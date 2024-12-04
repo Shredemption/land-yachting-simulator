@@ -8,6 +8,7 @@
 
 #include "file_manager/file_manager.h"
 #include "shader/shader.h"
+#include <vector>
 
 // Global Camera Variables
 glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction [y]
@@ -317,30 +318,30 @@ int main()
             cameraUp                              // Up vector
         );
 
-        // Render triangle
+        // Render objects
         {
             // Activate Shader
             simpleShader.use();
 
-            // Update model matrix for rotating on Z-axis
-            model = glm::rotate(
-                glm::mat4(1.f),
-                // std::sin(time * 0.8f) / 2.f,
-                time * 0.1f,
-                glm::vec3(1.f, 0.f, 0.f));
-            model = glm::rotate(
-                model,
-                // std::sin(time * 0.8f) / 2.f,
-                time * 0.3f,
-                glm::vec3(0.f, 1.f, 0.f));
-            model = glm::rotate(
-                model,
-                // std::sin(time * 0.8f) / 2.f,
-                time * 1.f,
-                glm::vec3(0.f, 0.f, 1.f));
+            // // Update model matrix for rotating on Z-axis
+            // model = glm::rotate(
+            //     glm::mat4(1.f),
+            //     // std::sin(time * 0.8f) / 2.f,
+            //     time * 0.1f,
+            //     glm::vec3(1.f, 0.f, 0.f));
+            // model = glm::rotate(
+            //     model,
+            //     // std::sin(time * 0.8f) / 2.f,
+            //     time * 0.3f,
+            //     glm::vec3(0.f, 1.f, 0.f));
+            // model = glm::rotate(
+            //     model,
+            //     // std::sin(time * 0.8f) / 2.f,
+            //     time * 1.f,
+            //     glm::vec3(0.f, 0.f, 1.f));
 
             // Set shader uniforms
-            simpleShader.setMat4("u_model", model);
+            // simpleShader.setMat4("u_model", model);
             simpleShader.setMat4("u_view", view);
             simpleShader.setMat4("u_projection", projection);
 
@@ -348,8 +349,37 @@ int main()
             glBindVertexArray(vao);
 
             // Issue the draw command
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // Cube
+            // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // Cube
             // glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0); // Triangle
+            // Draw multiple cubes
+            std::vector<glm::vec3> positions = {
+                {0.0f, 0.0f, 0.0f},
+                {2.0f, 0.0f, 2.0f},
+                {-2.0f, 0.0f, -2.0f},
+            };
+
+            for (const auto &pos : positions)
+            {
+                model = glm::translate(glm::mat4(1.0f), pos);
+                model = glm::rotate(
+                    model,
+                    // std::sin(time * 0.8f) / 2.f,
+                    time * 0.1f,
+                    glm::vec3(1.f, 0.f, 0.f));
+                model = glm::rotate(
+                    model,
+                    // std::sin(time * 0.8f) / 2.f,
+                    time * 0.3f,
+                    glm::vec3(0.f, 1.f, 0.f));
+                model = glm::rotate(
+                    model,
+                    // std::sin(time * 0.8f) / 2.f,
+                    time * 1.f,
+                    glm::vec3(0.f, 0.f, 1.f));
+
+                simpleShader.setMat4("u_model", model);
+                glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // Draw cube (assuming 36 indices for a cube)
+            }
 
             // Unbind the VAO
             glBindVertexArray(0);
