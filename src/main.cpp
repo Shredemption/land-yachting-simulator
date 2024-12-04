@@ -72,6 +72,76 @@ void createTriangle(unsigned int &vao, unsigned int &vbo, unsigned int &ebo)
     glBindVertexArray(0);             // VAO
 }
 
+void createCube(unsigned int &vao, unsigned int &vbo, unsigned int &ebo)
+{
+    // Define vertices and their colors
+    // Vertex has [x, y, z] and [r, g, b]
+    float cubeVertices[] = {
+        -1.f, -1.f, -1.f, // pos 1
+        0.f, 0.f, 0.f,    // col 1
+        -1.f, 1.f, -1.f,  // pos 2
+        0.f, 1.f, 0.f,    // col 2
+        1.f, 1.f, -1.f,   // pos 3
+        1.f, 1.f, 0.f,    // col 3
+        1.f, -1.f, -1.f,  // pos 4
+        1.f, 0.f, 0.f,    // col 4
+        -1.f, -1.f, 1.f,  // pos 5
+        0.f, 0.f, 1.f,    // col 5
+        -1.f, 1.f, 1.f,   // pos 6
+        0.f, 1.f, 1.f,    // col 6
+        1.f, 1.f, 1.f,    // pos 7
+        1.f, 1.f, 1.f,    // col 7
+        1.f, -1.f, 1.f,   // pos 8
+        1.f, 0.f, 1.f,    // col 8
+    };
+
+    // Define incides that represent vertex order
+    unsigned int cubeIndices[] = {
+        0, 2, 1, // back
+        0, 3, 2,
+        0, 1, 5, // left
+        0, 5, 4,
+        1, 2, 6, // up
+        1, 6, 5,
+        2, 3, 7, // right
+        2, 7, 6,
+        3, 0, 4, // down
+        3, 4, 7,
+        4, 5, 6, // front
+        4, 6, 7};
+
+    // Generate VertexArrayObject, VertexBufferObject, ElementBufferObject to manage and store OpenGL state
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    // Bind VAO to start recording OpenGL state for triangle
+    glBindVertexArray(vao);
+
+    // Bind the VBO to the GL_ARRAY_BUFFER target to store vertex data
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    // Upload vertex data to GPU
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+    // Bind the EBO to the GL_ELEMENT_ARRAY_BUFFER target to store index data
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    // Upload index data to GPU
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
+
+    // Specify layout of vertex data:
+    // Attribute 0: Position [x, y, z] - 3 floats, starting at offset 0
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0); // Enable attr 0
+
+    // Attribute 1: Color [r, g, b] - 3 floats, starting at offset 3 * sizeof(float)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1); // Enable attr 1
+
+    // Unbind the VBO, EBO and VAO (optional, to prevent accidental modifications of their data)
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // (VBO) EBO
+    glBindVertexArray(0);             // VAO
+}
+
 int main()
 {
 
@@ -121,7 +191,8 @@ int main()
 
     // Create triangle
     unsigned int vao, vbo, ebo;
-    createTriangle(vao, vbo, ebo);
+    // createTriangle(vao, vbo, ebo);
+    createCube(vao, vbo, ebo);
 
     // Initialize shader
     Shader simpleShader;
@@ -134,7 +205,7 @@ int main()
     glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 
     // Camera Setup
-    glm::vec3 cameraPosition(0.f, 0.f, 2.f);       // Camera placed at [0, 0, 2]
+    glm::vec3 cameraPosition(0.f, 0.f, 5.f);       // Camera placed at [0, 0, 2]
     glm::vec3 cameraViewDirection(0.f, 0.f, -1.f); // Camera looks in -Z axis
 
     // Model matrix
@@ -155,6 +226,11 @@ int main()
         100.0f                                    // Far clipping plane
     );
 
+    // Enable face culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -168,7 +244,7 @@ int main()
 
         // Clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(red, green, blue, 1.0f);
+        // glClearColor(red, green, blue, 1.0f);
 
         // Render triangle
         {
@@ -178,8 +254,19 @@ int main()
             // Update model matrix for rotating on Z-axis
             model = glm::rotate(
                 glm::mat4(1.f),
-                std::sin(time * 0.8f) / 4.f,
-                glm::vec3(0.f, 0.f, -1.f));
+                // std::sin(time * 0.8f) / 2.f,
+                time * 0.1f,
+                glm::vec3(1.f, 0.f, 0.f));
+            model = glm::rotate(
+                model,
+                // std::sin(time * 0.8f) / 2.f,
+                time * 0.3f,
+                glm::vec3(0.f, 1.f, 0.f));
+            model = glm::rotate(
+                model,
+                // std::sin(time * 0.8f) / 2.f,
+                time * 1.f,
+                glm::vec3(0.f, 0.f, 1.f));
 
             // Set shader uniforms
             simpleShader.setMat4("u_model", model);
@@ -190,7 +277,8 @@ int main()
             glBindVertexArray(vao);
 
             // Issue the draw command
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // Cube
+            // glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0); // Triangle
 
             // Unbind the VAO
             glBindVertexArray(0);
