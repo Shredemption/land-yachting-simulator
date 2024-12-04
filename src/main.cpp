@@ -9,17 +9,79 @@
 #include "file_manager/file_manager.h"
 #include "shader/shader.h"
 
+// Global Camera Variables
+glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction [y]
+glm::vec3 cameraPosition(0.f, 0.f, 5.f); // Camera placed at [0, 0, 2]
+float yaw = 0, pitch = 0, roll = 0;
+float xLast, yLast;
+glm::vec3 cameraViewDirection(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
+glm::vec3 cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight));
+
+// Global Time
+float deltaTime;
+float lastTime;
+
 void errorCallback(int error, const char *description)
 {
     std::cerr << "GLFW Error" << error << ": " << description << std::endl;
 }
 
 // Keycallback to define buttom presses
-static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     // Close on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+void mouseCallback(GLFWwindow *window, double xPos, double yPos)
+{
+    // Find how much mouse moved
+    float xOffset = xPos - xLast;
+    float yOffset = yPos - yLast;
+    xLast = xPos;
+    yLast = yPos;
+
+    // Apply sensitivity
+    float sensitvity = 0.1f;
+    xOffset *= sensitvity;
+    yOffset *= sensitvity;
+
+    // Update yaw and pitch
+    yaw += glm::radians(xOffset); // Convert to radians
+    pitch += glm::radians(yOffset);
+    // roll += 0;
+
+    // Clamp the pitch to prevent flipping
+    if (pitch > glm::radians(85.0f)) // Maximum upward angle
+        pitch = glm::radians(85.0f);
+    if (pitch < glm::radians(-85.0f)) // Maximum downward angle
+        pitch = glm::radians(-85.0f);
+
+    // Generate new direction vector(s)
+    cameraViewDirection = glm::normalize(glm::vec3(
+        cos(-pitch) * sin(-yaw + glm::radians(180.f)),
+        sin(-pitch),
+        cos(-pitch) * cos(-yaw + glm::radians(180.f))));
+}
+
+void processInput(GLFWwindow *window)
+{
+    // Move cam with WASD, space, shift
+    float cameraSpeed = 5.f * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPosition += cameraSpeed * cameraViewDirection;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPosition -= cameraSpeed * cameraViewDirection;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPosition -= glm::normalize(glm::cross(cameraViewDirection, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPosition += glm::normalize(glm::cross(cameraViewDirection, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        cameraPosition += cameraSpeed * worldUp;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        cameraPosition -= cameraSpeed * worldUp;
 }
 
 void createTriangle(unsigned int &vao, unsigned int &vbo, unsigned int &ebo)
@@ -176,9 +238,6 @@ int main()
     // Set swap interval
     glfwSwapInterval(1);
 
-    // Set Keycallback for window
-    glfwSetKeyCallback(window, keyCallback);
-
     // Initialize GLEW
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
@@ -204,19 +263,19 @@ int main()
     int screenWidth, screenHeight;
     glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 
-    // Camera Setup
-    glm::vec3 cameraPosition(0.f, 0.f, 5.f);       // Camera placed at [0, 0, 2]
-    glm::vec3 cameraViewDirection(0.f, 0.f, -1.f); // Camera looks in -Z axis
+    // Set initial mouse position
+    double initialMouseX, initialMouseY;
+    glfwGetCursorPos(window, &initialMouseX, &initialMouseY);
+    xLast = static_cast<float>(initialMouseX);
+    yLast = static_cast<float>(initialMouseY);
+
+    // Set Keycallback for window
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouseCallback);
 
     // Model matrix
     glm::mat4 model(1.f); // Identity matrix, no transformation on model
-
-    // View matrix
-    glm::mat4 view = glm::lookAt(
-        cameraPosition,                       // Camera Position
-        cameraPosition + cameraViewDirection, // Target Position
-        glm::vec3(0.f, 1.f, 0.f)              // Up vector
-    );
 
     // Projection Matrix
     glm::mat4 projection = glm::perspective(
@@ -236,6 +295,8 @@ int main()
     {
         // Get time since launch
         float time = (float)glfwGetTime();
+        deltaTime = time - lastTime;
+        lastTime = time;
 
         // Vary color based on time
         float red = (std::sin(time * 0.5f) + 1.0f) / 2.0f;
@@ -245,6 +306,16 @@ int main()
         // Clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
         // glClearColor(red, green, blue, 1.0f);
+
+        // Process Inputs
+        processInput(window);
+
+        // View matrix
+        glm::mat4 view = glm::lookAt(
+            cameraPosition,                       // Camera Position
+            cameraPosition + cameraViewDirection, // Target Position
+            cameraUp                              // Up vector
+        );
 
         // Render triangle
         {
