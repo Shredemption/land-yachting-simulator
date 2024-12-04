@@ -11,6 +11,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include <unordered_map>
 #include <vector>
 using namespace std;
 
@@ -19,7 +20,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 class Model
 {
 public:
-    vector<Texture> textures_loaded;
+    unordered_map<string, Texture> textureCache;
 
     Model(string const &path)
     {
@@ -41,7 +42,7 @@ private:
         // Define importer and open file
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
-        
+
         // If scene null, scene flagged as incomplete, or root node null
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
         {
@@ -54,6 +55,7 @@ private:
         directory = path.substr(0, path.find_last_of('/'));
         processNode(scene->mRootNode, scene);
     }
+
     void processNode(aiNode *node, const aiScene *scene)
     {
         // Process node's meshes
@@ -68,6 +70,7 @@ private:
             processNode(node->mChildren[i], scene);
         }
     }
+
     Mesh processMesh(aiMesh *mesh, const aiScene *scene)
     {
         vector<Vertex> vertices;
@@ -122,6 +125,7 @@ private:
 
         return Mesh(vertices, indices, textures);
     }
+    
     vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, string typeName)
     {
         vector<Texture> textures;
@@ -129,23 +133,19 @@ private:
         {
             aiString str;
             mat->GetTexture(type, i, &str);
-            bool skip = false;
-            for (unsigned int j = 0; j < textures_loaded.size(); j++)
+            string texturePath = str.C_Str();
+
+            if (textureCache.find(texturePath) != textureCache.end())
             {
-                if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
-                {
-                    textures.push_back(textures_loaded[j]);
-                    skip = true;
-                    break;
-                }
+                textures.push_back(textureCache[texturePath]);
             }
-            if (!skip)
-            {
+            else { 
                 Texture texture;
                 texture.id = TextureFromFile(str.C_Str(), directory);
                 texture.type = typeName;
                 texture.path = str.C_Str();
                 textures.push_back(texture);
+                textureCache[texturePath] = texture;
             }
         }
         return textures;
