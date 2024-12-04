@@ -37,3 +37,6 @@ target_link_libraries(${PROJECT_NAME} GLEW::GLEW)
 target_link_libraries(${PROJECT_NAME} glm::glm)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Set as Windows application
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
