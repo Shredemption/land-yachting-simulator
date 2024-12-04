@@ -71,14 +71,21 @@ void processInput(GLFWwindow *window)
 {
     // Move cam with WASD, space, shift
     float cameraSpeed = 5.f * deltaTime;
+
+    // Find XZ plane view direction
+    glm::vec3 forwardXZ = cameraViewDirection;
+    forwardXZ.y = 0.f;
+    forwardXZ = glm::normalize(forwardXZ);
+
+    // Apply correct movement per button pressed
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPosition += cameraSpeed * cameraViewDirection;
+        cameraPosition += cameraSpeed * forwardXZ;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPosition -= cameraSpeed * cameraViewDirection;
+        cameraPosition -= cameraSpeed * forwardXZ;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPosition -= glm::normalize(glm::cross(cameraViewDirection, cameraUp)) * cameraSpeed;
+        cameraPosition -= glm::normalize(glm::cross(forwardXZ, worldUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPosition += glm::normalize(glm::cross(cameraViewDirection, cameraUp)) * cameraSpeed;
+        cameraPosition += glm::normalize(glm::cross(forwardXZ, worldUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         cameraPosition += cameraSpeed * worldUp;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
