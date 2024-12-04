@@ -291,6 +291,10 @@ int main()
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
 
+    // Enalbe Depth buffer (Z-buffer)
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -305,7 +309,7 @@ int main()
         float blue = (std::sin(time * 0.7f) + 1.0f) / 2.0f;
 
         // Clear color buffer
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // glClearColor(red, green, blue, 1.0f);
 
         // Process Inputs
