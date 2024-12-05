@@ -24,6 +24,7 @@ glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction [y]
 glm::vec3 cameraPosition(0.f, 0.f, 5.f); // Camera placed at [0, 0, 2]
 float yaw = 0, pitch = 0, roll = 0;
 float xLast, yLast;
+bool firstFrame = true;
 glm::vec3 cameraViewDirection(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
 glm::vec3 cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight));
@@ -40,9 +41,6 @@ int windowXpos, windowYpos, windowWidth, windowHeight;
 
 int main()
 {
-
-    // Flip textures vertically on load
-    stbi_set_flip_vertically_on_load(true);
 
     // Initialize GLFW
     if (!glfwInit())
@@ -105,9 +103,9 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     // Enable face culling
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_BACK);
+    // glFrontFace(GL_CCW);
 
     // Enalbe Depth buffer (Z-buffer)
     glEnable(GL_DEPTH_TEST);
@@ -224,11 +222,27 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
-    // Find how much mouse moved
-    float xOffset = xPos - xLast;
-    float yOffset = yPos - yLast;
-    xLast = xPos;
-    yLast = yPos;
+
+    float xOffset;
+    float yOffset;
+
+    if (firstFrame)
+    {
+        xOffset = 0.f;
+        yOffset = 0.f;
+        xLast = xPos;
+        yLast = yPos;
+
+        firstFrame = false;
+    }
+    else
+    {
+        // Find how much mouse moved
+        xOffset = xPos - xLast;
+        yOffset = yPos - yLast;
+        xLast = xPos;
+        yLast = yPos;
+    }
 
     // Apply sensitivity
     float sensitvity = 0.1f;
