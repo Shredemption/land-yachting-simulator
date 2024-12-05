@@ -98,12 +98,6 @@ int main()
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
     glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 
-    // Set initial mouse position
-    double initialMouseX, initialMouseY;
-    glfwGetCursorPos(window, &initialMouseX, &initialMouseY);
-    xLast = static_cast<float>(initialMouseX);
-    yLast = static_cast<float>(initialMouseY);
-
     // Set Keycallback for window
     glfwSetKeyCallback(window, keyCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -287,4 +281,10 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height)
     glViewport(0, 0, width, height);
     screenWidth = width;
     screenHeight = height;
+
+    // Set initial mouse position after window resize
+    double initialMouseX, initialMouseY;
+    glfwGetCursorPos(window, &initialMouseX, &initialMouseY);
+    xLast = static_cast<float>(initialMouseX);
+    yLast = static_cast<float>(initialMouseY);
 }
