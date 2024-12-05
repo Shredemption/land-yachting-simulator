@@ -129,7 +129,11 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
+        {
             std::cout << "Window minimized, pauzing..." << std::endl;
+            glfwWaitEvents();
+            continue;
+        }
         else
         {
             // Get time since launch
@@ -204,7 +208,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
             glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
             glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
             glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
-            
+
             fullscreen = !fullscreen;
         }
         else
