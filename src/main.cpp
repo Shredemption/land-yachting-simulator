@@ -17,6 +17,7 @@ void errorCallback(int error, const char *description);
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void mouseCallback(GLFWwindow *window, double xPos, double yPos);
 void processInput(GLFWwindow *window);
+void framebufferSizeCallback(GLFWwindow *window, int width, int height);
 
 // Global Camera Variables
 glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction [y]
@@ -31,8 +32,15 @@ glm::vec3 cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight
 float deltaTime;
 float lastTime;
 
+// Global screen variables
+int xPos, yPos, screenWidth, screenHeight;
+bool fullscreen = false;
+GLFWmonitor *monitor;
+int windowXpos, windowYpos, windowWidth, windowHeight;
+
 int main()
 {
+
     // Flip textures vertically on load
     stbi_set_flip_vertically_on_load(true);
 
@@ -53,7 +61,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create Window
-    GLFWwindow *window = glfwCreateWindow(1200, 900, "Marama", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(800, 600, "Marama", nullptr, nullptr);
     if (!window)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -86,7 +94,8 @@ int main()
     // Shader modelShader("shaders/model.vs", "shaders/model.fs");
 
     // Get screen dimensions
-    int screenWidth, screenHeight;
+    glfwGetWindowPos(window, &windowXpos, &windowYpos);
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
     glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 
     // Set initial mouse position
@@ -99,6 +108,7 @@ int main()
     glfwSetKeyCallback(window, keyCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     // Enable face culling
     glEnable(GL_CULL_FACE);
@@ -109,50 +119,59 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
+    // Set window to fullscreen by default
+    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    fullscreen = true;
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
-        // Get time since launch
-        float time = (float)glfwGetTime();
-        deltaTime = time - lastTime;
-        lastTime = time;
+        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
+            std::cout << "Window minimized, pauzing..." << std::endl;
+        else
+        {
+            // Get time since launch
+            float time = (float)glfwGetTime();
+            deltaTime = time - lastTime;
+            lastTime = time;
 
-        // Clear color buffer
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // Clear color buffer
+            glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Process Inputs
-        processInput(window);
+            // Process Inputs
+            processInput(window);
 
-        // Projection Matrix
-        glm::mat4 projection = glm::perspective(
-            (float)M_PI_2,                            // Field of view (90 deg)
-            (float)screenWidth / (float)screenHeight, // Aspect Ratio (w/h)
-            0.01f,                                    // Near clipping plane
-            100.0f                                    // Far clipping plane
-        );
+            // Projection Matrix
+            glm::mat4 projection = glm::perspective((float)M_PI_2,                            // Field of view (90 deg)
+                                                    (float)screenWidth / (float)screenHeight, // Aspect Ratio (w/h)
+                                                    0.01f,                                    // Near clipping plane
+                                                    100.0f                                    // Far clipping plane
+            );
 
-        // View matrix
-        glm::mat4 view = glm::lookAt(
-            cameraPosition,                       // Camera Position
-            cameraPosition + cameraViewDirection, // Target Position
-            cameraUp                              // Up vector
-        );
+            // View matrix
+            glm::mat4 view = glm::lookAt(cameraPosition,                       // Camera Position
+                                         cameraPosition + cameraViewDirection, // Target Position
+                                         cameraUp                              // Up vector
+            );
 
-        // Model Matrix
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(1.f, 1.f, 1.f));
+            // Model Matrix
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::scale(model, glm::vec3(1.f, 1.f, 1.f));
 
-        modelShader.setMat4("u_projection", projection);
-        modelShader.setMat4("u_view", view);
-        modelShader.setMat4("u_model", model);
-        modelShader.use();
+            modelShader.setMat4("u_projection", projection);
+            modelShader.setMat4("u_view", view);
+            modelShader.setMat4("u_model", model);
+            modelShader.use();
 
-        objModel.Draw(modelShader);
+            objModel.Draw(modelShader);
 
-        // Swap buffers and poll events
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+            // Swap buffers and poll events
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+        }
     }
 
     // Cleanup GLFW
@@ -172,7 +191,37 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 {
     // Close on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+
+    // Toggle fullscreen on
+    if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
+    {
+        if (fullscreen)
+        {
+            // Set back to window, using saved old size etc.
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
+            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
+            glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
+            
+            fullscreen = !fullscreen;
+        }
+        else
+        {
+            // Store old window size etc.
+            glfwGetWindowPos(window, &windowXpos, &windowYpos);
+            glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+            // Set to borderless window
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+            const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
+
+            fullscreen = !fullscreen;
+        }
+    }
 }
 
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
@@ -200,10 +249,8 @@ void mouseCallback(GLFWwindow *window, double xPos, double yPos)
         pitch = glm::radians(-85.0f);
 
     // Generate new direction vector(s)
-    cameraViewDirection = glm::normalize(glm::vec3(
-        cos(-pitch) * sin(-yaw + glm::radians(180.f)),
-        sin(-pitch),
-        cos(-pitch) * cos(-yaw + glm::radians(180.f))));
+    cameraViewDirection = glm::normalize(glm::vec3(cos(-pitch) * sin(-yaw + glm::radians(180.f)), sin(-pitch),
+                                                   cos(-pitch) * cos(-yaw + glm::radians(180.f))));
 }
 
 void processInput(GLFWwindow *window)
@@ -229,4 +276,11 @@ void processInput(GLFWwindow *window)
         cameraPosition += cameraSpeed * worldUp;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         cameraPosition -= cameraSpeed * worldUp;
+}
+
+void framebufferSizeCallback(GLFWwindow *window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+    screenWidth = width;
+    screenHeight = height;
 }
