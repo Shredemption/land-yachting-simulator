@@ -8,6 +8,15 @@ project(Marama VERSION 0.1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Prioritize static libraries (static libraries first, dynamic ones ignored)
+set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib)
+
+# Check if using MinGW or UNIX
+if(MINGW OR UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -static-libgcc -static-libstdc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
+endif()
+
 # Set Conan's toolchain and dependency paths
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_BINARY_DIR}/build/conan_toolchain.cmake" CACHE FILEPATH "Conan toolchain file")
 

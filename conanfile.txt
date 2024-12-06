@@ -9,3 +9,6 @@ stb/cci.20230920
 [generators]
 CMakeToolchain
 CMakeDeps
+
+[options]
+/*:shared=False
