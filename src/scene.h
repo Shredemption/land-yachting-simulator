@@ -10,6 +10,8 @@
 class Scene
 {
 public:
+    std::unordered_map<std::string, Model> loadedModels;
+
     Scene(vector<string> input_model, vector<glm::mat4> input_u_model)
     {
         loadScene(input_model, input_u_model);
@@ -32,16 +34,24 @@ public:
     }
 
 private:
-    vector<Model> model;
+    vector<Model*> models;
     vector<glm::mat4> u_model;
 
     void loadScene(vector<string> input_model, vector<glm::mat4> input_u_model)
     {
-        for (string path : input_model)
+        for (const string& path : input_model)
         {
-            model.push_back(Model(FileManager::getPath(path)));
+            // If model not yet loaded
+            if (loadedModels.find(path) == loadedModels.end())
+            {
+                // Load model
+                loadedModels.emplace(path, Model(FileManager::getPath(path)));
+            }
+
+            // Push loaded path to model
+            models.push_back(&loadedModels.at(path));
         }
-        u_model = input_u_model;
+        u_model = std::move(input_u_model);
     }
 };
 
