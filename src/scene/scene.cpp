@@ -8,6 +8,7 @@ Scene::Scene(vector<string> input_model, vector<glm::mat4> input_u_model)
 
 void Scene::Draw(Shader &shader, glm::mat4 u_view, glm::mat4 u_projection)
 {
+    shader.use();
     // Apply view and projection to whole scene
     shader.setMat4("u_view", u_view);
     shader.setMat4("u_projection", u_projection);

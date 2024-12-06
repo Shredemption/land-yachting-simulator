@@ -85,6 +85,11 @@ int main()
         return -1;
     }
 
+    // Initialize shader
+    Shader defaultShader;
+    defaultShader.init(FileManager::read("shaders/default.vs"), FileManager::read("shaders/default.fs"));
+    defaultShader.use();
+
     // Import JSON file model registry
     std::map<std::string, std::string> modelMap = loadModels("resources/models.json");
 
@@ -105,13 +110,12 @@ int main()
     // Gather into scene
     Scene scene(objectList, objTransList);
 
+    // Generate Light properties
+    glm::vec3 ambientLightColor(0.1f, 0.1f, 0.1f);
+    defaultShader.setVec3("ambientLightColor", ambientLightColor);
+
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    // Initialize shader
-    Shader modelShader;
-    modelShader.init(FileManager::read("shaders/model.vs"), FileManager::read("shaders/model.fs"));
-    // Shader modelShader("shaders/model.vs", "shaders/model.fs");
 
     // Get screen dimensions
     glfwGetWindowPos(window, &windowXpos, &windowYpos);
@@ -178,9 +182,8 @@ int main()
                                          cameraUp                              // Up vector
             );
 
-            modelShader.use();
             // Draw scene, using view and projection matrix for entire scene
-            scene.Draw(modelShader, view, projection);
+            scene.Draw(defaultShader, view, projection);
 
             // Swap buffers and poll events
             glfwSwapBuffers(window);
