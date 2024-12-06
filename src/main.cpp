@@ -112,9 +112,10 @@ int main()
     glDepthFunc(GL_LESS);
 
     // Set window to fullscreen by default
-    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+    glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+    const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
     fullscreen = true;
 
     // Main Loop
