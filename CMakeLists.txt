@@ -42,6 +42,7 @@ find_package(glm REQUIRED)
 find_package(glad REQUIRED)
 find_package(assimp REQUIRED)
 find_package(stb REQUIRED)
+find_package(jsoncons REQUIRED)
 
 # Link libraries to the target
 target_link_libraries(${PROJECT_NAME} glfw)
@@ -49,6 +50,7 @@ target_link_libraries(${PROJECT_NAME} GLEW::GLEW)
 target_link_libraries(${PROJECT_NAME} glm::glm)
 target_link_libraries(${PROJECT_NAME} glad::glad)
 target_link_libraries(${PROJECT_NAME} assimp::assimp)
+target_link_libraries(${PROJECT_NAME} jsoncons)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
