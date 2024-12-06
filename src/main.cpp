@@ -2,6 +2,7 @@
 #include <fstream>
 #include <filesystem>
 #include <cmath>
+#include <vector>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -10,9 +11,7 @@
 #include <jsoncons/json.hpp>
 
 #include "file_manager/file_manager.h"
-#include "shader/shader.h"
-#include "scene.h"
-#include <vector>
+#include "scene/scene.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -37,7 +36,7 @@ float lastTime;
 
 // Global screen variables
 int xPos, yPos, screenWidth, screenHeight;
-bool fullscreen = false;
+bool fullscreen = true;
 bool windowSizeChanged = false;
 bool firstFrame = true;
 GLFWmonitor *monitor;
@@ -61,6 +60,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1); // OpenGL 4.1
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_FOCUS_ON_SHOW, GL_TRUE);
 
     // Create Window
     GLFWwindow *window = glfwCreateWindow(800, 600, "Marama", nullptr, nullptr);
@@ -89,9 +89,9 @@ int main()
 
     // Define list of objects to load
     vector<string> objectList = {
-        {modelMap["planet"]},
         {modelMap["backpack"]},
-        {modelMap["cyborg"]},
+        {modelMap["backpack"]},
+        {modelMap["backpack"]},
     };
 
     // Define wwhere to load objects
@@ -124,9 +124,9 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     // Enable face culling
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_BACK);
-    // glFrontFace(GL_CCW);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
 
     // Enalbe Depth buffer (Z-buffer)
     glEnable(GL_DEPTH_TEST);
@@ -177,15 +177,7 @@ int main()
                                          cameraUp                              // Up vector
             );
 
-            // Model Matrix
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::scale(model, glm::vec3(1.f, 1.f, 1.f));
-
-            modelShader.setMat4("u_projection", projection);
-            modelShader.setMat4("u_view", view);
-            modelShader.setMat4("u_model", model);
             modelShader.use();
-
             // Draw scene, using view and projection matrix for entire scene
             scene.Draw(modelShader, view, projection);
 
