@@ -10,7 +10,7 @@
 class Scene
 {
 public:
-    Scene(vector<Model> input_model, vector<glm::mat4> input_u_model)
+    Scene(vector<string> input_model, vector<glm::mat4> input_u_model)
     {
         loadScene(input_model, input_u_model);
     };
@@ -35,8 +35,12 @@ private:
     vector<Model> model;
     vector<glm::mat4> u_model;
 
-    void loadScene(vector<Model> input_model, vector<glm::mat4> input_u_model){
-        model = input_model;
+    void loadScene(vector<string> input_model, vector<glm::mat4> input_u_model)
+    {
+        for (string path : input_model)
+        {
+            model.push_back(Model(FileManager::getPath(path)));
+        }
         u_model = input_u_model;
     }
 };

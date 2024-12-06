@@ -1,10 +1,13 @@
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 #include <cmath>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <jsoncons/json.hpp>
 
 #include "file_manager/file_manager.h"
 #include "shader/shader.h"
@@ -18,6 +21,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 void mouseCallback(GLFWwindow *window, double xPos, double yPos);
 void processInput(GLFWwindow *window);
 void framebufferSizeCallback(GLFWwindow *window, int width, int height);
+std::map<std::string, std::string> loadModels(const std::string &filePath);
 
 // Global Camera Variables
 glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction [y]
@@ -80,18 +84,21 @@ int main()
         return -1;
     }
 
+    // Import JSON file model registry
+    std::map<std::string, std::string> modelMap = loadModels("resources/models.json");
+
     // Define list of objects to load
-    vector<Model> objectList = {
-        {FileManager::getPath("resources/objects/backpack/backpack.obj")},
-        {FileManager::getPath("resources/objects/backpack/backpack.obj")},
-        {FileManager::getPath("resources/objects/backpack/backpack.obj")},
+    vector<string> objectList = {
+        {modelMap["planet"]},
+        {modelMap["backpack"]},
+        {modelMap["cyborg"]},
     };
 
     // Define wwhere to load objects
     vector<glm::mat4> objTransList = {
-        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(5.f, 0.f, 0.f))},
+        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(10.f, 0.f, 0.f))},
         {glm::mat4(1.0f)},
-        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(-5.f, 0.f, 0.f))},
+        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(-10.f, 0.f, 0.f))},
     };
 
     // Gather into scene
@@ -312,4 +319,41 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height)
 
     // Track window size change for mouse movement
     windowSizeChanged = true;
+}
+
+std::map<std::string, std::string> loadModels(const std::string &filePath)
+{
+    const std::string path = "../" + filePath;
+    // Check if the file exists
+    if (!std::filesystem::exists(path))
+    {
+        throw std::runtime_error("File not found: " + path);
+    }
+
+    // Open the file
+    std::ifstream file(path);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Could not open file: " + path);
+    }
+
+    // Parse the JSON
+    jsoncons::json j;
+    try
+    {
+        j = jsoncons::json::parse(file);
+    }
+    catch (const std::exception &e)
+    {
+        throw std::runtime_error("Failed to parse JSON: " + std::string(e.what()));
+    }
+
+    // Create a map from the parsed JSON
+    std::map<std::string, std::string> modelMap;
+    for (const auto &kv : j["models"].object_range())
+    {
+        modelMap[kv.key()] = kv.value().as<std::string>();
+    }
+
+    return modelMap;
 }

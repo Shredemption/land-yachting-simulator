@@ -139,7 +139,8 @@ private:
             {
                 textures.push_back(textureCache[texturePath]);
             }
-            else { 
+            else
+            {
                 Texture texture;
                 texture.id = TextureFromFile(str.C_Str(), directory);
                 texture.type = typeName;
