@@ -114,6 +114,11 @@ int main()
     glm::vec3 ambientLightColor(0.1f, 0.1f, 0.1f);
     defaultShader.setVec3("ambientLightColor", ambientLightColor);
 
+    glm::vec3 lightPos(0.f, 10.f, 3.f);
+    glm::vec3 diffuseLightColor(1.0f,1.0f,1.0f);
+    defaultShader.setVec3("lightPos", lightPos);
+    defaultShader.setVec3("diffuseLightColor", diffuseLightColor);
+
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
