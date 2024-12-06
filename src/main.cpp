@@ -23,8 +23,6 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height);
 glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction [y]
 glm::vec3 cameraPosition(0.f, 0.f, 5.f); // Camera placed at [0, 0, 2]
 float yaw = 0, pitch = 0, roll = 0;
-float xLast, yLast;
-bool firstFrame = true;
 glm::vec3 cameraViewDirection(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
 glm::vec3 cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight));
@@ -36,6 +34,7 @@ float lastTime;
 // Global screen variables
 int xPos, yPos, screenWidth, screenHeight;
 bool fullscreen = false;
+bool windowSizeChanged = false;
 GLFWmonitor *monitor;
 int windowXpos, windowYpos, windowWidth, windowHeight;
 
@@ -223,36 +222,22 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
-
-    float xOffset;
-    float yOffset;
-
-    if (firstFrame)
+    // Check if window size changed last iteration
+    if (windowSizeChanged)
     {
-        xOffset = 0.f;
-        yOffset = 0.f;
-        xLast = xPos;
-        yLast = yPos;
-
-        firstFrame = false;
-    }
-    else
-    {
-        // Find how much mouse moved
-        xOffset = xPos - xLast;
-        yOffset = yPos - yLast;
-        xLast = xPos;
-        yLast = yPos;
+        xPos = 0;
+        yPos = 0;
+        windowSizeChanged = false;
     }
 
     // Apply sensitivity
     float sensitvity = 0.1f;
-    xOffset *= sensitvity;
-    yOffset *= sensitvity;
+    xPos *= sensitvity;
+    yPos *= sensitvity;
 
     // Update yaw and pitch
-    yaw += glm::radians(xOffset); // Convert to radians
-    pitch += glm::radians(yOffset);
+    yaw += glm::radians(xPos); // Convert to radians
+    pitch += glm::radians(yPos);
     // roll += 0;
 
     // Clamp the pitch to prevent flipping
@@ -264,6 +249,9 @@ void mouseCallback(GLFWwindow *window, double xPos, double yPos)
     // Generate new direction vector(s)
     cameraViewDirection = glm::normalize(glm::vec3(cos(-pitch) * sin(-yaw + glm::radians(180.f)), sin(-pitch),
                                                    cos(-pitch) * cos(-yaw + glm::radians(180.f))));
+
+    // Reset mouse to 0,0
+    glfwSetCursorPos(window, 0, 0);
 }
 
 void processInput(GLFWwindow *window)
@@ -297,9 +285,6 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height)
     screenWidth = width;
     screenHeight = height;
 
-    // Set initial mouse position after window resize
-    double initialMouseX, initialMouseY;
-    glfwGetCursorPos(window, &initialMouseX, &initialMouseY);
-    xLast = static_cast<float>(initialMouseX);
-    yLast = static_cast<float>(initialMouseY);
+    // Track window size change for mouse movement
+    windowSizeChanged = true;
 }
