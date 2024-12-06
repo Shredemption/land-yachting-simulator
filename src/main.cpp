@@ -8,7 +8,7 @@
 
 #include "file_manager/file_manager.h"
 #include "shader/shader.h"
-#include "model.h"
+#include "scene.h"
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -35,6 +35,7 @@ float lastTime;
 int xPos, yPos, screenWidth, screenHeight;
 bool fullscreen = false;
 bool windowSizeChanged = false;
+bool firstFrame = true;
 GLFWmonitor *monitor;
 int windowXpos, windowYpos, windowWidth, windowHeight;
 
@@ -79,10 +80,24 @@ int main()
         return -1;
     }
 
-    // Open Model
-    Model objModel(FileManager::getPath("resources/objects/backpack/backpack.obj"));
+    // Define list of objects to load
+    vector<Model> objectList = {
+        {FileManager::getPath("resources/objects/backpack/backpack.obj")},
+        {FileManager::getPath("resources/objects/backpack/backpack.obj")},
+        {FileManager::getPath("resources/objects/backpack/backpack.obj")},
+    };
 
-    // draw in wireframe
+    // Define wwhere to load objects
+    vector<glm::mat4> objTransList = {
+        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(5.f, 0.f, 0.f))},
+        {glm::mat4(1.0f)},
+        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(-5.f, 0.f, 0.f))},
+    };
+
+    // Gather into scene
+    Scene scene(objectList, objTransList);
+
+    // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Initialize shader
@@ -111,11 +126,13 @@ int main()
     glDepthFunc(GL_LESS);
 
     // Set window to fullscreen by default
-    glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
-    glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
-    const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
-    fullscreen = true;
+    if (fullscreen)
+    {
+        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+        glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
 
     // Main Loop
     while (!glfwWindowShouldClose(window))
@@ -162,7 +179,8 @@ int main()
             modelShader.setMat4("u_model", model);
             modelShader.use();
 
-            objModel.Draw(modelShader);
+            // Draw scene, using view and projection matrix for entire scene
+            scene.Draw(modelShader, view, projection);
 
             // Swap buffers and poll events
             glfwSwapBuffers(window);
@@ -223,6 +241,13 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
     // Check if window size changed last iteration
+    if (firstFrame)
+    {
+        xPos = 0;
+        yPos = 0;
+        firstFrame = false;
+    }
+
     if (windowSizeChanged)
     {
         xPos = 0;
