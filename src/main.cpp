@@ -219,6 +219,9 @@ int main()
         }
     }
 
+    // Unload Scene before stopping
+    scene.~Scene();
+
     // Cleanup GLFW
     glfwDestroyWindow(window);
     glfwTerminate();

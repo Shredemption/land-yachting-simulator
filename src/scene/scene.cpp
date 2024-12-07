@@ -1,11 +1,20 @@
 #include <scene/scene.h>
 #include <file_manager/file_manager.h>
 
+// Scene Constructor
 Scene::Scene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model)
 {
     loadScene(input_model, input_u_model);
 };
 
+// Scene Destructor
+Scene::~Scene()
+{
+    models.clear(); // Clear the vector of pointers (no need to delete the objects, as they're owned by loadedModels)
+    loadedModels.clear(); // Calls destructors of Model objects in the map
+}
+
+// Scene Renderer
 void Scene::Draw(Shader &shader, glm::mat4 u_view, glm::mat4 u_projection)
 {
     shader.use();
@@ -23,6 +32,7 @@ void Scene::Draw(Shader &shader, glm::mat4 u_view, glm::mat4 u_projection)
     }
 }
 
+// Load models into scene
 void Scene::loadScene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model)
 {
     for (const std::string &path : input_model)
@@ -31,7 +41,7 @@ void Scene::loadScene(std::vector<std::string> input_model, std::vector<glm::mat
         if (loadedModels.find(path) == loadedModels.end())
         {
             // Load model
-            loadedModels.emplace(path, Model(FileManager::getPath(path)));
+            loadedModels.emplace(path, FileManager::getPath(path));
         }
 
         // Push loaded path to model
