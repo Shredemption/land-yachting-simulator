@@ -9,26 +9,25 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-using namespace std;
 
 class Model
 {
 public:
-    unordered_map<string, Texture> textureCache;
+    std::unordered_map<std::string, Texture> textureCache;
 
     // Model Constructor
-    Model(string const &path);
+    Model(std::string const &path);
 
     // Model Renderer
     void Draw(Shader &shader);
 
 private:
     // Model data
-    vector<Mesh> meshes;
-    string directory;
+    std::vector<Mesh> meshes;
+    std::string directory;
 
     // Model Loading
-    void loadModel(string path);
+    void loadModel(std::string path);
 
     // Node Processor
     void processNode(aiNode *node, const aiScene *scene);
@@ -37,7 +36,7 @@ private:
     Mesh processMesh(aiMesh *mesh, const aiScene *scene);
         
     // Material Texture Loader
-    vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, string typeName);
+    std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
 };
 
 #endif // MODEL_H

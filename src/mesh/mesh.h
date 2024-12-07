@@ -6,7 +6,6 @@
 #include <vector>
 
 #include <shader/shader.h>
-using namespace std;
 
 struct Vertex
 {
@@ -18,20 +17,20 @@ struct Vertex
 struct Texture
 {
     unsigned int id;
-    string type;
-    string path;
+    std::string type;
+    std::string path;
 };
 
 class Mesh
 {
 public:
     // Mesh data
-    vector<Vertex> vertices;
-    vector<unsigned int> indices;
-    vector<Texture> textures;
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    std::vector<Texture> textures;
 
     // Mesh Constructor
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
     // Mesh Renderer
     void Draw(Shader &shader);

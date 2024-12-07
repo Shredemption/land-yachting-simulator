@@ -1,7 +1,7 @@
 #include "mesh/mesh.h"
 
 // Mesh constructor
-Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
 {
     this->vertices = vertices;
     this->indices = indices;
@@ -24,8 +24,8 @@ void Mesh::Draw(Shader &shader)
         glActiveTexture(GL_TEXTURE0 + i);
 
         // Retrieve texture number and type
-        string number;
-        string name = textures[i].type;
+        std::string number;
+        std::string name = textures[i].type;
 
         // Set appropriate number for filename (eg texture_diffuse3)
         if (name == "texture_diffuse")
