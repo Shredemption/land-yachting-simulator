@@ -62,6 +62,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_FOCUS_ON_SHOW, GL_TRUE);
     glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
+    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 
     // Create Window
     GLFWwindow *window = glfwCreateWindow(800, 600, "Marama", nullptr, nullptr);
@@ -116,6 +117,9 @@ int main()
     glm::vec3 lightPos(0.f, 10.f, 3.f);  // Position for diffuse and specular light source
     float specularStrength = 0.5f;       // Strength of specular light
 
+    // Sun/moon lighting
+    float sunAngle = rand() % 360;
+
     // Send Light properties to Shader
     defaultShader.setVec3("lightColor", lightColor);
     defaultShader.setVec3("lightPos", lightPos);
@@ -154,12 +158,13 @@ int main()
         glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
     }
 
+    glfwShowWindow(window);
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
         {
-            std::cout << "Window minimized, pauzing..." << std::endl;
             glfwWaitEvents();
             continue;
         }
@@ -189,6 +194,18 @@ int main()
                                          cameraPosition + cameraViewDirection, // Target Position
                                          cameraUp                              // Up vector
             );
+
+            // Sun/moon lighting
+            sunAngle += deltaTime * 10.0f;
+
+            // lightColor = glm::vec3((1.5f + std::sin(glm::radians(sunAngle)) + std::sin(glm::radians(2.f * sunAngle - 90.f))) / 3.5f);
+            lightPos = 100.0f * glm::vec3(std::sin(glm::radians(sunAngle)), 1.f, std::cos(glm::radians(sunAngle)));
+
+            // Send Light properties to Shader
+            defaultShader.setVec3("lightColor", lightColor);
+            defaultShader.setVec3("lightPos", lightPos);
+            defaultShader.setFloat("ambientStrength", ambientStrength);
+            defaultShader.setFloat("specularStrength", specularStrength);
 
             // Send camera position to shader
             defaultShader.setVec3("camPos", cameraPosition);
