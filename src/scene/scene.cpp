@@ -1,7 +1,7 @@
 #include <scene/scene.h>
 #include <file_manager/file_manager.h>
 
-Scene::Scene(vector<string> input_model, vector<glm::mat4> input_u_model)
+Scene::Scene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model)
 {
     loadScene(input_model, input_u_model);
 };
@@ -22,9 +22,9 @@ void Scene::Draw(Shader &shader, glm::mat4 u_view, glm::mat4 u_projection)
     }
 }
 
-void Scene::loadScene(vector<string> input_model, vector<glm::mat4> input_u_model)
+void Scene::loadScene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model)
 {
-    for (const string &path : input_model)
+    for (const std::string &path : input_model)
     {
         // If model not yet loaded
         if (loadedModels.find(path) == loadedModels.end())

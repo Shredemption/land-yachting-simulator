@@ -94,14 +94,14 @@ int main()
     std::map<std::string, std::string> modelMap = loadModels("resources/models.json");
 
     // Define list of objects to load
-    vector<string> objectList = {
+    std::vector<std::string> objectList = {
         {modelMap["backpack"]},
         {modelMap["backpack"]},
         {modelMap["backpack"]},
     };
 
     // Define wwhere to load objects
-    vector<glm::mat4> objTransList = {
+    std::vector<glm::mat4> objTransList = {
         {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(10.f, 0.f, 0.f))},
         {glm::mat4(1.0f)},
         {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(-10.f, 0.f, 0.f))},
