@@ -23,8 +23,8 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height);
 std::map<std::string, std::string> loadModels(const std::string &filePath);
 
 // Global Camera Variables
-glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction [y]
-glm::vec3 cameraPosition(0.f, 0.f, 5.f); // Camera placed at [0, 0, 2]
+glm::vec3 worldUp(0.f, 1.f, 0.f);        // World up direction
+glm::vec3 cameraPosition(0.f, 0.f, 5.f); // Camera placed
 float yaw = 0, pitch = 0, roll = 0;
 glm::vec3 cameraViewDirection(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
@@ -112,19 +112,16 @@ int main()
     Scene scene(objectList, objTransList);
 
     // Generate Light properties
-    glm::vec3 lightColor(1.f, 1.f, 1.f); // Overall Light color
-    float ambientStrength = 0.2;         // Strength of ambient light
     glm::vec3 lightPos(0.f, 10.f, 3.f);  // Position for diffuse and specular light source
-    float specularStrength = 0.5f;       // Strength of specular light
 
     // Sun/moon lighting
     float sunAngle = rand() % 360;
 
     // Send Light properties to Shader
-    defaultShader.setVec3("lightColor", lightColor);
-    defaultShader.setVec3("lightPos", lightPos);
-    defaultShader.setFloat("ambientStrength", ambientStrength);
-    defaultShader.setFloat("specularStrength", specularStrength);
+    defaultShader.setVec3("light.position", lightPos);
+    defaultShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+    defaultShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
+    defaultShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -202,10 +199,7 @@ int main()
             lightPos = 100.0f * glm::vec3(std::sin(glm::radians(sunAngle)), 1.f, std::cos(glm::radians(sunAngle)));
 
             // Send Light properties to Shader
-            defaultShader.setVec3("lightColor", lightColor);
-            defaultShader.setVec3("lightPos", lightPos);
-            defaultShader.setFloat("ambientStrength", ambientStrength);
-            defaultShader.setFloat("specularStrength", specularStrength);
+            defaultShader.setVec3("light.position", lightPos);
 
             // Send camera position to shader
             defaultShader.setVec3("camPos", cameraPosition);
