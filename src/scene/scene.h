@@ -21,6 +21,7 @@ public:
 private:
     std::vector<Model*> models;
     std::vector<glm::mat4> u_model;
+    std::vector<glm::mat3> u_normal;
 
     void loadScene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model);
 };
