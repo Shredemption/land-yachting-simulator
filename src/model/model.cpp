@@ -15,6 +15,42 @@ Model::Model(std::string const &path)
     loadModel(path);
 }
 
+// Model Destructor
+Model::~Model()
+{
+    // For every mesh
+    for (const auto &mesh : meshes)
+    {
+        // For every texture in mesh
+        for (const auto &texture : mesh.textures)
+        {
+            // Check if texture still in textureCache
+            auto iteration = textureCache.find(texture.path);
+            if (iteration != textureCache.end())
+            {
+                // If texture in cache, decrement count
+                iteration->second.refCount--;
+
+                // If count 0
+                if (iteration->second.refCount == 0)
+                {
+                    // Remove unload from GPU and remove from cache
+                    glDeleteTextures(1, &iteration->second.texture.id);
+                    textureCache.erase(iteration);
+                }
+            }
+        }
+    }
+
+    // Release mesh VAO, VBO and EBO from GPU
+    glDeleteBuffers(1, &meshes[0].VBO);
+    glDeleteBuffers(1, &meshes[0].EBO);
+    glDeleteVertexArrays(1, &meshes[0].VAO);
+
+    // Ensure meshes vector clears properly
+    meshes.clear();
+}
+
 // Model Renderer
 void Model::Draw(Shader &shader)
 {
