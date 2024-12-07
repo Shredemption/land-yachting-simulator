@@ -7,6 +7,8 @@
 
 unsigned int TextureFromFile(const char *path, const std::string &directory);
 
+std::unordered_map<std::string, CachedTexture> Model::textureCache;
+
 // Model Constructor
 Model::Model(std::string const &path)
 {
@@ -114,7 +116,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 
 std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName)
 {
-    // Vector of loaded textures
+    // Vector of textures to push to GPU
     std::vector<Texture> textures;
 
     // For every texture
@@ -130,7 +132,8 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
         if (textureCache.find(texturePath) != textureCache.end())
         {
             // Use cached texture
-            textures.push_back(textureCache[texturePath]);
+            textures.push_back(textureCache[texturePath].texture);
+            textureCache[texturePath].refCount++;
         }
         else
         {
@@ -140,7 +143,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);
-            textureCache[texturePath] = texture;
+            textureCache[texturePath].texture = texture;
         }
     }
     return textures;
