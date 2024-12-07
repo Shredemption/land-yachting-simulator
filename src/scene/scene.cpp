@@ -18,6 +18,7 @@ void Scene::Draw(Shader &shader, glm::mat4 u_view, glm::mat4 u_projection)
     {
         // Set model matrix for model and draw
         shader.setMat4("u_model", u_model[i]);
+        shader.setMat4("u_normal", u_normal[i]);
         models[i]->Draw(shader);
     }
 }
@@ -36,5 +37,11 @@ void Scene::loadScene(std::vector<std::string> input_model, std::vector<glm::mat
         // Push loaded path to model
         models.push_back(&loadedModels.at(path));
     }
-    u_model = std::move(input_u_model);
+    
+    for (auto u_model_i : input_u_model)
+    {
+        u_model.push_back(u_model_i);
+        u_normal.push_back(glm::transpose(glm::inverse(u_model_i)));
+    }
+
 }

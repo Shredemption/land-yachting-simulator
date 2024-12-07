@@ -111,13 +111,16 @@ int main()
     Scene scene(objectList, objTransList);
 
     // Generate Light properties
-    glm::vec3 ambientLightColor(0.1f, 0.1f, 0.1f);
-    defaultShader.setVec3("ambientLightColor", ambientLightColor);
+    glm::vec3 lightColor(1.f, 1.f, 1.f); // Overall Light color
+    float ambientStrength = 0.2;         // Strength of ambient light
+    glm::vec3 lightPos(0.f, 10.f, 3.f);  // Position for diffuse and specular light source
+    float specularStrength = 0.5f;       // Strength of specular light
 
-    glm::vec3 lightPos(0.f, 10.f, 3.f);
-    glm::vec3 diffuseLightColor(1.0f,1.0f,1.0f);
+    // Send Light properties to Shader
+    defaultShader.setVec3("lightColor", lightColor);
     defaultShader.setVec3("lightPos", lightPos);
-    defaultShader.setVec3("diffuseLightColor", diffuseLightColor);
+    defaultShader.setFloat("ambientStrength", ambientStrength);
+    defaultShader.setFloat("specularStrength", specularStrength);
 
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -186,6 +189,9 @@ int main()
                                          cameraPosition + cameraViewDirection, // Target Position
                                          cameraUp                              // Up vector
             );
+
+            // Send camera position to shader
+            defaultShader.setVec3("camPos", cameraPosition);
 
             // Draw scene, using view and projection matrix for entire scene
             scene.Draw(defaultShader, view, projection);

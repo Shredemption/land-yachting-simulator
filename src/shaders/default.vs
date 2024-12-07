@@ -10,11 +10,12 @@ out vec3 FragPos;
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
+uniform mat4 u_normal;
 
 void main()
 {
     TexCoords = aTexCoords;
     gl_Position = u_projection * u_view * u_model * vec4(aPos, 1.0);
     FragPos = vec3(u_model * vec4(aPos, 1.0));
-    Normal = aNormal;
+    Normal = mat3(transpose(inverse(u_normal))) * aNormal;
 }
