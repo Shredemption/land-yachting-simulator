@@ -25,7 +25,6 @@ void main()
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * diffuseLightColor;
 
-    // vec3 result = (ambient + diffuse) * textureColor;
-    vec3 result = ambient * textureColor;
+    vec3 result = (ambient + diffuse) * textureColor;
     FragColor = vec4(result, 1.0f);
 }
