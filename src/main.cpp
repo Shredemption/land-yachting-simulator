@@ -103,9 +103,9 @@ int main()
 
     // Define wwhere to load objects
     std::vector<glm::mat4> objTransList = {
-        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(10.f, 0.f, 0.f))},
+        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(5.f, 0.f, 0.f))},
         {glm::mat4(1.0f)},
-        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(-10.f, 0.f, 0.f))},
+        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(-5.f, 0.f, 0.f))},
     };
 
     // Gather into scene
@@ -118,10 +118,8 @@ int main()
     float sunAngle = rand() % 360;
 
     // Send Light properties to Shader
-    defaultShader.setVec3("light.position", lightPos);
-    defaultShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
-    defaultShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
-    defaultShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+    defaultShader.setVec3("lightPos", lightPos);
+    defaultShader.setVec3("lightCol", 1.f, 1.f, 1.f);
 
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -199,10 +197,10 @@ int main()
             lightPos = 100.0f * glm::vec3(std::sin(glm::radians(sunAngle)), 1.f, std::cos(glm::radians(sunAngle)));
 
             // Send Light properties to Shader
-            defaultShader.setVec3("light.position", lightPos);
+            defaultShader.setVec3("lightPos", lightPos);
 
             // Send camera position to shader
-            defaultShader.setVec3("camPos", cameraPosition);
+            defaultShader.setVec3("viewPos", cameraPosition);
 
             // Draw scene, using view and projection matrix for entire scene
             scene.Draw(defaultShader, view, projection);
