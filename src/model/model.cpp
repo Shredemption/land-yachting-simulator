@@ -2,12 +2,15 @@
 
 #include <assimp/postprocess.h>
 
+#include <filesystem>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-unsigned int TextureFromFile(const char *path, const std::string &directory);
-
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
+
+unsigned int TextureFromFile(const char *name, const std::string &directory);
+std::string findTextureInDirectory(const std::string &directory, const std::string &typeName);
+inline bool ends_with(std::string const &value, std::string const &ending);
 
 // Model Constructor
 Model::Model(std::string const &path)
@@ -140,11 +143,21 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         // Get material
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        // Instert diffuse and specular maps to textures
-        std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        // Instert PBR textures
+        std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_NORMALS, "normal");
+        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+        std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-        std::vector<Texture> specularMaps = loadMaterialTexture(material, aiTextureType_SPECULAR, "texture_specular");
+
+        std::vector<Texture> specularMaps = loadMaterialTexture(material, aiTextureType_SPECULAR, "specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+        std::vector<Texture> roughnessMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
+        textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+
+        std::vector<Texture> aoMaps = loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, "ao");
+        textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
     }
 
     return Mesh(vertices, indices, textures);
@@ -155,21 +168,52 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
     // Vector of textures to push to GPU
     std::vector<Texture> textures;
 
-    // For every texture
+    // If texture not in model
+    if (mat->GetTextureCount(type) == 0)
+    {   
+        // Find texture manually
+        std::string textureName = findTextureInDirectory(directory, typeName);
+        if (!textureName.empty())
+        {
+            // If texture already loaded
+            if (textureCache.find(textureName) != textureCache.end())
+            {
+                // Use cached texture
+                textures.push_back(textureCache[textureName].texture);
+                textureCache[textureName].refCount++;
+            }
+            else
+            {
+                // Define and load new texture to texture cache
+                Texture texture;
+                texture.id = TextureFromFile(textureName.c_str(), directory);
+                texture.type = typeName;
+                texture.path = textureName.c_str();
+                textures.push_back(texture);
+                textureCache[textureName].texture = texture;
+            }
+        }
+        else
+        {
+            std::cout << "Failed to load " << typeName << " texture in " << directory << "\n";
+        }
+    }
+
+    // For every texture in model
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
     {
         aiString str;
 
         // Find texture
         mat->GetTexture(type, i, &str);
-        std::string texturePath = str.C_Str();
+        std::string textureName = str.C_Str();
 
-        // If texture already loaded loaded
-        if (textureCache.find(texturePath) != textureCache.end())
+        // If texture already loaded
+        if (textureCache.find(textureName) != textureCache.end())
         {
             // Use cached texture
-            textures.push_back(textureCache[texturePath].texture);
-            textureCache[texturePath].refCount++;
+            textures.push_back(textureCache[textureName].texture);
+            textureCache[textureName].refCount++;
         }
         else
         {
@@ -179,16 +223,16 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);
-            textureCache[texturePath].texture = texture;
+            textureCache[textureName].texture = texture;
         }
     }
     return textures;
 }
 
-unsigned int TextureFromFile(const char *path, const std::string &directory)
+unsigned int TextureFromFile(const char *name, const std::string &directory)
 {
     // Get texture location
-    std::string filename = std::string(path);
+    std::string filename = std::string(name);
     filename = directory + '/' + filename;
 
     // Generate empty texture
@@ -226,8 +270,42 @@ unsigned int TextureFromFile(const char *path, const std::string &directory)
     else
     {
         // Error if texture cant be loaded
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+        std::cout << "Texture failed to load at path: " << name << std::endl;
         stbi_image_free(data);
     }
     return textureID;
 };
+
+std::string findTextureInDirectory(const std::string &directory, const std::string &typeName)
+{
+    // Define common texture file extensions
+    const std::vector<std::string> extensions = {".png", ".jpg", ".jpeg", ".bmp", ".tga"};
+
+    // Iterate through files in the directory
+    for (const auto &entry : std::filesystem::directory_iterator(directory))
+    {
+        std::string filename = entry.path().filename().string();
+
+        // Check if the filename contains the texture type (e.g., "normal", "roughness", etc.)
+        if (filename.find(typeName) != std::string::npos)
+        {
+            // Check if the file has a valid texture extension
+            for (const auto &ext : extensions)
+            {
+                if (ends_with(filename, ext))
+                {
+                    return filename; // Return the first matching texture
+                }
+            }
+        }
+    }
+
+    return ""; // Return empty if no matching texture is found
+}
+
+inline bool ends_with(std::string const &value, std::string const &ending)
+{
+    if (ending.size() > value.size())
+        return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
