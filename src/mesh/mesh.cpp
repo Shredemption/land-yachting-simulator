@@ -21,6 +21,9 @@ void Mesh::Draw(Shader &shader)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
+    unsigned int normalNr = 1;
+    unsigned int roughnessNr = 1;
+    unsigned int aoNr = 1;
 
     // For every texture
     for (unsigned int i = 0; i < textures.size(); i++)
@@ -33,10 +36,16 @@ void Mesh::Draw(Shader &shader)
         std::string name = textures[i].type;
 
         // Set appropriate number for filename (eg texture_diffuse3)
-        if (name == "texture_diffuse")
+        if (name == "diffuse")
             number = std::to_string(diffuseNr++);
-        else if (name == "texture_specular")
+        else if (name == "specular")
             number = std::to_string(specularNr++);
+        else if (name == "normal")
+            number = std::to_string(normalNr++);
+        else if (name == "roughness")
+            number = std::to_string(roughnessNr++);
+        else if (name == "ao")
+            number = std::to_string(aoNr++);
 
         // Send texture to shader
         shader.setInt(("material." + name + number).c_str(), i);
