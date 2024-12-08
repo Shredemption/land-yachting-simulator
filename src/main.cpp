@@ -66,7 +66,7 @@ int main()
     defaultShader.use();
 
     // Import JSON file model registry
-    std::map<std::string, std::string> modelMap = Model::loadModelMap("resources/models.json");
+    Model::modelMap = Model::loadModelMap("resources/models.json");
 
     // Import Scene
     // Scene scene("resources/scenes/testing.json");

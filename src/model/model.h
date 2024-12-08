@@ -28,6 +28,7 @@ public:
     ~Model();
 
     // Load JSON model map
+    static std::map<std::string, std::string> modelMap;
     static std::map<std::string, std::string> loadModelMap(const std::string &filePath);
 
     // Model Renderer
