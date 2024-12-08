@@ -3,14 +3,14 @@
 #include <assimp/postprocess.h>
 
 #include <filesystem>
+#include <fstream>
+#include <map>
+#include <jsoncons/json.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "model.h"
 
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
-
-unsigned int TextureFromFile(const char *name, const std::string &directory);
-std::string findTextureInDirectory(const std::string &directory, const std::string &typeName);
-inline bool ends_with(std::string const &value, std::string const &ending);
 
 // Model Constructor
 Model::Model(std::string const &path)
@@ -241,7 +241,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
     return textures;
 }
 
-unsigned int TextureFromFile(const char *name, const std::string &directory)
+unsigned int Model::TextureFromFile(const char *name, const std::string &directory)
 {
     // Get texture location
     std::string filename = std::string(name);
@@ -288,7 +288,7 @@ unsigned int TextureFromFile(const char *name, const std::string &directory)
     return textureID;
 };
 
-std::string findTextureInDirectory(const std::string &directory, const std::string &typeName)
+std::string Model::findTextureInDirectory(const std::string &directory, const std::string &typeName)
 {
     // Define common texture file extensions
     const std::vector<std::string> extensions = {".png", ".jpg", ".jpeg", ".bmp", ".tga"};
@@ -315,9 +315,46 @@ std::string findTextureInDirectory(const std::string &directory, const std::stri
     return ""; // Return empty if no matching texture is found
 }
 
-inline bool ends_with(std::string const &value, std::string const &ending)
+inline bool Model::ends_with(std::string const &value, std::string const &ending)
 {
     if (ending.size() > value.size())
         return false;
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
+std::map<std::string, std::string> Model::loadModelMap(const std::string &filePath)
+{
+    const std::string path = "../" + filePath;
+    // Check if the file exists
+    if (!std::filesystem::exists(path))
+    {
+        throw std::runtime_error("File not found: " + path);
+    }
+
+    // Open the file
+    std::ifstream file(path);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Could not open file: " + path);
+    }
+
+    // Parse the JSON
+    jsoncons::json j;
+    try
+    {
+        j = jsoncons::json::parse(file);
+    }
+    catch (const std::exception &e)
+    {
+        throw std::runtime_error("Failed to parse JSON: " + std::string(e.what()));
+    }
+
+    // Create a map from the parsed JSON
+    std::map<std::string, std::string> modelMap;
+    for (const auto &kv : j["models"].object_range())
+    {
+        modelMap[kv.key()] = kv.value().as<std::string>();
+    }
+
+    return modelMap;
 }
