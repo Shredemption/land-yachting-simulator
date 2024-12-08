@@ -11,6 +11,7 @@
 #include "model.h"
 
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
+std::map<std::string, std::string> Model::modelMap;
 
 // Model Constructor
 Model::Model(std::string const &path)
