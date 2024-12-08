@@ -8,10 +8,12 @@
 
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <vector>
 
 // Keep count of how many times cached texture is used
-struct CachedTexture {
+struct CachedTexture
+{
     Texture texture;
     int refCount;
 };
@@ -19,12 +21,14 @@ struct CachedTexture {
 class Model
 {
 public:
-
     // Model Constructor
     Model(std::string const &path);
 
     // Model Destructor
     ~Model();
+
+    // Load JSON model map
+    static std::map<std::string, std::string> loadModelMap(const std::string &filePath);
 
     // Model Renderer
     void Draw(Shader &shader);
@@ -45,9 +49,18 @@ private:
 
     // Mesh Processor
     Mesh processMesh(aiMesh *mesh, const aiScene *scene);
-        
+
     // Material Texture Loader
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
+
+    // Texture from File
+    unsigned int TextureFromFile(const char *name, const std::string &directory);
+
+    // Find textures in directory
+    std::string findTextureInDirectory(const std::string &directory, const std::string &typeName);
+
+    // Check if string ends with x
+    inline bool ends_with(std::string const &value, std::string const &ending);
 };
 
 #endif // MODEL_H
