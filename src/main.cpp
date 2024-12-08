@@ -68,26 +68,9 @@ int main()
     // Import JSON file model registry
     Model::modelMap = Model::loadModelMap("resources/models.json");
 
-    // Import Scene
-    // Scene scene("resources/scenes/testing.json");
+    // Import JSON file scene
+    Scene scene = Scene("resources/scenes/testing.json");
 
-    // Define list of objects to load
-    std::vector<std::string> objectList = {
-        {modelMap["backpack"]},
-        {modelMap["backpack"]},
-        {modelMap["backpack"]},
-    };
-
-    // Define wwhere to load objects
-    std::vector<glm::mat4> objTransList = {
-        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(5.f, 0.f, 0.f))},
-        {glm::mat4(1.0f)},
-        {glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.8f, 0.8f, 0.8f)), glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f)), glm::vec3(-5.f, 0.f, 0.f))},
-    };
-
-    // Gather into scene
-    Scene scene(objectList, objTransList);
-    
     // Send Light properties to Shader
     defaultShader.setVec3("lightPos", EventHandler::lightPos);
     defaultShader.setVec3("lightCol", 1.f, 1.f, 1.f);
@@ -149,16 +132,16 @@ int main()
             EventHandler::processInput(window);
 
             // Projection Matrix
-            glm::mat4 projection = glm::perspective((float)M_PI_2,                            // Field of view (90 deg)
+            glm::mat4 projection = glm::perspective((float)M_PI_2,                                                        // Field of view (90 deg)
                                                     (float)EventHandler::screenWidth / (float)EventHandler::screenHeight, // Aspect Ratio (w/h)
-                                                    0.01f,                                    // Near clipping plane
-                                                    100.0f                                    // Far clipping plane
+                                                    0.01f,                                                                // Near clipping plane
+                                                    100.0f                                                                // Far clipping plane
             );
 
             // View matrix
-            glm::mat4 view = glm::lookAt(EventHandler::cameraPosition,                       // Camera Position
+            glm::mat4 view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
                                          EventHandler::cameraPosition + EventHandler::cameraViewDirection, // Target Position
-                                         EventHandler::cameraUp                              // Up vector
+                                         EventHandler::cameraUp                                            // Up vector
             );
 
             // Sun/moon lighting

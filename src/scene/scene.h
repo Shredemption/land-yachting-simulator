@@ -9,10 +9,25 @@
 #include <unordered_map>
 #include <string>
 
+struct JSONModels
+{
+    std::string path;
+    std::vector<float> scale;
+    int angle;
+    std::vector<float> rotationAxis;
+    std::vector<float> translation;
+};
+
+struct JSONScene
+{
+    std::vector<JSONModels> models;
+};
+
 class Scene
 {
 public:
-    // Scene Constructor
+    // Scene Constructors
+    Scene(std::string jsonPath);
     Scene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model);
 
     // Scene Destructor
@@ -29,7 +44,7 @@ private:
     std::unordered_map<std::string, Model> loadedModels;
 
     // Load models into scene
-    void loadScene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model);
+    void loadModelToScene(JSONModels model);
 };
 
 #endif // SCENE_H
