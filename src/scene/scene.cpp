@@ -107,7 +107,9 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     UnitPlaneData loadUnitPlane;
 
     loadUnitPlane.color = {unitPlane.color[0], unitPlane.color[1], unitPlane.color[2]};
-    loadUnitPlane.unitPlane = Mesh::genUnitPlane(loadUnitPlane.color);
+    loadUnitPlane.shader = unitPlane.shader;
+
+    loadUnitPlane.unitPlane = Mesh::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
 
     // Generate u_model
     glm::mat4 u_model_i = glm::scale(
@@ -122,7 +124,6 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     loadUnitPlane.u_model = u_model_i;
     loadUnitPlane.u_normal = glm::transpose(glm::inverse(u_model_i));
 
-    loadUnitPlane.shader = unitPlane.shader;
     loadUnitPlane.position = u_model_i[3];
 
     if (loadUnitPlane.isTransparent())

@@ -24,7 +24,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     }
     else if (shaderName == "water")
     {
-        setupSimpleMesh();
+        setupWaterMesh();
     }
 }
 
@@ -105,21 +105,30 @@ void Mesh::setupPBRMesh()
     glBindVertexArray(0);
 }
 
-Mesh Mesh::genUnitPlane(glm::vec3 color)
+Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
 {
     std::vector<glm::vec3> Positions = {
         {-0.5f, 0.0f, -0.5f},
         {0.5f, 0.0f, -0.5f},
         {0.5f, 0.0f, 0.5f},
-        {-0.5f, 0.0f, 0.5f}};
+        {-0.5f, 0.0f, 0.5f},
+    };
 
     std::vector<Vertex> vertices;
+
+    std::vector<glm::vec2> TexCoords = {
+        {0.f, 0.f},
+        {1.f, 0.f},
+        {1.f, 1.f},
+        {0.f, 1.f}
+    };
 
     for (int i = 0; i < Positions.size(); i++)
     {
         Vertex vertex;
         vertex.Position = Positions[i];
         vertex.Color = color;
+        vertex.TexCoords = TexCoords[i];
 
         vertices.push_back(vertex);
     }
@@ -131,7 +140,7 @@ Mesh Mesh::genUnitPlane(glm::vec3 color)
 
     std::vector<Texture> textures;
 
-    return Mesh(vertices, indices, textures, "simple");
+    return Mesh(vertices, indices, textures, shaderName);
 }
 
 void Mesh::setupSimpleMesh()
@@ -155,7 +164,7 @@ void Mesh::setupSimpleMesh()
     // vertex positions
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
-    // vertex normals
+    // vertex colors
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Color));
 
@@ -187,8 +196,10 @@ void Mesh::setupWaterMesh()
     // vertex positions
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+    // vertex texcoords
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
 
-    glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(2);
     glDisableVertexAttribArray(3);
     glDisableVertexAttribArray(4);

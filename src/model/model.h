@@ -39,10 +39,13 @@ public:
     std::vector<Mesh> meshes;
     std::string directory;
 
-private:
     // Total texture cache
     static std::unordered_map<std::string, CachedTexture> textureCache;
 
+    // Texture from File
+    static unsigned int TextureFromFile(const char *name, const std::string &directory);
+
+private:
     // Model Loading
     void loadModel(std::string path, std::string shaderName);
 
@@ -54,9 +57,6 @@ private:
 
     // Material Texture Loader
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
-
-    // Texture from File
-    unsigned int TextureFromFile(const char *name, const std::string &directory);
 
     // Find textures in directory
     std::string findTextureInDirectory(const std::string &directory, const std::string &typeName);
