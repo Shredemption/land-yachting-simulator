@@ -16,6 +16,11 @@ JSONCONS_ALL_MEMBER_TRAITS(JSONModels, path, scale, angle, rotationAxis, transla
 JSONCONS_ALL_MEMBER_TRAITS(JSONUnitPlane, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_ALL_MEMBER_TRAITS(JSONScene, models, unitPlanes);
 
+
+// TODO: skybox
+// TODO: textured unitplane
+// TODO: environment
+
 // Scene Constructor
 Scene::Scene(std::string jsonPath)
 {

@@ -17,6 +17,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
+// TODO: Split camera functions to header
+// TODO: Add loading screen
+
 int main()
 {
 
