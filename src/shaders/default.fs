@@ -12,6 +12,7 @@ in VS_OUT
 fs_in;
 
 uniform vec3 lightCol;
+uniform float lightIntensity;
 
 struct Material
 {
@@ -81,7 +82,7 @@ void main()
     vec3 diffuse = albedo * diff;
     vec3 ambient = albedo * 0.1 * ao; // Apply AO as a darkening factor
 
-    vec3 finalColor = (diffuse + spec) * lightCol; // Light contribution
+    vec3 finalColor = (diffuse + spec) * lightCol * lightIntensity; // Light contribution
     finalColor = mix(finalColor, ambient, 0.5); // Combine with ambient color
 
     FragColor = vec4(finalColor, 1.0); // Set final fragment color

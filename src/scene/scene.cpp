@@ -8,9 +8,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "model/model.h"
+#include "mesh/mesh.h"
+#include "event_handler/event_handler.h"
 
 JSONCONS_ALL_MEMBER_TRAITS(JSONModels, path, scale, angle, rotationAxis, translation, shader);
-JSONCONS_ALL_MEMBER_TRAITS(JSONScene, models)
+JSONCONS_ALL_MEMBER_TRAITS(JSONUnitPlane, color, scale, angle, rotationAxis, translation, shader);
+JSONCONS_ALL_MEMBER_TRAITS(JSONScene, models, unitPlanes);
 
 // Scene Constructor
 Scene::Scene(std::string jsonPath)
@@ -46,8 +49,13 @@ Scene::Scene(std::string jsonPath)
 
     // For each model in scene
     for (JSONModels model : jsonModels.models)
-    {   
+    {
         loadModelToScene(model);
+    }
+
+    for (JSONUnitPlane unitPlane : jsonModels.unitPlanes)
+    {
+        loadUnitPlaneToScene(unitPlane);
     }
 };
 
@@ -60,6 +68,7 @@ Scene::~Scene()
 void Scene::Draw(glm::mat4 u_view, glm::mat4 u_projection)
 {
     Scene::DrawModels(u_view, u_projection);
+    Scene::DrawUnitPlanes(u_view, u_projection);
 }
 
 void Scene::DrawModels(glm::mat4 u_view, glm::mat4 u_projection)
@@ -85,11 +94,22 @@ void Scene::DrawModels(glm::mat4 u_view, glm::mat4 u_projection)
         models[i]->Draw();
     }
 }
+
+void Scene::DrawUnitPlanes(glm::mat4 u_view, glm::mat4 u_projection)
+{
+    for (int i = 0; i < size(unitPlanes); i++)
     {
+        Shader shader = Shader::load(unitPlanes_shaders[i]);
+
+        // Apply view and projection to whole scene
+        shader.setMat4("u_view", u_view);
+        shader.setMat4("u_projection", u_projection);
+
         // Set model matrix for model and draw
-        shader.setMat4("u_model", u_model[i]);
-        shader.setMat4("u_normal", u_normal[i]);
-        models[i]->Draw(shader);
+        shader.setMat4("u_model", unitPlanes_u_model[i]);
+        shader.setMat4("u_normal", unitPlanes_u_normal[i]);
+
+        unitPlanes[i].Draw();
     }
 }
 
@@ -123,4 +143,25 @@ void Scene::loadModelToScene(JSONModels model)
     models_u_normal.push_back(glm::transpose(glm::inverse(u_model_i)));
 
     models_shaders.push_back(model.shader);
+}
+
+void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
+{
+    Mesh plane = Mesh::genUnitPlane();
+    unitPlanes.push_back(plane);
+
+    // Generate u_model
+    glm::mat4 u_model_i = glm::scale(
+        glm::rotate(
+            glm::translate(
+                glm::mat4(1.0f),
+                glm::vec3(unitPlane.translation[0], unitPlane.translation[1], unitPlane.translation[2])),
+            glm::radians((float)unitPlane.angle),
+            glm::vec3(unitPlane.rotationAxis[0], unitPlane.rotationAxis[1], unitPlane.rotationAxis[2])),
+        glm::vec3(unitPlane.scale[0], unitPlane.scale[1], unitPlane.scale[2]));
+
+    unitPlanes_u_model.push_back(u_model_i);
+    unitPlanes_u_normal.push_back(glm::transpose(glm::inverse(u_model_i)));
+
+    unitPlanes_shaders.push_back(unitPlane.shader);
 }

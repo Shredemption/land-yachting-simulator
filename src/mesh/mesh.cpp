@@ -13,6 +13,10 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     {
         setupDefaultMesh();
     }
+    else if (shaderName == "simple")
+    {
+        setupSimpleMesh();
+    }
 }
 
 // Mesh Destructor
@@ -26,6 +30,11 @@ void Mesh::Draw()
     if (shader == "default")
     {
         this->DrawDefault();
+    }
+
+    else if (shader == "simple")
+    {
+        this->DrawSimple();
     }
 }
 
@@ -69,6 +78,16 @@ void Mesh::DrawDefault()
     // Draw Mesh
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+}
+
+void Mesh::DrawSimple()
+{
+    // Draw Mesh
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
     glBindVertexArray(0);
 }
 
@@ -105,6 +124,73 @@ void Mesh::setupDefaultMesh()
     // vertex bitangent
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Bitangent));
+
+    glBindVertexArray(0);
+}
+
+Mesh Mesh::genUnitPlane()
+{
+    std::vector<glm::vec3> Positions = {
+        {-0.5f, 0.0f, -0.5f},
+        {0.5f, 0.0f, -0.5f},
+        {0.5f, 0.0f, 0.5f},
+        {-0.5f, 0.0f, 0.5f}};
+
+    std::vector<glm::vec3> Colors = {
+        {1.f, 1.f, 0.f},
+        {1.f, 0.f, 1.f},
+        {0.f, 1.f, 1.f},
+        {0.2f, 0.4f, 0.6f}};
+
+    std::vector<Vertex> vertices;
+
+    for (int i = 0; i < Positions.size(); i++)
+    {
+        Vertex vertex;
+        vertex.Position = Positions[i];
+        vertex.Color = Colors[i];
+
+        vertices.push_back(vertex);
+    }
+
+    std::vector<unsigned int> indices = {
+        0, 2, 1, // First triangle
+        0, 3, 2  // Second triangle
+    };
+
+    std::vector<Texture> textures;
+
+    return Mesh(vertices, indices, textures, "simple");
+}
+
+void Mesh::setupSimpleMesh()
+{
+    // Generate empty buffer data
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    // Bind Vertex Array Object
+    glBindVertexArray(VAO);
+
+    // Send vertices of mesh to GPU
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+    // Send Send element indices to GPU
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    // vertex positions
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+    // vertex normals
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Color));
+
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
 
     glBindVertexArray(0);
 }
