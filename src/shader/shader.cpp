@@ -1,5 +1,25 @@
 #include "shader.h"
 
+#include <file_manager/file_manager.h>
+
+std::unordered_map<std::string, Shader> Shader::loadedShaders;
+
+Shader Shader::load(const std::string &shaderName)
+{
+    Shader shader;
+
+    if (loadedShaders.find(shaderName) == loadedShaders.end())
+    {
+        shader.init(FileManager::read("shaders/" + shaderName + ".vs"), FileManager::read("shaders/" + shaderName + ".fs"));
+        loadedShaders.emplace(shaderName, shader);
+    }
+
+    shader = loadedShaders[shaderName];
+    shader.use();
+    
+    return shader;
+}
+
 Shader::Shader() {}
 
 Shader::~Shader() {}

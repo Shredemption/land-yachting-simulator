@@ -1,14 +1,18 @@
 #include "mesh/mesh.h"
 
 // Mesh constructor
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName)
 {
     this->vertices = vertices;
     this->indices = indices;
     this->textures = textures;
+    this->shader = shaderName;
 
     // now that we have all the required data, set the vertex buffers and its attribute pointers.
-    setupMesh();
+    if (shaderName == "default")
+    {
+        setupDefaultMesh();
+    }
 }
 
 // Mesh Destructor
@@ -17,7 +21,15 @@ Mesh::~Mesh()
 }
 
 // Render mesh
-void Mesh::Draw(Shader &shader)
+void Mesh::Draw()
+{
+    if (shader == "default")
+    {
+        this->DrawDefault();
+    }
+}
+
+void Mesh::DrawDefault()
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -48,7 +60,7 @@ void Mesh::Draw(Shader &shader)
             number = std::to_string(aoNr++);
 
         // Send texture to shader
-        shader.setInt(("material." + name + number).c_str(), i);
+        Shader::load("default").setInt(("material." + name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
     // Unload texture
@@ -60,7 +72,7 @@ void Mesh::Draw(Shader &shader)
     glBindVertexArray(0);
 }
 
-void Mesh::setupMesh()
+void Mesh::setupDefaultMesh()
 {
     // Generate empty buffer data
     glGenVertexArrays(1, &VAO);

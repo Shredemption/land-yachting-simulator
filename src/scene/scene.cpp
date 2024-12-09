@@ -9,7 +9,7 @@
 
 #include "model/model.h"
 
-JSONCONS_ALL_MEMBER_TRAITS(JSONModels, path, scale, angle, rotationAxis, translation);
+JSONCONS_ALL_MEMBER_TRAITS(JSONModels, path, scale, angle, rotationAxis, translation, shader);
 JSONCONS_ALL_MEMBER_TRAITS(JSONScene, models)
 
 // Scene Constructor
@@ -54,20 +54,37 @@ Scene::Scene(std::string jsonPath)
 // Scene Destructor
 Scene::~Scene()
 {
-    models.clear();       // Clear the vector of pointers (no need to delete the objects, as they're owned by loadedModels)
-    loadedModels.clear(); // Calls destructors of Model objects in the map
 }
 
 // Scene Renderer
-void Scene::Draw(Shader &shader, glm::mat4 u_view, glm::mat4 u_projection)
+void Scene::Draw(glm::mat4 u_view, glm::mat4 u_projection)
 {
-    shader.use();
-    // Apply view and projection to whole scene
-    shader.setMat4("u_view", u_view);
-    shader.setMat4("u_projection", u_projection);
+    Scene::DrawModels(u_view, u_projection);
+}
 
-    // Loop over scene models
-    for (int i = 0; i < size(u_model); i++)
+void Scene::DrawModels(glm::mat4 u_view, glm::mat4 u_projection)
+{
+    for (int i = 0; i < size(models); i++)
+    {
+        Shader shader = Shader::load(models_shaders[i]);
+
+        // Send light and view position to relevant shader
+        shader.setVec3("lightPos", EventHandler::lightPos);
+        shader.setVec3("viewPos", EventHandler::cameraPosition);
+        shader.setFloat("lightIntensity", 2.0f);
+        shader.setVec3("lightCol", 1.f, 1.f, 1.f);
+
+        // Apply view and projection to whole scene
+        shader.setMat4("u_view", u_view);
+        shader.setMat4("u_projection", u_projection);
+
+        // Set model matrix for model and draw
+        shader.setMat4("u_model", models_u_model[i]);
+        shader.setMat4("u_normal", models_u_normal[i]);
+
+        models[i]->Draw();
+    }
+}
     {
         // Set model matrix for model and draw
         shader.setMat4("u_model", u_model[i]);
@@ -102,6 +119,8 @@ void Scene::loadModelToScene(JSONModels model)
             glm::vec3(model.rotationAxis[0], model.rotationAxis[1], model.rotationAxis[2])),
         glm::vec3(model.scale[0], model.scale[1], model.scale[2]));
 
-    u_model.push_back(u_model_i);
-    u_normal.push_back(glm::transpose(glm::inverse(u_model_i)));
+    models_u_model.push_back(u_model_i);
+    models_u_normal.push_back(glm::transpose(glm::inverse(u_model_i)));
+
+    models_shaders.push_back(model.shader);
 }

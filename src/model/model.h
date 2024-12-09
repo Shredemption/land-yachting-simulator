@@ -22,7 +22,8 @@ class Model
 {
 public:
     // Model Constructor
-    Model(std::string const &path);
+    Model(std::string const &path, std::string shaderName);
+    Model(std::string const &path); // if none passed, use "default"
 
     // Model Destructor
     ~Model();
@@ -32,7 +33,7 @@ public:
     static std::map<std::string, std::string> loadModelMap(const std::string &filePath);
 
     // Model Renderer
-    void Draw(Shader &shader);
+    void Draw();
 
 private:
     // Model data
@@ -43,13 +44,13 @@ private:
     static std::unordered_map<std::string, CachedTexture> textureCache;
 
     // Model Loading
-    void loadModel(std::string path);
+    void loadModel(std::string path, std::string shaderName);
 
     // Node Processor
-    void processNode(aiNode *node, const aiScene *scene);
+    void processNode(aiNode *node, const aiScene *scene, std::string shaderName);
 
     // Mesh Processor
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+    Mesh processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName);
 
     // Material Texture Loader
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
