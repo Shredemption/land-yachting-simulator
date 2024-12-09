@@ -18,9 +18,14 @@ uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform mat4 u_normal;
 
+uniform vec4 location_plane;
+
 void main()
 {
-    gl_Position = u_projection * u_view * u_model * vec4(aPos, 1.0);
+    vec4 worldPos = u_model * vec4(aPos, 1.0);
+    gl_Position = u_projection * u_view * worldPos;
+
+    gl_ClipDistance[0] = dot(worldPos, location_plane);
 
     vs_out.TexCoords = aTexCoords;
     vs_out.FragPos = vec3(u_model * vec4(aPos, 1.0));
