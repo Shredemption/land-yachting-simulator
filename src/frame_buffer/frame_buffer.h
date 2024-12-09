@@ -7,6 +7,9 @@ class FrameBuffer
 {
 public:
     unsigned int frameBuffer;
+    unsigned int colorTexture;
+    unsigned int depthTexture;
+    unsigned int depthRender;
 
     FrameBuffer() : frameBuffer(0), width(0), height(0) {};
     FrameBuffer(int width, int height);

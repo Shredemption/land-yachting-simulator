@@ -101,6 +101,8 @@ int main()
 
     glfwShowWindow(window);
 
+    Render::initQuad();
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
