@@ -10,6 +10,7 @@
 #include "model/model.h"
 #include "mesh/mesh.h"
 #include "event_handler/event_handler.h"
+#include "frame_buffer/frame_buffer.h"
 
 JSONCONS_ALL_MEMBER_TRAITS(JSONModels, path, scale, angle, rotationAxis, translation, shader);
 JSONCONS_ALL_MEMBER_TRAITS(JSONUnitPlane, color, scale, angle, rotationAxis, translation, shader);
@@ -64,85 +65,6 @@ Scene::~Scene()
 {
 }
 
-// Scene Renderer
-void Scene::Draw(glm::mat4 u_view, glm::mat4 u_projection)
-{
-    Scene::DrawModels(u_view, u_projection);
-    Scene::DrawUnitPlanes(u_view, u_projection);
-}
-
-void Scene::DrawModels(glm::mat4 u_view, glm::mat4 u_projection)
-{
-    for (auto model : structModels)
-    {
-        Shader shader = Shader::load(model.shader);
-
-        // Send light and view position to relevant shader
-        shader.setVec3("lightPos", EventHandler::lightPos);
-        shader.setVec3("viewPos", EventHandler::cameraPosition);
-        shader.setFloat("lightIntensity", 2.0f);
-        shader.setVec3("lightCol", 1.f, 1.f, 1.f);
-
-        // Apply view and projection to whole scene
-        shader.setMat4("u_view", u_view);
-        shader.setMat4("u_projection", u_projection);
-
-        // Set model matrix for model and draw
-        shader.setMat4("u_model", model.u_model);
-        shader.setMat4("u_normal", model.u_normal);
-
-        model.model->Draw();
-    }
-}
-
-void Scene::DrawUnitPlanes(glm::mat4 u_view, glm::mat4 u_projection)
-{
-    // Render opaque planes
-    for (auto unitPlane : opaqueUnitPlanes)
-    {
-        Shader shader = Shader::load(unitPlane.shader);
-
-        // Apply view and projection to whole scene
-        shader.setMat4("u_view", u_view);
-        shader.setMat4("u_projection", u_projection);
-
-        // Set model matrix for model and draw
-        shader.setMat4("u_model", unitPlane.u_model);
-        shader.setMat4("u_normal", unitPlane.u_normal);
-
-        unitPlane.unitPlane.Draw();
-    }
-
-    // Sort transparent planes back to front based on distance from the camera
-    std::sort(transparentUnitPlanes.begin(), transparentUnitPlanes.end(), [&](const UnitPlaneData& a, const UnitPlaneData& b) {
-        float distA = glm::distance(EventHandler::cameraPosition, a.position);
-        float distB = glm::distance(EventHandler::cameraPosition, b.position);
-        return distA > distB;  // Sort by distance: farthest first, closest last
-    });
-
-    // Render transparent planes
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    for (auto unitPlane : transparentUnitPlanes)
-    {
-        Shader shader = Shader::load(unitPlane.shader);
-
-        // Apply view and projection to whole scene
-        shader.setMat4("u_view", u_view);
-        shader.setMat4("u_projection", u_projection);
-
-        // Set model matrix for model and draw
-        shader.setMat4("u_model", unitPlane.u_model);
-        shader.setMat4("u_normal", unitPlane.u_normal);
-
-        unitPlane.unitPlane.Draw();
-    }
-
-    glDisable(GL_BLEND);
-
-}
-
 // Load models into scene
 void Scene::loadModelToScene(JSONModels model)
 {
@@ -183,6 +105,9 @@ void Scene::loadModelToScene(JSONModels model)
 void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 {
     UnitPlaneData loadUnitPlane;
+
+    loadUnitPlane.color = {unitPlane.color[0], unitPlane.color[1], unitPlane.color[2]};
+    loadUnitPlane.unitPlane = Mesh::genUnitPlane(loadUnitPlane.color);
 
     // Generate u_model
     glm::mat4 u_model_i = glm::scale(

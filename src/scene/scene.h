@@ -45,14 +45,16 @@ struct ModelData
 
 struct UnitPlaneData
 {
-    Mesh unitPlane = Mesh::genUnitPlane();
+    glm::vec3 color;
     glm::mat4 u_model;
     glm::mat3 u_normal;
     std::string shader;
+    Mesh unitPlane = Mesh::genUnitPlane(color);
 
     // Data from transparent rendering
     glm::vec3 position;
-    bool isTransparent() const {
+    bool isTransparent() const
+    {
         // Add logic to check whether the shader is transparent or not
         return (shader == "water");
     }
@@ -63,17 +65,10 @@ class Scene
 public:
     // Scene Constructors
     Scene(std::string jsonPath);
-    Scene(std::vector<std::string> input_model, std::vector<glm::mat4> input_u_model);
 
     // Scene Destructor
     ~Scene();
 
-    // Scene Renderer
-    void Draw(glm::mat4 u_view, glm::mat4 u_projection);
-    void DrawModels(glm::mat4 u_view, glm::mat4 u_projection);
-    void DrawUnitPlanes(glm::mat4 u_view, glm::mat4 u_projection);
-
-private:
     // Model data
     std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;
@@ -82,6 +77,7 @@ private:
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
 
+private:
     // Load models into scene
     void loadModelToScene(JSONModels model);
     void loadUnitPlaneToScene(JSONUnitPlane unitPlane);

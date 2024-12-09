@@ -1,4 +1,5 @@
 #include "mesh/mesh.h"
+#include "frame_buffer/frame_buffer.h"
 
 // Mesh constructor
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName)
@@ -26,82 +27,6 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 // Mesh Destructor
 Mesh::~Mesh()
 {
-}
-
-// Render mesh
-void Mesh::Draw()
-{
-    if (shader == "default")
-    {
-        this->DrawDefault();
-    }
-
-    else if (shader == "simple")
-    {
-        this->DrawSimple();
-    }
-}
-
-void Mesh::DrawDefault()
-{
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    unsigned int normalNr = 1;
-    unsigned int roughnessNr = 1;
-    unsigned int aoNr = 1;
-
-    // For every texture
-    for (unsigned int i = 0; i < textures.size(); i++)
-    {
-        // Activate texture unit before binding
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        // Retrieve texture number and type
-        std::string number;
-        std::string name = textures[i].type;
-
-        // Set appropriate number for filename (eg texture_diffuse3)
-        if (name == "diffuse")
-            number = std::to_string(diffuseNr++);
-        else if (name == "specular")
-            number = std::to_string(specularNr++);
-        else if (name == "normal")
-            number = std::to_string(normalNr++);
-        else if (name == "roughness")
-            number = std::to_string(roughnessNr++);
-        else if (name == "ao")
-            number = std::to_string(aoNr++);
-
-        // Send texture to shader
-        Shader::load("default").setInt(("material." + name + number).c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
-    }
-    // Unload texture
-    glActiveTexture(GL_TEXTURE0);
-
-    // Draw Mesh
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
-}
-
-void Mesh::DrawSimple()
-{
-    // Draw Mesh
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
-}
-
-void Mesh::DrawWater()
-{
-    // Draw Mesh
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
 }
 
 void Mesh::setupDefaultMesh()
@@ -141,7 +66,7 @@ void Mesh::setupDefaultMesh()
     glBindVertexArray(0);
 }
 
-Mesh Mesh::genUnitPlane()
+Mesh Mesh::genUnitPlane(glm::vec3 color)
 {
     std::vector<glm::vec3> Positions = {
         {-0.5f, 0.0f, -0.5f},
@@ -149,19 +74,13 @@ Mesh Mesh::genUnitPlane()
         {0.5f, 0.0f, 0.5f},
         {-0.5f, 0.0f, 0.5f}};
 
-    std::vector<glm::vec3> Colors = {
-        {1.f, 1.f, 0.f},
-        {1.f, 0.f, 1.f},
-        {0.f, 1.f, 1.f},
-        {0.2f, 0.4f, 0.6f}};
-
     std::vector<Vertex> vertices;
 
     for (int i = 0; i < Positions.size(); i++)
     {
         Vertex vertex;
         vertex.Position = Positions[i];
-        vertex.Color = Colors[i];
+        vertex.Color = color;
 
         vertices.push_back(vertex);
     }

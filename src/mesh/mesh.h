@@ -43,7 +43,7 @@ public:
     // Mesh Renderer
     void Draw();
 
-    static Mesh genUnitPlane();
+    static Mesh genUnitPlane(glm::vec3 color);
 
 private:
     void DrawDefault();

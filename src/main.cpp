@@ -13,6 +13,7 @@
 #include "file_manager/file_manager.h"
 #include "scene/scene.h"
 #include "event_handler/event_handler.h"
+#include "render/render.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -123,14 +124,14 @@ int main()
             EventHandler::processInput(window);
 
             // Projection Matrix
-            glm::mat4 projection = glm::perspective((float)M_PI_2,                                                        // Field of view (90 deg)
+            Render::u_projection = glm::perspective((float)M_PI_2,                                                        // Field of view (90 deg)
                                                     (float)EventHandler::screenWidth / (float)EventHandler::screenHeight, // Aspect Ratio (w/h)
                                                     0.01f,                                                                // Near clipping plane
                                                     100.0f                                                                // Far clipping plane
             );
 
             // View matrix
-            glm::mat4 view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
+            Render::u_view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
                                          EventHandler::cameraPosition + EventHandler::cameraViewDirection, // Target Position
                                          EventHandler::cameraUp                                            // Up vector
             );
@@ -142,7 +143,7 @@ int main()
             EventHandler::lightPos = 100.0f * glm::vec3(std::sin(glm::radians(EventHandler::sunAngle)), 1.f, std::cos(glm::radians(EventHandler::sunAngle)));
 
             // Draw scene, using view and projection matrix for entire scene
-            scene.Draw(view, projection);
+            Render::render(scene);
 
             // Swap buffers and poll events
             glfwSwapBuffers(window);
