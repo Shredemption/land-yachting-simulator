@@ -85,7 +85,7 @@ int main()
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    // Enalbe Depth buffer (Z-buffer)
+    // Enable Depth buffer (Z-buffer)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 

@@ -6,7 +6,7 @@
       "angle": 0,
       "rotationAxis": [0, 1, 0],
       "translation": [0, 0, 0],
-      "shader" : "default"
+      "shader": "default"
     },
     {
       "path": "backpack",
@@ -14,7 +14,7 @@
       "angle": 20,
       "rotationAxis": [0, 1, 0],
       "translation": [5, 0, 0],
-      "shader" : "default"
+      "shader": "default"
     },
     {
       "path": "backpack",
@@ -22,7 +22,7 @@
       "angle": -20,
       "rotationAxis": [0, 1, 0],
       "translation": [-5, 0, 0],
-      "shader" : "default"
+      "shader": "default"
     }
   ],
   "unitPlanes": [
@@ -31,8 +31,16 @@
       "scale": [100, 1, 100],
       "angle": 0,
       "rotationAxis": [0, 1, 0],
+      "translation": [0, -1.5, 0],
+      "shader": "water"
+    },
+    {
+      "color": [0.1, 0.1, 0.9],
+      "scale": [100, 1, 100],
+      "angle": 0,
+      "rotationAxis": [0, 1, 0],
       "translation": [0, -2, 0],
-      "shader" : "simple"
+      "shader": "simple"
     }
   ]
 }
