@@ -35,11 +35,11 @@ public:
     // Model Renderer
     void Draw();
 
-private:
     // Model data
     std::vector<Mesh> meshes;
     std::string directory;
 
+private:
     // Total texture cache
     static std::unordered_map<std::string, CachedTexture> textureCache;
 

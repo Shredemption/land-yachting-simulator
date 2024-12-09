@@ -42,15 +42,18 @@ public:
 
     // Mesh Renderer
     void Draw();
-    void DrawDefault();
-    void DrawSimple();
 
     static Mesh genUnitPlane();
 
 private:
+    void DrawDefault();
+    void DrawSimple();
+    void DrawWater();
+
     // Rendering Data to GPU
     void setupDefaultMesh();
     void setupSimpleMesh();
+    void setupWaterMesh();
 };
 
 #endif // MESH_H

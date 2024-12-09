@@ -35,6 +35,29 @@ struct JSONScene
     std::vector<JSONUnitPlane> unitPlanes;
 };
 
+struct ModelData
+{
+    Model *model;
+    glm::mat4 u_model;
+    glm::mat3 u_normal;
+    std::string shader;
+};
+
+struct UnitPlaneData
+{
+    Mesh unitPlane = Mesh::genUnitPlane();
+    glm::mat4 u_model;
+    glm::mat3 u_normal;
+    std::string shader;
+
+    // Data from transparent rendering
+    glm::vec3 position;
+    bool isTransparent() const {
+        // Add logic to check whether the shader is transparent or not
+        return (shader == "water");
+    }
+};
+
 class Scene
 {
 public:
@@ -52,17 +75,12 @@ public:
 
 private:
     // Model data
-    std::vector<Model*> models;
-    std::vector<glm::mat4> models_u_model;
-    std::vector<glm::mat3> models_u_normal;
+    std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;
-    std::vector<std::string> models_shaders;
 
     // Unit Plane Data
-    std::vector<Mesh> unitPlanes;
-    std::vector<glm::mat4> unitPlanes_u_model;
-    std::vector<glm::mat3> unitPlanes_u_normal;
-    std::vector<std::string> unitPlanes_shaders;
+    std::vector<UnitPlaneData> transparentUnitPlanes;
+    std::vector<UnitPlaneData> opaqueUnitPlanes;
 
     // Load models into scene
     void loadModelToScene(JSONModels model);
