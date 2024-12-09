@@ -99,8 +99,7 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
         pitch = glm::radians(-85.0f);
 
     // Generate new direction vector(s)
-    cameraViewDirection = glm::normalize(glm::vec3(cos(-pitch) * sin(-yaw + glm::radians(180.f)), sin(-pitch),
-                                                   cos(-pitch) * cos(-yaw + glm::radians(180.f))));
+    setCamDirection(yaw, pitch);
 
     // Reset mouse to 0,0
     glfwSetCursorPos(window, 0, 0);
@@ -144,4 +143,9 @@ void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int he
 void EventHandler::errorCallback(int error, const char *description)
 {
     std::cerr << "GLFW Error" << error << ": " << description << std::endl;
+}
+
+void EventHandler::setCamDirection(float yaw, float pitch) {
+    cameraViewDirection = glm::normalize(glm::vec3(cos(-pitch) * sin(-yaw + glm::radians(180.f)), sin(-pitch),
+                                                   cos(-pitch) * cos(-yaw + glm::radians(180.f))));
 }

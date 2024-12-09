@@ -2,11 +2,15 @@
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 glm::mat4 Render::u_view = glm::mat4(1.0f);
 glm::mat4 Render::u_projection = glm::mat4(1.0f);
+glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
 
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
 float Render::quadVertices[] = {0};
+float Render::waterHeight = -0.5;
 
 void Render::initQuad()
 {
@@ -37,13 +41,16 @@ void Render::initQuad()
 
 void Render::render(Scene &scene)
 {
-    renderReflectRefract(scene);
-    renderSceneModels(scene);
-    renderSceneUnitPlanes(scene);
-    // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture);
+    renderReflectRefract(scene, clipPlane);
+
+    clipPlane = {0, 0, 0, 0};
+    renderSceneModels(scene, clipPlane);
+    renderSceneUnitPlanes(scene, clipPlane);
+    renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
+    renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
 }
 
-void Render::renderSceneModels(Scene &scene)
+void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 {
     for (auto model : scene.structModels)
     {
@@ -63,11 +70,13 @@ void Render::renderSceneModels(Scene &scene)
         shader.setMat4("u_model", model.u_model);
         shader.setMat4("u_normal", model.u_normal);
 
+        shader.setVec4("location_plane", clipPlane);
+
         renderModel(model.model);
     }
 }
 
-void Render::renderSceneUnitPlanes(Scene &scene)
+void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 {
     // Render opaque planes
     for (auto unitPlane : scene.opaqueUnitPlanes)
@@ -81,6 +90,8 @@ void Render::renderSceneUnitPlanes(Scene &scene)
         // Set model matrix for model and draw
         shader.setMat4("u_model", unitPlane.u_model);
         shader.setMat4("u_normal", unitPlane.u_normal);
+
+        shader.setVec4("location_plane", clipPlane);
 
         renderMesh(unitPlane.unitPlane);
     }
@@ -109,6 +120,8 @@ void Render::renderSceneUnitPlanes(Scene &scene)
         shader.setMat4("u_model", unitPlane.u_model);
         shader.setMat4("u_normal", unitPlane.u_normal);
 
+        shader.setVec4("location_plane", clipPlane);
+
         if (unitPlane.shader == "water" & FrameBuffer::Water == false)
         {
             FrameBuffer::WaterFrameBuffers();
@@ -132,12 +145,11 @@ void Render::renderMesh(Mesh mesh)
     {
         renderPBR(mesh);
     }
-    if (mesh.shader == "default")
+    else if (mesh.shader == "default")
     {
         renderDefault(mesh);
     }
-
-    else if (mesh.shader == "simple")
+    else if (mesh.shader == "simple" || mesh.shader == "water")
     {
         renderSimple(mesh);
     }
@@ -228,29 +240,49 @@ void Render::renderSimple(Mesh mesh)
     glBindVertexArray(0);
 }
 
-void Render::renderReflectRefract(Scene &scene)
+void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
 {
+    // ===== REFLECTOIN =====
     // Bind reflection buffer
     FrameBuffer::bindFrameBuffer(FrameBuffer::reflectionFBO);
 
-    // Draw to it
-    renderSceneModels(scene);
-    renderSceneUnitPlanes(scene);
+    clipPlane = {0, 1, 0, -waterHeight};
+    EventHandler::setCamDirection(EventHandler::yaw, -EventHandler::pitch);
+    float distance = 2 * (EventHandler::cameraPosition[1] - waterHeight);
+    EventHandler::cameraPosition[1] -= distance;
+    u_view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
+                         EventHandler::cameraPosition + EventHandler::cameraViewDirection, // Target Position
+                         EventHandler::cameraUp                                            // Up vector
+    );
 
+    // Draw to it
+    renderSceneModels(scene, clipPlane);
+    renderSceneUnitPlanes(scene, clipPlane);
+
+    // ===== REFRACTION =====
     // Bind refraction buffer
     FrameBuffer::bindFrameBuffer(FrameBuffer::refractionFBO);
 
+    clipPlane = {0, -1, 0, waterHeight};
+    EventHandler::setCamDirection(EventHandler::yaw, EventHandler::pitch);
+    EventHandler::cameraPosition[1] += distance;
+    u_view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
+                         EventHandler::cameraPosition + EventHandler::cameraViewDirection, // Target Position
+                         EventHandler::cameraUp                                            // Up vector
+    );
+
+
     // Draw to it
-    renderSceneModels(scene);
-    renderSceneUnitPlanes(scene);
+    renderSceneModels(scene, clipPlane);
+    renderSceneUnitPlanes(scene, clipPlane);
 
     // Unbind buffers, bind default one
     FrameBuffer::unbindCurrentFrameBuffer();
 }
 
-void Render::renderTestQuad(GLuint texture)
+void Render::renderTestQuad(GLuint texture, int x, int y)
 {
-    glViewport(0, 0, EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
+    glViewport(x, y, EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
 
     Shader quadShader = Shader::load("gui");
     quadShader.setInt("screenTexture", 0);
