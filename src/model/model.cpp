@@ -14,9 +14,13 @@ std::unordered_map<std::string, CachedTexture> Model::textureCache;
 std::map<std::string, std::string> Model::modelMap;
 
 // Model Constructor
+Model::Model(std::string const &path, std::string shaderName)
+{
+    loadModel(path, shaderName);
+}
 Model::Model(std::string const &path)
 {
-    loadModel(path);
+    loadModel(path, "default");
 }
 
 // Model Destructor
@@ -56,13 +60,14 @@ Model::~Model()
 }
 
 // Model Renderer
-void Model::Draw(Shader &shader)
+void Model::Draw()
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].Draw(shader);
+        
+        meshes[i].Draw();
 }
 
-void Model::loadModel(std::string path)
+void Model::loadModel(std::string path, std::string shaderName)
 {
     // Define importer and open file
     Assimp::Importer importer;
@@ -78,25 +83,25 @@ void Model::loadModel(std::string path)
 
     // Open full node recursion
     directory = path.substr(0, path.find_last_of('/'));
-    processNode(scene->mRootNode, scene);
+    processNode(scene->mRootNode, scene, shaderName);
 }
 
-void Model::processNode(aiNode *node, const aiScene *scene)
+void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderName)
 {
     // Process node's meshes
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(processMesh(mesh, scene));
+        meshes.push_back(processMesh(mesh, scene, shaderName));
     }
     // Repeat for children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene);
+        processNode(node->mChildren[i], scene, shaderName);
     }
 }
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
+Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
@@ -173,7 +178,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
     }
 
-    return Mesh(vertices, indices, textures);
+    return Mesh(vertices, indices, textures, shaderName);
 }
 
 std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName)

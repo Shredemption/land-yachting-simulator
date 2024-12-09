@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -14,10 +15,10 @@ public:
     Shader();
     ~Shader();
 
-    unsigned int m_id;
-
-    void init(const std::string &vertexCode, const std::string &fragmentCode);
+    static Shader load(const std::string &shaderName);
     void use();
+
+    unsigned int m_id;
 
     void setBool(const std::string &name, bool value) const;
     void setInt(const std::string &name, int value) const;
@@ -33,6 +34,10 @@ public:
     void setMat4(const std::string &name, const glm::mat4 &mat) const;
 
 private:
+    void init(const std::string &vertexCode, const std::string &fragmentCode);
+    
+    static std::unordered_map<std::string, Shader> loadedShaders;
+
     unsigned int m_vertexId;
     unsigned int m_fragmentId;
 

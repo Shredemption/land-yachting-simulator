@@ -60,20 +60,11 @@ int main()
         return -1;
     }
 
-    // Initialize shader
-    Shader defaultShader;
-    defaultShader.init(FileManager::read("shaders/default.vs"), FileManager::read("shaders/default.fs"));
-    defaultShader.use();
-
     // Import JSON file model registry
     Model::modelMap = Model::loadModelMap("resources/models.json");
 
     // Import JSON file scene
     Scene scene = Scene("resources/scenes/testing.json");
-
-    // Send Light properties to Shader
-    defaultShader.setVec3("lightPos", EventHandler::lightPos);
-    defaultShader.setVec3("lightCol", 1.f, 1.f, 1.f);
 
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -150,14 +141,8 @@ int main()
             // lightColor = glm::vec3((1.5f + std::sin(glm::radians(sunAngle)) + std::sin(glm::radians(2.f * sunAngle - 90.f))) / 3.5f);
             EventHandler::lightPos = 100.0f * glm::vec3(std::sin(glm::radians(EventHandler::sunAngle)), 1.f, std::cos(glm::radians(EventHandler::sunAngle)));
 
-            // Send Light properties to Shader
-            defaultShader.setVec3("lightPos", EventHandler::lightPos);
-
-            // Send camera position to shader
-            defaultShader.setVec3("viewPos", EventHandler::cameraPosition);
-
             // Draw scene, using view and projection matrix for entire scene
-            scene.Draw(defaultShader, view, projection);
+            scene.Draw(view, projection);
 
             // Swap buffers and poll events
             glfwSwapBuffers(window);

@@ -30,16 +30,17 @@ public:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
+    std::string shader;
     unsigned int VAO, VBO, EBO;
 
     // Mesh Constructor
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName);
 
     // Mesh Destructor
     ~Mesh();
 
     // Mesh Renderer
-    void Draw(Shader &shader);
+    void Draw();
 
 private:
     // Rendering Data
