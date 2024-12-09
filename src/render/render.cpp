@@ -128,6 +128,10 @@ void Render::renderModel(Model *model)
 // Render mesh
 void Render::renderMesh(Mesh mesh)
 {
+    if (mesh.shader == "pbr")
+    {
+        renderPBR(mesh);
+    }
     if (mesh.shader == "default")
     {
         renderDefault(mesh);
@@ -137,14 +141,41 @@ void Render::renderMesh(Mesh mesh)
     {
         renderSimple(mesh);
     }
+}
+void Render::renderDefault(Mesh mesh)
+{
+    Shader shader = Shader::load("default");
+    unsigned int diffuseNr = 1;
 
-    else if (mesh.shader == "water")
+    // For every texture
+    for (unsigned int i = 0; i < mesh.textures.size(); i++)
     {
-        renderWater(mesh);
+        // Activate texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + i);
+
+        // Retrieve texture number and type
+        std::string number;
+        std::string name = mesh.textures[i].type;
+
+        // Set appropriate number for filename (eg texture_diffuse3)
+        if (name == "diffuse")
+        {
+            number = std::to_string(diffuseNr++);
+            shader.setInt(("material." + name + number).c_str(), i);
+            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        }
     }
+    // Unload texture
+    glActiveTexture(GL_TEXTURE0);
+
+    // Draw Mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
 }
 
-void Render::renderDefault(Mesh mesh)
+void Render::renderPBR(Mesh mesh)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -175,7 +206,7 @@ void Render::renderDefault(Mesh mesh)
             number = std::to_string(aoNr++);
 
         // Send texture to shader
-        Shader::load("default").setInt(("material." + name + number).c_str(), i);
+        Shader::load("pbr").setInt(("material." + name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
     }
     // Unload texture
