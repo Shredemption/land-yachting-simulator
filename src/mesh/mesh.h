@@ -40,17 +40,11 @@ public:
     // Mesh Destructor
     ~Mesh();
 
-    // Mesh Renderer
-    void Draw();
-
     static Mesh genUnitPlane(glm::vec3 color);
 
 private:
-    void DrawDefault();
-    void DrawSimple();
-    void DrawWater();
-
     // Rendering Data to GPU
+    void setupPBRMesh();
     void setupDefaultMesh();
     void setupSimpleMesh();
     void setupWaterMesh();

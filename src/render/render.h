@@ -19,6 +19,7 @@ private:
     static void renderMesh(Mesh mesh);
 
     static void renderDefault(Mesh mesh);
+    static void renderPBR(Mesh mesh);
     static void renderSimple(Mesh mesh);
 
     static void renderReflectRefract(Scene& scene);
