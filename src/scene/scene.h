@@ -49,7 +49,7 @@ struct UnitPlaneData
     glm::mat4 u_model;
     glm::mat3 u_normal;
     std::string shader;
-    Mesh unitPlane = Mesh::genUnitPlane(color);
+    Mesh unitPlane = Mesh::genUnitPlane(color, shader);
 
     // Data from transparent rendering
     glm::vec3 position;

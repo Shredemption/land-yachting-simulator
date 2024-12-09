@@ -26,6 +26,8 @@ float EventHandler::lastTime = 0;
 // Global Light properties
 glm::vec3 EventHandler::lightPos(0.f, 10.f, 3.f);
 float EventHandler::sunAngle = 180.0f;
+glm::vec3 EventHandler::lightCol(1, 1, 1);
+float EventHandler::lightInsensity = 2;
 
 // Keycallback to define buttom presses
 void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)

@@ -12,6 +12,8 @@ unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
 float Render::quadVertices[] = {0};
 float Render::waterHeight = -0.5;
 
+bool Render::WaterPass = true;
+
 void Render::initQuad()
 {
     if (quadVAO == 0)
@@ -41,13 +43,15 @@ void Render::initQuad()
 
 void Render::render(Scene &scene)
 {
+    WaterPass = true;
     renderReflectRefract(scene, clipPlane);
 
+    WaterPass = false;
     clipPlane = {0, 0, 0, 0};
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
-    renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
-    renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+    // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
+    // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
 }
 
 void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
@@ -59,8 +63,8 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
         // Send light and view position to relevant shader
         shader.setVec3("lightPos", EventHandler::lightPos);
         shader.setVec3("viewPos", EventHandler::cameraPosition);
-        shader.setFloat("lightIntensity", 2.0f);
-        shader.setVec3("lightCol", 1.f, 1.f, 1.f);
+        shader.setFloat("lightIntensity", EventHandler::lightInsensity);
+        shader.setVec3("lightCol", EventHandler::lightCol);
 
         // Apply view and projection to whole scene
         shader.setMat4("u_view", u_view);
@@ -149,9 +153,16 @@ void Render::renderMesh(Mesh mesh)
     {
         renderDefault(mesh);
     }
-    else if (mesh.shader == "simple" || mesh.shader == "water")
+    else if (mesh.shader == "simple")
     {
         renderSimple(mesh);
+    }
+    else if (mesh.shader == "water")
+    {
+        if (!WaterPass)
+        {
+            renderWater(mesh);
+        }
     }
 }
 void Render::renderDefault(Mesh mesh)
@@ -195,6 +206,8 @@ void Render::renderPBR(Mesh mesh)
     unsigned int roughnessNr = 1;
     unsigned int aoNr = 1;
 
+    Shader shader = Shader::load("pbr");
+
     // For every texture
     for (unsigned int i = 0; i < mesh.textures.size(); i++)
     {
@@ -218,7 +231,7 @@ void Render::renderPBR(Mesh mesh)
             number = std::to_string(aoNr++);
 
         // Send texture to shader
-        Shader::load("pbr").setInt(("material." + name + number).c_str(), i);
+        shader.setInt(("material." + name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
     }
     // Unload texture
@@ -233,6 +246,38 @@ void Render::renderPBR(Mesh mesh)
 
 void Render::renderSimple(Mesh mesh)
 {
+    // Draw Mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+}
+
+void Render::renderWater(Mesh mesh)
+{
+    // Load surface textures
+    Texture DuDv = LoadStandaloneTexture("waterDUDV.png");
+    Texture normal = LoadStandaloneTexture("waterNormal.png");
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, DuDv.id);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, normal.id);
+
+    Shader shader = Shader::load("water");
+    shader.setInt("reflectionTexture", 0);
+    shader.setInt("refractionTexture", 1);
+    shader.setInt("dudvMap", 2);
+    shader.setInt("normalMap", 3);
+    shader.setFloat("moveOffset", EventHandler::time);
+    shader.setVec3("cameraPosition", EventHandler::cameraPosition);
+    shader.setVec3("lightPos", EventHandler::lightPos);
+    shader.setVec3("lightCol", EventHandler::lightCol);
+
     // Draw Mesh
     glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -271,7 +316,6 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
                          EventHandler::cameraUp                                            // Up vector
     );
 
-
     // Draw to it
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
@@ -298,4 +342,29 @@ void Render::renderTestQuad(GLuint texture, int x, int y)
 
     // restore viewport
     glViewport(0, 0, EventHandler::screenWidth, EventHandler::screenHeight);
+}
+
+Texture Render::LoadStandaloneTexture(std::string fileName)
+{
+    Texture loadTexture;
+    // If texture already loaded
+    if (Model::textureCache.find(fileName) != Model::textureCache.end())
+    {
+        // Use cached texture
+        loadTexture = Model::textureCache[fileName].texture;
+        Model::textureCache[fileName].refCount++;
+    }
+    else
+    {
+        // Define and load new texture to texture cache
+        Texture texture;
+        texture.id = Model::TextureFromFile(fileName.c_str(), "../resources/textures");
+        texture.type = "standalone";
+        texture.path = fileName.c_str();
+
+        loadTexture = texture;
+        Model::textureCache[fileName].texture = texture;
+    }
+
+    return loadTexture;
 }

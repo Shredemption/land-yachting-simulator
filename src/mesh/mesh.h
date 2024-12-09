@@ -40,7 +40,7 @@ public:
     // Mesh Destructor
     ~Mesh();
 
-    static Mesh genUnitPlane(glm::vec3 color);
+    static Mesh genUnitPlane(glm::vec3 color, std::string shaderName);
 
 private:
     // Rendering Data to GPU
@@ -50,4 +50,4 @@ private:
     void setupWaterMesh();
 };
 
-#endif // MESH_H
+#endif

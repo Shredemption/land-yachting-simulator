@@ -119,13 +119,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
         vector.x = mesh->mTangents[i].x;
         vector.y = mesh->mTangents[i].y;
         vector.z = mesh->mTangents[i].z;
-        vertex.Tangent = vector;  
+        vertex.Tangent = vector;
 
         // Process Bitangent
         vector.x = mesh->mBitangents[i].x;
         vector.y = mesh->mBitangents[i].y;
         vector.z = mesh->mBitangents[i].z;
-        vertex.Bitangent = vector;  
+        vertex.Bitangent = vector;
 
         // Process texture coords
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
@@ -180,7 +180,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
 
     // If texture not in model
     if (mat->GetTextureCount(type) == 0)
-    {   
+    {
         // Find texture manually
         std::string textureName = findTextureInDirectory(directory, typeName);
         if (!textureName.empty())
