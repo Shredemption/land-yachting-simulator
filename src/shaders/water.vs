@@ -18,5 +18,5 @@ void main()
     gl_Position = u_projection * u_view * u_model * vec4(position, 1.0);
 
     // Pass the vertex color to the fragment shader
-    vertexColor = vec3(0.31, 0.66, 0.89);
+    vertexColor = vec3(color);
 }

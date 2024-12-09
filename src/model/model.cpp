@@ -59,14 +59,6 @@ Model::~Model()
     meshes.clear();
 }
 
-// Model Renderer
-void Model::Draw()
-{
-    for (unsigned int i = 0; i < meshes.size(); i++)
-        
-        meshes[i].Draw();
-}
-
 void Model::loadModel(std::string path, std::string shaderName)
 {
     // Define importer and open file
