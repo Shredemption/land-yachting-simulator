@@ -24,7 +24,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     }
     else if (shaderName == "water")
     {
-        setupWaterMesh();
+        setupSimpleMesh();
     }
 }
 
