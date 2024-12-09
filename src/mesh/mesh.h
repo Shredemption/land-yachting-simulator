@@ -14,6 +14,7 @@ struct Vertex
     glm::vec2 TexCoords;
     glm::vec3 Tangent;
     glm::vec3 Bitangent;
+    glm::vec3 Color;
 };
 
 struct Texture
@@ -41,10 +42,15 @@ public:
 
     // Mesh Renderer
     void Draw();
+    void DrawDefault();
+    void DrawSimple();
+
+    static Mesh genUnitPlane();
 
 private:
-    // Rendering Data
-    void setupMesh();
+    // Rendering Data to GPU
+    void setupDefaultMesh();
+    void setupSimpleMesh();
 };
 
 #endif // MESH_H
