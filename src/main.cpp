@@ -14,10 +14,10 @@
 #include "scene/scene.h"
 #include "event_handler/event_handler.h"
 #include "render/render.h"
+#include "camera/camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
-// TODO: Split camera functions to header
 // TODO: Add loading screen
 
 int main()
@@ -131,18 +131,9 @@ int main()
             // Process Inputs
             EventHandler::processInput(window);
 
-            // Projection Matrix
-            Render::u_projection = glm::perspective((float)M_PI_2,                                                        // Field of view (90 deg)
-                                                    (float)EventHandler::screenWidth / (float)EventHandler::screenHeight, // Aspect Ratio (w/h)
-                                                    0.01f,                                                                // Near clipping plane
-                                                    100.0f                                                                // Far clipping plane
-            );
-
-            // View matrix
-            Render::u_view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
-                                         EventHandler::cameraPosition + EventHandler::cameraViewDirection, // Target Position
-                                         EventHandler::cameraUp                                            // Up vector
-            );
+            // Gen render matrices
+            Camera::genViewMatrix();
+            Camera::genProjectionMatrix();
 
             // Sun/moon lighting
             EventHandler::sunAngle += EventHandler::deltaTime * 5.0f;
