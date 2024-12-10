@@ -1,6 +1,7 @@
 #include <event_handler/event_handler.h>
 
 #include <iostream>
+#include <camera/camera.h>
 
 // Global screen variables
 int EventHandler::xPos, EventHandler::yPos, EventHandler::screenWidth, EventHandler::screenHeight;
@@ -9,14 +10,6 @@ bool EventHandler::windowSizeChanged = false;
 bool EventHandler::firstFrame = true;
 GLFWmonitor *EventHandler::monitor;
 int EventHandler::windowXpos, EventHandler::windowYpos, EventHandler::windowWidth, EventHandler::windowHeight;
-
-// Global Camera Variables
-glm::vec3 EventHandler::worldUp(0.f, 1.f, 0.f);        // World up direction
-glm::vec3 EventHandler::cameraPosition(0.f, 0.f, 5.f); // Camera placed
-float EventHandler::yaw = 0, EventHandler::pitch = 0, EventHandler::roll = 0;
-glm::vec3 EventHandler::cameraViewDirection(0.0f, 0.0f, -1.0f);
-glm::vec3 EventHandler::cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
-glm::vec3 EventHandler::cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight));
 
 //Global Time 
 float EventHandler::time;
@@ -90,18 +83,18 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
     yPos *= sensitvity;
 
     // Update yaw and pitch
-    yaw += glm::radians(xPos); // Convert to radians
-    pitch += glm::radians(yPos);
+    Camera::yaw += glm::radians(xPos); // Convert to radians
+    Camera::pitch += glm::radians(yPos);
     // roll += 0;
 
     // Clamp the pitch to prevent flipping
-    if (pitch > glm::radians(85.0f)) // Maximum upward angle
-        pitch = glm::radians(85.0f);
-    if (pitch < glm::radians(-85.0f)) // Maximum downward angle
-        pitch = glm::radians(-85.0f);
+    if (Camera::pitch > glm::radians(85.0f)) // Maximum upward angle
+        Camera::pitch = glm::radians(85.0f);
+    if (Camera::pitch < glm::radians(-85.0f)) // Maximum downward angle
+        Camera::pitch = glm::radians(-85.0f);
 
     // Generate new direction vector(s)
-    setCamDirection(yaw, pitch);
+    Camera::setCamDirection();
 
     // Reset mouse to 0,0
     glfwSetCursorPos(window, 0, 0);
@@ -113,23 +106,23 @@ void EventHandler::processInput(GLFWwindow *window)
     float cameraSpeed = 5.f * deltaTime;
 
     // Find XZ plane view direction
-    glm::vec3 forwardXZ = cameraViewDirection;
+    glm::vec3 forwardXZ = Camera::cameraViewDirection;
     forwardXZ.y = 0.f;
     forwardXZ = glm::normalize(forwardXZ);
 
     // Apply correct movement per button pressed
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPosition += cameraSpeed * forwardXZ;
+        Camera::cameraPosition += cameraSpeed * forwardXZ;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPosition -= cameraSpeed * forwardXZ;
+        Camera::cameraPosition -= cameraSpeed * forwardXZ;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPosition -= glm::normalize(glm::cross(forwardXZ, worldUp)) * cameraSpeed;
+        Camera::cameraPosition -= glm::normalize(glm::cross(forwardXZ, Camera::worldUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPosition += glm::normalize(glm::cross(forwardXZ, worldUp)) * cameraSpeed;
+        Camera::cameraPosition += glm::normalize(glm::cross(forwardXZ, Camera::worldUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        cameraPosition += cameraSpeed * worldUp;
+        Camera::cameraPosition += cameraSpeed * Camera::worldUp;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        cameraPosition -= cameraSpeed * worldUp;
+        Camera::cameraPosition -= cameraSpeed * Camera::worldUp;
 }
 
 void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int height)
@@ -145,9 +138,4 @@ void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int he
 void EventHandler::errorCallback(int error, const char *description)
 {
     std::cerr << "GLFW Error" << error << ": " << description << std::endl;
-}
-
-void EventHandler::setCamDirection(float yaw, float pitch) {
-    cameraViewDirection = glm::normalize(glm::vec3(cos(-pitch) * sin(-yaw + glm::radians(180.f)), sin(-pitch),
-                                                   cos(-pitch) * cos(-yaw + glm::radians(180.f))));
 }

@@ -1,11 +1,10 @@
 #include "render/render.h"
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
+#include "camera/camera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
-glm::mat4 Render::u_view = glm::mat4(1.0f);
-glm::mat4 Render::u_projection = glm::mat4(1.0f);
 glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
 
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
@@ -62,13 +61,13 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 
         // Send light and view position to relevant shader
         shader.setVec3("lightPos", EventHandler::lightPos);
-        shader.setVec3("viewPos", EventHandler::cameraPosition);
+        shader.setVec3("viewPos", Camera::cameraPosition);
         shader.setFloat("lightIntensity", EventHandler::lightInsensity);
         shader.setVec3("lightCol", EventHandler::lightCol);
 
         // Apply view and projection to whole scene
-        shader.setMat4("u_view", u_view);
-        shader.setMat4("u_projection", u_projection);
+        shader.setMat4("u_view", Camera::u_view);
+        shader.setMat4("u_projection", Camera::u_projection);
 
         // Set model matrix for model and draw
         shader.setMat4("u_model", model.u_model);
@@ -88,8 +87,8 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
         Shader shader = Shader::load(unitPlane.shader);
 
         // Apply view and projection to whole scene
-        shader.setMat4("u_view", u_view);
-        shader.setMat4("u_projection", u_projection);
+        shader.setMat4("u_view", Camera::u_view);
+        shader.setMat4("u_projection", Camera::u_projection);
 
         // Set model matrix for model and draw
         shader.setMat4("u_model", unitPlane.u_model);
@@ -103,8 +102,8 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
     // Sort transparent planes back to front based on distance from the camera
     std::sort(scene.transparentUnitPlanes.begin(), scene.transparentUnitPlanes.end(), [&](const UnitPlaneData &a, const UnitPlaneData &b)
               {
-                  float distA = glm::distance(EventHandler::cameraPosition, a.position);
-                  float distB = glm::distance(EventHandler::cameraPosition, b.position);
+                  float distA = glm::distance(Camera::cameraPosition, a.position);
+                  float distB = glm::distance(Camera::cameraPosition, b.position);
                   return distA > distB; // Sort by distance: farthest first, closest last
               });
 
@@ -117,8 +116,8 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
         Shader shader = Shader::load(unitPlane.shader);
 
         // Apply view and projection to whole scene
-        shader.setMat4("u_view", u_view);
-        shader.setMat4("u_projection", u_projection);
+        shader.setMat4("u_view", Camera::u_view);
+        shader.setMat4("u_projection", Camera::u_projection);
 
         // Set model matrix for model and draw
         shader.setMat4("u_model", unitPlane.u_model);
@@ -274,7 +273,7 @@ void Render::renderWater(Mesh mesh)
     shader.setInt("dudvMap", 2);
     shader.setInt("normalMap", 3);
     shader.setFloat("moveOffset", EventHandler::time);
-    shader.setVec3("cameraPosition", EventHandler::cameraPosition);
+    shader.setVec3("cameraPosition", Camera::cameraPosition);
     shader.setVec3("lightPos", EventHandler::lightPos);
     shader.setVec3("lightCol", EventHandler::lightCol);
 
@@ -292,13 +291,11 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     FrameBuffer::bindFrameBuffer(FrameBuffer::reflectionFBO);
 
     clipPlane = {0, 1, 0, -waterHeight};
-    EventHandler::setCamDirection(EventHandler::yaw, -EventHandler::pitch);
-    float distance = 2 * (EventHandler::cameraPosition[1] - waterHeight);
-    EventHandler::cameraPosition[1] -= distance;
-    u_view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
-                         EventHandler::cameraPosition + EventHandler::cameraViewDirection, // Target Position
-                         EventHandler::cameraUp                                            // Up vector
-    );
+    Camera::pitch = - Camera::pitch;
+    Camera::setCamDirection();
+    float distance = 2 * (Camera::cameraPosition[1] - waterHeight);
+    Camera::cameraPosition[1] -= distance;
+    Camera::genViewMatrix();
 
     // Draw to it
     renderSceneModels(scene, clipPlane);
@@ -309,12 +306,10 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     FrameBuffer::bindFrameBuffer(FrameBuffer::refractionFBO);
 
     clipPlane = {0, -1, 0, waterHeight};
-    EventHandler::setCamDirection(EventHandler::yaw, EventHandler::pitch);
-    EventHandler::cameraPosition[1] += distance;
-    u_view = glm::lookAt(EventHandler::cameraPosition,                                     // Camera Position
-                         EventHandler::cameraPosition + EventHandler::cameraViewDirection, // Target Position
-                         EventHandler::cameraUp                                            // Up vector
-    );
+    Camera::pitch = - Camera::pitch;
+    Camera::setCamDirection();
+    Camera::cameraPosition[1] += distance;
+    Camera::genViewMatrix();
 
     // Draw to it
     renderSceneModels(scene, clipPlane);

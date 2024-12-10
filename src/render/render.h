@@ -9,8 +9,6 @@ class Render
 public:
     static void initQuad();
     static void render(Scene& scene);
-    static glm::mat4 u_view;
-    static glm::mat4 u_projection;
     static glm::vec4 clipPlane;
     static float waterHeight;
 

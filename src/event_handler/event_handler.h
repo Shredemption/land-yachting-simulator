@@ -13,10 +13,6 @@ public:
     static GLFWmonitor *monitor;
     static int windowXpos, windowYpos, windowWidth, windowHeight;
 
-    // Global Camera Variables
-    static glm::vec3 worldUp, cameraPosition, cameraViewDirection, cameraRight, cameraUp;
-    static float yaw, pitch, roll;
-
     // Global Time
     static float deltaTime;
     static float lastTime;
@@ -34,7 +30,6 @@ public:
     static void mouseCallback(GLFWwindow *window, double xPos, double yPos);
     static void processInput(GLFWwindow *window);
     static void framebufferSizeCallback(GLFWwindow *window, int width, int height);
-    static void setCamDirection(float yaw, float pitch);
 };
 
 #endif // EVENT_HANDLER_H
