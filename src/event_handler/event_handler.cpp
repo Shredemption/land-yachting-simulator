@@ -11,7 +11,7 @@ bool EventHandler::firstFrame = true;
 GLFWmonitor *EventHandler::monitor;
 int EventHandler::windowXpos, EventHandler::windowYpos, EventHandler::windowWidth, EventHandler::windowHeight;
 
-//Global Time 
+// Global Time
 float EventHandler::time;
 float EventHandler::deltaTime = 0;
 float EventHandler::lastTime = 0;
@@ -68,6 +68,9 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
         xPos = 0;
         yPos = 0;
         firstFrame = false;
+
+        // Reset mouse to 0,0
+        glfwSetCursorPos(window, 0, 0);
     }
 
     if (windowSizeChanged)
@@ -82,22 +85,27 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
     xPos *= sensitvity;
     yPos *= sensitvity;
 
-    // Update yaw and pitch
-    Camera::yaw += glm::radians(xPos); // Convert to radians
-    Camera::pitch += glm::radians(yPos);
-    // roll += 0;
+    if (xPos != 0 || yPos != 0)
+    {
+        Camera::cameraMoved = true;
 
-    // Clamp the pitch to prevent flipping
-    if (Camera::pitch > glm::radians(85.0f)) // Maximum upward angle
-        Camera::pitch = glm::radians(85.0f);
-    if (Camera::pitch < glm::radians(-85.0f)) // Maximum downward angle
-        Camera::pitch = glm::radians(-85.0f);
+        // Update yaw and pitch
+        Camera::yaw += glm::radians(xPos); // Convert to radians
+        Camera::pitch += glm::radians(yPos);
+        // roll += 0;
 
-    // Generate new direction vector(s)
-    Camera::setCamDirection();
+        // Clamp the pitch to prevent flipping
+        if (Camera::pitch > glm::radians(85.0f)) // Maximum upward angle
+            Camera::pitch = glm::radians(85.0f);
+        if (Camera::pitch < glm::radians(-85.0f)) // Maximum downward angle
+            Camera::pitch = glm::radians(-85.0f);
 
-    // Reset mouse to 0,0
-    glfwSetCursorPos(window, 0, 0);
+        // Generate new direction vector(s)
+        Camera::setCamDirection();
+
+        // Reset mouse to 0,0
+        glfwSetCursorPos(window, 0, 0);
+    }
 }
 
 void EventHandler::processInput(GLFWwindow *window)
@@ -112,17 +120,35 @@ void EventHandler::processInput(GLFWwindow *window)
 
     // Apply correct movement per button pressed
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
         Camera::cameraPosition += cameraSpeed * forwardXZ;
+        Camera::cameraMoved = true;
+    }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
         Camera::cameraPosition -= cameraSpeed * forwardXZ;
+        Camera::cameraMoved = true;
+    }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
         Camera::cameraPosition -= glm::normalize(glm::cross(forwardXZ, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraMoved = true;
+    }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
         Camera::cameraPosition += glm::normalize(glm::cross(forwardXZ, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraMoved = true;
+    }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
         Camera::cameraPosition += cameraSpeed * Camera::worldUp;
+        Camera::cameraMoved = true;
+    }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
         Camera::cameraPosition -= cameraSpeed * Camera::worldUp;
+        Camera::cameraMoved = true;
+    }
 }
 
 void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int height)
