@@ -9,30 +9,41 @@
 #include <unordered_map>
 #include <string>
 
-struct JSONModels
+struct JSONModel
 {
-    std::string path;
-    std::vector<float> scale;
-    int angle;
-    std::vector<float> rotationAxis;
-    std::vector<float> translation;
-    std::string shader;
+    std::string path = "none";
+    std::vector<float> scale = {1, 1, 1};
+    float angle = 0;
+    std::vector<float> rotationAxis = {0, 1, 0};
+    std::vector<float> translation = {0, 0, 0};
+    std::string shader = "default";
 };
 
 struct JSONUnitPlane
 {
-    std::vector<float> color;
-    std::vector<float> scale;
-    int angle;
-    std::vector<float> rotationAxis;
-    std::vector<float> translation;
-    std::string shader;
+    std::vector<float> color = {1, 1, 1};
+    std::vector<float> scale = {1, 1, 1};
+    float angle = 0;
+    std::vector<float> rotationAxis = {0, 1, 0};
+    std::vector<float> translation = {0, 0, 0};
+    std::string shader = "simple";
+};
+
+struct JSONSkybox
+{
+    std::string up = "";
+    std::string down = "";
+    std::string left = "";
+    std::string right = "";
+    std::string front = "";
+    std::string back = "";
 };
 
 struct JSONScene
 {
-    std::vector<JSONModels> models;
-    std::vector<JSONUnitPlane> unitPlanes;
+    std::vector<JSONModel> models = {};
+    std::vector<JSONUnitPlane> unitPlanes = {};
+    JSONSkybox skyBox = JSONSkybox()    ;
 };
 
 struct ModelData
@@ -79,7 +90,7 @@ public:
 
 private:
     // Load models into scene
-    void loadModelToScene(JSONModels model);
+    void loadModelToScene(JSONModel model);
     void loadUnitPlaneToScene(JSONUnitPlane unitPlane);
 };
 

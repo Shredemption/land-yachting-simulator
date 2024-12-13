@@ -32,9 +32,6 @@ public:
     static std::map<std::string, std::string> modelMap;
     static std::map<std::string, std::string> loadModelMap(const std::string &filePath);
 
-    // Model Renderer
-    void Draw();
-
     // Model data
     std::vector<Mesh> meshes;
     std::string directory;

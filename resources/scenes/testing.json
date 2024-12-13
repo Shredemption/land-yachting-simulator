@@ -1,28 +1,21 @@
 {
   "models": [
     {
-      "path": "backpack",
-      "scale": [1, 1, 1],
-      "angle": 0,
-      "rotationAxis": [0, 1, 0],
-      "translation": [0, 0, 0],
-      "shader": "default"
+      "path": "backpack"
     },
     {
       "path": "backpack",
       "scale": [0.7, 0.7, 0.7],
       "angle": 20,
       "rotationAxis": [0, 1, 0],
-      "translation": [5, 0, 0],
-      "shader": "default"
+      "translation": [5, 0, 0]
     },
     {
       "path": "backpack",
       "scale": [0.8, 0.8, 0.8],
       "angle": -20,
       "rotationAxis": [0, 1, 0],
-      "translation": [-5, 0, 0],
-      "shader": "default"
+      "translation": [-5, 0, 0]
     }
   ],
   "unitPlanes": [
@@ -39,8 +32,15 @@
       "scale": [100, 1, 100],
       "angle": 0,
       "rotationAxis": [0, 1, 0],
-      "translation": [0, -4, 0],
-      "shader": "simple"
+      "translation": [0, -4, 0]
     }
-  ]
+  ],
+  "skyBox": {
+    "up": "Daylight Box_Top.bpm",
+    "down": "Daylight Box_Bottom.bpm",
+    "left": "Daylight Box_Left.bpm",
+    "right": "Daylight Box_Right.bpm",
+    "front": "Daylight Box_Front.bpm",
+    "back": "Daylight Box_Back.bpm"
+  }
 }
