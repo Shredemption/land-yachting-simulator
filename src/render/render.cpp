@@ -42,15 +42,20 @@ void Render::initQuad()
 
 void Render::render(Scene &scene)
 {
-    WaterPass = true;
-    renderReflectRefract(scene, clipPlane);
+    if (Shader::waterLoaded & (Camera::cameraMoved || EventHandler::firstFrame || EventHandler::windowSizeChanged))
+    {
+        WaterPass = true;
+        renderReflectRefract(scene, clipPlane);
+        WaterPass = false;
+    }
 
-    WaterPass = false;
     clipPlane = {0, 0, 0, 0};
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
     // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
     // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+
+    Camera::cameraMoved = false;
 }
 
 void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
@@ -291,7 +296,7 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     FrameBuffer::bindFrameBuffer(FrameBuffer::reflectionFBO);
 
     clipPlane = {0, 1, 0, -waterHeight};
-    Camera::pitch = - Camera::pitch;
+    Camera::pitch = -Camera::pitch;
     Camera::setCamDirection();
     float distance = 2 * (Camera::cameraPosition[1] - waterHeight);
     Camera::cameraPosition[1] -= distance;
@@ -306,7 +311,7 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     FrameBuffer::bindFrameBuffer(FrameBuffer::refractionFBO);
 
     clipPlane = {0, -1, 0, waterHeight};
-    Camera::pitch = - Camera::pitch;
+    Camera::pitch = -Camera::pitch;
     Camera::setCamDirection();
     Camera::cameraPosition[1] += distance;
     Camera::genViewMatrix();

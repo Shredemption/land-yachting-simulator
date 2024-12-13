@@ -16,6 +16,7 @@ public:
     static void setCamDirection();
     static void genViewMatrix();
     static void genProjectionMatrix();
+    static bool cameraMoved;
 };
 
 #endif

@@ -13,6 +13,8 @@ glm::vec3 Camera::cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cam
 glm::mat4 Camera::u_view;
 glm::mat4 Camera::u_projection;
 
+bool Camera::cameraMoved = true;
+
 void Camera::setCamDirection()
 {
     cameraViewDirection = glm::normalize(glm::vec3(cos(-pitch) * sin(-yaw + glm::radians(180.f)), sin(-pitch),
