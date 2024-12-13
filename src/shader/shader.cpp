@@ -3,15 +3,27 @@
 #include <file_manager/file_manager.h>
 
 std::unordered_map<std::string, Shader> Shader::loadedShaders;
+std::string Shader::lastShader;
+bool Shader::waterLoaded = false;
 
 Shader Shader::load(const std::string &shaderName)
 {
+    if (shaderName == lastShader)
+    {
+        return loadedShaders[shaderName];
+    }
+
     Shader shader;
 
     if (loadedShaders.find(shaderName) == loadedShaders.end())
     {
         shader.init(FileManager::read("shaders/" + shaderName + ".vs"), FileManager::read("shaders/" + shaderName + ".fs"));
         loadedShaders.emplace(shaderName, shader);
+
+        if (shaderName == "water")
+        {  
+            waterLoaded = true;
+        }
     }
 
     shader = loadedShaders[shaderName];
