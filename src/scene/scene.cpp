@@ -12,10 +12,10 @@
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
 
-JSONCONS_ALL_MEMBER_TRAITS(JSONModels, path, scale, angle, rotationAxis, translation, shader);
-JSONCONS_ALL_MEMBER_TRAITS(JSONUnitPlane, color, scale, angle, rotationAxis, translation, shader);
-JSONCONS_ALL_MEMBER_TRAITS(JSONScene, models, unitPlanes);
-
+JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader);
+JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
+JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 0, up, down, left, right, front, back);
+JSONCONS_N_MEMBER_TRAITS(JSONScene, 1, models, unitPlanes, skyBox);
 
 // TODO: skybox
 // TODO: textured unitplane
@@ -39,27 +39,16 @@ Scene::Scene(std::string jsonPath)
         throw std::runtime_error("Could not open file: " + path);
     }
 
-    // Parse the JSON
-    jsoncons::json jsonScene;
-    try
-    {
-        jsonScene = jsoncons::json::parse(file);
-    }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Failed to parse JSON: " + std::string(e.what()));
-    }
-
     // Parse json into struct
-    JSONScene jsonModels = jsonScene.as<JSONScene>();
+    JSONScene jsonScene = jsoncons::decode_json<JSONScene>(file);
 
     // For each model in scene
-    for (JSONModels model : jsonModels.models)
+    for (JSONModel model : jsonScene.models)
     {
         loadModelToScene(model);
     }
 
-    for (JSONUnitPlane unitPlane : jsonModels.unitPlanes)
+    for (JSONUnitPlane unitPlane : jsonScene.unitPlanes)
     {
         loadUnitPlaneToScene(unitPlane);
     }
@@ -71,7 +60,7 @@ Scene::~Scene()
 }
 
 // Load models into scene
-void Scene::loadModelToScene(JSONModels model)
+void Scene::loadModelToScene(JSONModel model)
 {
     // Setup empty structModel unit
     ModelData loadModel;
