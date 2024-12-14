@@ -17,7 +17,6 @@ JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, tr
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 0, up, down, left, right, front, back);
 JSONCONS_N_MEMBER_TRAITS(JSONScene, 1, models, unitPlanes, skyBox);
 
-// TODO: skybox
 // TODO: textured unitplane
 // TODO: environment
 
