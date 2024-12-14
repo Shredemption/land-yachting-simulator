@@ -136,7 +136,7 @@ int main()
             Camera::genProjectionMatrix();
 
             // Sun/moon lighting
-            EventHandler::sunAngle += EventHandler::deltaTime * 5.0f;
+            EventHandler::sunAngle += EventHandler::deltaTime * EventHandler::sunSpeed;
 
             // lightColor = glm::vec3((1.5f + std::sin(glm::radians(sunAngle)) + std::sin(glm::radians(2.f * sunAngle - 90.f))) / 3.5f);
             EventHandler::lightPos = 200.0f * glm::vec3(std::sin(glm::radians(EventHandler::sunAngle)), 1.f, std::cos(glm::radians(EventHandler::sunAngle)));
