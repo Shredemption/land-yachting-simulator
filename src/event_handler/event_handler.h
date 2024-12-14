@@ -21,6 +21,7 @@ public:
     // Global Light properties
     static glm::vec3 lightPos;
     static float sunAngle;
+    static float sunSpeed;
     static glm::vec3 lightCol;
     static float lightInsensity;
 

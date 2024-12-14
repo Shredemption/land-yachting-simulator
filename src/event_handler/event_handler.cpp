@@ -18,7 +18,8 @@ float EventHandler::lastTime = 0;
 
 // Global Light properties
 glm::vec3 EventHandler::lightPos(0.f, 10.f, 3.f);
-float EventHandler::sunAngle = 180.0f;
+float EventHandler::sunAngle = rand() % 360;
+float EventHandler::sunSpeed = 1.0f;
 glm::vec3 EventHandler::lightCol(1, 1, 1);
 float EventHandler::lightInsensity = 2;
 
