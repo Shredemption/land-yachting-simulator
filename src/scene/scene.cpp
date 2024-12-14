@@ -52,6 +52,8 @@ Scene::Scene(std::string jsonPath)
     {
         loadUnitPlaneToScene(unitPlane);
     }
+
+    loadSkyBoxToScene(jsonScene.skyBox);
 };
 
 // Scene Destructor
@@ -124,4 +126,17 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
         transparentUnitPlanes.push_back(loadUnitPlane);
     else
         opaqueUnitPlanes.push_back(loadUnitPlane);
+}
+
+void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
+{
+    this->skyBox.up = loadSkyBox.up;
+    this->skyBox.down = loadSkyBox.down;
+    this->skyBox.left = loadSkyBox.left;
+    this->skyBox.right = loadSkyBox.right;
+    this->skyBox.front = loadSkyBox.front;
+    this->skyBox.back = loadSkyBox.back;
+
+    this->skyBox.textureID = Model::LoadSkyBoxTexture(this->skyBox);
+    this->skyBox.VAO = Mesh::setupSkyBoxMesh();
 }

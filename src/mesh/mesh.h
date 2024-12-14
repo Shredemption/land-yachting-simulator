@@ -41,6 +41,8 @@ public:
     ~Mesh();
 
     static Mesh genUnitPlane(glm::vec3 color, std::string shaderName);
+    
+    static unsigned int setupSkyBoxMesh();
 
 private:
     // Rendering Data to GPU

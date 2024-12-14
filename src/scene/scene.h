@@ -43,7 +43,7 @@ struct JSONScene
 {
     std::vector<JSONModel> models = {};
     std::vector<JSONUnitPlane> unitPlanes = {};
-    JSONSkybox skyBox = JSONSkybox()    ;
+    JSONSkybox skyBox = JSONSkybox();
 };
 
 struct ModelData
@@ -71,6 +71,18 @@ struct UnitPlaneData
     }
 };
 
+struct SkyBoxData
+{
+    std::string up = "";
+    std::string down = "";
+    std::string left = "";
+    std::string right = "";
+    std::string front = "";
+    std::string back = "";
+    unsigned int textureID;
+    unsigned int VAO;
+};
+
 class Scene
 {
 public:
@@ -88,10 +100,14 @@ public:
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
 
+    // Skybox
+    SkyBoxData skyBox;
+
 private:
     // Load models into scene
     void loadModelToScene(JSONModel model);
     void loadUnitPlaneToScene(JSONUnitPlane unitPlane);
+    void loadSkyBoxToScene(JSONSkybox skyBox);
 };
 
 #endif

@@ -18,6 +18,8 @@ struct CachedTexture
     int refCount;
 };
 
+struct SkyBoxData;
+
 class Model
 {
 public:
@@ -41,6 +43,8 @@ public:
 
     // Texture from File
     static unsigned int TextureFromFile(const char *name, const std::string &directory);
+
+    static unsigned int LoadSkyBoxTexture(SkyBoxData skybox);
 
 private:
     // Model Loading
