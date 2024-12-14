@@ -7,6 +7,7 @@ in vec4 projectionPosition;    // Input color from vertex shader
 in vec2 TexCoords;
 in vec3 toCamera;
 in vec3 fromLight;
+in vec4 worldPos;
 
 uniform sampler2D reflectionTexture;
 uniform sampler2D refractionTexture;
@@ -16,6 +17,7 @@ uniform sampler2D normalMap;
 uniform sampler2D depthMap;
 
 uniform vec3 lightCol;
+uniform vec3 cameraPosition;
 
 const float waveStrength = 0.05;
 uniform float moveOffset;
@@ -26,6 +28,9 @@ const float reflectivity = 0.6;
 
 const float near = 0.1;
 const float far = 1000.0;
+
+const float fogStart = 150;
+const float fogEnd = 200;
 
 void main()
 {
@@ -68,6 +73,11 @@ void main()
 
     FragColor = mix(reflectionColor, refractionColor, fresnel);
 
-    FragColor = mix(FragColor, vec4(0.0, 0.25, 0.5, 1), 0.12) + vec4(specularHighlights, 0);
-    FragColor.a = min(1, waterDepth/15.0);
+    FragColor = mix(FragColor, vec4(0.0, 0.25, 0.5, 1.0), 0.0) + vec4(specularHighlights, 0);
+
+    float distance = length(cameraPosition - vec3(worldPos));
+
+    float fogFactor = clamp((fogEnd - distance)/(fogEnd - fogStart), 0.0, 1.0);
+
+    FragColor.a = min(min(1, waterDepth/15.0), fogFactor);
 }
