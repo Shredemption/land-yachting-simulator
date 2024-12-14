@@ -17,6 +17,7 @@ public:
     static float deltaTime;
     static float lastTime;
     static float time;
+    static unsigned int frame;
 
     // Global Light properties
     static glm::vec3 lightPos;

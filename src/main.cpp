@@ -121,6 +121,8 @@ int main()
             EventHandler::deltaTime = EventHandler::time - EventHandler::lastTime;
             EventHandler::lastTime = EventHandler::time;
 
+            EventHandler::frame++;
+
             // Clear color buffer
             glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
