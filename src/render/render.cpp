@@ -42,6 +42,8 @@ void Render::initQuad()
 
 void Render::render(Scene &scene)
 {
+    renderSceneSkyBox(scene);
+
     if (Shader::waterLoaded & (Camera::cameraMoved || EventHandler::firstFrame || EventHandler::windowSizeChanged))
     {
         WaterPass = true;
@@ -52,6 +54,7 @@ void Render::render(Scene &scene)
     clipPlane = {0, 0, 0, 0};
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
+
     // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
     // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
 
@@ -137,6 +140,31 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
         renderMesh(unitPlane.unitPlane);
     }
     glDisable(GL_BLEND);
+}
+
+void Render::renderSceneSkyBox(Scene &scene)
+{
+    glDepthFunc(GL_LEQUAL);
+    glDisable(GL_DEPTH_TEST);
+
+    Shader shader = Shader::load("skybox");
+
+    glBindVertexArray(scene.skyBox.VAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skyBox.textureID);
+
+    shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
+    shader.setMat4("u_projection", Camera::u_projection);
+    shader.setMat4("u_model", glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(100.0f)), glm::vec3(0.0f, -0.1f, 0.0f)));
+
+    shader.setInt("skybox", 0);
+
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    glDepthFunc(GL_LESS);
+    glEnable(GL_DEPTH_TEST);
+
+    glBindVertexArray(0);
 }
 
 void Render::renderModel(Model *model)
@@ -311,6 +339,9 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     Camera::genViewMatrix();
 
     // Draw to it
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    renderSceneSkyBox(scene);
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
 
@@ -325,6 +356,9 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     Camera::genViewMatrix();
 
     // Draw to it
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    renderSceneSkyBox(scene);
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
 
