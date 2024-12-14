@@ -26,8 +26,8 @@ void Camera::genProjectionMatrix()
 {
     u_projection = glm::perspective((float)M_PI_2,                                                        // Field of view (90 deg)
                                               (float)EventHandler::screenWidth / (float)EventHandler::screenHeight, // Aspect Ratio (w/h)
-                                              0.01f,                                                                // Near clipping plane
-                                              100.0f                                                                // Far clipping plane
+                                              0.1f,                                                                // Near clipping plane
+                                              1000.0f                                                                // Far clipping plane
     );
 }
 

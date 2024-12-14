@@ -271,20 +271,28 @@ void Render::renderWater(Mesh mesh)
     glBindTexture(GL_TEXTURE_2D, DuDv.id);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, normal.id);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.depthTexture);
 
     Shader shader = Shader::load("water");
     shader.setInt("reflectionTexture", 0);
     shader.setInt("refractionTexture", 1);
     shader.setInt("dudvMap", 2);
     shader.setInt("normalMap", 3);
+    shader.setInt("depthMap", 4);
     shader.setFloat("moveOffset", EventHandler::time);
     shader.setVec3("cameraPosition", Camera::cameraPosition);
     shader.setVec3("lightPos", EventHandler::lightPos);
     shader.setVec3("lightCol", EventHandler::lightCol);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // Draw Mesh
     glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glDisable(GL_BLEND);
 
     glBindVertexArray(0);
 }
