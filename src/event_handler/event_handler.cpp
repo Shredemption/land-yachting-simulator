@@ -15,6 +15,7 @@ int EventHandler::windowXpos, EventHandler::windowYpos, EventHandler::windowWidt
 float EventHandler::time;
 float EventHandler::deltaTime = 0;
 float EventHandler::lastTime = 0;
+unsigned int EventHandler::frame = 0;
 
 // Global Light properties
 glm::vec3 EventHandler::lightPos(0.f, 10.f, 3.f);
