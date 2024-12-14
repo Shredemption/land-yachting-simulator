@@ -8,6 +8,7 @@ out vec4 projectionPosition;
 out vec2 TexCoords;
 out vec3 toCamera;
 out vec3 fromLight;
+out vec4 worldPos;
 
 uniform vec3 lightPos;
 uniform vec3 cameraPosition;
@@ -22,7 +23,7 @@ int tiling = 8;
 void main()
 {
     // Apply the transformations to the vertex position
-    vec4 worldPos = u_model * vec4(position, 1.0);
+    worldPos = u_model * vec4(position, 1.0);
     projectionPosition = u_projection * u_view * worldPos;
     gl_Position = projectionPosition;
     TexCoords = texCoords * tiling;

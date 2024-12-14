@@ -21,7 +21,7 @@
   "unitPlanes": [
     {
       "color": [0.38, 0.7, 0.97],
-      "scale": [200, 1, 200],
+      "scale": [400, 1, 400],
       "angle": 0,
       "rotationAxis": [0, 1, 0],
       "translation": [0, -0.5, 0],
