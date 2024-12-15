@@ -6,7 +6,9 @@ layout(location = 2) in vec2 aTexCoords;
 out VS_OUT
 {
     vec3 FragPos;
+    vec3 Normal;
     vec2 TexCoords;
+    vec3 lightDir;
 }
 vs_out;
 
@@ -29,4 +31,6 @@ void main()
 
     vs_out.TexCoords = aTexCoords;
     vs_out.FragPos = vec3(u_model * vec4(aPos, 1.0));
+    vs_out.Normal = aNormal;
+    vs_out.lightDir = normalize(lightPos - worldPos.xyz);
 }
