@@ -153,21 +153,30 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
         // Get material
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        // Instert PBR textures
-        std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_NORMALS, "normal");
-        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-
         std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-        std::vector<Texture> specularMaps = loadMaterialTexture(material, aiTextureType_SPECULAR, "specular");
-        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        if (shaderName == "default")
+        {
+            std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_UNKNOWN, "properties");
+            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        }
 
-        std::vector<Texture> roughnessMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
-        textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+        if (shaderName == "pbr")
+        {
+            // Instert PBR textures
+            std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_NORMALS, "normal");
+            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-        std::vector<Texture> aoMaps = loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, "ao");
-        textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
+            std::vector<Texture> specularMaps = loadMaterialTexture(material, aiTextureType_SPECULAR, "specular");
+            textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+            std::vector<Texture> roughnessMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
+            textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+
+            std::vector<Texture> aoMaps = loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, "ao");
+            textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
+        }
     }
 
     return Mesh(vertices, indices, textures, shaderName);
