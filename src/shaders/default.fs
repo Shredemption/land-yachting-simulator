@@ -12,20 +12,25 @@ fs_in;
 
 uniform vec3 lightCol;
 uniform float lightIntensity;
+uniform vec3 viewPos;
 
 struct Material
 {
     sampler2D diffuse1;
+    sampler2D properties1;
 };
 
 uniform Material material;
 
-const float ambientLight = 0.3;
+const float ambientLight = 0.5;
 
 void main()
 {
     // Sample textures
     vec3 albedo = texture(material.diffuse1, fs_in.TexCoords).rgb;
+
+    float roughness = texture(material.properties1, fs_in.TexCoords).r;
+    float specular = texture(material.properties1, fs_in.TexCoords).g;
 
     vec3 diffuse = dot(fs_in.Normal, fs_in.lightDir) * lightCol * lightIntensity;
 

@@ -13,7 +13,6 @@ out VS_OUT
 vs_out;
 
 uniform vec3 lightPos;
-uniform vec3 viewPos;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
