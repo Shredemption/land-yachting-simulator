@@ -6,6 +6,7 @@
         "nanosuit": "resources/objects/nanosuit/nanosuit.obj",
         "planet": "resources/objects/planet/planet.obj",
         "rock": "resources/objects/rock/rock.obj",
-        "vampire": "resources/objects/vampire/dancing_vampire.dae"
+        "vampire": "resources/objects/vampire/dancing_vampire.dae",
+        "duvel": "resources/objects/duvel/duvel.obj"
     }
 }
