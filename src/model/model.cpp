@@ -187,46 +187,10 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
     // Vector of textures to push to GPU
     std::vector<Texture> textures;
 
-    // If texture not in model
-    if (mat->GetTextureCount(type) == 0)
+    // Find texture manually
+    std::string textureName = findTextureInDirectory(directory, typeName);
+    if (!textureName.empty())
     {
-        // Find texture manually
-        std::string textureName = findTextureInDirectory(directory, typeName);
-        if (!textureName.empty())
-        {
-            // If texture already loaded
-            if (textureCache.find(textureName) != textureCache.end())
-            {
-                // Use cached texture
-                textures.push_back(textureCache[textureName].texture);
-                textureCache[textureName].refCount++;
-            }
-            else
-            {
-                // Define and load new texture to texture cache
-                Texture texture;
-                texture.id = TextureFromFile(textureName.c_str(), directory);
-                texture.type = typeName;
-                texture.path = textureName.c_str();
-                textures.push_back(texture);
-                textureCache[textureName].texture = texture;
-            }
-        }
-        else
-        {
-            std::cout << "Failed to load " << typeName << " texture in " << directory << "\n";
-        }
-    }
-
-    // For every texture in model
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-    {
-        aiString str;
-
-        // Find texture
-        mat->GetTexture(type, i, &str);
-        std::string textureName = str.C_Str();
-
         // If texture already loaded
         if (textureCache.find(textureName) != textureCache.end())
         {
@@ -238,13 +202,19 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
         {
             // Define and load new texture to texture cache
             Texture texture;
-            texture.id = TextureFromFile(str.C_Str(), directory);
+            texture.id = TextureFromFile(textureName.c_str(), directory);
             texture.type = typeName;
-            texture.path = str.C_Str();
+            texture.path = textureName.c_str();
             textures.push_back(texture);
             textureCache[textureName].texture = texture;
         }
     }
+
+    else
+    {
+        std::cout << "Failed to load " << typeName << " texture in " << directory << "\n";
+    }
+
     return textures;
 }
 
