@@ -250,6 +250,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
         boneHierarchy.erase(it); // Remove the "Scene" bone from the hierarchy
     }
 
+    int newIndex = 0;
+    for (auto &[name, bone] : boneHierarchy)
+    {
+        bone->index = newIndex;
+        newIndex++;
+    }
+
     Mesh loadedMesh = Mesh(vertices, indices, textures, shaderName);
     return loadedMesh;
 }
@@ -476,7 +483,7 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
 
     if (bone->index < 0 || bone->index >= boneTransforms.size())
     {
-        std::cerr << "Error: Bone index out of range: " << bone->index << std::endl;
+        std::cerr << "Error: Bone index out of range: " << bone->index << ", with name: " << bone->name << std::endl;
         return;
     }
 
