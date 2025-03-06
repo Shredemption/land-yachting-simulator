@@ -26,6 +26,11 @@ public:
     // Model Constructor
     Model(std::string const &path, std::string shaderName = "default");
 
+    std::map<std::string, Bone *> boneHierarchy;
+    std::vector<glm::mat4> boneTransforms;
+    std::vector<glm::mat4> boneInverseOffsets;
+    std::vector<Bone *> rootBones;
+
     // Model Destructor
     ~Model();
 
@@ -44,16 +49,19 @@ public:
     static unsigned int TextureFromFile(const char *name, const std::string &directory);
 
     static unsigned int LoadSkyBoxTexture(SkyBoxData skybox);
+    
+    void updateBoneTransforms();
+    void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform);
 
 private:
     // Model Loading
     void loadModel(std::string path, std::string shaderName);
 
     // Node Processor
-    void processNode(aiNode *node, const aiScene *scene, std::string shaderName);
+    void processNode(aiNode *node, const aiScene *scene, std::string shaderName, Bone *parentBone = nullptr);
 
     // Mesh Processor
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName);
+    Mesh processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy);
 
     // Material Texture Loader
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
