@@ -86,7 +86,7 @@ void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderNa
     // If node is armatrue, extract bone
     if (nodeName.rfind("Armature", 0) == 0)
     {
-        Bone *currentBone = new Bone(nodeName, boneHierarchy.size(), glm::mat4(1.0f));
+        Bone *currentBone = new Bone(nodeName, boneHierarchy.size() - 1, glm::mat4(1.0f));
         boneHierarchy.emplace(nodeName, currentBone);
 
         if (parentBone)
@@ -248,13 +248,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
     if (it != boneHierarchy.end())
     {
         boneHierarchy.erase(it); // Remove the "Scene" bone from the hierarchy
-    }
-
-    int newIndex = 0;
-    for (auto &[name, bone] : boneHierarchy)
-    {
-        bone->index = newIndex;
-        newIndex++;
     }
 
     Mesh loadedMesh = Mesh(vertices, indices, textures, shaderName);
