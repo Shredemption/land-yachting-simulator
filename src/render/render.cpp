@@ -83,7 +83,14 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 
         shader.setVec4("location_plane", clipPlane);
 
-        renderModel(model.model);
+        if (model.model->boneHierarchy.size() > 0)
+        {
+            model.model->updateBoneTransforms();
+            shader.setMat4Array("u_boneTransforms", model.model->boneTransforms);
+            shader.setMat4Array("inverse_offset", model.model->boneInverseOffsets);
+        }
+
+        renderModel(model);
     }
 }
 
@@ -167,11 +174,12 @@ void Render::renderSceneSkyBox(Scene &scene)
     glBindVertexArray(0);
 }
 
-void Render::renderModel(Model *model)
+void Render::renderModel(ModelData model)
 {
-    for (unsigned int i = 0; i < model->meshes.size(); i++)
-
-        Render::renderMesh(model->meshes[i]);
+    for (unsigned int i = 0; i < model.model->meshes.size(); i++)
+    {
+        Render::renderMesh(model.model->meshes[i]);
+    }
 }
 
 // Render mesh
