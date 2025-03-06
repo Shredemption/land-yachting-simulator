@@ -41,14 +41,14 @@ void main()
     float depth = texture(depthMap, refractCoords).r;
     float depthDistance = 2 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
 
-    depth = gl_FragCoord.y;
+    depth = gl_FragCoord.z;
     float waterDistance = 2 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
 
     float waterDepth = depthDistance - waterDistance;
 
     vec2 distoredTexCoords = texture(dudvMap, vec2(TexCoords.x + moveSpeed * moveOffset, TexCoords.y)).rg * 0.1;
     distoredTexCoords = TexCoords + vec2(distoredTexCoords.x, distoredTexCoords.y + moveSpeed * moveOffset);
-    vec2 totalDistortion = (texture(dudvMap, distoredTexCoords).rg * 2 - 1) * waveStrength * min(1, waterDepth/50.0);
+    vec2 totalDistortion = (texture(dudvMap, distoredTexCoords).rg * 2 - 1) * waveStrength * min(1, waterDepth / 50.0);
 
     reflectCoords += totalDistortion;
     reflectCoords.x = clamp(reflectCoords.x, 0.0001, 0.9999);
@@ -60,16 +60,16 @@ void main()
     vec4 reflectionColor = texture(reflectionTexture, reflectCoords);
     vec4 refractionColor = texture(refractionTexture, refractCoords);
 
-    float fresnel = dot(normalize(toCamera), vec3(0, 1, 0));
+    float fresnel = dot(normalize(toCamera), vec3(0, 0, 1));
 
     vec4 normalMapColor = texture(normalMap, distoredTexCoords);
-    vec3 normal = vec3(normalMapColor.x * 2 - 1, normalMapColor.z * 2 - 1, normalMapColor.y * 2 - 1);
+    vec3 normal = vec3(normalMapColor.x * 2 - 1, normalMapColor.y * 2 - 1, normalMapColor.z * 2 - 1);
     normal = normalize(normal);
 
     vec3 reflectedLight = reflect(normalize(fromLight), normal);
     float specular = max(dot(reflectedLight, normalize(toCamera)), 0.0);
     specular = pow(specular, shineDamper);
-    vec3 specularHighlights = lightCol * specular * reflectivity * min(1, waterDepth/50.0); 
+    vec3 specularHighlights = lightCol * specular * reflectivity * min(1, waterDepth / 50.0);
 
     FragColor = mix(reflectionColor, refractionColor, fresnel);
 
@@ -77,7 +77,7 @@ void main()
 
     float distance = length(cameraPosition - vec3(worldPos));
 
-    float fogFactor = clamp((fogEnd - distance)/(fogEnd - fogStart), 0.0, 1.0);
+    float fogFactor = clamp((fogEnd - distance) / (fogEnd - fogStart), 0.0, 1.0);
 
-    FragColor.a = min(min(1, waterDepth/15.0), fogFactor);
+    FragColor.a = min(min(1, waterDepth / 15.0), fogFactor);
 }

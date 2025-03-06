@@ -162,7 +162,7 @@ void Render::renderSceneSkyBox(Scene &scene)
 
     shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
     shader.setMat4("u_projection", Camera::u_projection);
-    shader.setMat4("u_model", glm::rotate(glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(100.0f)), glm::vec3(0.0f, -0.175f, 0.0f)), glm::radians(EventHandler::sunAngle), glm::vec3(0.0f, 1.0f, 0.0f)));
+    shader.setMat4("u_model", glm::rotate(glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(100.0f)), glm::vec3(0.0f, 0.0f, -0.175f)), glm::radians(EventHandler::sunAngle), glm::vec3(0.0f, 0.0f, 1.0f)));
 
     shader.setInt("skybox", 0);
 
@@ -339,11 +339,11 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     // Bind reflection buffer
     FrameBuffer::bindFrameBuffer(FrameBuffer::reflectionFBO);
 
-    clipPlane = {0, 1, 0, -waterHeight};
+    clipPlane = {0, 0, 1, -waterHeight};
     Camera::pitch = -Camera::pitch;
     Camera::setCamDirection();
-    float distance = 2 * (Camera::cameraPosition[1] - waterHeight);
-    Camera::cameraPosition[1] -= distance;
+    float distance = 2 * (Camera::cameraPosition[2] - waterHeight);
+    Camera::cameraPosition[2] -= distance;
     Camera::genViewMatrix();
 
     // Draw to it
@@ -357,10 +357,10 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     // Bind refraction buffer
     FrameBuffer::bindFrameBuffer(FrameBuffer::refractionFBO);
 
-    clipPlane = {0, -1, 0, waterHeight};
+    clipPlane = {0, 0, -1, waterHeight};
     Camera::pitch = -Camera::pitch;
     Camera::setCamDirection();
-    Camera::cameraPosition[1] += distance;
+    Camera::cameraPosition[2] += distance;
     Camera::genViewMatrix();
 
     // Draw to it

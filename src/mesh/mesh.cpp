@@ -71,7 +71,6 @@ void Mesh::setupDefaultMesh()
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Weights));
 
-
     glBindVertexArray(0);
 }
 
@@ -115,10 +114,10 @@ void Mesh::setupPBRMesh()
 Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
 {
     std::vector<glm::vec3> Positions = {
-        {-0.5f, 0.0f, -0.5f},
-        {0.5f, 0.0f, -0.5f},
-        {0.5f, 0.0f, 0.5f},
-        {-0.5f, 0.0f, 0.5f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {-0.5f, -0.5f, 0.0f},
     };
 
     std::vector<Vertex> vertices;
@@ -215,28 +214,15 @@ void Mesh::setupWaterMesh()
 unsigned int Mesh::setupSkyBoxMesh()
 {
     float skyboxVertices[] = {
-        // positions
-        -1.0f, 1.0f, -1.0f,
+        // Front face (towards -Y)
         -1.0f, -1.0f, -1.0f,
         1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
         1.0f, 1.0f, -1.0f,
         -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f,
         -1.0f, -1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
 
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-
+        // Back face (towards +Y)
         -1.0f, -1.0f, 1.0f,
         -1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f,
@@ -244,19 +230,37 @@ unsigned int Mesh::setupSkyBoxMesh()
         1.0f, -1.0f, 1.0f,
         -1.0f, -1.0f, 1.0f,
 
+        // Left face (towards -X)
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+
+        // Right face (towards +X)
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+        // Bottom face (towards -Z)
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+
+        // Top face (towards +Z)
         -1.0f, 1.0f, -1.0f,
         1.0f, 1.0f, -1.0f,
         1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f,
         -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f};
+        -1.0f, 1.0f, -1.0f};
 
     unsigned int skyboxVAO, skyboxVBO;
     glGenVertexArrays(1, &skyboxVAO);

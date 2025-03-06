@@ -142,7 +142,7 @@ int main()
             EventHandler::sunAngle += EventHandler::deltaTime * EventHandler::sunSpeed;
 
             // lightColor = glm::vec3((1.5f + std::sin(glm::radians(sunAngle)) + std::sin(glm::radians(2.f * sunAngle - 90.f))) / 3.5f);
-            EventHandler::lightPos = 200.0f * glm::vec3(std::sin(glm::radians(EventHandler::sunAngle)), 1.f, std::cos(glm::radians(EventHandler::sunAngle)));
+            EventHandler::lightPos = 200.0f * glm::vec3(std::sin(glm::radians(EventHandler::sunAngle)), std::cos(glm::radians(EventHandler::sunAngle)), 1.0f);
 
             // Draw scene, using view and projection matrix for entire scene
             Render::render(scene);

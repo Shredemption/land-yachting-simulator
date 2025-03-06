@@ -18,7 +18,7 @@ float EventHandler::lastTime = 0;
 unsigned int EventHandler::frame = 0;
 
 // Global Light properties
-glm::vec3 EventHandler::lightPos(0.f, 10.f, 3.f);
+glm::vec3 EventHandler::lightPos(0.f, 3.f, 10.f);
 float EventHandler::sunAngle = rand() % 360;
 float EventHandler::sunSpeed = 1.0f;
 glm::vec3 EventHandler::lightCol(1, 1, 1);
@@ -115,30 +115,30 @@ void EventHandler::processInput(GLFWwindow *window)
     // Move cam with WASD, space, shift
     float cameraSpeed = 5.f * deltaTime;
 
-    // Find XZ plane view direction
-    glm::vec3 forwardXZ = Camera::cameraViewDirection;
-    forwardXZ.y = 0.f;
-    forwardXZ = glm::normalize(forwardXZ);
+    // Find XY plane view direction
+    glm::vec3 forwardXY = Camera::cameraViewDirection;
+    forwardXY.z = 0.f;
+    forwardXY = glm::normalize(forwardXY);
 
     // Apply correct movement per button pressed
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        Camera::cameraPosition += cameraSpeed * forwardXZ;
+        Camera::cameraPosition += cameraSpeed * forwardXY;
         Camera::cameraMoved = true;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        Camera::cameraPosition -= cameraSpeed * forwardXZ;
+        Camera::cameraPosition -= cameraSpeed * forwardXY;
         Camera::cameraMoved = true;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        Camera::cameraPosition -= glm::normalize(glm::cross(forwardXZ, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraPosition -= glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
         Camera::cameraMoved = true;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        Camera::cameraPosition += glm::normalize(glm::cross(forwardXZ, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraPosition += glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
         Camera::cameraMoved = true;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)

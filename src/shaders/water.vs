@@ -23,7 +23,7 @@ void main()
 {
     // Apply the transformations to the vertex position
     worldPos = u_model * vec4(position, 1.0);
-    TexCoords = worldPos.xz / tiling;
+    TexCoords = worldPos.xy / tiling;
     projectionPosition = u_projection * u_view * worldPos;
     gl_Position = projectionPosition;
 
