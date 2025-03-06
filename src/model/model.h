@@ -24,8 +24,7 @@ class Model
 {
 public:
     // Model Constructor
-    Model(std::string const &path, std::string shaderName);
-    Model(std::string const &path); // if none passed, use "default"
+    Model(std::string const &path, std::string shaderName = "default");
 
     // Model Destructor
     ~Model();

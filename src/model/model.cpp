@@ -18,10 +18,6 @@ Model::Model(std::string const &path, std::string shaderName)
 {
     loadModel(path, shaderName);
 }
-Model::Model(std::string const &path)
-{
-    loadModel(path, "default");
-}
 
 // Model Destructor
 Model::~Model()
