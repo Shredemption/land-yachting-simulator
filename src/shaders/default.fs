@@ -38,6 +38,4 @@ void main()
     vec3 outputColor = albedo * (ambientLight + 0.5 * diffuse);
 
     FragColor = vec4(outputColor, 1.0);  // Output final color
-
-    // FragColor = vec4(fs_in.color, 0);
 }
