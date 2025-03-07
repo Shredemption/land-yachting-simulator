@@ -52,9 +52,8 @@ void main()
 
             vec4 boneSpacePos = inverseOffset * vec4(aPos, 1.0);
             vec4 transformedPos = boneTransform * boneSpacePos;
-            vec4 globalPos = Offset * transformedPos;
 
-            finalPosition += globalPos * weight;
+            finalPosition += transformedPos * weight;
             finalNormal += transpose(inverse(mat3(boneTransform))) * aNormal * weight; // Use the rotation part of the matrix for normal
         }
     }

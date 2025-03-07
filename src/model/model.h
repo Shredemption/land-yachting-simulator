@@ -54,7 +54,7 @@ public:
     void generateBoneTransforms();
     void generateBoneTransformsRecursive(Bone *bone);
     void updateBoneTransforms();
-    void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform);
+    void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset);
 
 private:
     // Model Loading
