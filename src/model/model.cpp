@@ -494,11 +494,11 @@ void Model::updateBoneTransforms()
     for (auto &rootBone : rootBones)
     {
         // Start recursion from the root bone, with identity matrix for the root's parent transform
-        updateBoneTransformsRecursive(rootBone, glm::mat4(1.0f));
+        updateBoneTransformsRecursive(rootBone, glm::mat4(1.0f), glm::mat4(1.0f));
     }
 }
 
-void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform)
+void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset)
 {
 
     if (bone->index < 0 || bone->index >= boneTransforms.size())
@@ -508,10 +508,17 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
     }
 
     // Compute the global transform of the current bone
-    bone->transform = glm::rotate(glm::mat4(1.0f), glm::radians(EventHandler::time * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    // bone->transform = glm::mat4(1.0f);
+    if (bone->index = 0)
+    {
+        bone->transform = glm::rotate(glm::mat4(1.0f), glm::radians(EventHandler::time * 10.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    }
+    else
+    {
+        bone->transform = glm::mat4(1.0f);
+    }
 
-    boneTransforms[bone->index] = parentTransform * bone->transform;
+    boneTransforms[bone->index] = bone->transform * bone->offsetMatrix;
+    boneTransforms[bone->index] *= parentTransform * parentInverseOffset;
 
     // Recursively update the transforms of the child bones
     for (Bone *child : bone->children)
@@ -520,7 +527,6 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
         {
             continue; // Prevents null pointer access
         }
-        updateBoneTransformsRecursive(child, boneTransforms[bone->index]);
+        updateBoneTransformsRecursive(child, boneTransforms[bone->index], boneInverseOffsets[bone->index]);
     }
 }
-
