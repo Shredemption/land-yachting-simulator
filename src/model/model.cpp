@@ -11,6 +11,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
 std::map<std::string, std::string> Model::modelMap;
@@ -75,7 +76,7 @@ void Model::loadModel(std::string path, std::string shaderName)
     directory = path.substr(0, path.find_last_of('/'));
     processNode(scene->mRootNode, scene, shaderName);
 
-    updateBoneTransforms();
+    generateBoneTransforms();
 }
 
 void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderName, Bone *parentBone)
@@ -209,16 +210,9 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
         aiBone *bone = mesh->mBones[i];
         std::string boneName = bone->mName.C_Str();
 
-        glm::mat4 offsetMatrix;
-        for (int row = 0; row < 4; ++row)
-        {
-            for (int col = 0; col < 4; ++col)
-            {
-                offsetMatrix[row][col] = bone->mOffsetMatrix[row][col]; // Copy the data
-            }
-        }
+        glm::mat4 offsetMatrix = glm::transpose(glm::make_mat4(&bone->mOffsetMatrix.a1));
 
-        boneHierarchy[boneName]->offsetMatrix = glm::transpose(offsetMatrix);
+        boneHierarchy[boneName]->offsetMatrix = glm::inverse(offsetMatrix);
 
         int boneIndex = boneHierarchy[boneName]->index;
 
@@ -454,16 +448,49 @@ unsigned int Model::LoadSkyBoxTexture(SkyBoxData skybox)
     return textureID;
 }
 
-void Model::updateBoneTransforms()
+void Model::generateBoneTransforms()
 {
 
     // Resize if matrix array not large enough
     if (boneTransforms.size() != boneHierarchy.size())
     {
         boneTransforms.resize(boneHierarchy.size(), glm::mat4(1.0f));
+        boneOffsets.resize(boneHierarchy.size(), glm::mat4(1.0f));
         boneInverseOffsets.resize(boneHierarchy.size(), glm::mat4(1.0f));
     }
 
+    for (auto &rootBone : rootBones)
+    {
+        // Start recursion from the root bone, with identity matrix for the root's parent transform
+        generateBoneTransformsRecursive(rootBone);
+    }
+}
+
+void Model::generateBoneTransformsRecursive(Bone *bone)
+{
+
+    if (bone->index < 0 || bone->index >= boneTransforms.size())
+    {
+        std::cerr << "Error: Bone index out of range: " << bone->index << ", with name: " << bone->name << std::endl;
+        return;
+    }
+
+    boneOffsets[bone->index] = bone->offsetMatrix;
+    boneInverseOffsets[bone->index] = glm::inverse(bone->offsetMatrix);
+
+    // Recursively update the transforms of the child bones
+    for (Bone *child : bone->children)
+    {
+        if (!child)
+        {
+            continue; // Prevents null pointer access
+        }
+        generateBoneTransformsRecursive(child);
+    }
+}
+
+void Model::updateBoneTransforms()
+{
     for (auto &rootBone : rootBones)
     {
         // Start recursion from the root bone, with identity matrix for the root's parent transform
@@ -481,13 +508,10 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
     }
 
     // Compute the global transform of the current bone
-    bone->transform = glm::rotate(glm::mat4(1.0f), glm::radians(EventHandler::time), glm::vec3(0.0f, 1.0f, 0.0f));
-    // bone->transform = glm::mat4(1.0f);
+    // bone->transform = glm::rotate(glm::mat4(1.0f), glm::radians(EventHandler::time * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    bone->transform = glm::mat4(1.0f);
 
-    bone->globalTransform = parentTransform * bone->transform;
-
-    boneTransforms[bone->index] = bone->offsetMatrix * bone->globalTransform;
-    boneInverseOffsets[bone->index] = glm::inverse(bone->offsetMatrix);
+    boneTransforms[bone->index] = parentTransform * bone->transform;
 
     // Recursively update the transforms of the child bones
     for (Bone *child : bone->children)
@@ -499,3 +523,4 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
         updateBoneTransformsRecursive(child, boneTransforms[bone->index]);
     }
 }
+

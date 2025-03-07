@@ -28,6 +28,7 @@ public:
 
     std::map<std::string, Bone *> boneHierarchy;
     std::vector<glm::mat4> boneTransforms;
+    std::vector<glm::mat4> boneOffsets;
     std::vector<glm::mat4> boneInverseOffsets;
     std::vector<Bone *> rootBones;
 
@@ -49,7 +50,9 @@ public:
     static unsigned int TextureFromFile(const char *name, const std::string &directory);
 
     static unsigned int LoadSkyBoxTexture(SkyBoxData skybox);
-    
+
+    void generateBoneTransforms();
+    void generateBoneTransformsRecursive(Bone *bone);
     void updateBoneTransforms();
     void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform);
 
