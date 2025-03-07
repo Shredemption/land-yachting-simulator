@@ -508,8 +508,8 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
     }
 
     // Compute the global transform of the current bone
-    // bone->transform = glm::rotate(glm::mat4(1.0f), glm::radians(EventHandler::time * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    bone->transform = glm::mat4(1.0f);
+    bone->transform = glm::rotate(glm::mat4(1.0f), glm::radians(EventHandler::time * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    // bone->transform = glm::mat4(1.0f);
 
     boneTransforms[bone->index] = parentTransform * bone->transform;
 
