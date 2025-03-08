@@ -517,7 +517,7 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
         bone->transform = glm::mat4(1.0f);
     }
 
-    boneTransforms[bone->index] = parentTransform * parentInverseOffset * boneOffsets[bone->index] * bone->transform;=
+    boneTransforms[bone->index] = parentTransform * parentInverseOffset * boneOffsets[bone->index] * bone->transform;
 
     // Recursively update the transforms of the child bones
     for (Bone *child : bone->children)
