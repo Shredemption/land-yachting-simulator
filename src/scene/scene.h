@@ -17,6 +17,7 @@ struct JSONModel
     std::vector<float> rotationAxis = {0, 1, 0};
     std::vector<float> translation = {0, 0, 0};
     std::string shader = "default";
+    std::string animation = "none";
 };
 
 struct JSONUnitPlane
@@ -52,6 +53,7 @@ struct ModelData
     glm::mat4 u_model;
     glm::mat3 u_normal;
     std::string shader;
+    std::string animation;
 };
 
 struct UnitPlaneData

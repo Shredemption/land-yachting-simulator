@@ -31,6 +31,7 @@ public:
     std::vector<glm::mat4> boneOffsets;
     std::vector<glm::mat4> boneInverseOffsets;
     std::vector<Bone *> rootBones;
+    std::string path;
 
     // Model Destructor
     ~Model();
