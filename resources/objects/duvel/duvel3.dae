@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 4.0.2 commit date:2023-12-05, commit time:07:41, hash:9be62e85b727</authoring_tool>
     </contributor>
-    <created>2025-03-08T18:08:07</created>
-    <modified>2025-03-08T18:08:07</modified>
+    <created>2025-03-08T21:10:24</created>
+    <modified>2025-03-08T21:10:24</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -166,7 +166,7 @@
   </library_effects>
   <library_images>
     <image id="diffuse" name="diffuse">
-      <init_from>diffuse.png</init_from>
+      <init_from>/C:/Users/stijn/OneDrive/Documents/Blender/Vampier/duvel-diffuse.png</init_from>
     </image>
   </library_images>
   <library_materials>
@@ -979,7 +979,7 @@
       <skin source="#Circle-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Zeil-skin-joints">
-          <Name_array id="Armature_Zeil-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Zeil-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Zeil-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1018,7 +1018,7 @@
       <skin source="#Cylinder_006-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Mast-staal-skin-joints">
-          <Name_array id="Armature_Mast-staal-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Mast-staal-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Mast-staal-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1057,7 +1057,7 @@
       <skin source="#Cylinder_004-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Mast-skin-joints">
-          <Name_array id="Armature_Mast-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Mast-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Mast-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1096,7 +1096,7 @@
       <skin source="#Cylinder_003-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Velg_002-skin-joints">
-          <Name_array id="Armature_Velg_002-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Velg_002-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Velg_002-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1135,7 +1135,7 @@
       <skin source="#Cylinder_002-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Band-skin-joints">
-          <Name_array id="Armature_Band-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Band-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Band-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1174,7 +1174,7 @@
       <skin source="#Cube_004-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Voorvork-skin-joints">
-          <Name_array id="Armature_Voorvork-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Voorvork-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Voorvork-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1213,7 +1213,7 @@
       <skin source="#Cylinder-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Band_002-skin-joints">
-          <Name_array id="Armature_Band_002-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Band_002-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Band_002-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1252,7 +1252,7 @@
       <skin source="#Cube-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Velg-skin-joints">
-          <Name_array id="Armature_Velg-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Velg-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Velg-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1291,7 +1291,7 @@
       <skin source="#Cube_006-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Velg_001-skin-joints">
-          <Name_array id="Armature_Velg_001-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Velg_001-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Velg_001-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1330,7 +1330,7 @@
       <skin source="#Cylinder_001-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Band_001-skin-joints">
-          <Name_array id="Armature_Band_001-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Band_001-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Band_001-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1369,7 +1369,7 @@
       <skin source="#Cube_007-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Giek_staal-skin-joints">
-          <Name_array id="Armature_Giek_staal-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Giek_staal-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Giek_staal-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1408,7 +1408,7 @@
       <skin source="#Cube_005-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Giek-skin-joints">
-          <Name_array id="Armature_Giek-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Giek-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Giek-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1447,7 +1447,7 @@
       <skin source="#Cylinder_005-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Mastpin-skin-joints">
-          <Name_array id="Armature_Mastpin-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Mastpin-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Mastpin-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1486,7 +1486,7 @@
       <skin source="#Cube_002-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Cube_001-skin-joints">
-          <Name_array id="Armature_Cube_001-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Cube_001-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Cube_001-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1525,7 +1525,7 @@
       <skin source="#Cube_003-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Cube-skin-joints">
-          <Name_array id="Armature_Cube-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Cube-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Cube-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1564,7 +1564,7 @@
       <skin source="#Plane_003-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Rugsteun-skin-joints">
-          <Name_array id="Armature_Rugsteun-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Rugsteun-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Rugsteun-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1603,7 +1603,7 @@
       <skin source="#Plane_002-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Voorloper-skin-joints">
-          <Name_array id="Armature_Voorloper-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Voorloper-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Voorloper-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1642,7 +1642,7 @@
       <skin source="#Plane_001-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Achterloper-skin-joints">
-          <Name_array id="Armature_Achterloper-skin-joints-array" count="3">Body Mast Giek</Name_array>
+          <Name_array id="Armature_Achterloper-skin-joints-array" count="3">Body Mast Boom</Name_array>
           <technique_common>
             <accessor source="#Armature_Achterloper-skin-joints-array" count="3" stride="1">
               <param name="JOINT" type="name"/>
@@ -1681,7 +1681,7 @@
       <skin source="#Plane-mesh">
         <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>
         <source id="Armature_Body-skin-joints">
-          <Name_array id="Armature_Body-skin-joints-array" count="7">Body Mast Giek Voorvork Voorwiel Wiel_L Wiel_R</Name_array>
+          <Name_array id="Armature_Body-skin-joints-array" count="7">Body Mast Boom Fork Wheel_Front Wheel_Left Wheel_Right</Name_array>
           <technique_common>
             <accessor source="#Armature_Body-skin-joints-array" count="7" stride="1">
               <param name="JOINT" type="name"/>
@@ -1725,7 +1725,7 @@
           <matrix sid="transform">1 1.16536e-15 1.50996e-7 0 -1.16536e-15 -1 1.54356e-8 1.049103 1.50996e-7 -1.54356e-8 -1 -0.0110479 0 0 0 1</matrix>
           <node id="Armature_Mast" name="Mast" sid="Mast" type="JOINT">
             <matrix sid="transform">1 1.43559e-7 4.01634e-11 -0.007866094 4.45126e-8 -0.3103297 0.950629 1.673586 1.36484e-7 -0.950629 -0.3103297 -0.3336463 0 0 0 1</matrix>
-            <node id="Armature_Giek" name="Giek" sid="Giek" type="JOINT">
+            <node id="Armature_Boom" name="Boom" sid="Boom" type="JOINT">
               <matrix sid="transform">1 -4.43307e-8 -1.39808e-11 0.007866139 1.3994e-8 0.3153729 0.9489678 0.6589913 -4.2064e-8 -0.9489678 0.3153729 -0.1113897 0 0 0 1</matrix>
               <extra>
                 <technique profile="blender">
@@ -1747,9 +1747,9 @@
               </technique>
             </extra>
           </node>
-          <node id="Armature_Voorvork" name="Voorvork" sid="Voorvork" type="JOINT">
+          <node id="Armature_Fork" name="Fork" sid="Fork" type="JOINT">
             <matrix sid="transform">1 -1.0677e-7 -2.38419e-7 0 -9.30895e-8 0.7071069 -0.7071066 3.861506 2.44085e-7 0.7071066 0.7071069 3.61041e-10 0 0 0 1</matrix>
-            <node id="Armature_Voorwiel" name="Voorwiel" sid="Voorwiel" type="JOINT">
+            <node id="Armature_Wheel_Front" name="Wheel_Front" sid="Wheel_Front" type="JOINT">
               <matrix sid="transform">3.55271e-14 1 1.31648e-7 0 -0.9999999 7.10542e-15 4.17233e-7 0.4699857 4.17233e-7 -1.31648e-7 0.9999999 0 0 0 0 1</matrix>
               <extra>
                 <technique profile="blender">
@@ -1770,7 +1770,7 @@
               </technique>
             </extra>
           </node>
-          <node id="Armature_Wiel_L" name="Wiel.L" sid="Wiel_L" type="JOINT">
+          <node id="Armature_Wheel_Left" name="Wheel_Left" sid="Wheel_Left" type="JOINT">
             <matrix sid="transform">-1.52994e-7 0.9999999 0 1.85074 9.92688e-9 0 1 -0.02101612 1 1.52994e-7 -9.92688e-9 0.02010684 0 0 0 1</matrix>
             <extra>
               <technique profile="blender">
@@ -1782,7 +1782,7 @@
               </technique>
             </extra>
           </node>
-          <node id="Armature_Wiel_R" name="Wiel.R" sid="Wiel_R" type="JOINT">
+          <node id="Armature_Wheel_Right" name="Wheel_Right" sid="Wheel_Right" type="JOINT">
             <matrix sid="transform">1.52994e-7 -1 -2.84217e-14 -1.85074 2.80132e-7 0 1 -0.02101612 -1 -1.52994e-7 2.80132e-7 0.02010628 0 0 0 1</matrix>
             <extra>
               <technique profile="blender">
@@ -2065,7 +2065,7 @@
         <instance_light url="#Area_001-light"/>
       </node>
       <node id="Area" name="Area" type="NODE">
-        <matrix sid="transform">0.8291788 0.1265135 -0.5444785 -3.020164 0.1559093 0.8830535 0.4426158 2.306859 0.5368006 -0.4518969 0.7124847 3.849109 0 0 0 1</matrix>
+        <matrix sid="transform">0.8291788 0.1265135 -0.5444785 -3.000164 0.1559093 0.8830535 0.4426158 2.306859 0.5368006 -0.4518969 0.7124847 3.849109 0 0 0 1</matrix>
         <instance_light url="#Area-light"/>
       </node>
       <node id="Camera" name="Camera" type="NODE">
