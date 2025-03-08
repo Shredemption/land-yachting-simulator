@@ -15,6 +15,7 @@
 #include "event_handler/event_handler.h"
 #include "render/render.h"
 #include "camera/camera.h"
+#include "animation/animation.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -143,6 +144,9 @@ int main()
 
             // lightColor = glm::vec3((1.5f + std::sin(glm::radians(sunAngle)) + std::sin(glm::radians(2.f * sunAngle - 90.f))) / 3.5f);
             EventHandler::lightPos = 200.0f * glm::vec3(std::cos(glm::radians(EventHandler::sunAngle)), std::sin(glm::radians(EventHandler::sunAngle)), 1.0f);
+
+            // Update bone animations
+            Animation::updateBones(scene);
 
             // Draw scene, using view and projection matrix for entire scene
             Render::render(scene);
