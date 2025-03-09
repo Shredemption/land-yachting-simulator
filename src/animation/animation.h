@@ -1,3 +1,6 @@
+#ifndef ANIMATION_H
+#define ANIMATION_H
+
 #include <unordered_map>
 #include <iostream>
 
@@ -10,3 +13,5 @@ public:
     static void generateYachtBones(Model *model);
     static std::unordered_map<std::string, std::map<std::string, int>> yachtBoneMap;
 };
+
+#endif

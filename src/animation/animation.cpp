@@ -8,7 +8,7 @@ void Animation::updateBones(Scene &scene)
 {
     for (auto ModelData : scene.structModels)
     {
-        if (ModelData.animation == "yacht_generated")
+        if (ModelData.type == "yacht_controlled")
         {
             generateYachtBones(ModelData.model);
         };

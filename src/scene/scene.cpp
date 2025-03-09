@@ -12,7 +12,7 @@
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
 
-JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animation);
+JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, type);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 0, up, down, left, right, front, back);
 JSONCONS_N_MEMBER_TRAITS(JSONScene, 1, models, unitPlanes, skyBox);
@@ -94,7 +94,7 @@ void Scene::loadModelToScene(JSONModel model)
 
     loadModel.shader = model.shader;
 
-    loadModel.animation = model.animation;
+    loadModel.type = model.type;
 
     structModels.push_back(loadModel);
 }
