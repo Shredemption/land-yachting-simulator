@@ -17,7 +17,7 @@ struct JSONModel
     std::vector<float> rotationAxis = {0, 1, 0};
     std::vector<float> translation = {0, 0, 0};
     std::string shader = "default";
-    std::string animation = "none";
+    std::string type = "none";
 };
 
 struct JSONUnitPlane
@@ -47,13 +47,16 @@ struct JSONScene
     JSONSkybox skyBox = JSONSkybox();
 };
 
+class Physics;
+
 struct ModelData
 {
     Model *model;
     glm::mat4 u_model;
     glm::mat3 u_normal;
     std::string shader;
-    std::string animation;
+    std::string type;
+    std::vector<Physics *> physics;
 };
 
 struct UnitPlaneData

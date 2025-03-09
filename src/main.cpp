@@ -16,6 +16,7 @@
 #include "render/render.h"
 #include "camera/camera.h"
 #include "animation/animation.h"
+#include "physics/physics.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -70,6 +71,9 @@ int main()
 
     // Import JSON file scene
     Scene scene = Scene("resources/scenes/testing.json");
+
+    // Generate physics properties for relevant models
+    Physics::setup(scene);
 
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -144,6 +148,9 @@ int main()
 
             // lightColor = glm::vec3((1.5f + std::sin(glm::radians(sunAngle)) + std::sin(glm::radians(2.f * sunAngle - 90.f))) / 3.5f);
             EventHandler::lightPos = 200.0f * glm::vec3(std::cos(glm::radians(EventHandler::sunAngle)), std::sin(glm::radians(EventHandler::sunAngle)), 1.0f);
+
+            // Update physics entry for relevant models in scene
+            Physics::update(scene);
 
             // Update bone animations
             Animation::updateBones(scene);
