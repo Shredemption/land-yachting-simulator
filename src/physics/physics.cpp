@@ -11,6 +11,7 @@ Physics::Physics()
 {
     baseTransform = glm::mat4(1.0f);
     steeringAngle = 0.0f;
+    steeringChange = 0.0f;
     sailAngle = 0.0f;
     forwardVelocity = 0.0f;
     forwardAcceleration = 0.0f;
@@ -41,17 +42,28 @@ void Physics::update(Scene &scene)
 void Physics::move()
 {
     forwardAcceleration = 0.0f;
+    steeringChange = 0.0f;
 
     if (keyInputs[0])
     {
-        forwardAcceleration += 0.5f;
+        forwardAcceleration += 2.f;
     }
     if (keyInputs[1])
     {
-        forwardAcceleration -= 0.5f;
+        forwardAcceleration -= 2.f;
+    }
+    if (keyInputs[2])
+    {
+        steeringChange += 10.f;
+    }
+    if (keyInputs[3])
+    {
+        steeringChange -= 10.f;
     }
 
     forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
+    steeringAngle += steeringChange * EventHandler::deltaTime;
 
+    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(steeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
     baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
 }

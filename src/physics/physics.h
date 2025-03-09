@@ -18,6 +18,7 @@ public:
 
     glm::mat4 baseTransform;
     float steeringAngle;
+    float steeringChange;
     float sailAngle;
     float forwardVelocity;
     float forwardAcceleration;
