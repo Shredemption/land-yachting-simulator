@@ -10,14 +10,18 @@ class Physics
 public:
     Physics();
 
-    glm::vec3 windDirection;
+    static glm::vec3 windDirection;
     static void setup(Scene &scene);
     static void update(Scene &scene);
+
+    static bool keyInputs[4];
 
 private:
     glm::mat4 baseTransform;
     float steeringAngle;
     float sailAngle;
+    float forwardVelocity;
+    float forwardAcceleration;
     void move();
 };
 

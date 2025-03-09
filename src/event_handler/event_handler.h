@@ -1,7 +1,12 @@
 #ifndef EVENT_HANDLER_H
 #define EVENT_HANDLER_H
 
+#ifndef __glad_h_
+#include <glad/glad.h>
+#endif
+
 #include <GLFW/glfw3.h>
+
 #include <glm/glm.hpp>
 
 class EventHandler

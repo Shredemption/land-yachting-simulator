@@ -2,11 +2,16 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+bool Physics::keyInputs[4];
+glm::vec3 Physics::windDirection = glm::vec3(1.0f, 0.0f, 0.0f);
+
 Physics::Physics()
 {
     baseTransform = glm::mat4(1.0f);
     steeringAngle = 0.0f;
     sailAngle = 0.0f;
+    forwardVelocity = 0.0f;
+    forwardAcceleration = 0.0f;
 }
 
 void Physics::setup(Scene &scene)
@@ -33,5 +38,5 @@ void Physics::update(Scene &scene)
 
 void Physics::move()
 {
-    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.0f, 0.0f));
+    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(forwardVelocity, 0.0f, 0.0f));
 }
