@@ -16,12 +16,13 @@ public:
 
     static bool keyInputs[4];
 
-private:
     glm::mat4 baseTransform;
     float steeringAngle;
     float sailAngle;
     float forwardVelocity;
     float forwardAcceleration;
+    
+private:
     void move();
 };
 
