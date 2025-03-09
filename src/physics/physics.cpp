@@ -1,5 +1,7 @@
 #include <physics/physics.h>
 
+#include <event_handler/event_handler.h>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 bool Physics::keyInputs[4];
@@ -38,5 +40,18 @@ void Physics::update(Scene &scene)
 
 void Physics::move()
 {
-    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(forwardVelocity, 0.0f, 0.0f));
+    forwardAcceleration = 0.0f;
+
+    if (keyInputs[0])
+    {
+        forwardAcceleration += 0.5f;
+    }
+    if (keyInputs[1])
+    {
+        forwardAcceleration -= 0.5f;
+    }
+
+    forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
+
+    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
 }
