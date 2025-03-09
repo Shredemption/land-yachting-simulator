@@ -1,5 +1,7 @@
 #include <event_handler/event_handler.h>
 
+#include <physics/physics.h>
+
 #include <iostream>
 #include <camera/camera.h>
 
@@ -33,7 +35,7 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
-    // Toggle fullscreen on
+    // Toggle fullscreen on F12
     if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
     {
         if (fullscreen)
@@ -150,6 +152,30 @@ void EventHandler::processInput(GLFWwindow *window)
     {
         Camera::cameraPosition -= cameraSpeed * Camera::worldUp;
         Camera::cameraMoved = true;
+    }
+
+    // Physics Keys
+    // Set all keyspresses to false
+    for (auto &key : Physics::keyInputs)
+    {
+        key = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        Physics::keyInputs[0] = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        Physics::keyInputs[1] = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        Physics::keyInputs[2] = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        Physics::keyInputs[3] = true;
     }
 }
 

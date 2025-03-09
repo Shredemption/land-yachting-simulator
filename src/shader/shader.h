@@ -5,8 +5,11 @@
 #include <string>
 #include <unordered_map>
 
+#ifndef __glad_h_
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#endif
+
 #include <glm/glm.hpp>
 #include <vector>
 
