@@ -94,18 +94,13 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
         Camera::cameraMoved = true;
 
         // Update yaw and pitch
-        Camera::yaw += glm::radians(xPos); // Convert to radians
-        Camera::pitch += glm::radians(yPos);
-        // roll += 0;
+        if (Camera::freeCam)
+        {
+            Camera::yawFree += glm::radians(xPos); // Convert to radians
+            Camera::pitchFree += glm::radians(yPos);
 
-        // Clamp the pitch to prevent flipping
-        if (Camera::pitch > glm::radians(85.0f)) // Maximum upward angle
-            Camera::pitch = glm::radians(85.0f);
-        if (Camera::pitch < glm::radians(-85.0f)) // Maximum downward angle
-            Camera::pitch = glm::radians(-85.0f);
-
-        // Generate new direction vector(s)
-        Camera::setCamDirection();
+            Camera::pitchFree = std::clamp(Camera::pitchFree, -90.0f, 90.0f);
+        }
 
         // Reset mouse to 0,0
         glfwSetCursorPos(window, 0, 0);
@@ -123,34 +118,34 @@ void EventHandler::processInput(GLFWwindow *window)
     forwardXY = glm::normalize(forwardXY);
 
     // Apply correct movement per button pressed
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && Camera::freeCam)
     {
-        Camera::cameraPosition += cameraSpeed * forwardXY;
+        Camera::cameraPositionFree += cameraSpeed * forwardXY;
         Camera::cameraMoved = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && Camera::freeCam)
     {
-        Camera::cameraPosition -= cameraSpeed * forwardXY;
+        Camera::cameraPositionFree -= cameraSpeed * forwardXY;
         Camera::cameraMoved = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && Camera::freeCam)
     {
-        Camera::cameraPosition -= glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraPositionFree -= glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
         Camera::cameraMoved = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && Camera::freeCam)
     {
-        Camera::cameraPosition += glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraPositionFree += glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
         Camera::cameraMoved = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && Camera::freeCam)
     {
-        Camera::cameraPosition += cameraSpeed * Camera::worldUp;
+        Camera::cameraPositionFree += cameraSpeed * Camera::worldUp;
         Camera::cameraMoved = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && Camera::freeCam)
     {
-        Camera::cameraPosition -= cameraSpeed * Camera::worldUp;
+        Camera::cameraPositionFree -= cameraSpeed * Camera::worldUp;
         Camera::cameraMoved = true;
     }
 
