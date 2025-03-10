@@ -6,8 +6,10 @@
 // Global Camera Variables
 glm::vec3 Camera::worldUp(0.f, 0.f, 1.f);             // World up direction
 glm::vec3 Camera::cameraPositionFree(0.f, -5.f, 0.f); // Camera placed
+glm::vec3 Camera::cameraPosition(0.f, 0.f, 0.f);
 float Camera::yawFree = 0, Camera::pitchFree = 0, Camera::rollFree = 0;
 float Camera::yaw = 0, Camera::pitch = 0, Camera::roll = 0;
+float Camera::yawOffset = 0, Camera::pitchOffset = 0, Camera::rollOffset = 0;
 glm::vec3 Camera::cameraViewDirection(0.0f, 1.0f, 0.0f);
 glm::vec3 Camera::cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
 glm::vec3 Camera::cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight));
@@ -16,6 +18,7 @@ glm::mat4 Camera::u_projection;
 
 bool Camera::cameraMoved = true;
 bool Camera::freeCam = true;
+bool Camera::toggled = false;
 
 void Camera::update()
 {
@@ -60,6 +63,10 @@ glm::vec3 Camera::getPos()
     {
         return cameraPositionFree;
     }
+    else
+    {
+        return cameraPosition;
+    }
 
     return glm::vec3(0.0f);
 }
@@ -70,6 +77,10 @@ glm::vec3 Camera::getRotation()
     {
         return glm::vec3(pitchFree, yawFree, rollFree);
     }
+    else
+    {
+        return glm::vec3(pitch + pitchOffset, yaw + yawOffset, roll + rollOffset);
+    }
 
-    return glm::vec3(0.0f,0.0f,0.0f);
+    return glm::vec3(0.0f, 0.0f, 0.0f);
 }
