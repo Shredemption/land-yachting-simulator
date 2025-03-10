@@ -11,6 +11,10 @@ public:
     Physics(ModelData &ModelData);
 
     static glm::vec3 windDirection;
+    static float windStrength;
+    static float airDensity;
+    static float g;
+
     static void setup(Scene &scene);
     static void update(Scene &scene);
 
@@ -28,7 +32,15 @@ public:
     float targetMastAngle = 0.0f;
     float BoomAngle = 0.0f;
     float targetBoomAngle = 0.0f;
+
     float angleToWind = 0.0f;
+    float maxLiftCoefficient;
+    float minDragCoefficient;
+    float rollCoefficient;
+    float sailArea;
+    float mass;
+    float bodyDragCoefficient;
+    float bodyArea;
     
 private:
     void move();
