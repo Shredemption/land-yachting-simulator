@@ -7,9 +7,10 @@ class Camera
 {
 public:
     // Global Camera Variables
-    static glm::vec3 worldUp, cameraPositionFree, cameraViewDirection, cameraRight, cameraUp;
+    static glm::vec3 worldUp, cameraPositionFree, cameraPosition, cameraViewDirection, cameraRight, cameraUp;
     static float yawFree, pitchFree, rollFree;
     static float yaw, pitch, roll;
+    static float yawOffset, pitchOffset, rollOffset;
 
     static glm::mat4 u_view;
     static glm::mat4 u_projection;
@@ -20,6 +21,7 @@ public:
     static void genProjectionMatrix();
     static bool cameraMoved;
     static bool freeCam;
+    static bool toggled;
 
     static glm::vec3 getPos();
     static glm::vec3 getRotation();

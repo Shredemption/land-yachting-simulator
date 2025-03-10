@@ -99,7 +99,15 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
             Camera::yawFree += glm::radians(xPos); // Convert to radians
             Camera::pitchFree += glm::radians(yPos);
 
-            Camera::pitchFree = std::clamp(Camera::pitchFree, -90.0f, 90.0f);
+            Camera::pitchFree = std::clamp(Camera::pitchFree, glm::radians(-90.0f), glm::radians(90.0f));
+        }
+        else
+        {
+            Camera::yawOffset += glm::radians(xPos); // Convert to radians
+            Camera::pitchOffset += glm::radians(yPos);
+
+            Camera::yawOffset = std::clamp(Camera::yawOffset, glm::radians(-100.0f), glm::radians(100.0f));
+            Camera::pitchOffset = std::clamp(Camera::pitchOffset, glm::radians(-45.0f), glm::radians(60.0f));
         }
 
         // Reset mouse to 0,0
@@ -147,6 +155,30 @@ void EventHandler::processInput(GLFWwindow *window)
     {
         Camera::cameraPositionFree -= cameraSpeed * Camera::worldUp;
         Camera::cameraMoved = true;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    {
+        if (Camera::toggled)
+        {
+            return;
+        }
+
+        if (Camera::freeCam)
+        {
+            Camera::freeCam = false;
+        }
+        else
+        {
+            Camera::freeCam = true;
+        }
+
+        Camera::toggled = true;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE)
+    {
+        Camera::toggled = false;
     }
 
     // Physics Keys

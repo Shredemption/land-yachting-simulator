@@ -1,7 +1,8 @@
 #include <animation/animation.h>
 
-#include <physics/physics.h>
-#include <event_handler/event_handler.h>
+#include "physics/physics.h"
+#include "event_handler/event_handler.h"
+#include "camera/camera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -42,4 +43,7 @@ void Animation::generateYachtBones(ModelData &ModelData)
     model->boneHierarchy["Armature_Body"]->transform = physics->baseTransform;
 
     model->updateBoneTransforms();
+
+    Camera::cameraPosition = (model->boneTransforms[model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
+    Camera::yaw = atan2(physics->baseTransform[0][1], physics->baseTransform[1][1]) + M_PI;
 };
