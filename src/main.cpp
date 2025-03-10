@@ -140,8 +140,7 @@ int main()
             EventHandler::processInput(window);
 
             // Gen render matrices
-            Camera::genViewMatrix();
-            Camera::genProjectionMatrix();
+            Camera::update();
 
             // Sun/moon lighting
             EventHandler::sunAngle += EventHandler::deltaTime * EventHandler::sunSpeed;

@@ -4,8 +4,9 @@
 #include <event_handler/event_handler.h>
 
 // Global Camera Variables
-glm::vec3 Camera::worldUp(0.f, 0.f, 1.f);         // World up direction
-glm::vec3 Camera::cameraPosition(0.f, -5.f, 0.f); // Camera placed
+glm::vec3 Camera::worldUp(0.f, 0.f, 1.f);             // World up direction
+glm::vec3 Camera::cameraPositionFree(0.f, -5.f, 0.f); // Camera placed
+float Camera::yawFree = 0, Camera::pitchFree = 0, Camera::rollFree = 0;
 float Camera::yaw = 0, Camera::pitch = 0, Camera::roll = 0;
 glm::vec3 Camera::cameraViewDirection(0.0f, 1.0f, 0.0f);
 glm::vec3 Camera::cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
@@ -14,12 +15,24 @@ glm::mat4 Camera::u_view;
 glm::mat4 Camera::u_projection;
 
 bool Camera::cameraMoved = true;
+bool Camera::freeCam = true;
 
-void Camera::setCamDirection()
+void Camera::update()
 {
-    cameraViewDirection = glm::normalize(glm::vec3(cos(-pitch) * sin(yaw),
-                                                   cos(-pitch) * cos(yaw),
-                                                   sin(-pitch)));
+    setCamDirection(getRotation());
+    genProjectionMatrix();
+    genViewMatrix(getPos());
+}
+
+void Camera::setCamDirection(glm::vec3 rotation)
+{
+    float p = rotation[0];
+    float y = rotation[1];
+    float r = rotation[2];
+
+    cameraViewDirection = glm::normalize(glm::vec3(cos(-p) * sin(y),
+                                                   cos(-p) * cos(y),
+                                                   sin(-p)));
 }
 
 // Projection Matrix
@@ -33,10 +46,30 @@ void Camera::genProjectionMatrix()
 }
 
 // View matrix
-void Camera::genViewMatrix()
+void Camera::genViewMatrix(glm::vec3 position)
 {
-    u_view = glm::lookAt(cameraPosition,                       // Camera Position
-                         cameraPosition + cameraViewDirection, // Target Position
-                         cameraUp                              // Up vector
+    u_view = glm::lookAt(position,                       // Camera Position
+                         position + cameraViewDirection, // Target Position
+                         cameraUp                        // Up vector
     );
+}
+
+glm::vec3 Camera::getPos()
+{
+    if (freeCam)
+    {
+        return cameraPositionFree;
+    }
+
+    return glm::vec3(0.0f);
+}
+
+glm::vec3 Camera::getRotation()
+{
+    if (freeCam)
+    {
+        return glm::vec3(pitchFree, yawFree, rollFree);
+    }
+
+    return glm::vec3(0.0f,0.0f,0.0f);
 }
