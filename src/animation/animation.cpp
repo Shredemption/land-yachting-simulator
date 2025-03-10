@@ -4,7 +4,6 @@
 #include <event_handler/event_handler.h>
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/vector_angle.hpp>
 
 float wheelAngle;
 
@@ -32,16 +31,13 @@ void Animation::generateYachtBones(ModelData &ModelData)
 
     wheelAngle += physics->forwardVelocity * EventHandler::deltaTime * 100;
 
-    glm::vec3 direction = glm::vec3(physics->baseTransform[0]);
-
-    float angleToWind = glm::orientedAngle(direction, physics->windDirection, glm::vec3(0, 0, 1));
-    std::cout << angleToWind << std::endl;
-
     model->boneHierarchy["Armature_Fork"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(physics->steeringAngle * 2), glm::vec3(0.0f, -1.0f, 0.0f));
     model->boneHierarchy["Armature_Wheel_Front"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(wheelAngle), glm::vec3(0.0f, 1.0f, 0.0f));
     model->boneHierarchy["Armature_Wheel_Left"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(wheelAngle), glm::vec3(0.0f, 1.0f, 0.0f));
     model->boneHierarchy["Armature_Wheel_Right"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(-wheelAngle), glm::vec3(0.0f, 1.0f, 0.0f));
-    model->boneHierarchy["Armature_Mast"]->transform = glm::rotate(glm::mat4(1.0f), angleToWind, glm::vec3(0.0f, -1.0f, 0.0f));
+
+    model->boneHierarchy["Armature_Mast"]->transform = glm::rotate(glm::mat4(1.0f), physics->MastAngle, glm::vec3(0.0f, -1.0f, 0.0f));
+    model->boneHierarchy["Armature_Boom"]->transform = glm::rotate(glm::mat4(1.0f), physics->BoomAngle, glm::vec3(0.0f, 0.0f, -1.0f));
 
     model->boneHierarchy["Armature_Body"]->transform = physics->baseTransform;
 
