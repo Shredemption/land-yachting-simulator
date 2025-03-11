@@ -18,7 +18,6 @@ glm::mat4 Camera::u_projection;
 
 bool Camera::cameraMoved = true;
 bool Camera::freeCam = true;
-bool Camera::toggled = false;
 
 void Camera::update()
 {
