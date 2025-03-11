@@ -60,7 +60,7 @@ void Physics::move()
 
     if (keyInputs[0])
     {
-        sailControlFactor += 1f * EventHandler::deltaTime;
+        sailControlFactor += 1.f * EventHandler::deltaTime;
     }
     if (keyInputs[1])
     {
