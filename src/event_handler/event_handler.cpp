@@ -35,8 +35,8 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
-    // Toggle fullscreen on F12
-    if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
+    // Toggle fullscreen on F11
+    if (key == GLFW_KEY_F11 && action == GLFW_PRESS)
     {
         if (fullscreen)
         {
@@ -60,6 +60,19 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
 
             fullscreen = !fullscreen;
+        }
+    }
+
+    // Toggle Freecam
+    if (key == GLFW_KEY_C && action == GLFW_PRESS)
+    {
+        if (Camera::freeCam)
+        {
+            Camera::freeCam = false;
+        }
+        else
+        {
+            Camera::freeCam = true;
         }
     }
 }
@@ -155,30 +168,6 @@ void EventHandler::processInput(GLFWwindow *window)
     {
         Camera::cameraPositionFree -= cameraSpeed * Camera::worldUp;
         Camera::cameraMoved = true;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-    {
-        if (Camera::toggled)
-        {
-            return;
-        }
-
-        if (Camera::freeCam)
-        {
-            Camera::freeCam = false;
-        }
-        else
-        {
-            Camera::freeCam = true;
-        }
-
-        Camera::toggled = true;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE)
-    {
-        Camera::toggled = false;
     }
 
     // Physics Keys

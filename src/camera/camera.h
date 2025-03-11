@@ -21,7 +21,6 @@ public:
     static void genProjectionMatrix();
     static bool cameraMoved;
     static bool freeCam;
-    static bool toggled;
 
     static glm::vec3 getPos();
     static glm::vec3 getRotation();
