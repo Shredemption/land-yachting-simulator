@@ -204,6 +204,10 @@ void EventHandler::processInput(GLFWwindow *window)
     {
         Physics::keyInputs[3] = true;
     }
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    {
+        Physics::keyInputs[4] = true;
+    }
 }
 
 void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int height)

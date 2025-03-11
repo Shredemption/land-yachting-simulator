@@ -18,7 +18,7 @@ public:
     static void setup(Scene &scene);
     static void update(Scene &scene);
 
-    static bool keyInputs[4];
+    static bool keyInputs[5];
 
     glm::mat4 baseTransform;
     float steeringAngle = 0.0f;
@@ -32,6 +32,7 @@ public:
     float targetMastAngle = 0.0f;
     float BoomAngle = 0.0f;
     float targetBoomAngle = 0.0f;
+    float sailControlFactor;
 
     float angleToWind = 0.0f;
     float maxLiftCoefficient;
@@ -41,7 +42,7 @@ public:
     float mass;
     float bodyDragCoefficient;
     float bodyArea;
-    
+
 private:
     void move();
 };

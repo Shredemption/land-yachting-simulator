@@ -5,10 +5,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-bool Physics::keyInputs[4];
+bool Physics::keyInputs[5];
 glm::vec3 Physics::windDirection = glm::vec3(1.0f, 0.0f, 0.0f);
-float Physics::windStrength = 5;
-float Physics::airDensity = 1.2;
+float Physics::windStrength = 10;
+float Physics::airDensity = 1.225;
 float Physics::g = 9.81;
 
 Physics::Physics(ModelData &ModelData)
@@ -19,12 +19,13 @@ Physics::Physics(ModelData &ModelData)
     {
         maxMastAngle = glm::radians(30.0f);
         maxBoomAngle = glm::radians(90.0f);
-        maxLiftCoefficient = 1.2;
+        sailControlFactor = 1.0f;
+        maxLiftCoefficient = 1.3;
         minDragCoefficient = 0.1;
-        sailArea = 5;
-        rollCoefficient = 0.05;
-        mass = 50;
-        bodyDragCoefficient = 0.5;
+        sailArea = 6;
+        rollCoefficient = 0.01;
+        mass = 150;
+        bodyDragCoefficient = 0.3;
         bodyArea = 1;
     }
 }
@@ -59,11 +60,11 @@ void Physics::move()
 
     if (keyInputs[0])
     {
-        forwardAcceleration += 2.f;
+        sailControlFactor += 1f * EventHandler::deltaTime;
     }
     if (keyInputs[1])
     {
-        forwardAcceleration -= 2.f;
+        sailControlFactor -= 0.4f * EventHandler::deltaTime;
     }
     if (keyInputs[2])
     {
@@ -73,13 +74,19 @@ void Physics::move()
     {
         steeringChange -= 10.f;
     }
+    if (keyInputs[4])
+    {
+        forwardAcceleration += 2.f;
+    }
+
+    sailControlFactor = std::clamp(sailControlFactor, 0.0f, 1.0f);
 
     // Find new angles for sail
     glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[0]));
     angleToWind = glm::orientedAngle(direction, windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    targetMastAngle = std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
-    targetBoomAngle = std::clamp(angleToWind, -maxBoomAngle + maxMastAngle, maxBoomAngle - maxMastAngle);
+    targetMastAngle = sailControlFactor * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
+    targetBoomAngle = sailControlFactor * std::clamp(angleToWind, -maxBoomAngle + maxMastAngle, maxBoomAngle - maxMastAngle);
 
     float smoothingFactor = 0.05f;
 
@@ -96,15 +103,18 @@ void Physics::move()
     glm::vec3 liftDirection = glm::vec3(-apparentWindDirection[1], apparentWindDirection[0], 0.0f);
 
     float sailDragForce;
-    if (abs(relativeSailAngle) < 0.1f) {
+    if (abs(relativeSailAngle) < 0.1f)
+    {
         sailDragForce = 0.0f; // No drag when sail and wind are aligned
-    } else {
+    }
+    else
+    {
         sailDragForce = 0.5 * airDensity * (minDragCoefficient + (1 - minDragCoefficient) * abs(cos(relativeSailAngle))) * sailArea * apparentWindSpeed * apparentWindSpeed;
     }
 
     float bodyDragForce = 0.5 * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
-    float resistanceForce = rollCoefficient * mass * g * forwardVelocity;
+    float resistanceForce = rollCoefficient * mass * g * forwardVelocity * forwardVelocity;
     float F_forward = liftForce * glm::dot(liftDirection, direction);
     float F_backward = sailDragForce * glm::dot(apparentWindDirection, direction) + resistanceForce;
 
