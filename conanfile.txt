@@ -6,6 +6,7 @@ glad/0.1.36
 assimp/5.4.3
 stb/cci.20230920
 jsoncons/0.178.0
+imgui/1.89.9
 
 [generators]
 CMakeToolchain
