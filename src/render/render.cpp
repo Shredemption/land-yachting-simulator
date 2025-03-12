@@ -12,6 +12,7 @@ float Render::quadVertices[] = {0};
 float Render::waterHeight = -0.5;
 
 bool Render::WaterPass = true;
+bool Render::debugMenu = false;
 
 FT_Library Render::ft;
 FT_Face Render::face;
@@ -65,7 +66,10 @@ void Render::render(Scene &scene)
     // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
     // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
 
-    renderText("Test text\nMultiline", 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+    if (debugMenu)
+    {
+        renderText("Test text\nMultiline", 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+    }
 
     Camera::cameraMoved = false;
 }
@@ -535,14 +539,14 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    float startX = x; // Store the initial x position
+    float startX = x;                                          // Store the initial x position
     float lineSpacing = Characters['H'].Size.y * scale * 1.2f; // Adjust line spacing with a small padding
 
     for (char c : text)
     {
         if (c == '\n')
         {
-            x = startX; // Reset x to the start of the line
+            x = startX;       // Reset x to the start of the line
             y += lineSpacing; // Move y down by the height of a character plus padding
             continue;
         }
@@ -561,9 +565,9 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
             {xpos + w, ypos, ch.TexCoords.x + ch.TexCoords.z, ch.TexCoords.y}, // Top-right
             {xpos, ypos, ch.TexCoords.x, ch.TexCoords.y},                      // Top-left
 
-            {xpos, ypos + h, ch.TexCoords.x, ch.TexCoords.y + ch.TexCoords.w}, // Bottom-left
+            {xpos, ypos + h, ch.TexCoords.x, ch.TexCoords.y + ch.TexCoords.w},                      // Bottom-left
             {xpos + w, ypos + h, ch.TexCoords.x + ch.TexCoords.z, ch.TexCoords.y + ch.TexCoords.w}, // Bottom-right
-            {xpos + w, ypos, ch.TexCoords.x + ch.TexCoords.z, ch.TexCoords.y}  // Top-right
+            {xpos + w, ypos, ch.TexCoords.x + ch.TexCoords.z, ch.TexCoords.y}                       // Top-right
         };
 
         // Update VBO with new vertex data
