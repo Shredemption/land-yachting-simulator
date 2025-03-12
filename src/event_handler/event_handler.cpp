@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <camera/camera.h>
+#include <render/render.h>
 
 // Global screen variables
 int EventHandler::xPos, EventHandler::yPos, EventHandler::screenWidth, EventHandler::screenHeight;
@@ -33,6 +34,19 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+
+    // Toggle DEBUG on F10
+    if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
+    {
+        if (Render::debugMenu)
+        {
+            Render::debugMenu = false;
+        }
+        else
+        {
+            Render::debugMenu = true;
+        }
     }
 
     // Toggle fullscreen on F11
