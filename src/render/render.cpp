@@ -65,7 +65,7 @@ void Render::render(Scene &scene)
     // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
     // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
 
-    renderText("Test text\nMultiline", 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+    renderText("Test text\nMultiline", 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 0.0f, 1.0f));
 
     Camera::cameraMoved = false;
 }
@@ -535,8 +535,18 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    float startX = x; // Store the initial x position
+    float lineSpacing = Characters['H'].Size.y * scale * 1.2f; // Adjust line spacing with a small padding
+
     for (char c : text)
     {
+        if (c == '\n')
+        {
+            x = startX; // Reset x to the start of the line
+            y += lineSpacing; // Move y down by the height of a character plus padding
+            continue;
+        }
+
         Character ch = Characters[c];
 
         // Calculate the position of each character
