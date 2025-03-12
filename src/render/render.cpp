@@ -19,7 +19,7 @@ FT_Face Render::face;
 GLuint Render::textVAO, Render::textVBO;
 GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
-std::string Render::fontpath = "resources/fonts/BebasKai.ttf";
+std::string Render::fontpath = "resources/fonts/PiratesBay.ttf";
 
 void Render::initQuad()
 {
@@ -68,7 +68,7 @@ void Render::render(Scene &scene)
 
     if (debugMenu)
     {
-        renderText("Test text\nMultiline", 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+        renderText("Test text\nMultiline", 10.0f, 10.0f, EventHandler::screenHeight/1500.0f, glm::vec3(1.0f, 0.0f, 1.0f));
     }
 
     Camera::cameraMoved = false;
@@ -555,7 +555,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 
         // Calculate the position of each character
         float xpos = x + ch.Bearing.x * scale;
-        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale; // Adjust y-coordinate calculation
+        float ypos = y + (Characters['H'].Size.y - ch.Bearing.y) * scale; // Adjust y-coordinate calculation
         float w = ch.Size.x * scale;
         float h = ch.Size.y * scale;
 
