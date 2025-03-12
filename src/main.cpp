@@ -111,6 +111,8 @@ int main()
 
     Render::initQuad();
 
+    Render::initFreeType(Render::fontpath);
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
