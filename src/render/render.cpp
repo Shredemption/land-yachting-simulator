@@ -13,6 +13,13 @@ float Render::waterHeight = -0.5;
 
 bool Render::WaterPass = true;
 
+FT_Library Render::ft;
+FT_Face Render::face;
+GLuint Render::textVAO, Render::textVBO;
+GLuint Render::textTexture;
+std::map<GLchar, Character> Render::Characters;
+std::string Render::fontpath = "resources/fonts/BebasKai.ttf";
+
 void Render::initQuad()
 {
     if (quadVAO == 0)
@@ -57,6 +64,8 @@ void Render::render(Scene &scene)
 
     // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
     // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+
+    renderText("Test text\nMultiline", 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 
     Camera::cameraMoved = false;
 }
@@ -413,4 +422,153 @@ Texture Render::LoadStandaloneTexture(std::string fileName)
     }
 
     return loadTexture;
+}
+
+void Render::initFreeType(std::string &fontPath)
+{
+    // Initialize FreeType
+    if (FT_Init_FreeType(&ft))
+        std::cerr << "ERROR: Could not initialize FreeType\n";
+
+    fontPath = "../" + fontPath;
+
+    // Load font face
+    if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
+        std::cerr << "ERROR: Failed to load font\n";
+
+    // Set font size
+    FT_Set_Pixel_Sizes(face, 0, 48);
+
+    // Generate texture for each character
+    glGenTextures(1, &textTexture);
+    glBindTexture(GL_TEXTURE_2D, textTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Store the texture in your character map
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // To prevent padding issues
+
+    // Define the width and height of the atlas
+    const int atlasWidth = 1024;
+    const int atlasHeight = 1024;
+    GLubyte *atlasData = new GLubyte[atlasWidth * atlasHeight * 4]; // RGBA
+
+    int xPos = 0, yPos = 0;
+
+    for (GLuint c = 0; c < 128; c++)
+    {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        {
+            std::cerr << "ERROR: Failed to load Glyph\n";
+            continue;
+        }
+
+        // Check if the character fits in the current line
+        if (xPos + face->glyph->bitmap.width >= atlasWidth)
+        {
+            xPos = 0;
+            yPos += face->glyph->bitmap.rows;
+        }
+
+        // Copy the character bitmap into the atlasData
+        for (int y = 0; y < face->glyph->bitmap.rows; y++)
+        {
+            for (int x = 0; x < face->glyph->bitmap.width; x++)
+            {
+                int index = (yPos + y) * atlasWidth * 4 + (xPos + x) * 4;
+                atlasData[index] = 255;                                                               // R
+                atlasData[index + 1] = 255;                                                           // G
+                atlasData[index + 2] = 255;                                                           // B
+                atlasData[index + 3] = face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x]; // A
+            }
+        }
+
+        // Store character information in the map
+        Character ch = {
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            static_cast<GLuint>(face->glyph->advance.x),
+            glm::vec4(xPos / (float)atlasWidth, yPos / (float)atlasHeight, face->glyph->bitmap.width / (float)atlasWidth, face->glyph->bitmap.rows / (float)atlasHeight)};
+        Characters[c] = ch;
+
+        // Update xPos for the next character in the atlas
+        xPos += face->glyph->bitmap.width;
+    }
+
+    // Now upload the entire atlas texture to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasWidth, atlasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlasData);
+    delete[] atlasData; // Free the memory
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Generate VAO and VBO for text rendering
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+
+    // Set up vertex attributes (assuming position and texture coordinates)
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+}
+
+void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color)
+{
+    // Load the shader for rendering text
+    Shader shader = Shader::load("text");
+
+    // Set text color uniform
+    glUniform3f(glGetUniformLocation(shader.m_id, "textColor"), color.x, color.y, color.z);
+
+    // Set the projection matrix for the text shader
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(EventHandler::screenWidth), static_cast<float>(EventHandler::screenHeight), 0.0f);
+    shader.setMat4("projection", projection);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textTexture);
+
+    glBindVertexArray(textVAO);
+
+    // Enable blending for text rendering
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    for (char c : text)
+    {
+        Character ch = Characters[c];
+
+        // Calculate the position of each character
+        float xpos = x + ch.Bearing.x * scale;
+        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale; // Adjust y-coordinate calculation
+        float w = ch.Size.x * scale;
+        float h = ch.Size.y * scale;
+
+        // Prepare the vertices and texture coordinates with counter-clockwise winding
+        float vertices[6][4] = {
+            {xpos, ypos + h, ch.TexCoords.x, ch.TexCoords.y + ch.TexCoords.w}, // Bottom-left
+            {xpos + w, ypos, ch.TexCoords.x + ch.TexCoords.z, ch.TexCoords.y}, // Top-right
+            {xpos, ypos, ch.TexCoords.x, ch.TexCoords.y},                      // Top-left
+
+            {xpos, ypos + h, ch.TexCoords.x, ch.TexCoords.y + ch.TexCoords.w}, // Bottom-left
+            {xpos + w, ypos + h, ch.TexCoords.x + ch.TexCoords.z, ch.TexCoords.y + ch.TexCoords.w}, // Bottom-right
+            {xpos + w, ypos, ch.TexCoords.x + ch.TexCoords.z, ch.TexCoords.y}  // Top-right
+        };
+
+        // Update VBO with new vertex data
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        x += (ch.Advance >> 6) * scale;
+    }
+
+    // Unbind the texture
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Disable blending after text rendering
+    glDisable(GL_BLEND);
 }
