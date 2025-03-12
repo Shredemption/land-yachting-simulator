@@ -112,7 +112,7 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
             Camera::yawFree += glm::radians(xPos); // Convert to radians
             Camera::pitchFree += glm::radians(yPos);
 
-            Camera::pitchFree = std::clamp(Camera::pitchFree, glm::radians(-90.0f), glm::radians(90.0f));
+            Camera::pitchFree = std::clamp(Camera::pitchFree, glm::radians(-89.0f), glm::radians(89.0f));
         }
         else
         {
