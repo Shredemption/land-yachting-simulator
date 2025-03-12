@@ -60,6 +60,7 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
 
             fullscreen = !fullscreen;
+            windowSizeChanged = true;
         }
         else
         {
@@ -74,6 +75,7 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
 
             fullscreen = !fullscreen;
+            windowSizeChanged = true;
         }
     }
 
@@ -109,6 +111,7 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
         xPos = 0;
         yPos = 0;
         windowSizeChanged = false;
+        glfwSetCursorPos(window, 0, 0);
     }
 
     // Apply sensitivity
