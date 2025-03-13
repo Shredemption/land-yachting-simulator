@@ -77,13 +77,10 @@ void Render::render(Scene &scene)
         }
 
         renderText(debugText, 10.0f, 10.0f, EventHandler::screenHeight / 2000.0f, glm::vec3(1.0f, 0.0f, 1.0f));
-
-        debugData.clear();
     }
 
-
-
     Camera::cameraMoved = false;
+    debugData.clear();
 }
 
 void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
