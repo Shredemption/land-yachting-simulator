@@ -184,7 +184,7 @@ void Render::renderSceneSkyBox(Scene &scene)
 
     shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
     shader.setMat4("u_projection", Camera::u_projection);
-    shader.setMat4("u_model", glm::rotate(glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(100.0f)), glm::vec3(0.0f, 0.0f, -0.175f)), glm::radians(EventHandler::sunAngle), glm::vec3(0.0f, 0.0f, 1.0f)));
+    shader.setMat4("u_model", glm::mat4(1.0f));
 
     shader.setInt("skybox", 0);
 
