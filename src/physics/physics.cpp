@@ -1,6 +1,7 @@
 #include <physics/physics.h>
 
-#include <event_handler/event_handler.h>
+#include "event_handler/event_handler.h"
+#include "render/render.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
@@ -48,6 +49,7 @@ void Physics::update(Scene &scene)
         if (scene.structModels[i].type == "yacht_controlled")
         {
             scene.structModels[i].physics[0]->move();
+            scene.structModels[i].physics[0]->debug();
         }
     }
 }
@@ -95,7 +97,7 @@ void Physics::move()
 
     // Sail Physics
     glm::vec3 apparentWind = windStrength * windDirection - forwardVelocity * direction;
-    float apparentWindSpeed = glm::length(apparentWind);
+    apparentWindSpeed = glm::length(apparentWind);
     glm::vec3 apparentWindDirection = glm::normalize(apparentWind);
 
     float relativeSailAngle = glm::orientedAngle(apparentWindDirection, direction, glm::vec3(0, 0, 1)) + BoomAngle;
@@ -122,9 +124,15 @@ void Physics::move()
 
     // Apply accelerations
     forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
-    steeringAngle += steeringChange * EventHandler::deltaTime;
+    steeringAngle += -steeringAngle * 0.003 + steeringChange * EventHandler::deltaTime;
 
     // Transform with velocities
     baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(steeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
     baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
+}
+
+void Physics::debug() {
+    Render::debugData.push_back(std::pair("velocity", forwardVelocity));
+    Render::debugData.push_back(std::pair("acceleration", forwardAcceleration));
+    Render::debugData.push_back(std::pair("apparantWind", apparentWindSpeed));
 }

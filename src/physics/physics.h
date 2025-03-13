@@ -43,8 +43,11 @@ public:
     float bodyDragCoefficient;
     float bodyArea;
 
+    float apparentWindSpeed;
+
 private:
     void move();
+    void debug();
 };
 
 #endif

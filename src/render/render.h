@@ -34,6 +34,7 @@ public:
     static std::string fontpath;
 
     static bool debugMenu;
+    static std::vector<std::pair<std::string, float>> debugData;
 
 private:
     static void renderSceneModels(Scene &scene, glm::vec4 clipPlane);
