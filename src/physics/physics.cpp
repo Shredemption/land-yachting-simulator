@@ -7,8 +7,8 @@
 #include <glm/gtx/vector_angle.hpp>
 
 bool Physics::keyInputs[5];
-glm::vec3 Physics::windDirection = glm::vec3(1.0f, 0.0f, 0.0f);
-float Physics::windStrength = 10;
+glm::vec3 Physics::windDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+float Physics::windStrength = 15;
 float Physics::airDensity = 1.225;
 float Physics::g = 9.81;
 
@@ -27,9 +27,9 @@ Physics::Physics(ModelData &ModelData)
         minDragCoefficient = 0.1;
         sailArea = 6;
         rollCoefficient = 0.01;
-        mass = 100;
-        bodyDragCoefficient = 0.2;
-        bodyArea = 1;
+        mass = 300;
+        bodyDragCoefficient = 0.3;
+        bodyArea = 1.0;
     }
 }
 
@@ -105,7 +105,7 @@ void Physics::move()
     sailControlFactor = std::clamp(sailControlFactor, 0.0f, 1.0f);
 
     // Find new angles for sail
-    glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[0]));
+    glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[1]));
     angleToWind = glm::orientedAngle(direction, windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
     targetMastAngle = sailControlFactor * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
@@ -113,7 +113,7 @@ void Physics::move()
 
     float smoothingFactor = 0.05f;
 
-    MastAngle += smoothingFactor * (targetBoomAngle - MastAngle);
+    MastAngle += smoothingFactor * (targetMastAngle - MastAngle);
     BoomAngle += smoothingFactor * (targetBoomAngle - BoomAngle);
 
     // Sail Physics
