@@ -20,7 +20,7 @@ FT_Face Render::face;
 GLuint Render::textVAO, Render::textVBO;
 GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
-std::string Render::fontpath = "resources/fonts/BebasKai.ttf";
+std::string Render::fontpath = "resources/fonts/Nexa-Heavy.ttf";
 
 void Render::initQuad()
 {
