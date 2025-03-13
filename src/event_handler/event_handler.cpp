@@ -91,6 +91,12 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             Camera::freeCam = true;
         }
     }
+
+    // Reset physics
+    if (key == GLFW_KEY_R && action == GLFW_PRESS)
+    {
+        Physics::resetState = true;
+    }
 }
 
 void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
