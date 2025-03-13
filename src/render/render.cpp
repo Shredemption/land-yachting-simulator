@@ -13,13 +13,14 @@ float Render::waterHeight = -0.5;
 
 bool Render::WaterPass = true;
 bool Render::debugMenu = false;
+std::vector<std::pair<std::string, float>> Render::debugData;
 
 FT_Library Render::ft;
 FT_Face Render::face;
 GLuint Render::textVAO, Render::textVBO;
 GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
-std::string Render::fontpath = "resources/fonts/PiratesBay.ttf";
+std::string Render::fontpath = "resources/fonts/BebasKai.ttf";
 
 void Render::initQuad()
 {
@@ -68,8 +69,19 @@ void Render::render(Scene &scene)
 
     if (debugMenu)
     {
-        renderText("Test text\nMultiline", 10.0f, 10.0f, EventHandler::screenHeight/1500.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+        std::string debugText = "Debug Menu:\n";
+
+        for (auto entry : debugData)
+        {
+            debugText = debugText + entry.first + ": " + std::to_string(entry.second) + "\n";
+        }
+
+        renderText(debugText, 10.0f, 10.0f, EventHandler::screenHeight / 2000.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+
+        debugData.clear();
     }
+
+
 
     Camera::cameraMoved = false;
 }
