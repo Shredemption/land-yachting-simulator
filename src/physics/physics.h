@@ -9,6 +9,7 @@ class Physics
 {
 public:
     Physics(ModelData &ModelData);
+    static bool resetState;
 
     static glm::vec3 windDirection;
     static float windStrength;
@@ -44,10 +45,12 @@ public:
     float bodyArea;
 
     float apparentWindSpeed;
+    float relativeSailAngle;
 
 private:
     void move();
     void debug();
+    void reset();
 };
 
 #endif
