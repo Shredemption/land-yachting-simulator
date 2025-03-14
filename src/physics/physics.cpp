@@ -8,7 +8,7 @@
 
 bool Physics::keyInputs[5];
 glm::vec3 Physics::windDirection = glm::vec3(0.0f, 1.0f, 0.0f);
-float Physics::windStrength = 10;
+float Physics::windStrength = 15;
 float Physics::airDensity = 1.225;
 float Physics::g = 9.81;
 
@@ -23,11 +23,11 @@ Physics::Physics(ModelData &ModelData)
         maxMastAngle = glm::radians(30.0f);
         maxBoomAngle = glm::radians(90.0f);
         sailControlFactor = 1.0f;
-        maxLiftCoefficient = 1.3;
+        maxLiftCoefficient = 1.5;
         minDragCoefficient = 0.1;
-        sailArea = 6;
+        sailArea = 8;
         rollCoefficient = 0.01;
-        mass = 200;
+        mass = 300;
         bodyDragCoefficient = 0.3;
         bodyArea = 1.0;
     }
@@ -117,7 +117,7 @@ void Physics::move()
     BoomAngle += smoothingFactor * (targetBoomAngle - BoomAngle);
 
     // Sail Physics
-    glm::vec3 apparentWind = windStrength * windDirection - forwardVelocity * direction;
+    glm::vec3 apparentWind = windStrength * windDirection + forwardVelocity * direction;
     apparentWindSpeed = glm::length(apparentWind);
     glm::vec3 apparentWindDirection = glm::normalize(apparentWind);
 
