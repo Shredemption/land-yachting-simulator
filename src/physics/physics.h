@@ -24,6 +24,8 @@ public:
     glm::mat4 baseTransform;
     float steeringAngle = 0.0f;
     float steeringChange = 0.0f;
+    float steeringSmoothness;
+    float maxSteeringAngle;
     float forwardVelocity = 0.0f;
     float forwardAcceleration = 0.0f;
 

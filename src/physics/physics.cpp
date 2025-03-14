@@ -28,8 +28,9 @@ Physics::Physics(ModelData &ModelData)
         sailArea = 8;
         rollCoefficient = 0.01;
         mass = 300;
-        bodyDragCoefficient = 0.3;
-        bodyArea = 1.0;
+
+        steeringSmoothness = 3.0;
+        maxSteeringAngle = 10;
     }
 }
 
@@ -91,11 +92,11 @@ void Physics::move()
     }
     if (keyInputs[2])
     {
-        steeringChange += 40.f;
+        steeringChange += steeringSmoothness * maxSteeringAngle;
     }
     if (keyInputs[3])
     {
-        steeringChange -= 40.f;
+        steeringChange -= steeringSmoothness * maxSteeringAngle;
     }
     if (keyInputs[4])
     {
@@ -145,7 +146,7 @@ void Physics::move()
 
     // Apply accelerations
     forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
-    steeringAngle += (steeringChange - steeringAngle * 5) * EventHandler::deltaTime;
+    steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * EventHandler::deltaTime;
 
     // Transform with velocities
     baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(steeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
