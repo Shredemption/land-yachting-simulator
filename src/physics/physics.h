@@ -37,11 +37,15 @@ public:
     float targetBoomAngle = 0.0f;
     float sailControlFactor;
     float optimalAngle;
+    float SailAngle;
 
     float angleToWind = 0.0f;
     float maxLiftCoefficient;
     float minDragCoefficient;
     float rollCoefficient;
+    float effectiveCL;
+    float effectiveCD;
+
     float sailArea;
     float mass;
     float bodyDragCoefficient;

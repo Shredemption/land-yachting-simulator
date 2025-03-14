@@ -16,7 +16,7 @@ out VS_OUT
 vs_out;
 
 const int MAX_BONES = 50;
-const int MAX_BONE_INFLUENCE = 1;
+const int MAX_BONE_INFLUENCE = 4;
 
 uniform vec3 lightPos;
 
