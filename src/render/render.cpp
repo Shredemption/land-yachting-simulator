@@ -20,7 +20,7 @@ FT_Face Render::face;
 GLuint Render::textVAO, Render::textVBO;
 GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
-std::string Render::fontpath = "resources/fonts/Nexa-ExtraLight.ttf";
+std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 
 void Render::initQuad()
 {
@@ -76,7 +76,7 @@ void Render::render(Scene &scene)
             debugText = debugText + entry.first + ": " + std::to_string(entry.second) + "\n";
         }
 
-        renderText(debugText, 10.0f, 10.0f, EventHandler::screenHeight / 2000.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+        renderText(debugText, 10.0f, 10.0f, ceil(EventHandler::screenHeight / 250.0f) / 10.0f, glm::vec3(1.0f, 0.0f, 1.0f));
     }
 
     Camera::cameraMoved = false;
@@ -469,6 +469,8 @@ void Render::initFreeType(std::string &fontPath)
     GLubyte *atlasData = new GLubyte[atlasWidth * atlasHeight * 4]; // RGBA
 
     int xPos = 0, yPos = 0;
+    const int gapX = 2; // Define a small gap between characters
+    const int gapY = 32;
 
     for (GLuint c = 0; c < 128; c++)
     {
@@ -479,10 +481,10 @@ void Render::initFreeType(std::string &fontPath)
         }
 
         // Check if the character fits in the current line
-        if (xPos + face->glyph->bitmap.width >= atlasWidth)
+        if (xPos + face->glyph->bitmap.width + gapX >= atlasWidth)
         {
             xPos = 0;
-            yPos += face->glyph->bitmap.rows;
+            yPos += face->glyph->bitmap.rows + gapY;
         }
 
         // Copy the character bitmap into the atlasData
@@ -507,7 +509,7 @@ void Render::initFreeType(std::string &fontPath)
         Characters[c] = ch;
 
         // Update xPos for the next character in the atlas
-        xPos += face->glyph->bitmap.width;
+        xPos += face->glyph->bitmap.width + gapX; // Add gap to x position
     }
 
     // Now upload the entire atlas texture to OpenGL
