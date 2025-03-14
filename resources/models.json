@@ -1,12 +1,5 @@
 {
     "models": {
-        "backpack": "resources/objects/backpack/backpack.obj",
-        "cube": "resources/objects/Cube/untitled.obj",
-        "cyborg": "resources/objects/cyborg/cyborg.obj",
-        "nanosuit": "resources/objects/nanosuit/nanosuit.obj",
-        "planet": "resources/objects/planet/planet.obj",
-        "rock": "resources/objects/rock/rock.obj",
-        "vampire": "resources/objects/vampire/dancing_vampire.dae",
-        "duvel": "resources/objects/duvel/duvel3.dae"
+        "duvel": "resources/objects/duvel/duvel.dae"
     }
 }
