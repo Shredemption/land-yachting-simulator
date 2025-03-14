@@ -121,6 +121,7 @@ void Physics::move()
 
     MastAngle += smoothingFactor * (targetMastAngle - MastAngle);
     BoomAngle += smoothingFactor * (targetBoomAngle - BoomAngle);
+    SailAngle = BoomAngle;
 
     // Apparent wind direction
     glm::vec3 apparentWind = windDirection * windStrength - direction * forwardVelocity;
@@ -132,8 +133,8 @@ void Physics::move()
     float absAngle = fabs(relativeSailAngle);
 
     // Lift and Drag coefficients
-    float effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
-    float effectiveCD = minDragCoefficient + 1.0f * sin(absAngle) * sin(absAngle);
+    effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
+    effectiveCD = minDragCoefficient + 1.0f * sin(absAngle) * sin(absAngle);
 
     // Lift and Drag forces
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
@@ -191,4 +192,6 @@ void Physics::debug()
     Render::debugData.push_back(std::pair("steeringAngle", steeringAngle));
     Render::debugData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
     Render::debugData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
+    Render::debugData.push_back(std::pair("effectiveCL", effectiveCL));
+    Render::debugData.push_back(std::pair("effectiveCD", effectiveCD));
 }
