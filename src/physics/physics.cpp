@@ -139,18 +139,40 @@ void Physics::move()
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
     glm::vec2 F_aero_local = dynamicPressure * sailArea * glm::vec2(effectiveCL, -effectiveCD);
 
-    glm::vec2 F_aero_boat;
-    F_aero_boat.x = F_aero_local.x * cos(relativeSailAngle) - F_aero_local.y * sin(relativeSailAngle); // lateral force
-    F_aero_boat.y = F_aero_local.x * sin(relativeSailAngle) + F_aero_local.y * cos(relativeSailAngle); // forward thrust
+    float F_lateral = F_aero_local.x * cos(relativeSailAngle) - F_aero_local.y * sin(relativeSailAngle); // lateral force
+    float F_forward = F_aero_local.x * sin(relativeSailAngle) + F_aero_local.y * cos(relativeSailAngle); // forward thrust
 
     float bodyDragForce = 0.5 * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
     // Rolling Resistance
-    float effectiveCr = (fabs(forwardVelocity) < 0.01 ? 0 : rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / 500.0f));
+    float effectiveCr = rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / 250.0f);
     float rollResistance = effectiveCr * mass * g;
 
-    // Sum of forces
-    forwardAcceleration += (F_aero_boat.y - bodyDragForce - rollResistance) / mass;
+    // Stationary force/acceleration
+    const float standstillVelocity = 0.02f;
+    float F_net;
+
+    // if stationary
+    if (forwardVelocity < standstillVelocity)
+    {
+        // if propulsion less than rollresistance
+        if (F_forward - bodyDragForce < rollResistance)
+        {
+            F_net = 0;
+        }
+        // if propulsion greater than rollresistance
+        else
+        {
+            F_net = F_forward - bodyDragForce - rollResistance;
+        }
+    }
+    // if already moving
+    else
+    {
+        F_net = F_forward - bodyDragForce - rollResistance;
+    }
+
+    forwardAcceleration += F_net / mass;
 
     // Apply accelerations
     forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
