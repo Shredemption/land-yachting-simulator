@@ -27,16 +27,25 @@ void Animation::generateYachtBones(ModelData &ModelData)
 
     wheelAngle += physics->forwardVelocity * EventHandler::deltaTime * 100;
 
+    // Body Transform
+    model->boneHierarchy["Armature_Body"]->transform = physics->baseTransform;
+
+    // Wheel transforms
     model->boneHierarchy["Armature_Fork"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(physics->steeringAngle * 2), glm::vec3(0.0f, -1.0f, 0.0f));
     model->boneHierarchy["Armature_Wheel_Front"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(wheelAngle), glm::vec3(0.0f, 1.0f, 0.0f));
     model->boneHierarchy["Armature_Wheel_Left"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(wheelAngle), glm::vec3(0.0f, 1.0f, 0.0f));
     model->boneHierarchy["Armature_Wheel_Right"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(-wheelAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    // Sail setup transform
     model->boneHierarchy["Armature_Mast"]->transform = glm::rotate(glm::mat4(1.0f), physics->MastAngle, glm::vec3(0.0f, -1.0f, 0.0f));
-    model->boneHierarchy["Armature_Boom"]->transform = glm::rotate(glm::mat4(1.0f), physics->BoomAngle - physics->MastAngle, glm::vec3(0.0f, 0.0f, -1.0f));
-    model->boneHierarchy["Armature_Sail"]->transform = glm::rotate(glm::mat4(1.0f), physics->BoomAngle - physics->MastAngle, glm::vec3(0.0f, 0.0f, -1.0f));
-
-    model->boneHierarchy["Armature_Body"]->transform = physics->baseTransform;
+    model->boneHierarchy["Armature_Boom"]->transform = glm::rotate(glm::rotate(
+                                                                       glm::mat4(1.0f), abs(physics->BoomAngle) / 20.0f,
+                                                                       glm::vec3(1.0f, 0.0f, 0.0f)),
+                                                                   physics->BoomAngle - physics->MastAngle, glm::vec3(0.0f, 0.0f, -1.0f));
+    model->boneHierarchy["Armature_Sail"]->transform = glm::rotate(glm::rotate(
+                                                                       glm::mat4(1.0f), abs(physics->SailAngle) / 10.0f,
+                                                                       glm::vec3(0.0f, -1.0f, 0.0f)),
+                                                                   physics->SailAngle - physics->MastAngle / 2, glm::vec3(0.0f, 0.0f, -1.0f));
 
     model->updateBoneTransforms();
 
