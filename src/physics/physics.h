@@ -23,40 +23,29 @@ public:
 
     glm::mat4 baseTransform;
     float steeringAngle = 0.0f;
-    float steeringChange = 0.0f;
     float steeringSmoothness;
     float maxSteeringAngle;
     float forwardVelocity = 0.0f;
-    float forwardAcceleration = 0.0f;
 
     float maxMastAngle;
     float maxBoomAngle;
     float MastAngle = 0.0f;
-    float targetMastAngle = 0.0f;
     float BoomAngle = 0.0f;
-    float targetBoomAngle = 0.0f;
-    float sailControlFactor;
+    float sailControlFactor = 1.0f;
     float optimalAngle;
     float SailAngle;
 
-    float angleToWind = 0.0f;
     float maxLiftCoefficient;
     float minDragCoefficient;
     float rollCoefficient;
-    float effectiveCL;
-    float effectiveCD;
 
     float sailArea;
     float mass;
     float bodyDragCoefficient;
     float bodyArea;
 
-    float apparentWindSpeed;
-    float relativeSailAngle;
-
 private:
     void move();
-    void debug();
     void reset();
 };
 

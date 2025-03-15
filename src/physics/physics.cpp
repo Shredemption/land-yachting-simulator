@@ -22,15 +22,14 @@ Physics::Physics(ModelData &ModelData)
     {
         maxMastAngle = glm::radians(30.0f);
         maxBoomAngle = glm::radians(90.0f);
-        sailControlFactor = 1.0f;
 
-        maxLiftCoefficient = 1.2;
-        optimalAngle = glm::radians(30.0f);
+        maxLiftCoefficient = 1;
+        optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1;
         sailArea = 6;
 
         rollCoefficient = 0.01;
-        mass = 300;
+        mass = 250;
         bodyDragCoefficient = 0.4;
         bodyArea = 2.0;
 
@@ -44,13 +43,9 @@ void Physics::reset()
     baseTransform = glm::mat4(1.0f);
     sailControlFactor = 1.0f;
     MastAngle = 0.0f;
-    targetMastAngle = 0.0f;
     BoomAngle = 0.0f;
-    targetBoomAngle = 0.0f;
     steeringAngle = 0.0f;
-    steeringChange = 0.0f;
     forwardVelocity = 0.0f;
-    forwardAcceleration = 0.0f;
 }
 
 void Physics::setup(Scene &scene)
@@ -71,7 +66,6 @@ void Physics::update(Scene &scene)
         if (scene.structModels[i].type == "yacht_controlled")
         {
             scene.structModels[i].physics[0]->move();
-            scene.structModels[i].physics[0]->debug();
         }
     }
 }
@@ -84,8 +78,8 @@ void Physics::move()
         this->reset();
     }
     // Acceleration from keys
-    forwardAcceleration = 0.0f;
-    steeringChange = 0.0f;
+    float forwardAcceleration = 0.0f;
+    float steeringChange = 0.0f;
 
     if (keyInputs[0])
     {
@@ -112,41 +106,42 @@ void Physics::move()
 
     // Find new angles for sail
     glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[1]));
-    angleToWind = glm::orientedAngle(direction, -windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
+    float angleToWind = glm::orientedAngle(direction, -windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    targetMastAngle = sailControlFactor * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
-    targetBoomAngle = sailControlFactor * std::clamp(angleToWind, -maxBoomAngle + maxMastAngle, maxBoomAngle - maxMastAngle);
+    float targetMastAngle = sailControlFactor * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
+    float targetBoomAngle = sailControlFactor * std::clamp(angleToWind, -maxBoomAngle + maxMastAngle, maxBoomAngle - maxMastAngle);
 
     float smoothingFactor = 0.05f;
 
     MastAngle += smoothingFactor * (targetMastAngle - MastAngle);
     BoomAngle += smoothingFactor * (targetBoomAngle - BoomAngle);
-    SailAngle = BoomAngle;
+    SailAngle = BoomAngle * (1 + 0.1 * sin(angleToWind / 2));
 
     // Apparent wind direction
     glm::vec3 apparentWind = windDirection * windStrength - direction * forwardVelocity;
-    apparentWindSpeed = glm::length(apparentWind);
+    float apparentWindSpeed = glm::length(apparentWind);
     glm::vec3 apparentWindDirection = glm::normalize(apparentWind);
 
     // Relative sail angle
-    relativeSailAngle = glm::orientedAngle(direction, -apparentWindDirection, glm::vec3(0.0f, 0.0f, 1.0f)) + BoomAngle;
+    float angleToApparentWind = glm::orientedAngle(direction, -apparentWindDirection, glm::vec3(0.0f, 0.0f, 1.0f));
+    float relativeSailAngle = angleToApparentWind + SailAngle;
     float absAngle = fabs(relativeSailAngle);
 
     // Lift and Drag coefficients
-    effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
-    effectiveCD = minDragCoefficient + 1.0f * sin(absAngle) * sin(absAngle);
+    float effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
+    float effectiveCD = minDragCoefficient + 1.0f * sin(absAngle) * sin(absAngle);
 
     // Lift and Drag forces
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
-    glm::vec2 F_aero_local = dynamicPressure * sailArea * glm::vec2(effectiveCL, -effectiveCD);
+    glm::vec2 F_local_sail = dynamicPressure * sailArea * glm::vec2(effectiveCL, -effectiveCD);
 
-    float F_lateral = F_aero_local.x * cos(relativeSailAngle) - F_aero_local.y * sin(relativeSailAngle); // lateral force
-    float F_forward = F_aero_local.x * sin(relativeSailAngle) + F_aero_local.y * cos(relativeSailAngle); // forward thrust
+    float F_lateral = F_local_sail.x * cos(angleToApparentWind) - F_local_sail.y * sin(angleToApparentWind); // lateral force
+    float F_forward = F_local_sail.x * sin(angleToApparentWind) + F_local_sail.y * cos(angleToApparentWind); // forward thrust
 
-    float bodyDragForce = 0.5 * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
+    float bodyDragForce = 0.5f * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
     // Rolling Resistance
-    float effectiveCr = rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / 250.0f);
+    float effectiveCr = rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / 350.0f);
     float rollResistance = effectiveCr * mass * g;
 
     // Stationary force/acceleration
@@ -182,10 +177,8 @@ void Physics::move()
     // Transform with velocities
     baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(steeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
     baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
-}
 
-void Physics::debug()
-{
+    // Send values to debug
     Render::debugData.push_back(std::pair("velocity", forwardVelocity));
     Render::debugData.push_back(std::pair("acceleration", forwardAcceleration));
     Render::debugData.push_back(std::pair("apparantWind", apparentWindSpeed));
