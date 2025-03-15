@@ -27,10 +27,10 @@ const float shineDamper = 20;
 const float reflectivity = 0.6;
 
 const float near = 0.1;
-const float far = 1000.0;
+const float far = 2000.0;
 
-const float fogStart = 150;
-const float fogEnd = 200;
+const float fogStart = 1500;
+const float fogEnd = 2000;
 
 void main()
 {
