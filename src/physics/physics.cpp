@@ -23,15 +23,15 @@ Physics::Physics(ModelData &ModelData)
         maxMastAngle = glm::radians(30.0f);
         maxBoomAngle = glm::radians(90.0f);
 
-        maxLiftCoefficient = 1;
+        maxLiftCoefficient = 1.4;
         optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1;
         sailArea = 6;
 
         rollCoefficient = 0.01;
         mass = 250;
-        bodyDragCoefficient = 0.4;
-        bodyArea = 2.0;
+        bodyDragCoefficient = 0.3;
+        bodyArea = 1.0;
 
         steeringSmoothness = 3.0;
         maxSteeringAngle = 10;
@@ -135,8 +135,8 @@ void Physics::move()
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
     glm::vec2 F_local_sail = dynamicPressure * sailArea * glm::vec2(effectiveCL, -effectiveCD);
 
-    float F_lateral = F_local_sail.x * cos(angleToApparentWind) - F_local_sail.y * sin(angleToApparentWind); // lateral force
-    float F_forward = F_local_sail.x * sin(angleToApparentWind) + F_local_sail.y * cos(angleToApparentWind); // forward thrust
+    float F_lateral = F_local_sail.x * cos(relativeSailAngle) - F_local_sail.y * sin(relativeSailAngle); // lateral force
+    float F_forward = F_local_sail.x * sin(relativeSailAngle) + F_local_sail.y * cos(relativeSailAngle); // forward thrust
 
     float bodyDragForce = 0.5f * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
