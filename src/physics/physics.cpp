@@ -128,8 +128,8 @@ void Physics::move()
     float absAngle = fabs(relativeSailAngle);
 
     // Lift and Drag coefficients
-    float effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
-    float effectiveCD = minDragCoefficient + 1.0f * sin(absAngle) * sin(absAngle);
+    float effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) * sin(2.0f * absAngle) / sin(2.0f * optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
+    float effectiveCD = minDragCoefficient + 1.0f * effectiveCL * effectiveCL;
 
     // Lift and Drag forces
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
