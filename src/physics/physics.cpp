@@ -8,9 +8,9 @@
 
 bool Physics::keyInputs[5];
 glm::vec3 Physics::windDirection = glm::vec3(0.0f, -1.0f, 0.0f);
-float Physics::windStrength = 10;
-float Physics::airDensity = 1.225;
-float Physics::g = 9.81;
+float Physics::windStrength = 10.0f;
+float Physics::airDensity = 1.225f;
+float Physics::g = 9.81f;
 
 bool Physics::resetState = false;
 
@@ -23,18 +23,19 @@ Physics::Physics(ModelData &ModelData)
         maxMastAngle = glm::radians(30.0f);
         maxBoomAngle = glm::radians(90.0f);
 
-        maxLiftCoefficient = 1.4;
-        optimalAngle = glm::radians(20.0f);
-        minDragCoefficient = 0.1;
-        sailArea = 6;
+        maxLiftCoefficient = 1.5f;
+        optimalAngle = glm::radians(25.0f);
+        minDragCoefficient = 0.1f;
+        sailArea = 6.0f;
 
-        rollCoefficient = 0.01;
-        mass = 250;
-        bodyDragCoefficient = 0.3;
-        bodyArea = 1.0;
+        rollCoefficient = 0.005f;
+        rollScaling = 15.0f;
+        mass = 250.0f;
+        bodyDragCoefficient = 0.3f;
+        bodyArea = 1.2f;
 
-        steeringSmoothness = 3.0;
-        maxSteeringAngle = 10;
+        steeringSmoothness = 3.0f;
+        maxSteeringAngle = 10.0f;
     }
 }
 
@@ -129,7 +130,7 @@ void Physics::move()
 
     // Lift and Drag coefficients
     float effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) * sin(2.0f * absAngle) / sin(2.0f * optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
-    float effectiveCD = minDragCoefficient + 1.0f * effectiveCL * effectiveCL;
+    float effectiveCD = minDragCoefficient + sin(absAngle) * sin(absAngle);
 
     // Lift and Drag forces
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
@@ -142,7 +143,7 @@ void Physics::move()
     float bodyDragForce = 0.5f * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
     // Rolling Resistance
-    float effectiveCr = rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / 350.0f);
+    float effectiveCr = rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / (rollScaling * rollScaling));
     float rollResistance = effectiveCr * mass * g;
 
     // Stationary force/acceleration
