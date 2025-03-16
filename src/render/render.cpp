@@ -53,7 +53,7 @@ void Render::render(Scene &scene)
 {
     renderSceneSkyBox(scene);
 
-    if (Shader::waterLoaded)
+    if (Shader::waterLoaded & EventHandler::frame % 2 == 0)
     {
         WaterPass = true;
         renderReflectRefract(scene, clipPlane);
@@ -67,7 +67,7 @@ void Render::render(Scene &scene)
     if (debugMenu)
     {
         renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
-        renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+        renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2.0f * EventHandler::screenWidth / 3.0f, 0);
 
         std::string debugText = "Debug Menu:\n";
 
