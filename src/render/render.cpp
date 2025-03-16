@@ -203,7 +203,6 @@ void Render::renderModel(ModelData model)
     }
 }
 
-// Render mesh
 void Render::renderMesh(Mesh mesh)
 {
     if (mesh.shader == "pbr")
@@ -226,6 +225,7 @@ void Render::renderMesh(Mesh mesh)
         }
     }
 }
+
 void Render::renderDefault(Mesh mesh)
 {
     Shader shader = Shader::load("default");

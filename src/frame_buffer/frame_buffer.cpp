@@ -41,6 +41,7 @@ void FrameBuffer::WaterFrameBuffers()
     reflectionFBO = FrameBuffer(EventHandler::screenWidth / 2, EventHandler::screenHeight / 2);
     FrameBuffer::bindFrameBuffer(reflectionFBO);
     reflectionFBO.createTextureAttachment();
+    reflectionFBO.createDepthBufferAttachment();
 
     refractionFBO = FrameBuffer(EventHandler::screenWidth / 4, EventHandler::screenHeight / 4);
     FrameBuffer::bindFrameBuffer(refractionFBO);
