@@ -64,11 +64,11 @@ void Render::render(Scene &scene)
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
 
-    // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
-    // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
-
     if (debugMenu)
     {
+        renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
+        renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+
         std::string debugText = "Debug Menu:\n";
 
         for (auto entry : debugData)
