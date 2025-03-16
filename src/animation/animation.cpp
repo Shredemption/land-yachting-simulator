@@ -35,7 +35,7 @@ void Animation::generateYachtBones(ModelData &ModelData)
     // Sail setup transform
     model->boneHierarchy["Armature_Mast"]->transform = glm::rotate(glm::mat4(1.0f), physics->MastAngle, glm::vec3(0.0f, -1.0f, 0.0f));
     model->boneHierarchy["Armature_Boom"]->transform = glm::rotate(glm::rotate(
-                                                                       glm::mat4(1.0f), abs(physics->SailAngle - physics->BoomAngle),
+                                                                       glm::mat4(1.0f), abs(physics->SailAngle - physics->BoomAngle) / 2.0f,
                                                                        glm::vec3(1.0f, 0.0f, 0.0f)),
                                                                    physics->BoomAngle - physics->MastAngle, glm::vec3(0.0f, 0.0f, -1.0f));
     model->boneHierarchy["Armature_Sail"]->transform = glm::rotate(glm::mat4(1.0f), physics->SailAngle - physics->MastAngle, glm::vec3(0.0f, 0.0f, -1.0f));
