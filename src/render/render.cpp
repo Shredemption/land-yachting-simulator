@@ -108,7 +108,6 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
         if (model.model->boneHierarchy.size() > 0)
         {
             shader.setMat4Array("u_boneTransforms", model.model->boneTransforms);
-            shader.setMat4Array("u_Offsets", model.model->boneOffsets);
             shader.setMat4Array("u_inverseOffsets", model.model->boneInverseOffsets);
         }
 
