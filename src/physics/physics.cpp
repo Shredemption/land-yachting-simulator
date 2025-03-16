@@ -135,8 +135,8 @@ void Physics::move()
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
     glm::vec2 F_local_sail = dynamicPressure * sailArea * glm::vec2(effectiveCL, -effectiveCD);
 
-    float F_lateral = F_local_sail.x * cos(relativeSailAngle) - F_local_sail.y * sin(relativeSailAngle); // lateral force
-    float F_forward = F_local_sail.x * sin(relativeSailAngle) + F_local_sail.y * cos(relativeSailAngle); // forward thrust
+    float F_lateral = F_local_sail.x * cos(angleToApparentWind) - F_local_sail.y * sin(angleToApparentWind); // lateral force
+    float F_forward = F_local_sail.x * sin(angleToApparentWind) + F_local_sail.y * cos(angleToApparentWind); // forward thrust
 
     float bodyDragForce = 0.5f * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
@@ -184,6 +184,7 @@ void Physics::move()
     Render::debugData.push_back(std::pair("apparantWind", apparentWindSpeed));
     Render::debugData.push_back(std::pair("steeringAngle", steeringAngle));
     Render::debugData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
+    Render::debugData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
     Render::debugData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
     Render::debugData.push_back(std::pair("effectiveCL", effectiveCL));
     Render::debugData.push_back(std::pair("effectiveCD", effectiveCD));
