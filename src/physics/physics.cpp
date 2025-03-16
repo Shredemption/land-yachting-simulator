@@ -47,6 +47,7 @@ void Physics::reset()
     BoomAngle = 0.0f;
     steeringAngle = 0.0f;
     forwardVelocity = 0.0f;
+    wheelAngle = 0.0f;
 }
 
 void Physics::setup(Scene &scene)
@@ -179,7 +180,7 @@ void Physics::move()
     // Transform with velocities
     baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(steeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
     baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
-    wheelAngle = forwardVelocity * EventHandler::deltaTime * 100;
+    wheelAngle += forwardVelocity * EventHandler::deltaTime * 100;
 
     // Send values to debug
     Render::debugData.push_back(std::pair("velocity", forwardVelocity));
