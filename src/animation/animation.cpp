@@ -44,7 +44,7 @@ void Animation::generateYachtBones(ModelData &ModelData)
 
     if (ModelData.controlled)
     {
-        Camera::cameraPosition = (model->boneTransforms[model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
+        Camera::cameraPosition = (ModelData.u_model * model->boneTransforms[model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
         Camera::yaw = atan2(physics->baseTransform[0][1], physics->baseTransform[1][1]) + M_PI;
     }
 };
