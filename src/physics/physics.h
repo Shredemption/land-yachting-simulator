@@ -26,6 +26,7 @@ public:
     float steeringSmoothness;
     float maxSteeringAngle;
     float forwardVelocity = 0.0f;
+    float wheelAngle = 0.0f;
 
     float maxMastAngle;
     float maxBoomAngle;
