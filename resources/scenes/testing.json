@@ -6,7 +6,24 @@
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0],
-      "type": "yacht_controlled"
+      "animated": true,
+      "controlled": true
+    },
+    {
+      "path": "red-piper",
+      "scale": [1, 1, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [6, 1, 0],
+      "animated": true
+    },
+    {
+      "path": "blue-piper",
+      "scale": [1, 1, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [-6, 1, 0],
+      "animated": true
     }
   ],
   "unitPlanes": [

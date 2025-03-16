@@ -12,7 +12,7 @@ void Animation::updateBones(Scene &scene)
 {
     for (auto ModelData : scene.structModels)
     {
-        if (ModelData.type == "yacht_controlled")
+        if (ModelData.animated)
         {
             generateYachtBones(ModelData);
         };

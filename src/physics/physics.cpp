@@ -53,7 +53,7 @@ void Physics::setup(Scene &scene)
 {
     for (int i = 0; i < scene.structModels.size(); i++)
     {
-        if (scene.structModels[i].type == "yacht_controlled")
+        if (scene.structModels[i].animated)
         {
             scene.structModels[i].physics.push_back(new Physics(scene.structModels[i]));
         }
@@ -64,7 +64,7 @@ void Physics::update(Scene &scene)
 {
     for (int i = 0; i < scene.structModels.size(); i++)
     {
-        if (scene.structModels[i].type == "yacht_controlled")
+        if (scene.structModels[i].controlled)
         {
             scene.structModels[i].physics[0]->move();
         }
