@@ -28,7 +28,6 @@ uniform mat4 u_normal;
 uniform vec4 location_plane;
 
 uniform mat4 u_boneTransforms[MAX_BONES];
-uniform mat4 u_Offsets[MAX_BONES];
 uniform mat4 u_inverseOffsets[MAX_BONES];
 
 void main()
@@ -47,7 +46,6 @@ void main()
         {
             // Apply the bone transform to the vertex position and normal
             mat4 boneTransform = u_boneTransforms[boneID];
-            mat4 Offset = u_Offsets[boneID];
             mat4 inverseOffset = u_inverseOffsets[boneID];
 
             vec4 boneSpacePos = inverseOffset * vec4(aPos, 1.0);
