@@ -20,11 +20,11 @@ Physics::Physics(ModelData &ModelData)
 
     if (ModelData.model->path.find("duvel") != std::string::npos)
     {
-        maxMastAngle = glm::radians(30.0f);
+        maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
 
         maxLiftCoefficient = 1.5f;
-        optimalAngle = glm::radians(25.0f);
+        optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1f;
         sailArea = 6.0f;
 
@@ -40,11 +40,11 @@ Physics::Physics(ModelData &ModelData)
 
     if (ModelData.model->path.find("red-piper") != std::string::npos)
     {
-        maxMastAngle = glm::radians(30.0f);
+        maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
 
         maxLiftCoefficient = 1.3f;
-        optimalAngle = glm::radians(25.0f);
+        optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1f;
         sailArea = 6.8f;
 
@@ -130,8 +130,8 @@ void Physics::move()
     glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[1]));
     float angleToWind = glm::orientedAngle(direction, -windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    float targetMastAngle = sailControlFactor * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
-    float targetBoomAngle = sailControlFactor * std::clamp(angleToWind, -maxBoomAngle + maxMastAngle, maxBoomAngle - maxMastAngle);
+    float targetMastAngle = (0.5f + sailControlFactor) / 1.5f * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
+    float targetBoomAngle = sailControlFactor * std::clamp(angleToWind, -maxBoomAngle, maxBoomAngle);
 
     float smoothingFactor = 0.05f;
 
