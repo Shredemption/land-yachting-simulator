@@ -38,6 +38,7 @@ public:
     float maxLiftCoefficient;
     float minDragCoefficient;
     float rollCoefficient;
+    float rollScaling;
 
     float sailArea;
     float mass;
