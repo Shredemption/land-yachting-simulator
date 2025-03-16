@@ -53,7 +53,7 @@ void Render::render(Scene &scene)
 {
     renderSceneSkyBox(scene);
 
-    if (Shader::waterLoaded && (EventHandler::frame % 2 == 0))
+    if (Shader::waterLoaded)
     {
         WaterPass = true;
         renderReflectRefract(scene, clipPlane);
