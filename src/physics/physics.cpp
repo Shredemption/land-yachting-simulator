@@ -18,7 +18,7 @@ Physics::Physics(ModelData &ModelData)
 {
     baseTransform = glm::mat4(1.0f);
 
-    if (ModelData.model->path.find("duvel/duvel") != std::string::npos)
+    if (ModelData.model->path.find("duvel") != std::string::npos)
     {
         maxMastAngle = glm::radians(30.0f);
         maxBoomAngle = glm::radians(90.0f);
@@ -33,6 +33,26 @@ Physics::Physics(ModelData &ModelData)
         mass = 250.0f;
         bodyDragCoefficient = 0.3f;
         bodyArea = 1.2f;
+
+        steeringSmoothness = 3.0f;
+        maxSteeringAngle = 10.0f;
+    }
+
+    if (ModelData.model->path.find("red-piper") != std::string::npos)
+    {
+        maxMastAngle = glm::radians(30.0f);
+        maxBoomAngle = glm::radians(90.0f);
+
+        maxLiftCoefficient = 1.3f;
+        optimalAngle = glm::radians(25.0f);
+        minDragCoefficient = 0.1f;
+        sailArea = 6.8f;
+
+        rollCoefficient = 0.005f;
+        rollScaling = 15.0f;
+        mass = 200.0f;
+        bodyDragCoefficient = 0.25f;
+        bodyArea = 1.0f;
 
         steeringSmoothness = 3.0f;
         maxSteeringAngle = 10.0f;
