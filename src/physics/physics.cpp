@@ -57,6 +57,26 @@ Physics::Physics(ModelData &ModelData)
         steeringSmoothness = 3.0f;
         maxSteeringAngle = 10.0f;
     }
+
+    if (ModelData.model->path.find("blue-piper") != std::string::npos)
+    {
+        maxMastAngle = glm::radians(60.0f);
+        maxBoomAngle = glm::radians(90.0f);
+
+        maxLiftCoefficient = 1.4f;
+        optimalAngle = glm::radians(20.0f);
+        minDragCoefficient = 0.1f;
+        sailArea = 6.4f;
+
+        rollCoefficient = 0.005f;
+        rollScaling = 15.0f;
+        mass = 200.0f;
+        bodyDragCoefficient = 0.25f;
+        bodyArea = 1.0f;
+
+        steeringSmoothness = 3.0f;
+        maxSteeringAngle = 10.0f;
+    }
 }
 
 void Physics::reset()
