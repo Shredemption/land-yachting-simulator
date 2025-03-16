@@ -124,7 +124,7 @@ void Physics::move()
 
     // Relative sail angle
     float angleToApparentWind = glm::orientedAngle(direction, -apparentWindDirection, glm::vec3(0.0f, 0.0f, 1.0f));
-    float relativeSailAngle = angleToApparentWind + SailAngle;
+    float relativeSailAngle = angleToApparentWind - SailAngle;
     float absAngle = fabs(relativeSailAngle);
 
     // Lift and Drag coefficients
@@ -133,10 +133,11 @@ void Physics::move()
 
     // Lift and Drag forces
     float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
-    glm::vec2 F_local_sail = dynamicPressure * sailArea * glm::vec2(effectiveCL, -effectiveCD);
+    float localLift = dynamicPressure * sailArea * effectiveCL;
+    float localDrag = dynamicPressure * sailArea * effectiveCD;
 
-    float F_lateral = F_local_sail.x * cos(angleToApparentWind) - F_local_sail.y * sin(angleToApparentWind); // lateral force
-    float F_forward = F_local_sail.x * sin(angleToApparentWind) + F_local_sail.y * cos(angleToApparentWind); // forward thrust
+    float sailLiftForce = localLift * sin(angleToApparentWind);
+    float sailDragForce = localDrag * cos(angleToApparentWind);
 
     float bodyDragForce = 0.5f * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
@@ -146,29 +147,29 @@ void Physics::move()
 
     // Stationary force/acceleration
     const float standstillVelocity = 0.02f;
-    float F_net;
+    float netForce;
 
     // if stationary
     if (forwardVelocity < standstillVelocity)
     {
         // if propulsion less than rollresistance
-        if (F_forward - bodyDragForce < rollResistance)
+        if (sailLiftForce - sailDragForce - bodyDragForce < rollResistance)
         {
-            F_net = 0;
+            netForce = 0;
         }
         // if propulsion greater than rollresistance
         else
         {
-            F_net = F_forward - bodyDragForce - rollResistance;
+            netForce = sailLiftForce - sailDragForce - bodyDragForce - rollResistance;
         }
     }
     // if already moving
     else
     {
-        F_net = F_forward - bodyDragForce - rollResistance;
+        netForce = sailLiftForce - sailDragForce - bodyDragForce - rollResistance;
     }
 
-    forwardAcceleration += F_net / mass;
+    forwardAcceleration += netForce / mass;
 
     // Apply accelerations
     forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
