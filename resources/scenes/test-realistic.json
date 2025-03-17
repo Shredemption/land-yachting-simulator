@@ -1,0 +1,52 @@
+{
+  "models": [
+    {
+      "path": "duvel",
+      "scale": [1, 1, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [0, 0, 0],
+      "animated": true,
+      "controlled": true
+    },
+    {
+      "path": "red-piper",
+      "scale": [1, 1, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [6, 1, 0]
+    },
+    {
+      "path": "blue-piper",
+      "scale": [1, 1, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [-6, 1, 0]
+    }
+  ],
+  "unitPlanes": [
+    {
+      "color": [0.18, 0.64, 0.85],
+      "scale": [2000, 2000, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [0, 0, 0],
+      "shader": "water"
+    },
+    {
+      "color": [0.78, 0.67, 0.13],
+      "scale": [10000, 10000, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [0, 0, -4]
+    }
+  ],
+  "skyBox": {
+    "up": "../resources/skybox/Daylight Box_Top.bmp",
+    "down": "../resources/skybox/Daylight Box_Bottom.bmp",
+    "left": "../resources/skybox/Daylight Box_Left.bmp",
+    "right": "../resources/skybox/Daylight Box_Right.bmp",
+    "front": "../resources/skybox/Daylight Box_Front.bmp",
+    "back": "../resources/skybox/Daylight Box_Back.bmp"
+  }
+}
