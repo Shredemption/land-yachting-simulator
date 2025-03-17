@@ -160,7 +160,7 @@ void Physics::move()
 
     MastAngle += smoothingFactor * (targetMastAngle - MastAngle);
     BoomAngle += smoothingFactor * (targetBoomAngle - BoomAngle);
-    SailAngle = BoomAngle * (1 + 0.2 * sin(angleToWind / 2));
+    SailAngle = BoomAngle * (1 + 0.2 * fabs(sin(angleToWind / 2)));
 
     // Apparent wind direction
     glm::vec3 apparentWind = windDirection * windStrength - direction * forwardVelocity;
