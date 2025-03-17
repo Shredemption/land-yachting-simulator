@@ -15,13 +15,12 @@
 
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
-JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 0, up, down, left, right, front, back);
-JSONCONS_N_MEMBER_TRAITS(JSONScene, 1, models, unitPlanes, skyBox, bgColor);
+JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
+JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, skyBox, bgColor);
 
 // TODO: textured unitplane
 // TODO: environment
 
-// Scene Constructor
 Scene::Scene(std::string jsonPath)
 {
     const std::string path = "../" + jsonPath;
@@ -61,12 +60,10 @@ Scene::Scene(std::string jsonPath)
     bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
 };
 
-// Scene Destructor
 Scene::~Scene()
 {
 }
 
-// Load models into scene
 void Scene::loadModelToScene(JSONModel model)
 {
     // Setup empty structModel unit
