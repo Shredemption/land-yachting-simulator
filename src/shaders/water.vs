@@ -27,6 +27,6 @@ void main()
     projectionPosition = u_projection * u_view * worldPos;
     gl_Position = projectionPosition;
 
-    toCamera = cameraPosition - worldPos.xyz;
-    fromLight = worldPos.xyz - lightPos;
+    toCamera = normalize(cameraPosition - worldPos.xyz);
+    fromLight = normalize(worldPos.xyz - lightPos);
 }
