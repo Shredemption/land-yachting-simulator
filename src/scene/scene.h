@@ -74,7 +74,7 @@ struct UnitPlaneData
     bool isTransparent() const
     {
         // Add logic to check whether the shader is transparent or not
-        return (shader == "water");
+        return (shader == "water" | shader == "toon-water");
     }
 };
 
