@@ -53,7 +53,7 @@ void Render::render(Scene &scene)
 {
     renderSceneSkyBox(scene);
 
-    if (Shader::waterLoaded & EventHandler::frame % 2 == 0)
+    if (Shader::waterLoaded && (EventHandler::frame % 2 == 0))
     {
         WaterPass = true;
         renderReflectRefract(scene, clipPlane);
@@ -64,11 +64,11 @@ void Render::render(Scene &scene)
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
 
+    // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
+    // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+
     if (debugMenu)
     {
-        renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
-        renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2.0f * EventHandler::screenWidth / 3.0f, 0);
-
         std::string debugText = "Debug Menu:\n";
 
         for (auto entry : debugData)
@@ -87,7 +87,21 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 {
     for (auto model : scene.structModels)
     {
-        Shader shader = Shader::load(model.shader);
+        Shader shader;
+        if (model.controlled)
+        {
+            shader = Shader::load("animated");
+            shader.setInt("maxBoneInfluence", 4);
+        }
+        if (model.animated)
+        {
+            shader = Shader::load("animated");
+            shader.setInt("maxBoneInfluence", 1);
+        }
+        else
+        {
+            shader = Shader::load(model.shader);
+        }
 
         // Send light and view position to relevant shader
         shader.setVec3("lightPos", EventHandler::lightPos);
@@ -132,7 +146,7 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 
         shader.setVec4("location_plane", clipPlane);
 
-        renderMesh(unitPlane.unitPlane);
+        renderModel(unitPlane);
     }
 
     // Sort transparent planes back to front based on distance from the camera
@@ -165,7 +179,7 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
         {
             FrameBuffer::WaterFrameBuffers();
         }
-        renderMesh(unitPlane.unitPlane);
+        renderModel(unitPlane);
     }
     glDisable(GL_BLEND);
 }
@@ -197,33 +211,75 @@ void Render::renderSceneSkyBox(Scene &scene)
 
 void Render::renderModel(ModelData model)
 {
-    for (unsigned int i = 0; i < model.model->meshes.size(); i++)
+    if (model.animated)
     {
-        Render::renderMesh(model.model->meshes[i]);
+        for (auto mesh : model.model->meshes)
+        {
+            renderAnimated(mesh);
+        }
+    }
+    else if (model.shader == "default")
+    {
+        for (auto mesh : model.model->meshes)
+        {
+            renderDefault(mesh);
+        }
+    }
+    else if (model.shader == "pbr")
+    {
+        for (auto mesh : model.model->meshes)
+        {
+            renderPBR(mesh);
+        }
     }
 }
 
-void Render::renderMesh(Mesh mesh)
+void Render::renderModel(UnitPlaneData unitPlane)
 {
-    if (mesh.shader == "pbr")
+    if (unitPlane.shader == "simple")
     {
-        renderPBR(mesh);
+        renderSimple(unitPlane.unitPlane);
     }
-    else if (mesh.shader == "default")
-    {
-        renderDefault(mesh);
-    }
-    else if (mesh.shader == "simple")
-    {
-        renderSimple(mesh);
-    }
-    else if (mesh.shader == "water")
+    else if (unitPlane.shader == "water")
     {
         if (!WaterPass)
         {
-            renderWater(mesh);
+            renderWater(unitPlane.unitPlane);
         }
     }
+}
+
+void Render::renderAnimated(Mesh mesh)
+{
+    Shader shader = Shader::load("animated");
+    unsigned int diffuseNr = 1;
+
+    // For every texture
+    for (unsigned int i = 0; i < mesh.textures.size(); i++)
+    {
+        // Activate texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + i);
+
+        // Retrieve texture number and type
+        std::string number;
+        std::string name = mesh.textures[i].type;
+
+        // Set appropriate number for filename (eg texture_diffuse3)
+        if (name == "diffuse")
+        {
+            number = std::to_string(diffuseNr++);
+            shader.setInt(("material." + name + number).c_str(), i);
+            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        }
+    }
+    // Unload texture
+    glActiveTexture(GL_TEXTURE0);
+
+    // Draw Mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
 }
 
 void Render::renderDefault(Mesh mesh)
