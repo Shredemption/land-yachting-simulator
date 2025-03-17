@@ -17,6 +17,8 @@ void main()
 {
     // Apply the transformations to the vertex position
     worldPos = u_model * vec4(position, 1.0);
+    vec3 camPos = vec3(u_view[3][0], u_view[3][1], 0);
+    worldPos.xyz -= camPos;
     TexCoords = worldPos.xy / scale;
     gl_Position = u_projection * u_view * worldPos;
 }
