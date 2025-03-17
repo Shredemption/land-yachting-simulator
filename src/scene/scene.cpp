@@ -1,5 +1,5 @@
 #include <scene/scene.h>
-#include <file_manager/file_manager.h>
+
 #include <filesystem>
 #include <fstream>
 #include <jsoncons/json.hpp>
@@ -11,6 +11,7 @@
 #include "mesh/mesh.h"
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
+#include "file_manager/file_manager.h"
 
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);

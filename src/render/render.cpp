@@ -1,9 +1,10 @@
 #include "render/render.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
 #include "camera/camera.h"
-
-#include <glm/gtc/matrix_transform.hpp>
 
 glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <shader/shader.h>
+#include "shader/shader.h"
 
 struct Vertex
 {

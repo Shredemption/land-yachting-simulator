@@ -1,8 +1,6 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <mesh/mesh.h>
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 
@@ -10,6 +8,8 @@
 #include <unordered_map>
 #include <map>
 #include <vector>
+
+#include "mesh/mesh.h"
 
 // Keep count of how many times cached texture is used
 struct CachedTexture

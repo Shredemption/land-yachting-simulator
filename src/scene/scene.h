@@ -1,13 +1,13 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <model/model.h>
-
 #include <glm/glm.hpp>
 
 #include <vector>
 #include <unordered_map>
 #include <string>
+
+#include "model/model.h"
 
 struct JSONModel
 {

@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-#include <scene/scene.h>
+#include "scene/scene.h"
 
 class Physics
 {

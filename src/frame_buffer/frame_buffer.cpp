@@ -1,7 +1,7 @@
+#include "frame_buffer/frame_buffer.h"
+
 #include <glad/glad.h>
 #include <iostream>
-
-#include "frame_buffer/frame_buffer.h"
 
 bool FrameBuffer::Water = false;
 unsigned int FrameBuffer::reflectionFrameBuffer;

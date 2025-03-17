@@ -1,10 +1,10 @@
-#include <animation/animation.h>
+#include "animation/animation.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "physics/physics.h"
 #include "event_handler/event_handler.h"
 #include "camera/camera.h"
-
-#include <glm/gtc/matrix_transform.hpp>
 
 void Animation::updateBones(Scene &scene)
 {

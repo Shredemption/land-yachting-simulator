@@ -1,7 +1,7 @@
 #include "mesh/mesh.h"
+
 #include "frame_buffer/frame_buffer.h"
 
-// Mesh constructor
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName)
 {
     this->vertices = vertices;
