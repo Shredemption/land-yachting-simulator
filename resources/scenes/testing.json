@@ -26,19 +26,19 @@
   ],
   "unitPlanes": [
     {
-      "color": [0.38, 0.7, 0.97],
+      "color": [0.18, 0.64, 0.85],
       "scale": [2000, 2000, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, -0.5],
+      "translation": [0, 0, 0],
       "shader": "toon-water"
     },
     {
-      "color": [0.72, 0.61, 0.24],
-      "scale": [100, 100, 1],
+      "color": [0.18, 0.64, 0.85],
+      "scale": [10000, 10000, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, -4]
+      "translation": [0, 0, -0.1]
     }
   ],
   "skyBox": {
