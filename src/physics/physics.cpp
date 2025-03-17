@@ -35,7 +35,8 @@ Physics::Physics(ModelData &ModelData)
         bodyArea = 1.2f;
 
         steeringSmoothness = 3.0f;
-        maxSteeringAngle = 10.0f;
+        maxSteeringAngle = 25.0f;
+        steeringAttenuation = 0.5f;
     }
 
     if (ModelData.model->path.find("red-piper") != std::string::npos)
@@ -55,7 +56,8 @@ Physics::Physics(ModelData &ModelData)
         bodyArea = 1.0f;
 
         steeringSmoothness = 3.0f;
-        maxSteeringAngle = 10.0f;
+        maxSteeringAngle = 25.0f;
+        steeringAttenuation = 0.45f;
     }
 
     if (ModelData.model->path.find("blue-piper") != std::string::npos)
@@ -75,7 +77,8 @@ Physics::Physics(ModelData &ModelData)
         bodyArea = 1.0f;
 
         steeringSmoothness = 3.0f;
-        maxSteeringAngle = 10.0f;
+        maxSteeringAngle = 25.0f;
+        steeringAttenuation = 1.55f;
     }
 }
 
@@ -141,7 +144,7 @@ void Physics::move()
     }
     if (keyInputs[4])
     {
-        forwardAcceleration += 2.f;
+        forwardAcceleration += 1.f;
     }
 
     sailControlFactor = std::clamp(sailControlFactor, 0.2f, 1.0f);
@@ -216,9 +219,10 @@ void Physics::move()
     // Apply accelerations
     forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
     steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * EventHandler::deltaTime;
+    float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
 
     // Transform with velocities
-    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(steeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
+    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(effectiveSteeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
     baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
     wheelAngle += forwardVelocity * EventHandler::deltaTime * 100;
 
@@ -227,6 +231,7 @@ void Physics::move()
     Render::debugData.push_back(std::pair("acceleration", forwardAcceleration));
     Render::debugData.push_back(std::pair("apparantWind", apparentWindSpeed));
     Render::debugData.push_back(std::pair("steeringAngle", steeringAngle));
+    Render::debugData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
     Render::debugData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
     Render::debugData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
     Render::debugData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
