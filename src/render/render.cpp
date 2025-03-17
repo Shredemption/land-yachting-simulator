@@ -52,6 +52,14 @@ void Render::initQuad()
 
 void Render::render(Scene &scene)
 {
+    // Clear color buffer
+    glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // Enable clipping planes
+    glEnable(GL_CLIP_DISTANCE0);
+
     renderSceneSkyBox(scene);
 
     if (Shader::waterLoaded && (EventHandler::frame % 2 == 0))
@@ -175,27 +183,30 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 
 void Render::renderSceneSkyBox(Scene &scene)
 {
-    glDepthFunc(GL_LEQUAL);
-    glDisable(GL_DEPTH_TEST);
+    for (auto skybox : scene.skyBox)
+    {
+        glDepthFunc(GL_LEQUAL);
+        glDisable(GL_DEPTH_TEST);
 
-    Shader shader = Shader::load("skybox");
+        Shader shader = Shader::load("skybox");
 
-    glBindVertexArray(scene.skyBox.VAO);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skyBox.textureID);
+        glBindVertexArray(skybox.VAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.textureID);
 
-    shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
-    shader.setMat4("u_projection", Camera::u_projection);
-    shader.setMat4("u_model", glm::mat4(1.0f));
+        shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
+        shader.setMat4("u_projection", Camera::u_projection);
+        shader.setMat4("u_model", glm::mat4(1.0f));
 
-    shader.setInt("skybox", 0);
+        shader.setInt("skybox", 0);
 
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    glDepthFunc(GL_LESS);
-    glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glEnable(GL_DEPTH_TEST);
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
+    }
 }
 
 void Render::renderModel(ModelData model)

@@ -10,16 +10,16 @@ uniform vec3 cameraPosition;
 uniform sampler2D toonWater;
 uniform sampler2D normalMap;
 
-const vec4 baseColor = vec4(0.18, 0.64, 0.85, 1.0);
-const vec4 darkColor = vec4(0.06, 0.53, 0.78, 1.0);
-const vec4 lightColor = vec4(0.87, 0.98, 1, 1);
+const vec4 baseColor = vec4(0.078, 0.416, 1, 1.0);
+const vec4 darkColor = vec4(0.078, 0.38, 0.89, 1.0);
+const vec4 lightColor = vec4(0.937, 1, 1, 1);
 
 const float moveSpeed = 5;
 const float moveScale = 1.0f/500.0f;
 uniform float moveOffset;
 
-const float fogStart = 150;
-const float fogEnd = 250;
+const float fogStart = 450;
+const float fogEnd = 600;
 
 void main()
 {

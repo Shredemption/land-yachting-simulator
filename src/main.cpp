@@ -130,14 +130,6 @@ int main()
 
             EventHandler::frame++;
 
-            // Clear color buffer
-            glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-            // Enable clipping planes
-            glEnable(GL_CLIP_DISTANCE0);
-
             // Process Inputs
             EventHandler::processInput(window);
 

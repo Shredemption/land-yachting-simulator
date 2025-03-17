@@ -29,27 +29,13 @@
   ],
   "unitPlanes": [
     {
-      "color": [0.18, 0.64, 0.85],
+      "color": [0.208, 0.502, 0.988],
       "scale": [2000, 2000, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0],
       "shader": "toon-water"
-    },
-    {
-      "color": [0.18, 0.64, 0.85],
-      "scale": [10000, 10000, 1],
-      "angle": 0,
-      "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, -0.1]
     }
   ],
-  "skyBox": {
-    "up": "../resources/skybox/Daylight Box_Top.bmp",
-    "down": "../resources/skybox/Daylight Box_Bottom.bmp",
-    "left": "../resources/skybox/Daylight Box_Left.bmp",
-    "right": "../resources/skybox/Daylight Box_Right.bmp",
-    "front": "../resources/skybox/Daylight Box_Front.bmp",
-    "back": "../resources/skybox/Daylight Box_Back.bmp"
-  }
+  "bgColor": [0.545, 0.929, 0.984]
 }
