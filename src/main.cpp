@@ -70,7 +70,7 @@ int main()
     Model::modelMap = Model::loadModelMap("resources/models.json");
 
     // Import JSON file scene
-    Scene scene = Scene("resources/scenes/testing.json");
+    Scene scene = Scene("resources/scenes/test-cartoon.json");
 
     // Generate physics properties for relevant models
     Physics::setup(scene);
