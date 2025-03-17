@@ -1,17 +1,18 @@
-#include <model/model.h>
-#include <scene/scene.h>
-#include <event_handler/event_handler.h>
+#include "model/model.h"
 
 #include <assimp/postprocess.h>
 #include <jsoncons/json.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <filesystem>
 #include <fstream>
 #include <map>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
+#include "scene/scene.h"
+#include "event_handler/event_handler.h"
 
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
 std::map<std::string, std::string> Model::modelMap;

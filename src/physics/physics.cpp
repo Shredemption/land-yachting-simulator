@@ -1,10 +1,10 @@
 #include <physics/physics.h>
 
-#include "event_handler/event_handler.h"
-#include "render/render.h"
-
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
+
+#include "event_handler/event_handler.h"
+#include "render/render.h"
 
 bool Physics::keyInputs[5];
 glm::vec3 Physics::windDirection = glm::vec3(0.0f, -1.0f, 0.0f);

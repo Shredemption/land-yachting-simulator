@@ -1,11 +1,11 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include "scene/scene.h"
 #include "glm/glm.hpp"
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#include "scene/scene.h"
 
 struct Character
 {

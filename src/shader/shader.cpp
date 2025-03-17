@@ -1,7 +1,8 @@
-#include "shader.h"
+#include "shader/shader.h"
 
-#include <file_manager/file_manager.h>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "file_manager/file_manager.h"
 
 std::unordered_map<std::string, Shader> Shader::loadedShaders;
 std::string Shader::lastShader;

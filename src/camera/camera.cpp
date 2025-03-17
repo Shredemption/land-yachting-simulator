@@ -1,7 +1,8 @@
-#include <camera/camera.h>
+#include "camera/camera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <event_handler/event_handler.h>
+
+#include "event_handler/event_handler.h"
 
 // Global Camera Variables
 glm::vec3 Camera::worldUp(0.f, 0.f, 1.f);             // World up direction
