@@ -42,8 +42,9 @@ private:
     static void renderSceneSkyBox(Scene &scene);
 
     static void renderModel(ModelData model);
-    static void renderMesh(Mesh mesh);
+    static void renderModel(UnitPlaneData unitPlane);
 
+    static void renderAnimated(Mesh mesh);
     static void renderDefault(Mesh mesh);
     static void renderPBR(Mesh mesh);
     static void renderSimple(Mesh mesh);
