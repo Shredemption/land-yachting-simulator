@@ -14,10 +14,6 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     {
         setupPBRMesh();
     }
-    if (shaderName == "default")
-    {
-        setupDefaultMesh();
-    }
     else if (shaderName == "simple")
     {
         setupSimpleMesh();
@@ -33,6 +29,14 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     else if (shaderName == "skybox")
     {
         setupSkyBoxMesh();
+    }
+    else if (shaderName == "toon")
+    {
+        setupToonMesh();
+    }
+    else
+    {
+        setupDefaultMesh();
     }
 }
 
@@ -74,6 +78,40 @@ void Mesh::setupDefaultMesh()
     // vertex bone weights
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Weights));
+
+    glBindVertexArray(0);
+}
+
+void Mesh::setupToonMesh()
+{
+    // Generate empty buffer data
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    // Bind Vertex Array Object
+    glBindVertexArray(VAO);
+
+    // Send vertices of mesh to GPU
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+    // Send Send element indices to GPU
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    // vertex positions
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+    // vertex normals
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Normal));
+    // vertex texture coords
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
+
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
 
     glBindVertexArray(0);
 }

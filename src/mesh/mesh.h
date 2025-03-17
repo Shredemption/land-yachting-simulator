@@ -64,6 +64,7 @@ private:
     // Rendering Data to GPU
     void setupPBRMesh();
     void setupDefaultMesh();
+    void setupToonMesh();
     void setupSimpleMesh();
     void setupToonWaterMesh();
     void setupWaterMesh();
