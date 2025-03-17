@@ -44,9 +44,10 @@ private:
     static void renderModel(ModelData model);
     static void renderModel(UnitPlaneData unitPlane);
 
-    static void renderAnimated(Mesh mesh);
     static void renderDefault(Mesh mesh);
+    static void renderDefaultAnimated(Mesh mesh);
     static void renderToon(Mesh mesh);
+    static void renderToonAnimated(Mesh mesh);
     static void renderPBR(Mesh mesh);
     static void renderSimple(Mesh mesh);
     static void renderToonWater(Mesh mesh);
