@@ -16,7 +16,7 @@
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 0, up, down, left, right, front, back);
-JSONCONS_N_MEMBER_TRAITS(JSONScene, 1, models, unitPlanes, skyBox);
+JSONCONS_N_MEMBER_TRAITS(JSONScene, 1, models, unitPlanes, skyBox, bgColor);
 
 // TODO: textured unitplane
 // TODO: environment
@@ -53,7 +53,12 @@ Scene::Scene(std::string jsonPath)
         loadUnitPlaneToScene(unitPlane);
     }
 
-    loadSkyBoxToScene(jsonScene.skyBox);
+    for (JSONSkybox skybox : jsonScene.skyBox)
+    {
+        loadSkyBoxToScene(skybox);
+    }
+
+    bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
 };
 
 // Scene Destructor
@@ -133,13 +138,13 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 
 void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
 {
-    this->skyBox.up = loadSkyBox.up;
-    this->skyBox.down = loadSkyBox.down;
-    this->skyBox.left = loadSkyBox.left;
-    this->skyBox.right = loadSkyBox.right;
-    this->skyBox.front = loadSkyBox.front;
-    this->skyBox.back = loadSkyBox.back;
+    this->skyBox[0].up = loadSkyBox.up;
+    this->skyBox[0].down = loadSkyBox.down;
+    this->skyBox[0].left = loadSkyBox.left;
+    this->skyBox[0].right = loadSkyBox.right;
+    this->skyBox[0].front = loadSkyBox.front;
+    this->skyBox[0].back = loadSkyBox.back;
 
-    this->skyBox.textureID = Model::LoadSkyBoxTexture(this->skyBox);
-    this->skyBox.VAO = Mesh::setupSkyBoxMesh();
+    this->skyBox[0].textureID = Model::LoadSkyBoxTexture(this->skyBox[0]);
+    this->skyBox[0].VAO = Mesh::setupSkyBoxMesh();
 }

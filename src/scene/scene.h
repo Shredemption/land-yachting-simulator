@@ -45,7 +45,8 @@ struct JSONScene
 {
     std::vector<JSONModel> models = {};
     std::vector<JSONUnitPlane> unitPlanes = {};
-    JSONSkybox skyBox = JSONSkybox();
+    std::vector<JSONSkybox> skyBox = {};
+    std::vector<float> bgColor = {0, 0, 0};
 };
 
 class Physics;
@@ -93,25 +94,20 @@ struct SkyBoxData
 class Scene
 {
 public:
-    // Scene Constructors
     Scene(std::string jsonPath);
-
-    // Scene Destructor
     ~Scene();
 
-    // Model data
     std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;
 
-    // Unit Plane Data
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
 
-    // Skybox
-    SkyBoxData skyBox;
+    std::vector<SkyBoxData> skyBox;
+
+    glm::vec3 bgColor;
 
 private:
-    // Load models into scene
     void loadModelToScene(JSONModel model);
     void loadUnitPlaneToScene(JSONUnitPlane unitPlane);
     void loadSkyBoxToScene(JSONSkybox skyBox);
