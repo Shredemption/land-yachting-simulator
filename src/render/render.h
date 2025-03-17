@@ -48,6 +48,7 @@ private:
     static void renderDefault(Mesh mesh);
     static void renderPBR(Mesh mesh);
     static void renderSimple(Mesh mesh);
+    static void renderToonWater(Mesh mesh);
     static void renderWater(Mesh mesh);
 
     static void renderReflectRefract(Scene &scene, glm::vec4 clipPlane);

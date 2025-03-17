@@ -65,6 +65,7 @@ private:
     void setupPBRMesh();
     void setupDefaultMesh();
     void setupSimpleMesh();
+    void setupToonWaterMesh();
     void setupWaterMesh();
 };
 
