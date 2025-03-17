@@ -218,11 +218,11 @@ void Render::renderModel(ModelData model)
             renderAnimated(mesh);
         }
     }
-    else if (model.shader == "default")
+    else if (model.shader == "toon")
     {
         for (auto mesh : model.model->meshes)
         {
-            renderDefault(mesh);
+            renderToon(mesh);
         }
     }
     else if (model.shader == "pbr")
@@ -230,6 +230,13 @@ void Render::renderModel(ModelData model)
         for (auto mesh : model.model->meshes)
         {
             renderPBR(mesh);
+        }
+    }
+    else
+    {
+        for (auto mesh : model.model->meshes)
+        {
+            renderDefault(mesh);
         }
     }
 }
@@ -306,6 +313,48 @@ void Render::renderDefault(Mesh mesh)
         {
             number = std::to_string(diffuseNr++);
             shader.setInt(("material." + name + number).c_str(), i);
+            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        }
+    }
+    // Unload texture
+    glActiveTexture(GL_TEXTURE0);
+
+    // Draw Mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+}
+
+void Render::renderToon(Mesh mesh)
+{
+    Shader shader = Shader::load("toon");
+    unsigned int diffuseNr = 1;
+    unsigned int shadowNr = 1;
+
+    shader.setFloat("ambientLightIntensity", 1.2);
+
+    // For every texture
+    for (unsigned int i = 0; i < mesh.textures.size(); i++)
+    {
+        // Activate texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + i);
+
+        // Retrieve texture number and type
+        std::string number;
+        std::string name = mesh.textures[i].type;
+
+        // Set appropriate number for filename (eg texture_diffuse3)
+        if (name == "diffuse")
+        {
+            number = std::to_string(diffuseNr++);
+            shader.setInt("diffuse", i);
+            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        }
+        if (name == "shadow")
+        {
+            number = std::to_string(shadowNr++);
+            shader.setInt("shadow", i);
             glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
         }
     }

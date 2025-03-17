@@ -24,7 +24,7 @@ class Model
 {
 public:
     // Model Constructor
-    Model(std::string const &path, std::string shaderName = "default");
+    Model(std::pair<std::string, std::string> pathShader);
 
     std::map<std::string, Bone *> boneHierarchy;
     std::vector<glm::mat4> boneTransforms;

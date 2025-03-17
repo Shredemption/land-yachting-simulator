@@ -17,10 +17,10 @@ std::unordered_map<std::string, CachedTexture> Model::textureCache;
 std::map<std::string, std::string> Model::modelMap;
 
 // Model Constructor
-Model::Model(std::string const &path, std::string shaderName)
+Model::Model(std::pair<std::string, std::string> pathShader)
 {
-    this->path = path;
-    loadModel(path, shaderName);
+    this->path = pathShader.first;
+    loadModel(pathShader.first, pathShader.second);
 }
 
 // Model Destructor
@@ -185,6 +185,12 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
         if (shaderName == "default")
         {
             std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_UNKNOWN, "properties");
+            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        }
+
+        if (shaderName == "toon")
+        {
+            std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_UNKNOWN, "shadow");
             textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
         }
 
