@@ -93,7 +93,7 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
             shader = Shader::load("animated");
             shader.setInt("maxBoneInfluence", 4);
         }
-        if (model.animated)
+        else if (model.animated)
         {
             shader = Shader::load("animated");
             shader.setInt("maxBoneInfluence", 1);
