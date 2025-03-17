@@ -240,6 +240,10 @@ void Render::renderModel(UnitPlaneData unitPlane)
     {
         renderSimple(unitPlane.unitPlane);
     }
+    else if (unitPlane.shader == "toon-water")
+    {
+        renderToonWater(unitPlane.unitPlane);
+    }
     else if (unitPlane.shader == "water")
     {
         if (!WaterPass)
@@ -366,6 +370,35 @@ void Render::renderSimple(Mesh mesh)
     // Draw Mesh
     glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+}
+
+void Render::renderToonWater(Mesh mesh)
+{
+    Texture DuDv = LoadStandaloneTexture("toonWater.jpeg");
+    Texture normal = LoadStandaloneTexture("waterNormal.png");
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, DuDv.id);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, normal.id);
+
+    Shader shader = Shader::load("toon-water");
+
+    shader.setInt("toonWater", 0);
+    shader.setInt("normalMap", 1);
+    shader.setFloat("moveOffset", EventHandler::time);
+    shader.setVec3("cameraPosition", Camera::getPos());
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Draw Mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glDisable(GL_BLEND);
 
     glBindVertexArray(0);
 }
