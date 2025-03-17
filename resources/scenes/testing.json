@@ -6,21 +6,25 @@
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0],
-      "shader": "toon"
+      "shader": "toon",
+      "animated": true,
+      "controlled": true
     },
     {
       "path": "red-piper",
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [6, 1, 0]
+      "translation": [6, 1, 0],
+      "shader": "toon"
     },
     {
       "path": "blue-piper",
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [-6, 1, 0]
+      "translation": [-6, 1, 0],
+      "shader": "toon"
     }
   ],
   "unitPlanes": [

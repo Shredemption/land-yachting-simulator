@@ -87,21 +87,7 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 {
     for (auto model : scene.structModels)
     {
-        Shader shader;
-        if (model.controlled)
-        {
-            shader = Shader::load("animated");
-            shader.setInt("maxBoneInfluence", 4);
-        }
-        else if (model.animated)
-        {
-            shader = Shader::load("animated");
-            shader.setInt("maxBoneInfluence", 1);
-        }
-        else
-        {
-            shader = Shader::load(model.shader);
-        }
+        Shader shader = Shader::load(model.shader);
 
         // Send light and view position to relevant shader
         shader.setVec3("lightPos", EventHandler::lightPos);
@@ -119,7 +105,9 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 
         shader.setVec4("location_plane", clipPlane);
 
-        if (model.model->boneHierarchy.size() > 0)
+        // Set animation state and bone stuff
+        shader.setBool("animated", model.animated);
+        if (model.animated)
         {
             shader.setMat4Array("u_boneTransforms", model.model->boneTransforms);
             shader.setMat4Array("u_inverseOffsets", model.model->boneInverseOffsets);
@@ -211,14 +199,7 @@ void Render::renderSceneSkyBox(Scene &scene)
 
 void Render::renderModel(ModelData model)
 {
-    if (model.animated)
-    {
-        for (auto mesh : model.model->meshes)
-        {
-            renderAnimated(mesh);
-        }
-    }
-    else if (model.shader == "toon")
+    if (model.shader == "toon")
     {
         for (auto mesh : model.model->meshes)
         {
@@ -258,39 +239,6 @@ void Render::renderModel(UnitPlaneData unitPlane)
             renderWater(unitPlane.unitPlane);
         }
     }
-}
-
-void Render::renderAnimated(Mesh mesh)
-{
-    Shader shader = Shader::load("animated");
-    unsigned int diffuseNr = 1;
-
-    // For every texture
-    for (unsigned int i = 0; i < mesh.textures.size(); i++)
-    {
-        // Activate texture unit before binding
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        // Retrieve texture number and type
-        std::string number;
-        std::string name = mesh.textures[i].type;
-
-        // Set appropriate number for filename (eg texture_diffuse3)
-        if (name == "diffuse")
-        {
-            number = std::to_string(diffuseNr++);
-            shader.setInt(("material." + name + number).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
-        }
-    }
-    // Unload texture
-    glActiveTexture(GL_TEXTURE0);
-
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
 }
 
 void Render::renderDefault(Mesh mesh)
