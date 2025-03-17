@@ -5,9 +5,9 @@
 
 // Global Camera Variables
 glm::vec3 Camera::worldUp(0.f, 0.f, 1.f);             // World up direction
-glm::vec3 Camera::cameraPositionFree(0.f, -5.f, 0.f); // Camera placed
+glm::vec3 Camera::cameraPositionFree(17.32f, -10.f, 10.f); // Camera placed
 glm::vec3 Camera::cameraPosition(0.f, 0.f, 0.f);
-float Camera::yawFree = 0, Camera::pitchFree = 0, Camera::rollFree = 0;
+float Camera::yawFree = glm::radians(-60.0f), Camera::pitchFree = glm::radians(30.0f), Camera::rollFree = 0;
 float Camera::yaw = 0, Camera::pitch = 0, Camera::roll = 0;
 float Camera::yawOffset = 0, Camera::pitchOffset = 0, Camera::rollOffset = 0;
 glm::vec3 Camera::cameraViewDirection(0.0f, 1.0f, 0.0f);
