@@ -112,8 +112,7 @@ class Scene
 {
 public:
     Scene(std::string jsonPath, std::string sceneName);
-    ~Scene();
-
+    
     std::string name;
     std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;

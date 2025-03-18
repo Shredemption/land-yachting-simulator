@@ -34,10 +34,6 @@ Shader Shader::load(const std::string &shaderName)
     return shader;
 }
 
-Shader::Shader() {}
-
-Shader::~Shader() {}
-
 void Shader::init(const std::string &vertexCode, const std::string &fragmentCode)
 {
     m_vertexCode = vertexCode;

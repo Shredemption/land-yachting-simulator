@@ -68,10 +68,6 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
 };
 
-Scene::~Scene()
-{
-}
-
 void Scene::loadModelToScene(JSONModel model)
 {
     // Setup empty structModel unit
@@ -148,7 +144,7 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
 {
     hasSkyBox = true;
-    
+
     this->skyBox.up = loadSkyBox.up;
     this->skyBox.down = loadSkyBox.down;
     this->skyBox.left = loadSkyBox.left;

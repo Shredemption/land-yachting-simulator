@@ -16,9 +16,6 @@
 class Shader
 {
 public:
-    Shader();
-    ~Shader();
-
     static Shader load(const std::string &shaderName);
     void use();
 
