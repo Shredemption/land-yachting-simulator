@@ -38,7 +38,7 @@ public:
 
     // Load JSON model map
     static std::map<std::string, std::string> modelMap;
-    static std::map<std::string, std::string> loadModelMap(const std::string &filePath);
+    static void loadModelMap();
 
     // Model data
     std::vector<Mesh> meshes;

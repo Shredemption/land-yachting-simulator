@@ -16,6 +16,7 @@
 
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
 std::map<std::string, std::string> Model::modelMap;
+std::string modelMapPath = "resources/models.json";
 
 // Model Constructor
 Model::Model(std::pair<std::string, std::string> pathShader)
@@ -378,9 +379,9 @@ inline bool Model::ends_with(std::string const &value, std::string const &ending
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
-std::map<std::string, std::string> Model::loadModelMap(const std::string &filePath)
+void Model::loadModelMap()
 {
-    const std::string path = "../" + filePath;
+    const std::string path = "../" + modelMapPath;
     // Check if the file exists
     if (!std::filesystem::exists(path))
     {
@@ -406,13 +407,10 @@ std::map<std::string, std::string> Model::loadModelMap(const std::string &filePa
     }
 
     // Create a map from the parsed JSON
-    std::map<std::string, std::string> modelMap;
     for (const auto &kv : j["models"].object_range())
     {
         modelMap[kv.key()] = kv.value().as<std::string>();
     }
-
-    return modelMap;
 }
 
 unsigned int Model::LoadSkyBoxTexture(SkyBoxData skybox)

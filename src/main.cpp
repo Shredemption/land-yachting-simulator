@@ -66,10 +66,11 @@ int main()
     }
 
     // Import JSON file model registry
-    Model::modelMap = Model::loadModelMap("resources/models.json");
+    Model::loadModelMap();
+    SceneManager::loadSceneMap();
 
     // Load title screen Scene
-    SceneManager::load("resources/scenes/main-menu.json");
+    SceneManager::load("title");
 
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
