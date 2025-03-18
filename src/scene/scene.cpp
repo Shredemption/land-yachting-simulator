@@ -16,7 +16,8 @@
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
-JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, skyBox, bgColor);
+JSONCONS_N_MEMBER_TRAITS(JSONText, 1, text, color, position, scale);
+JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, skyBox, texts, bgColor);
 
 // TODO: textured unitplane
 // TODO: environment
@@ -55,6 +56,11 @@ Scene::Scene(std::string jsonPath)
     for (JSONSkybox skybox : jsonScene.skyBox)
     {
         loadSkyBoxToScene(skybox);
+    }
+
+    for (JSONText text : jsonScene.texts)
+    {
+        loadTextToScene(text);
     }
 
     bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
@@ -100,7 +106,7 @@ void Scene::loadModelToScene(JSONModel model)
     loadModel.animated = model.animated;
     loadModel.controlled = model.controlled;
 
-    structModels.push_back(loadModel);
+    this->structModels.push_back(loadModel);
 }
 
 void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
@@ -128,9 +134,13 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     loadUnitPlane.position = u_model_i[3];
 
     if (loadUnitPlane.isTransparent())
-        transparentUnitPlanes.push_back(loadUnitPlane);
+    {
+        this->transparentUnitPlanes.push_back(loadUnitPlane);
+    }
     else
-        opaqueUnitPlanes.push_back(loadUnitPlane);
+    {
+        this->opaqueUnitPlanes.push_back(loadUnitPlane);
+    }
 }
 
 void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
@@ -144,4 +154,16 @@ void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
 
     this->skyBox[0].textureID = Model::LoadSkyBoxTexture(this->skyBox[0]);
     this->skyBox[0].VAO = Mesh::setupSkyBoxMesh();
+}
+
+void Scene::loadTextToScene(JSONText text)
+{
+    TextData loadText;
+
+    loadText.text = text.text;
+    loadText.color = glm::vec3(text.color[0], text.color[1], text.color[2]);
+    loadText.position = glm::vec2(text.position[0],text.position[1]);
+    loadText.scale = text.scale;
+
+    this->texts.push_back(loadText);
 }

@@ -72,12 +72,13 @@ void Render::render(Scene &scene)
     clipPlane = {0, 0, 0, 0};
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
-
-    // renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
-    // renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+    renderSceneTexts(scene);
 
     if (debugMenu)
     {
+        renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
+        renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+
         std::string debugText = "Debug Menu:\n";
 
         for (auto entry : debugData)
@@ -206,6 +207,14 @@ void Render::renderSceneSkyBox(Scene &scene)
         glEnable(GL_DEPTH_TEST);
 
         glBindVertexArray(0);
+    }
+}
+
+void Render::renderSceneTexts(Scene &scene)
+{
+    for (auto text : scene.texts)
+    {
+        renderText(text.text, text.position.x * EventHandler::screenHeight, text.position.y * EventHandler::screenHeight, text.scale, text.color);
     }
 }
 
@@ -648,7 +657,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float startX = x;                                          // Store the initial x position
-    float lineSpacing = Characters['H'].Size.y * scale * 1.2f; // Adjust line spacing with a small padding
+    float lineSpacing = Characters['H'].Size.y * scale * 1.5f; // Adjust line spacing with a small padding
 
     for (char c : text)
     {
