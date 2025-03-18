@@ -7,14 +7,16 @@ layout(location = 4) in vec4 aWeights;
 
 out VS_OUT
 {
-    vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
     vec3 lightDir;
+    vec3 viewDir;
+    vec3 halfwayDir;
 }
 vs_out;
 
 uniform vec3 lightPos;
+uniform vec3 viewPos;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -70,9 +72,10 @@ void main()
     gl_ClipDistance[0] = dot(worldPosition, location_plane);
 
     vs_out.TexCoords = aTexCoords;
-    vs_out.FragPos = worldPosition.xyz;
-    vs_out.Normal = normalize(mat3(u_normal) * finalNormal);
+    vs_out.Normal = normalize(transpose(inverse(mat3(u_model))) * finalNormal);
     vs_out.lightDir = normalize(lightPos - worldPosition.xyz);
+    vs_out.viewDir = normalize(viewPos - worldPosition.xyz);
+    vs_out.halfwayDir = normalize(vs_out.viewDir + vs_out.lightDir);
 
     gl_Position = u_projection * u_view * worldPosition;
 }
