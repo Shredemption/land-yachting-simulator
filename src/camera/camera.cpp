@@ -25,7 +25,7 @@ void Camera::update()
 {
     setCamDirection(getRotation());
     genProjectionMatrix();
-    genViewMatrix(getPos());
+    genViewMatrix(getPosition());
 }
 
 void Camera::reset()
@@ -39,6 +39,7 @@ void Camera::reset()
         freeCam = false;
 
         setCamDirection(getRotation());
+        genViewMatrix(getPosition());
     }
     else
     {
@@ -53,6 +54,7 @@ void Camera::reset()
         freeCam = true;
 
         setCamDirection(getRotation());
+        genViewMatrix(getPosition());
     }
 }
 
@@ -80,13 +82,16 @@ void Camera::genProjectionMatrix()
 // View matrix
 void Camera::genViewMatrix(glm::vec3 position)
 {
+    cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
+    cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight));
+
     u_view = glm::lookAt(position,                       // Camera Position
                          position + cameraViewDirection, // Target Position
                          cameraUp                        // Up vector
     );
 }
 
-glm::vec3 Camera::getPos()
+glm::vec3 Camera::getPosition()
 {
     if (freeCam)
     {
