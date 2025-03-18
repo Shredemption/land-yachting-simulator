@@ -12,6 +12,7 @@
 Scene *SceneManager::currentScene = nullptr;
 std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
+bool SceneManager::onTitleScreen = false;
 
 void SceneManager::load(const std::string &sceneName)
 {
@@ -19,6 +20,11 @@ void SceneManager::load(const std::string &sceneName)
 
     currentScene = new Scene(sceneMap[sceneName], sceneName);
     Physics::setup(*currentScene);
+
+    if (sceneName == "title")
+    {
+        onTitleScreen = true;
+    }
 }
 
 void SceneManager::update()
@@ -39,6 +45,8 @@ void SceneManager::unload()
         delete currentScene;
         currentScene = nullptr;
     }
+
+    onTitleScreen = false;
 }
 
 void SceneManager::loadSceneMap()
