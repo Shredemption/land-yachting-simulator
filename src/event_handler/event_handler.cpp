@@ -154,6 +154,13 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
         glfwSetCursorPos(window, 0, 0);
     }
 
+    if (SceneManager::onTitleScreen)
+    {
+        xPos = 0;
+        yPos = 0;
+        glfwSetCursorPos(window, 0, 0);
+    }
+
     // Apply sensitivity
     float sensitvity = 0.1f;
     xPos *= sensitvity;
