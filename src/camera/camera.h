@@ -23,7 +23,7 @@ public:
     static bool cameraMoved;
     static bool freeCam;
 
-    static glm::vec3 getPos();
+    static glm::vec3 getPosition();
     static glm::vec3 getRotation();
 };
 

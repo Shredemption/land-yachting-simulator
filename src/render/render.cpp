@@ -108,7 +108,7 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 
         // Send light and view position to relevant shader
         shader.setVec3("lightPos", EventHandler::lightPos);
-        shader.setVec3("viewPos", Camera::getPos());
+        shader.setVec3("viewPos", Camera::getPosition());
         shader.setFloat("lightIntensity", EventHandler::lightInsensity);
         shader.setVec3("lightCol", EventHandler::lightCol);
 
@@ -157,8 +157,8 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
     // Sort transparent planes back to front based on distance from the camera
     std::sort(scene.transparentUnitPlanes.begin(), scene.transparentUnitPlanes.end(), [&](const UnitPlaneData &a, const UnitPlaneData &b)
               {
-                  float distA = glm::distance(Camera::getPos(), a.position);
-                  float distB = glm::distance(Camera::getPos(), b.position);
+                  float distA = glm::distance(Camera::getPosition(), a.position);
+                  float distB = glm::distance(Camera::getPosition(), b.position);
                   return distA > distB; // Sort by distance: farthest first, closest last
               });
 
@@ -414,7 +414,7 @@ void Render::renderToonWater(Mesh mesh)
     shader.setInt("toonWater", 0);
     shader.setInt("normalMap", 1);
     shader.setFloat("moveOffset", EventHandler::time);
-    shader.setVec3("cameraPosition", Camera::getPos());
+    shader.setVec3("cameraPosition", Camera::getPosition());
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -452,7 +452,7 @@ void Render::renderWater(Mesh mesh)
     shader.setInt("normalMap", 3);
     shader.setInt("depthMap", 4);
     shader.setFloat("moveOffset", EventHandler::time);
-    shader.setVec3("cameraPosition", Camera::getPos());
+    shader.setVec3("cameraPosition", Camera::getPosition());
     shader.setVec3("lightPos", EventHandler::lightPos);
     shader.setVec3("lightCol", EventHandler::lightCol);
 
@@ -476,8 +476,8 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
 
     clipPlane = {0, 0, 1, -waterHeight};
     Camera::setCamDirection(glm::vec3(-Camera::getRotation()[0], Camera::getRotation()[1], Camera::getRotation()[2]));
-    float distance = 2 * (Camera::getPos()[2] - waterHeight);
-    Camera::genViewMatrix(Camera::getPos() + glm::vec3(0, 0, -distance));
+    float distance = 2 * (Camera::getPosition()[2] - waterHeight);
+    Camera::genViewMatrix(Camera::getPosition() + glm::vec3(0, 0, -distance));
 
     // Draw to it
     glClear(GL_COLOR_BUFFER_BIT);
@@ -492,7 +492,7 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
 
     clipPlane = {0, 0, -1, waterHeight};
     Camera::setCamDirection(Camera::getRotation());
-    Camera::genViewMatrix(Camera::getPos());
+    Camera::genViewMatrix(Camera::getPosition());
 
     // Draw to it
     glClear(GL_COLOR_BUFFER_BIT);
