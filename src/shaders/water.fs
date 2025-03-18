@@ -23,8 +23,8 @@ const float waveStrength = 0.05;
 uniform float moveOffset;
 const float moveSpeed = 0.05;
 
-const float shineDamper = 20;
-const float reflectivity = 0.6;
+const float shineDamper = 1;
+const float reflectivity = 50;
 
 const float near = 0.1;
 const float far = 200.0;
@@ -40,7 +40,6 @@ void main()
     vec2 refractCoords = devicePosition;
 
     // Precompute depth conversion constants
-    float invRange = 1.0 / (far - near);
     float constantFactor = 2.0 * near * far;
 
     // Calculate depth distances from the depth map and the current fragment
