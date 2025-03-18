@@ -13,16 +13,16 @@ uniform vec3 lightPos;
 uniform vec3 cameraPosition;
 
 // Uniforms for transformation matrices
-uniform mat4 u_model;           // Model Matrix: transforms from local to world space
-uniform mat4 u_view;            // View Matrix: transforms from world space to camera/view space
-uniform mat4 u_projection;      // Projection matrix: transforms from camera space to clip space
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_projection;
+uniform mat4 u_water;
 
 int tiling = 20;
 
-void main()
-{
+void main() {
     // Apply the transformations to the vertex position
-    worldPos = u_model * vec4(position, 1.0);
+    worldPos = u_water * u_model * vec4(position, 1.0);
     TexCoords = worldPos.xy / tiling;
     projectionPosition = u_projection * u_view * worldPos;
     gl_Position = projectionPosition;
