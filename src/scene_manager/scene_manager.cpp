@@ -8,6 +8,7 @@
 #include "physics/physics.h"
 #include "animation/animation.h"
 #include "render/render.h"
+#include "shader/shader.h"
 
 Scene *SceneManager::currentScene = nullptr;
 std::map<std::string, std::string> SceneManager::sceneMap;
@@ -47,6 +48,8 @@ void SceneManager::unload()
     }
 
     onTitleScreen = false;
+
+    Shader::waterLoaded = false;
 }
 
 void SceneManager::loadSceneMap()
