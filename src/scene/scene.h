@@ -41,11 +41,20 @@ struct JSONSkybox
     std::string back = "";
 };
 
+struct JSONText
+{
+    std::string text = "";
+    std::vector<float> color = {1, 1, 1};
+    std::vector<float> position = {0, 0};
+    float scale = 1;
+};
+
 struct JSONScene
 {
     std::vector<JSONModel> models = {};
     std::vector<JSONUnitPlane> unitPlanes = {};
     std::vector<JSONSkybox> skyBox = {};
+    std::vector<JSONText> texts = {};
     std::vector<float> bgColor = {0, 0, 0};
 };
 
@@ -81,14 +90,22 @@ struct UnitPlaneData
 
 struct SkyBoxData
 {
-    std::string up = "";
-    std::string down = "";
-    std::string left = "";
-    std::string right = "";
-    std::string front = "";
-    std::string back = "";
+    std::string up;
+    std::string down;
+    std::string left;
+    std::string right;
+    std::string front;
+    std::string back;
     unsigned int textureID;
     unsigned int VAO;
+};
+
+struct TextData
+{
+    std::string text;
+    glm::vec3 color;
+    glm::vec2 position;
+    float scale;
 };
 
 class Scene
@@ -99,18 +116,17 @@ public:
 
     std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;
-
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
-
     std::vector<SkyBoxData> skyBox;
-
+    std::vector<TextData> texts;    
     glm::vec3 bgColor;
 
 private:
     void loadModelToScene(JSONModel model);
     void loadUnitPlaneToScene(JSONUnitPlane unitPlane);
     void loadSkyBoxToScene(JSONSkybox skyBox);
+    void loadTextToScene(JSONText text);
 };
 
 #endif

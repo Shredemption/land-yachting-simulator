@@ -40,6 +40,7 @@ private:
     static void renderSceneModels(Scene &scene, glm::vec4 clipPlane);
     static void renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane);
     static void renderSceneSkyBox(Scene &scene);
+    static void renderSceneTexts(Scene &scene);
 
     static void renderModel(ModelData model);
     static void renderModel(UnitPlaneData unitPlane);
