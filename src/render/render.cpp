@@ -5,6 +5,7 @@
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
 #include "camera/camera.h"
+#include "scene_manager/scene_manager.h"
 
 glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
 
@@ -80,7 +81,7 @@ void Render::render(Scene &scene)
     renderSceneUnitPlanes(scene, clipPlane);
     renderSceneTexts(scene);
 
-    if (debugMenu)
+    if (debugMenu && !SceneManager::onTitleScreen)
     {
         renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
         renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
@@ -179,7 +180,7 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 
         shader.setVec4("location_plane", clipPlane);
 
-        if (unitPlane.shader == "water" & FrameBuffer::Water == false)
+        if (unitPlane.shader == "water" && FrameBuffer::Water == false)
         {
             FrameBuffer::WaterFrameBuffers();
         }
@@ -190,28 +191,30 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 
 void Render::renderSceneSkyBox(Scene &scene)
 {
+    if (scene.hasSkyBox)
+    {
+        glDepthFunc(GL_LEQUAL);
+        glDisable(GL_DEPTH_TEST);
 
-    glDepthFunc(GL_LEQUAL);
-    glDisable(GL_DEPTH_TEST);
+        Shader shader = Shader::load("skybox");
 
-    Shader shader = Shader::load("skybox");
+        glBindVertexArray(scene.skyBox.VAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skyBox.textureID);
 
-    glBindVertexArray(scene.skyBox.VAO);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skyBox.textureID);
+        shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
+        shader.setMat4("u_projection", Camera::u_projection);
+        shader.setMat4("u_model", glm::mat4(1.0f));
 
-    shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
-    shader.setMat4("u_projection", Camera::u_projection);
-    shader.setMat4("u_model", glm::mat4(1.0f));
+        shader.setInt("skybox", 0);
 
-    shader.setInt("skybox", 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthFunc(GL_LESS);
+        glEnable(GL_DEPTH_TEST);
 
-    glDepthFunc(GL_LESS);
-    glEnable(GL_DEPTH_TEST);
-
-    glBindVertexArray(0);
+        glBindVertexArray(0);
+    }
 }
 
 void Render::renderSceneTexts(Scene &scene)

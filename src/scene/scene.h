@@ -120,6 +120,7 @@ public:
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
     SkyBoxData skyBox;
+    bool hasSkyBox;
     std::vector<TextData> texts;    
     glm::vec3 bgColor;
 
