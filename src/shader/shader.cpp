@@ -23,14 +23,14 @@ Shader Shader::load(const std::string &shaderName)
         loadedShaders.emplace(shaderName, shader);
 
         if (shaderName == "water")
-        {  
+        {
             waterLoaded = true;
         }
     }
 
     shader = loadedShaders[shaderName];
     shader.use();
-    
+
     return shader;
 }
 
