@@ -34,6 +34,7 @@ void Camera::reset()
     {
         cameraPosition = glm::vec3(0.f, 0.f, 0.f);
         yaw = 0, pitch = 0, roll = 0;
+        yawOffset = 0, pitchOffset = 0, rollOffset = 0;
 
         cameraMoved = true;
         freeCam = false;
@@ -72,11 +73,10 @@ void Camera::setCamDirection(glm::vec3 rotation)
 // Projection Matrix
 void Camera::genProjectionMatrix()
 {
-    u_projection = glm::perspective((float)M_PI_2,                                                        // Field of view (90 deg)
-                                    (float)EventHandler::screenWidth / (float)EventHandler::screenHeight, // Aspect Ratio (w/h)
-                                    0.1f,                                                                 // Near clipping plane
-                                    1000.0f                                                               // Far clipping plane
-    );
+    u_projection = glm::perspective(glm::radians(75.0f),
+                                    (float)EventHandler::screenWidth / (float)EventHandler::screenHeight,
+                                    0.1f,
+                                    1000.0f);
 }
 
 // View matrix

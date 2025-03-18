@@ -5,5 +5,13 @@
       "text": "MARAMA - Land Yachting Simulator\n\n[1] Load Realistic Scene\n[2] Load Cartoon Scene",
       "position": [0.05, 0.05]
     }
+  ],
+  "models": [
+    {
+      "path": "dn-duvel",
+      "translation": [5, 7, -3],
+      "angle": -66.5,
+      "rotationAxis": [0, 0, 1]
+    }
   ]
 }
