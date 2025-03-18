@@ -50,7 +50,6 @@ public:
     unsigned int VAO, VBO, EBO;
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName);
-    ~Mesh();
 
     static Mesh genUnitPlane(glm::vec3 color, std::string shaderName);
     static unsigned int setupSkyBoxMesh();

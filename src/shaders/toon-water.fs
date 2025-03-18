@@ -15,7 +15,7 @@ const vec4 darkColor = vec4(0.078, 0.38, 0.89, 1.0);
 const vec4 lightColor = vec4(0.937, 1, 1, 1);
 
 const float moveSpeed = 5;
-const float moveScale = 1.0f/500.0f;
+const float moveScale = 1.0f/400.0f;
 uniform float moveOffset;
 
 const float fogStart = 450;
@@ -25,8 +25,8 @@ void main()
 {
     vec3 normal = texture(normalMap, moveScale * vec2(TexCoords.x + moveSpeed * moveOffset, TexCoords.y)).rgb;
 
-    float darks = texture(toonWater, TexCoords + normal.xz).r;
-    float lights = texture(toonWater, TexCoords + normal.zx).r;
+    float darks = texture(toonWater, TexCoords + normal.xy).r;
+    float lights = texture(toonWater, TexCoords + normal.xz).r;
 
     FragColor = mix(baseColor, darkColor, darks);
     FragColor = mix(FragColor, lightColor, lights);

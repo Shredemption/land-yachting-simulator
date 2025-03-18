@@ -11,7 +11,7 @@ uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 
-const float scale = 3;
+const float scale = 5;
 
 void main()
 {
