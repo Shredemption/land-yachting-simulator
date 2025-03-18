@@ -11,7 +11,7 @@ in VS_OUT
 fs_in;
 
 const float stepMin = 0.4;
-const float stepMax = 0.5;
+const float stepMax = 0.45;
 
 uniform sampler2D diffuse;
 uniform sampler2D shadow;
