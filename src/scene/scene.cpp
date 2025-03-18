@@ -22,9 +22,10 @@ JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, skyBox, texts, bgColo
 // TODO: textured unitplane
 // TODO: environment
 
-Scene::Scene(std::string jsonPath)
+Scene::Scene(std::string jsonPath, std::string sceneName)
 {
     const std::string path = "../" + jsonPath;
+    this->name = sceneName;
 
     // Check if the file exists
     if (!std::filesystem::exists(path))

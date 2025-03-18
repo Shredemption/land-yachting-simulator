@@ -111,9 +111,10 @@ struct TextData
 class Scene
 {
 public:
-    Scene(std::string jsonPath);
+    Scene(std::string jsonPath, std::string sceneName);
     ~Scene();
 
+    std::string name;
     std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;
     std::vector<UnitPlaneData> transparentUnitPlanes;

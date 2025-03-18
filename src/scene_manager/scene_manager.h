@@ -7,6 +7,8 @@ class SceneManager
 {
 public:
     static Scene *currentScene;
+    static std::map<std::string, std::string> sceneMap;
+    static void loadSceneMap();
 
     static void load(const std::string &scenePath);
     static void update();
