@@ -23,6 +23,12 @@ GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
 std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 
+void Render::setup()
+{
+    Render::initQuad();
+    Render::initFreeType();
+}
+
 void Render::initQuad()
 {
     if (quadVAO == 0)
@@ -543,13 +549,13 @@ Texture Render::LoadStandaloneTexture(std::string fileName)
     return loadTexture;
 }
 
-void Render::initFreeType(std::string &fontPath)
+void Render::initFreeType()
 {
     // Initialize FreeType
     if (FT_Init_FreeType(&ft))
         std::cerr << "ERROR: Could not initialize FreeType\n";
 
-    fontPath = "../" + fontPath;
+    const std::string fontPath = "../" + fontpath;
 
     // Load font face
     if (FT_New_Face(ft, fontPath.c_str(), 0, &face))

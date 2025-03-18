@@ -10,13 +10,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "file_manager/file_manager.h"
-#include "scene/scene.h"
 #include "event_handler/event_handler.h"
-#include "render/render.h"
+#include "model/model.h"
+#include "scene/scene.h"
+#include "scene_manager/scene_manager.h"
 #include "camera/camera.h"
-#include "animation/animation.h"
-#include "physics/physics.h"
+#include "render/render.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -69,11 +68,8 @@ int main()
     // Import JSON file model registry
     Model::modelMap = Model::loadModelMap("resources/models.json");
 
-    // Import JSON file scene
-    Scene scene = Scene("resources/scenes/main-menu.json");
-
-    // Generate physics properties for relevant models
-    Physics::setup(scene);
+    // Load title screen Scene
+    SceneManager::load("resources/scenes/main-menu.json");
 
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -109,9 +105,7 @@ int main()
 
     glfwShowWindow(window);
 
-    Render::initQuad();
-
-    Render::initFreeType(Render::fontpath);
+    Render::setup();
 
     // Main Loop
     while (!glfwWindowShouldClose(window))
@@ -123,33 +117,13 @@ int main()
         }
         else
         {
-            // Get time since launch
-            EventHandler::time = (float)glfwGetTime();
-            EventHandler::deltaTime = EventHandler::time - EventHandler::lastTime;
-            EventHandler::lastTime = EventHandler::time;
+            EventHandler::update(window);
 
-            EventHandler::frame++;
-
-            // Process Inputs
-            EventHandler::processInput(window);
-
-            // Gen render matrices
             Camera::update();
+            
+            SceneManager::update();
 
-            // Sun/moon lighting
-            EventHandler::sunAngle += EventHandler::deltaTime * EventHandler::sunSpeed;
-
-            // lightColor = glm::vec3((1.5f + std::sin(glm::radians(sunAngle)) + std::sin(glm::radians(2.f * sunAngle - 90.f))) / 3.5f);
-            EventHandler::lightPos = 200.0f * glm::vec3(std::cos(glm::radians(EventHandler::sunAngle)), std::sin(glm::radians(EventHandler::sunAngle)), 1.0f);
-
-            // Update physics entry for relevant models in scene
-            Physics::update(scene);
-
-            // Update bone animations
-            Animation::updateBones(scene);
-
-            // Draw scene, using view and projection matrix for entire scene
-            Render::render(scene);
+            SceneManager::render();
 
             // Swap buffers and poll events
             glfwSwapBuffers(window);
@@ -157,8 +131,7 @@ int main()
         }
     }
 
-    // Unload Scene before stopping
-    scene.~Scene();
+    SceneManager::unload();
 
     // Cleanup GLFW
     glfwDestroyWindow(window);

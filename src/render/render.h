@@ -17,6 +17,7 @@ struct Character
 class Render
 {
 public:
+    static void setup();
     static void initQuad();
     static void render(Scene &scene);
     static glm::vec4 clipPlane;
@@ -24,7 +25,7 @@ public:
 
     static Texture LoadStandaloneTexture(std::string fileName);
 
-    static void initFreeType(std::string &fontPath);
+    static void initFreeType();
     static void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
     static FT_Library ft;
     static FT_Face face;
