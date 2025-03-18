@@ -22,8 +22,8 @@ struct Material
 
 uniform Material material;
 
-const float ambientLight = 0.5;
-const float diffuseStrength = 0.5;
+const float ambientLight = 0.66;
+const float diffuseStrength = 0.66;
 
 float G1(float NdotX, float k)
 {
@@ -37,7 +37,7 @@ void main()
     vec3 albedo = texture(material.diffuse1, fs_in.TexCoords).rgb;
 
     float metallic = texture(material.properties1, fs_in.TexCoords).r;
-    float roughness = texture(material.properties1, fs_in.TexCoords).g;
+    float roughness = 1 - texture(material.properties1, fs_in.TexCoords).g;
 
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
     float cosTheta = max(dot(fs_in.halfwayDir, fs_in.viewDir), 0.0);
