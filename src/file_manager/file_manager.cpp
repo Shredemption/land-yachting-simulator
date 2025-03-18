@@ -4,10 +4,6 @@
 #include <iostream>
 #include <sstream>
 
-FileManager::FileManager() {}
-
-FileManager::~FileManager() {}
-
 std::string FileManager::read(const std::string &filename)
 {
     std::ifstream file;

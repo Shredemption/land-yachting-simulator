@@ -10,9 +10,6 @@ private:
     typedef std::string (*Builder)(const std::string &path);
 
 public:
-    FileManager();
-    ~FileManager();
-
     static std::string read(const std::string &filename);
 
     static std::string getPath(const std::string &path)

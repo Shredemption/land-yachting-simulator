@@ -9,7 +9,6 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     this->textures = textures;
     this->shader = shaderName;
 
-    // now that we have all the required data, set the vertex buffers and its attribute pointers.
     if (shaderName == "pbr")
     {
         setupPBRMesh();
@@ -38,11 +37,6 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     {
         setupDefaultMesh();
     }
-}
-
-// Mesh Destructor
-Mesh::~Mesh()
-{
 }
 
 void Mesh::setupDefaultMesh()

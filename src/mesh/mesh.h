@@ -43,25 +43,19 @@ struct Bone
 class Mesh
 {
 public:
-    // Mesh data
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
     std::string shader;
     unsigned int VAO, VBO, EBO;
 
-    // Mesh Constructor
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName);
-
-    // Mesh Destructor
     ~Mesh();
 
     static Mesh genUnitPlane(glm::vec3 color, std::string shaderName);
-    
     static unsigned int setupSkyBoxMesh();
 
 private:
-    // Rendering Data to GPU
     void setupPBRMesh();
     void setupDefaultMesh();
     void setupToonMesh();
