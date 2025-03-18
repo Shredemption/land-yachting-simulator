@@ -10,15 +10,13 @@ out vec4 worldPos;
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
+uniform mat4 u_water;
 
 const float scale = 5;
 
-void main()
-{
+void main() {
     // Apply the transformations to the vertex position
-    worldPos = u_model * vec4(position, 1.0);
-    vec3 camPos = vec3(u_view[3][0], u_view[3][1], 0);
-    worldPos.xyz -= camPos;
+    worldPos = u_water * u_model * vec4(position, 1.0);
     TexCoords = worldPos.xy / scale;
     gl_Position = u_projection * u_view * worldPos;
 }
