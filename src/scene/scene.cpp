@@ -54,6 +54,7 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
         loadUnitPlaneToScene(unitPlane);
     }
 
+    hasSkyBox = false;
     for (JSONSkybox skybox : jsonScene.skyBox)
     {
         loadSkyBoxToScene(skybox);
@@ -146,6 +147,8 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 
 void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
 {
+    hasSkyBox = true;
+    
     this->skyBox.up = loadSkyBox.up;
     this->skyBox.down = loadSkyBox.down;
     this->skyBox.left = loadSkyBox.left;
