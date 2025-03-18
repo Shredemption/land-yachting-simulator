@@ -51,6 +51,7 @@ void SceneManager::unload()
 
     onTitleScreen = false;
 
+    Shader::loadedShaders.clear();
     Shader::waterLoaded = false;
 }
 
