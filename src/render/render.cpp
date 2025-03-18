@@ -298,7 +298,7 @@ void Render::renderDefault(Mesh mesh)
 void Render::renderToon(Mesh mesh)
 {
     Shader shader = Shader::load("toon");
-    unsigned int diffuseNr = 1;
+    unsigned int highlightNr = 1;
     unsigned int shadowNr = 1;
 
     shader.setFloat("ambientLightIntensity", 1.2);
@@ -314,10 +314,10 @@ void Render::renderToon(Mesh mesh)
         std::string name = mesh.textures[i].type;
 
         // Set appropriate number for filename (eg texture_diffuse3)
-        if (name == "diffuse")
+        if (name == "highlight")
         {
-            number = std::to_string(diffuseNr++);
-            shader.setInt("diffuse", i);
+            number = std::to_string(highlightNr++);
+            shader.setInt("highlight", i);
             glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
         }
         if (name == "shadow")
