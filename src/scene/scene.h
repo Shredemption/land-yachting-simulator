@@ -119,7 +119,7 @@ public:
     std::unordered_map<std::string, Model> loadedModels;
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
-    std::vector<SkyBoxData> skyBox;
+    SkyBoxData skyBox;
     std::vector<TextData> texts;    
     glm::vec3 bgColor;
 
