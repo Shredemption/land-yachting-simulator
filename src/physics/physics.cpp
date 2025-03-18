@@ -18,7 +18,7 @@ Physics::Physics(ModelData &ModelData)
 {
     baseTransform = glm::mat4(1.0f);
 
-    if (ModelData.model->path.find("duvel") != std::string::npos)
+    if (ModelData.model->path.find("dn-duvel") != std::string::npos)
     {
         maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
