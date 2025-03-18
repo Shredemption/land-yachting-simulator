@@ -14,6 +14,8 @@ public:
     static void update();
     static void render();
     static void unload();
+
+    static bool onTitleScreen;
 };
 
 #endif
