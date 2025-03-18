@@ -121,7 +121,7 @@ int main()
             EventHandler::update(window);
 
             Camera::update();
-            
+
             SceneManager::update();
 
             SceneManager::render();
