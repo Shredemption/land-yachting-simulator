@@ -16,6 +16,7 @@ public:
     static glm::mat4 u_projection;
 
     static void update();
+    static void reset();
     static void setCamDirection(glm::vec3 rotation);
     static void genViewMatrix(glm::vec3 position);
     static void genProjectionMatrix();

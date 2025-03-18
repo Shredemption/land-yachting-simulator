@@ -3,28 +3,57 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "event_handler/event_handler.h"
+#include "scene_manager/scene_manager.h"
 
 // Global Camera Variables
-glm::vec3 Camera::worldUp(0.f, 0.f, 1.f);             // World up direction
-glm::vec3 Camera::cameraPositionFree(17.32f, -10.f, 10.f); // Camera placed
-glm::vec3 Camera::cameraPosition(0.f, 0.f, 0.f);
-float Camera::yawFree = glm::radians(-60.0f), Camera::pitchFree = glm::radians(30.0f), Camera::rollFree = 0;
-float Camera::yaw = 0, Camera::pitch = 0, Camera::roll = 0;
-float Camera::yawOffset = 0, Camera::pitchOffset = 0, Camera::rollOffset = 0;
-glm::vec3 Camera::cameraViewDirection(0.0f, 1.0f, 0.0f);
-glm::vec3 Camera::cameraRight = glm::normalize(glm::cross(worldUp, -cameraViewDirection));
-glm::vec3 Camera::cameraUp = glm::normalize(glm::cross(-cameraViewDirection, cameraRight));
+glm::vec3 Camera::worldUp(0.f, 0.f, 1.f); // World up direction
+glm::vec3 Camera::cameraPositionFree;
+glm::vec3 Camera::cameraPosition;
+float Camera::yawFree, Camera::pitchFree, Camera::rollFree;
+float Camera::yaw, Camera::pitch, Camera::roll;
+float Camera::yawOffset, Camera::pitchOffset, Camera::rollOffset;
+glm::vec3 Camera::cameraViewDirection;
+glm::vec3 Camera::cameraRight;
+glm::vec3 Camera::cameraUp;
 glm::mat4 Camera::u_view;
 glm::mat4 Camera::u_projection;
 
-bool Camera::cameraMoved = true;
-bool Camera::freeCam = true;
+bool Camera::cameraMoved;
+bool Camera::freeCam;
 
 void Camera::update()
 {
     setCamDirection(getRotation());
     genProjectionMatrix();
     genViewMatrix(getPos());
+}
+
+void Camera::reset()
+{
+    if (SceneManager::onTitleScreen)
+    {
+        cameraPosition = glm::vec3(0.f, 0.f, 0.f);
+        yaw = 0, pitch = 0, roll = 0;
+
+        cameraMoved = true;
+        freeCam = false;
+
+        setCamDirection(getRotation());
+    }
+    else
+    {
+        cameraPositionFree = glm::vec3(17.32f, -10.f, 10.f);
+        cameraPosition = glm::vec3(0.f, 0.f, 0.f);
+
+        yawFree = glm::radians(-60.0f), pitchFree = glm::radians(30.0f), rollFree = 0;
+        yaw = 0, pitch = 0, roll = 0;
+        yawOffset = 0, pitchOffset = 0, rollOffset = 0;
+
+        cameraMoved = true;
+        freeCam = true;
+
+        setCamDirection(getRotation());
+    }
 }
 
 void Camera::setCamDirection(glm::vec3 rotation)
