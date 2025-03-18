@@ -31,6 +31,7 @@ public:
     static float lightInsensity;
 
     // Global input/callback Functions
+    static void update(GLFWwindow *window);
     static void errorCallback(int error, const char *description);
     static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
     static void mouseCallback(GLFWwindow *window, double xPos, double yPos);
