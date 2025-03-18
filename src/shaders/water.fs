@@ -29,8 +29,8 @@ const float reflectivity = 0.6;
 const float near = 0.1;
 const float far = 200.0;
 
-const float fogStart = 150;
-const float fogEnd = 200;
+const float fogStart = 500;
+const float fogEnd = 600;
 
 void main()
 {
