@@ -11,7 +11,7 @@ glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
 
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
 float Render::quadVertices[] = {0};
-float Render::waterHeight = -0.5;
+float Render::waterHeight = 0;
 
 bool Render::WaterPass = true;
 bool Render::debugMenu = false;
@@ -63,9 +63,6 @@ void Render::render(Scene &scene)
     glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
-
-    // Enable clipping planes
-    glEnable(GL_CLIP_DISTANCE0);
 
     renderSceneSkyBox(scene);
 
@@ -485,8 +482,10 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     renderSceneSkyBox(scene);
+    glEnable(GL_CLIP_DISTANCE0);
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
+    glDisable(GL_CLIP_DISTANCE0);
 
     // ===== REFRACTION =====
     // Bind refraction buffer
@@ -500,8 +499,10 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     renderSceneSkyBox(scene);
+    glEnable(GL_CLIP_DISTANCE0);
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
+    glDisable(GL_CLIP_DISTANCE0);
 
     // Unbind buffers, bind default one
     FrameBuffer::unbindCurrentFrameBuffer();
