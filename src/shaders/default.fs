@@ -22,8 +22,9 @@ struct Material
 
 uniform Material material;
 
-const float ambientLight = 0.66;
-const float diffuseStrength = 0.66;
+const float ambientLight = 0.33;
+const float diffuseStrength = 1;
+const float specularStrength = 5;
 
 float G1(float NdotX, float k)
 {
@@ -57,7 +58,7 @@ void main()
 
     vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec3 diffuse = kD * albedo * lightCol * lightIntensity * max(dot(fs_in.Normal, fs_in.lightDir), 0.0);
-    vec3 outputColor = albedo * ambientLight + diffuseStrength * diffuse + specular;
+    vec3 outputColor = albedo * ambientLight + diffuseStrength * diffuse + specularStrength * specular;
 
     FragColor = vec4(outputColor, 1.0);
 }

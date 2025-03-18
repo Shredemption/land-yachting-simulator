@@ -9,6 +9,7 @@
 #include "animation/animation.h"
 #include "render/render.h"
 #include "shader/shader.h"
+#include "camera/camera.h"
 
 Scene *SceneManager::currentScene = nullptr;
 std::map<std::string, std::string> SceneManager::sceneMap;
@@ -19,13 +20,14 @@ void SceneManager::load(const std::string &sceneName)
 {
     unload();
 
-    currentScene = new Scene(sceneMap[sceneName], sceneName);
-    Physics::setup(*currentScene);
-
     if (sceneName == "title")
     {
         onTitleScreen = true;
     }
+
+    currentScene = new Scene(sceneMap[sceneName], sceneName);
+    Camera::reset();
+    Physics::setup(*currentScene);
 }
 
 void SceneManager::update()
