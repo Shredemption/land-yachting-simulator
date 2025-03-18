@@ -1,6 +1,6 @@
 {
     "models": {
-        "duvel": "resources/objects/duvel/duvel.dae",
+        "dn-duvel": "resources/objects/dn-duvel/dn-duvel.dae",
         "red-piper": "resources/objects/red-piper/red-piper.dae",
         "blue-piper": "resources/objects/blue-piper/blue-piper.dae"
     }
