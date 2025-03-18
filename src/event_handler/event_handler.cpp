@@ -22,9 +22,7 @@ float EventHandler::lastTime = 0;
 unsigned int EventHandler::frame = 0;
 
 // Global Light properties
-glm::vec3 EventHandler::lightPos(0.f, 3.f, 10.f);
-float EventHandler::sunAngle = 135.4f;
-float EventHandler::sunSpeed = 1.0f;
+glm::vec3 EventHandler::lightPos(1000.f, -1000.f, 2000.f);
 glm::vec3 EventHandler::lightCol(1, 1, 1);
 float EventHandler::lightInsensity = 2;
 
@@ -34,9 +32,6 @@ void EventHandler::update(GLFWwindow *window)
     deltaTime = time - lastTime;
     lastTime = time;
     frame++;
-
-    // sunAngle += deltaTime * sunSpeed;
-    lightPos = 200.0f * glm::vec3(std::cos(glm::radians(EventHandler::sunAngle)), std::sin(glm::radians(EventHandler::sunAngle)), 1.0f);
 
     processInput(window);
 }
