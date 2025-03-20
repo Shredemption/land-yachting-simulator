@@ -52,6 +52,7 @@ public:
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName);
 
     static Mesh genUnitPlane(glm::vec3 color, std::string shaderName);
+    static Mesh genGrid(int gridSizeX, int gridSizeY, float cellSize, glm::vec3 color, std::string shaderName);
     static unsigned int setupSkyBoxMesh();
 
 private:

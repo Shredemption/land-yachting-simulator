@@ -31,6 +31,17 @@ struct JSONUnitPlane
     std::string shader = "simple";
 };
 
+struct JSONGrid
+{
+    std::vector<float> gridSize = {1, 1};
+    float cellSize = 1;
+    std::vector<float> color = {1, 1, 1};
+    float angle = 0;
+    std::vector<float> rotationAxis = {0, 0, 1};
+    std::vector<float> translation = {0, 0, 0};
+    std::string shader = "simple";
+};
+
 struct JSONSkybox
 {
     std::string up = "";
@@ -53,6 +64,7 @@ struct JSONScene
 {
     std::vector<JSONModel> models = {};
     std::vector<JSONUnitPlane> unitPlanes = {};
+    std::vector<JSONGrid> grids = {};
     std::vector<JSONSkybox> skyBox = {};
     std::vector<JSONText> texts = {};
     std::vector<float> bgColor = {0, 0, 0};
@@ -88,6 +100,17 @@ struct UnitPlaneData
     }
 };
 
+struct GridData
+{
+    glm::vec3 color;
+    glm::mat4 u_model;
+    glm::mat3 u_normal;
+    std::string shader;
+    glm::vec2 gridSize;
+    float cellSize;
+    Mesh grid = Mesh::genGrid(gridSize.x, gridSize.y, cellSize, color, shader);
+};
+
 struct SkyBoxData
 {
     std::string up;
@@ -112,20 +135,22 @@ class Scene
 {
 public:
     Scene(std::string jsonPath, std::string sceneName);
-    
+
     std::string name;
     std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
+    std::vector<GridData> grids;
     SkyBoxData skyBox;
     bool hasSkyBox;
-    std::vector<TextData> texts;    
+    std::vector<TextData> texts;
     glm::vec3 bgColor;
 
 private:
     void loadModelToScene(JSONModel model);
     void loadUnitPlaneToScene(JSONUnitPlane unitPlane);
+    void loadGridToScene(JSONGrid grid);
     void loadSkyBoxToScene(JSONSkybox skyBox);
     void loadTextToScene(JSONText text);
 };
