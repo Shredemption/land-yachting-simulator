@@ -175,7 +175,7 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
         shader.setMat4("u_model", unitPlane.u_model);
         shader.setMat4("u_normal", unitPlane.u_normal);
 
-        shader.setMat4("u_water", glm::translate(glm::mat4(1.0f), glm::vec3(Camera::getPosition()[0], Camera::getPosition()[1], 0)));
+        shader.setMat4("u_camXY", Camera::u_camXY);
 
         shader.setVec4("location_plane", clipPlane);
 

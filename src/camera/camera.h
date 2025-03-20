@@ -14,6 +14,7 @@ public:
 
     static glm::mat4 u_view;
     static glm::mat4 u_projection;
+    static glm::mat4 u_camXY;
 
     static void update();
     static void reset();
