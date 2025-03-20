@@ -17,6 +17,7 @@ glm::vec3 Camera::cameraRight;
 glm::vec3 Camera::cameraUp;
 glm::mat4 Camera::u_view;
 glm::mat4 Camera::u_projection;
+glm::mat4 Camera::u_camXY;
 
 bool Camera::cameraMoved;
 bool Camera::freeCam;
@@ -25,7 +26,9 @@ void Camera::update()
 {
     setCamDirection(getRotation());
     genProjectionMatrix();
-    genViewMatrix(getPosition());
+    glm::vec3 position = getPosition();
+    genViewMatrix(position);
+    u_camXY = glm::translate(glm::mat4(1.0f), glm::vec3(position[0], position[1], 0));
 }
 
 void Camera::reset()
