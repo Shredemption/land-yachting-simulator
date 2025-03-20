@@ -22,9 +22,9 @@ struct Material
 
 uniform Material material;
 
-const float ambientLight = 0.33;
+const float ambientLight = 0.5;
 const float diffuseStrength = 1;
-const float specularStrength = 5;
+const float specularStrength = 1;
 
 float G1(float NdotX, float k)
 {
@@ -37,8 +37,11 @@ void main()
     // Sample textures
     vec3 albedo = texture(material.diffuse1, fs_in.TexCoords).rgb;
 
-    float metallic = texture(material.properties1, fs_in.TexCoords).r;
-    float roughness = 1 - texture(material.properties1, fs_in.TexCoords).g;
+    vec4 properties = texture(material.properties1, fs_in.TexCoords);
+
+    float metallic = properties.r;
+    float roughness = properties.g;
+    float ao = properties.b;
 
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
     float cosTheta = max(dot(fs_in.halfwayDir, fs_in.viewDir), 0.0);
@@ -58,7 +61,7 @@ void main()
 
     vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec3 diffuse = kD * albedo * lightCol * lightIntensity * max(dot(fs_in.Normal, fs_in.lightDir), 0.0);
-    vec3 outputColor = albedo * ambientLight + diffuseStrength * diffuse + specularStrength * specular;
+    vec3 outputColor = albedo * ambientLight + ao * diffuseStrength * diffuse + specularStrength * specular;
 
     FragColor = vec4(outputColor, 1.0);
 }

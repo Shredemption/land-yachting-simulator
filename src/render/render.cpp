@@ -272,6 +272,7 @@ void Render::renderDefault(Mesh mesh)
 {
     Shader shader = Shader::load("default");
     unsigned int diffuseNr = 1;
+    unsigned int propertiesNr = 1;
 
     // For every texture
     for (unsigned int i = 0; i < mesh.textures.size(); i++)
@@ -287,6 +288,12 @@ void Render::renderDefault(Mesh mesh)
         if (name == "diffuse")
         {
             number = std::to_string(diffuseNr++);
+            shader.setInt(("material." + name + number).c_str(), i);
+            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        }
+        if (name == "properties")
+        {
+            number = std::to_string(propertiesNr++);
             shader.setInt(("material." + name + number).c_str(), i);
             glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
         }
