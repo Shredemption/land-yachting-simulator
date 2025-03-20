@@ -37,5 +37,15 @@
       "shader": "toon-water"
     }
   ],
+  "grids": [
+    {
+      "color": [0.39, 0.84, 0.21],
+      "gridSize": [100, 100],
+      "cellSize": 0.1,
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [0, 0, 0.1]
+    }
+  ],
   "bgColor": [0.545, 0.929, 0.984]
 }

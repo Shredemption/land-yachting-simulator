@@ -109,7 +109,7 @@ void Mesh::setupToonMesh()
     // vertex bone weights
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Weights));
-    
+
     glBindVertexArray(0);
 }
 
@@ -185,6 +185,44 @@ Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
 
     std::vector<Texture> textures;
 
+    return Mesh(vertices, indices, textures, shaderName);
+}
+
+Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float cellSize, glm::vec3 color, std::string shaderName)
+{
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    for (int y = 0; y <= gridSizeY; y++)
+    {
+        for (int x = 0; x <= gridSizeX; x++)
+        {
+            Vertex vertex;
+            vertex.Position = glm::vec3(cellSize * (x - 0.5f * gridSizeX), cellSize * (y - 0.5f * gridSizeY), 0.0f);
+            vertex.Color = color;
+            vertex.TexCoords = glm::vec2((float)x / gridSizeX, (float)y / gridSizeY);
+
+            vertices.push_back(vertex);
+        }
+    }
+
+    for (int y = 0; y < gridSizeY; y++)
+    {
+        for (int x = 0; x < gridSizeX; x++)
+        {
+            int start = y * (gridSizeX + 1) + x;
+
+            indices.push_back(start);
+            indices.push_back(start + 1);
+            indices.push_back(start + gridSizeX + 1);
+
+            indices.push_back(start + 1);
+            indices.push_back(start + gridSizeX + 2);
+            indices.push_back(start + gridSizeX + 1);
+        }
+    }
+
+    std::vector<Texture> textures;
     return Mesh(vertices, indices, textures, shaderName);
 }
 

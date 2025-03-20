@@ -76,6 +76,7 @@ void Render::render(Scene &scene)
     clipPlane = {0, 0, 0, 0};
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
+    renderSceneGrids(scene, clipPlane);
     renderSceneTexts(scene);
 
     if (debugMenu && !SceneManager::onTitleScreen)
@@ -188,6 +189,26 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
     glDisable(GL_BLEND);
 }
 
+void Render::renderSceneGrids(Scene &scene, glm::vec4 clipPlane)
+{
+    for (auto grid : scene.grids)
+    {
+        Shader shader = Shader::load(grid.shader);
+
+        // Apply view and projection to whole scene
+        shader.setMat4("u_view", Camera::u_view);
+        shader.setMat4("u_projection", Camera::u_projection);
+
+        // Set model matrix for model and draw
+        shader.setMat4("u_model", grid.u_model);
+        shader.setMat4("u_normal", grid.u_normal);
+
+        shader.setVec4("location_plane", clipPlane);
+
+        renderModel(grid);
+    }
+}
+
 void Render::renderSceneSkyBox(Scene &scene)
 {
     if (scene.hasSkyBox)
@@ -266,6 +287,11 @@ void Render::renderModel(UnitPlaneData unitPlane)
             renderWater(unitPlane.unitPlane);
         }
     }
+}
+
+void Render::renderModel(GridData grid)
+{
+    renderSimple(grid.grid);
 }
 
 void Render::renderDefault(Mesh mesh)
@@ -492,6 +518,7 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     glEnable(GL_CLIP_DISTANCE0);
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
+    renderSceneGrids(scene, clipPlane);
     glDisable(GL_CLIP_DISTANCE0);
 
     // ===== REFRACTION =====
@@ -509,6 +536,7 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     glEnable(GL_CLIP_DISTANCE0);
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
+    renderSceneGrids(scene, clipPlane);
     glDisable(GL_CLIP_DISTANCE0);
 
     // Unbind buffers, bind default one

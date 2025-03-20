@@ -40,16 +40,16 @@ public:
 private:
     static void renderSceneModels(Scene &scene, glm::vec4 clipPlane);
     static void renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane);
+    static void renderSceneGrids(Scene &scene, glm::vec4 clipPlane);
     static void renderSceneSkyBox(Scene &scene);
     static void renderSceneTexts(Scene &scene);
 
     static void renderModel(ModelData model);
     static void renderModel(UnitPlaneData unitPlane);
+    static void renderModel(GridData grid);
 
     static void renderDefault(Mesh mesh);
-    static void renderDefaultAnimated(Mesh mesh);
     static void renderToon(Mesh mesh);
-    static void renderToonAnimated(Mesh mesh);
     static void renderPBR(Mesh mesh);
     static void renderSimple(Mesh mesh);
     static void renderToonWater(Mesh mesh);

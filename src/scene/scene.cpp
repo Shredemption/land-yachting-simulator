@@ -15,9 +15,10 @@
 
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
+JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, cellSize, color, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
 JSONCONS_N_MEMBER_TRAITS(JSONText, 1, text, color, position, scale);
-JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, skyBox, texts, bgColor);
+JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, grids, skyBox, texts, bgColor);
 
 // TODO: textured unitplane
 // TODO: environment
@@ -52,6 +53,11 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     for (JSONUnitPlane unitPlane : jsonScene.unitPlanes)
     {
         loadUnitPlaneToScene(unitPlane);
+    }
+
+    for (JSONGrid grid : jsonScene.grids)
+    {
+        loadGridToScene(grid);
     }
 
     hasSkyBox = false;
@@ -111,7 +117,7 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 {
     UnitPlaneData loadUnitPlane;
 
-    loadUnitPlane.color = {unitPlane.color[0], unitPlane.color[1], unitPlane.color[2]};
+    loadUnitPlane.color = glm::vec3(unitPlane.color[0], unitPlane.color[1], unitPlane.color[2]);
     loadUnitPlane.shader = unitPlane.shader;
 
     loadUnitPlane.unitPlane = Mesh::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
@@ -141,6 +147,31 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     }
 }
 
+void Scene::loadGridToScene(JSONGrid grid)
+{
+    GridData loadGrid;
+
+    loadGrid.color = glm::vec3(grid.color[0], grid.color[1], grid.color[2]);
+    loadGrid.shader = grid.shader;
+    loadGrid.gridSize = glm::vec2(grid.gridSize[0], grid.gridSize[1]);
+    loadGrid.cellSize = grid.cellSize;
+    loadGrid.grid = Mesh::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.cellSize, loadGrid.color, loadGrid.shader);
+
+    // Generate u_model
+    glm::mat4 u_model_i =
+        glm::rotate(
+            glm::translate(
+                glm::mat4(1.0f),
+                glm::vec3(grid.translation[0], grid.translation[1], grid.translation[2])),
+            glm::radians((float)grid.angle),
+            glm::vec3(grid.rotationAxis[0], grid.rotationAxis[1], grid.rotationAxis[2]));
+
+    loadGrid.u_model = u_model_i;
+    loadGrid.u_normal = glm::transpose(glm::inverse(u_model_i));
+
+    this->grids.push_back(loadGrid);
+}
+
 void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
 {
     hasSkyBox = true;
@@ -162,7 +193,7 @@ void Scene::loadTextToScene(JSONText text)
 
     loadText.text = text.text;
     loadText.color = glm::vec3(text.color[0], text.color[1], text.color[2]);
-    loadText.position = glm::vec2(text.position[0],text.position[1]);
+    loadText.position = glm::vec2(text.position[0], text.position[1]);
     loadText.scale = text.scale;
 
     this->texts.push_back(loadText);
