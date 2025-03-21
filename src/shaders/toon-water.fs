@@ -26,7 +26,7 @@ const float fogEnd = 600;
 void main()
 {
     vec3 normal = texture(normalMap, moveScale * vec2(waterTexCoords.x + moveSpeed * moveOffset, waterTexCoords.y)).rgb;
-    float height = smoothstep(0.998, 0.999, 1-texture(heightmap, heightTexCoords).r);
+    float height = smoothstep(0.99, 0.999, 1-texture(heightmap, heightTexCoords).r);
 
     float darks = texture(toonWater, waterTexCoords + normal.xy).r;
     float lights = texture(toonWater, waterTexCoords + normal.xz).r;
