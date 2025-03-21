@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec3 aPosition;
 
-out vec4 worldPos;
+out vec2 TexCoord;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -17,10 +17,9 @@ const float scale = 1024;
 
 void main()
 {
-
-    worldPos = u_camXY * u_model * vec4(aPosition, 1.0);
-    vec2 TexCoord = worldPos.xy / (scale) + vec2(0.5);
+    vec4 worldPos = u_camXY * u_model * vec4(aPosition, 1.0);
+    TexCoord = worldPos.xy / (scale) + vec2(0.5);
     float height = texture(heightmap, TexCoord).r;
-    worldPos.z = 3 * height - lod / 16 - 1;
+    worldPos.z = 3 * height - lod / 24 - 1;
     gl_Position = u_projection * u_view * worldPos;
 }
