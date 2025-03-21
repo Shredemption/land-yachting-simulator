@@ -11,7 +11,7 @@ glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
 
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
 float Render::quadVertices[] = {0};
-float Render::waterHeight = 0;
+float Render::waterHeight = 0.25;
 
 bool Render::WaterPass = true;
 bool Render::debugMenu = false;
@@ -184,6 +184,7 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
         }
         renderModel(unitPlane);
     }
+    
     glDisable(GL_BLEND);
 }
 
@@ -515,15 +516,11 @@ void Render::renderWater(Mesh mesh)
     shader.setVec3("cameraPosition", Camera::getPosition());
     shader.setVec3("lightPos", EventHandler::lightPos);
     shader.setVec3("lightCol", EventHandler::lightCol);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    shader.setMat4("u_camXY", Camera::u_camXY);
 
     // Draw Mesh
     glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glDisable(GL_BLEND);
 
     glBindVertexArray(0);
 }
