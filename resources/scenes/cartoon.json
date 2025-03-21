@@ -33,7 +33,7 @@
       "scale": [2000, 2000, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, 0],
+      "translation": [0, 0, -0.95],
       "shader": "toon-water"
     }
   ],
@@ -41,10 +41,12 @@
     {
       "color": [0.39, 0.84, 0.21],
       "gridSize": [100, 100],
-      "cellSize": 0.1,
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, 0.1]
+      "translation": [0, 0, 0],
+      "scale": 0.5,
+      "lod": 5,
+      "shader": "toon-terrain"
     }
   ],
   "bgColor": [0.545, 0.929, 0.984]

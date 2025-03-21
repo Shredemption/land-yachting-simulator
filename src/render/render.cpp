@@ -176,8 +176,6 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
         shader.setMat4("u_model", unitPlane.u_model);
         shader.setMat4("u_normal", unitPlane.u_normal);
 
-        shader.setMat4("u_camXY", Camera::u_camXY);
-
         shader.setVec4("location_plane", clipPlane);
 
         if (unitPlane.shader == "water" && FrameBuffer::Water == false)
@@ -204,6 +202,8 @@ void Render::renderSceneGrids(Scene &scene, glm::vec4 clipPlane)
         shader.setMat4("u_normal", grid.u_normal);
 
         shader.setVec4("location_plane", clipPlane);
+
+        shader.setFloat("lod", grid.lod);
 
         renderModel(grid);
     }
@@ -291,7 +291,14 @@ void Render::renderModel(UnitPlaneData unitPlane)
 
 void Render::renderModel(GridData grid)
 {
-    renderSimple(grid.grid);
+    if (grid.shader == "toon-terrain")
+    {
+        renderToonTerrain(grid.grid);
+    }
+    else
+    {
+        renderSimple(grid.grid);
+    }
 }
 
 void Render::renderDefault(Mesh mesh)
@@ -376,6 +383,28 @@ void Render::renderToon(Mesh mesh)
     glBindVertexArray(0);
 }
 
+void Render::renderToonTerrain(Mesh mesh)
+{
+    Texture heightmap = LoadStandaloneTexture("heightmap.jpg");
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, heightmap.id);
+
+    Shader shader = Shader::load("toon-terrain");
+
+    shader.setMat4("u_camXY", Camera::u_camXY);
+    shader.setInt("heightmap", 0);
+
+    // Unload texture
+    glActiveTexture(GL_TEXTURE0);
+
+    // Draw Mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+}
+
 void Render::renderPBR(Mesh mesh) // FIXME : Not showing when rendered (but is shown wrong in reflection of water fsr)
 {
     unsigned int diffuseNr = 1;
@@ -447,6 +476,7 @@ void Render::renderToonWater(Mesh mesh)
     shader.setInt("normalMap", 1);
     shader.setFloat("moveOffset", EventHandler::time);
     shader.setVec3("cameraPosition", Camera::getPosition());
+    shader.setMat4("u_camXY", Camera::u_camXY);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
