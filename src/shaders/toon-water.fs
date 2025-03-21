@@ -20,13 +20,10 @@ const float moveSpeed = 5;
 const float moveScale = 1.0 / 400.0;
 uniform float moveOffset;
 
-const float fogStart = 450;
-const float fogEnd = 600;
-
 void main()
 {
     vec3 normal = texture(normalMap, moveScale * vec2(waterTexCoords.x + moveSpeed * moveOffset, waterTexCoords.y)).rgb;
-    float height = smoothstep(0.99, 0.999, 1-texture(heightmap, heightTexCoords).r);
+    float height = smoothstep(0.96, 0.97, 1-texture(heightmap, heightTexCoords).r);
 
     float darks = texture(toonWater, waterTexCoords + normal.xy).r;
     float lights = texture(toonWater, waterTexCoords + normal.xz).r;
@@ -36,7 +33,4 @@ void main()
     FragColor = mix(lightColor, FragColor, height);
 
     float distance = length(cameraPosition - worldPos.xyz);
-    float fogFactor = clamp((fogEnd - distance) / (fogEnd - fogStart), 0.0, 1.0);
-
-    FragColor.a = fogFactor;
 }
