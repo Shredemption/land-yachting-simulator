@@ -2,16 +2,20 @@
 
 out vec4 FragColor;
 
-in vec4 worldPos;
+in vec2 TexCoord;
 
 const vec4 baseColor = vec4(1, 0.85, 0.51, 1.0);
 const vec4 darkColor = vec4(0.81, 0.53, 0.09, 1.0);
-const vec4 lightColor = vec4(0.937, 1, 1, 1);
+const vec4 foamColor = vec4(0.937, 1, 1, 1);
 
-uniform float lod;
+uniform sampler2D heightmap;
 
 void main()
 {
-    float darknessFactor = clamp(worldPos.z / 5, 0.0, 1.0);
-    FragColor = mix(darkColor, baseColor, darknessFactor);
+    float height = texture(heightmap, TexCoord).r;
+    float invDarkFactor = clamp(height * 5, 0, 1);
+    float foamFactor = smoothstep(0.035, 0.04, height);
+
+    FragColor = mix(darkColor, baseColor, invDarkFactor);
+    FragColor = mix(foamColor, FragColor, foamFactor);
 }
