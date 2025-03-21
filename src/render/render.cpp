@@ -160,9 +160,6 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
                   return distA > distB; // Sort by distance: farthest first, closest last
               });
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     // Render transparent planes
     for (auto unitPlane : scene.transparentUnitPlanes)
     {
@@ -178,14 +175,15 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 
         shader.setVec4("location_plane", clipPlane);
 
-        if (unitPlane.shader == "water" && FrameBuffer::Water == false)
+        if (FrameBuffer::Water == false)
         {
-            FrameBuffer::WaterFrameBuffers();
+            if (unitPlane.shader == "water" || unitPlane.shader == "water2")
+            {
+                FrameBuffer::WaterFrameBuffers();
+            }
         }
         renderModel(unitPlane);
     }
-    
-    glDisable(GL_BLEND);
 }
 
 void Render::renderSceneGrids(Scene &scene, glm::vec4 clipPlane)
@@ -286,6 +284,13 @@ void Render::renderModel(UnitPlaneData unitPlane)
         if (!WaterPass)
         {
             renderWater(unitPlane.unitPlane);
+        }
+    }
+    else if (unitPlane.shader == "water2")
+    {
+        if (!WaterPass)
+        {
+            renderWater2(unitPlane.unitPlane);
         }
     }
 }
@@ -516,6 +521,32 @@ void Render::renderWater(Mesh mesh)
     shader.setVec3("cameraPosition", Camera::getPosition());
     shader.setVec3("lightPos", EventHandler::lightPos);
     shader.setVec3("lightCol", EventHandler::lightCol);
+    shader.setMat4("u_camXY", Camera::u_camXY);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Draw Mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+
+    glDisable(GL_BLEND);
+}
+
+void Render::renderWater2(Mesh mesh)
+{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
+
+    Shader shader = Shader::load("water2");
+    shader.setInt("reflectionTexture", 0);
+    shader.setInt("refractionTexture", 1);
+
+    shader.setVec3("cameraPosition", Camera::getPosition());
     shader.setMat4("u_camXY", Camera::u_camXY);
 
     // Draw Mesh

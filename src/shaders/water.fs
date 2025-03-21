@@ -23,8 +23,8 @@ const float waveStrength = 0.05;
 uniform float moveOffset;
 const float moveSpeed = 0.05;
 
-const float shineDamper = 1;
-const float reflectivity = 50;
+const float shineDamper = 5;
+const float reflectivity = 2;
 
 const float near = 0.1;
 const float far = 200.0;
