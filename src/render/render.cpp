@@ -479,17 +479,11 @@ void Render::renderToonWater(Mesh mesh)
     shader.setInt("normalMap", 1);
     shader.setInt("heightmap", 2);
     shader.setFloat("moveOffset", EventHandler::time);
-    shader.setVec3("cameraPosition", Camera::getPosition());
     shader.setMat4("u_camXY", Camera::u_camXY);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Draw Mesh
     glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glDisable(GL_BLEND);
 
     glBindVertexArray(0);
 }

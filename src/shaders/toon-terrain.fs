@@ -14,7 +14,7 @@ void main()
 {
     float height = texture(heightmap, TexCoord).r;
     float invDarkFactor = clamp(height * 5, 0, 1);
-    float foamFactor = smoothstep(0.035, 0.04, height);
+    float foamFactor = smoothstep(0.10, 0.11, height);
 
     FragColor = mix(darkColor, baseColor, invDarkFactor);
     FragColor = mix(foamColor, FragColor, foamFactor);
