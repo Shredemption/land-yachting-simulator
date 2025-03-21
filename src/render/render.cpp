@@ -464,16 +464,20 @@ void Render::renderToonWater(Mesh mesh)
 {
     Texture DuDv = LoadStandaloneTexture("toonWater.jpeg");
     Texture normal = LoadStandaloneTexture("waterNormal.png");
+    Texture height = LoadStandaloneTexture("heightmap.jpg");
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, DuDv.id);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, normal.id);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, height.id);
 
     Shader shader = Shader::load("toon-water");
 
     shader.setInt("toonWater", 0);
     shader.setInt("normalMap", 1);
+    shader.setInt("heightmap", 2);
     shader.setFloat("moveOffset", EventHandler::time);
     shader.setVec3("cameraPosition", Camera::getPosition());
     shader.setMat4("u_camXY", Camera::u_camXY);
