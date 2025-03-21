@@ -33,6 +33,10 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     {
         setupToonMesh();
     }
+    else if (shaderName == "toon-terrain")
+    {
+        setupToonTerrainMesh();
+    }
     else
     {
         setupDefaultMesh();
@@ -188,17 +192,23 @@ Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
     return Mesh(vertices, indices, textures, shaderName);
 }
 
-Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float cellSize, glm::vec3 color, std::string shaderName)
+Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std::string shaderName)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
+
+    float holeFactor;
+    if (lod == 0)
+        holeFactor = 1.0f;
+    else
+        holeFactor = 0.25f;
 
     for (int y = 0; y <= gridSizeY; y++)
     {
         for (int x = 0; x <= gridSizeX; x++)
         {
             Vertex vertex;
-            vertex.Position = glm::vec3(cellSize * (x - 0.5f * gridSizeX), cellSize * (y - 0.5f * gridSizeY), 0.0f);
+            vertex.Position = glm::vec3(x - 0.5f * gridSizeX, y - 0.5f * gridSizeY, 0.0f);
             vertex.Color = color;
             vertex.TexCoords = glm::vec2((float)x / gridSizeX, (float)y / gridSizeY);
 
@@ -210,6 +220,12 @@ Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float cellSize, glm::vec3 color
     {
         for (int x = 0; x < gridSizeX; x++)
         {
+            if (x > holeFactor * gridSizeX && x < gridSizeX * (1 - holeFactor) &&
+                y > holeFactor * gridSizeY && y < gridSizeY * (1 - holeFactor))
+            {
+                continue;
+            }
+
             int start = y * (gridSizeX + 1) + x;
 
             indices.push_back(start);
@@ -281,6 +297,38 @@ void Mesh::setupToonWaterMesh()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
 
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+
+    glBindVertexArray(0);
+}
+
+void Mesh::setupToonTerrainMesh()
+{
+    // Generate empty buffer data
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    // Bind Vertex Array Object
+    glBindVertexArray(VAO);
+
+    // Send vertices of mesh to GPU
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+    // Send Send element indices to GPU
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    // vertex positions
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+    // vertex texture coords
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
+
     glDisableVertexAttribArray(2);
     glDisableVertexAttribArray(3);
     glDisableVertexAttribArray(4);

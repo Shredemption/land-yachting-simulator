@@ -15,7 +15,7 @@
 
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
-JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, cellSize, color, angle, rotationAxis, translation, shader);
+JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, scale, lod, color, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
 JSONCONS_N_MEMBER_TRAITS(JSONText, 1, text, color, position, scale);
 JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, grids, skyBox, texts, bgColor);
@@ -57,7 +57,12 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
 
     for (JSONGrid grid : jsonScene.grids)
     {
-        loadGridToScene(grid);
+        for (int i = 0; i <= grid.lod; i++)
+        {
+            JSONGrid loadGrid = grid;
+            loadGrid.lod = i;
+            loadGridToScene(loadGrid);
+        }
     }
 
     hasSkyBox = false;
@@ -153,18 +158,19 @@ void Scene::loadGridToScene(JSONGrid grid)
 
     loadGrid.color = glm::vec3(grid.color[0], grid.color[1], grid.color[2]);
     loadGrid.shader = grid.shader;
+    loadGrid.lod = grid.lod;
     loadGrid.gridSize = glm::vec2(grid.gridSize[0], grid.gridSize[1]);
-    loadGrid.cellSize = grid.cellSize;
-    loadGrid.grid = Mesh::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.cellSize, loadGrid.color, loadGrid.shader);
+    loadGrid.grid = Mesh::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
 
     // Generate u_model
     glm::mat4 u_model_i =
         glm::rotate(
-            glm::translate(
-                glm::mat4(1.0f),
-                glm::vec3(grid.translation[0], grid.translation[1], grid.translation[2])),
-            glm::radians((float)grid.angle),
-            glm::vec3(grid.rotationAxis[0], grid.rotationAxis[1], grid.rotationAxis[2]));
+            glm::scale(
+                glm::translate(
+                    glm::mat4(1.0f),
+                    glm::vec3(grid.translation[0], grid.translation[1], grid.translation[2])),
+                glm::vec3(grid.scale * pow(2, loadGrid.lod), grid.scale * pow(2, loadGrid.lod), 1.0f)),
+            glm::radians((float)grid.angle), glm::vec3(grid.rotationAxis[0], grid.rotationAxis[1], grid.rotationAxis[2]));
 
     loadGrid.u_model = u_model_i;
     loadGrid.u_normal = glm::transpose(glm::inverse(u_model_i));

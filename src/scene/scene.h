@@ -34,7 +34,8 @@ struct JSONUnitPlane
 struct JSONGrid
 {
     std::vector<float> gridSize = {1, 1};
-    float cellSize = 1;
+    float scale = 1;
+    float lod = 0;
     std::vector<float> color = {1, 1, 1};
     float angle = 0;
     std::vector<float> rotationAxis = {0, 0, 1};
@@ -107,8 +108,8 @@ struct GridData
     glm::mat3 u_normal;
     std::string shader;
     glm::vec2 gridSize;
-    float cellSize;
-    Mesh grid = Mesh::genGrid(gridSize.x, gridSize.y, cellSize, color, shader);
+    float lod;
+    Mesh grid = Mesh::genGrid(gridSize.x, gridSize.y, lod, color, shader);
 };
 
 struct SkyBoxData

@@ -50,6 +50,7 @@ private:
 
     static void renderDefault(Mesh mesh);
     static void renderToon(Mesh mesh);
+    static void renderToonTerrain(Mesh mesh);
     static void renderPBR(Mesh mesh);
     static void renderSimple(Mesh mesh);
     static void renderToonWater(Mesh mesh);
