@@ -85,7 +85,7 @@ void Scene::loadModelToScene(JSONModel model)
     ModelData loadModel;
 
     // Find model location using map
-    std::string modelPath = Model::modelMap[model.path];
+    std::string modelPath = Model::modelMap[model.path].first;
 
     // If model not yet loaded
     if (loadedModels.find(modelPath) == loadedModels.end())

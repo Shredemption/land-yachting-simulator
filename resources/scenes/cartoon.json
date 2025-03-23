@@ -6,7 +6,8 @@
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 2],
-      "shader": "toon"
+      "shader": "toon",
+      "animated": true
     },
     {
       "path": "red-piper",
@@ -14,7 +15,8 @@
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [-6, 1, 2],
-      "shader": "toon"
+      "shader": "toon",
+      "animated": true
     },
     {
       "path": "blue-piper",
@@ -22,7 +24,8 @@
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [-12, 2, 2],
-      "shader": "toon"
+      "shader": "toon",
+      "animated": true
     },
     {
       "path": "sietske",
@@ -31,8 +34,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [6, 1, 2],
       "shader": "toon",
-      "animated": true,
-      "controlled": true
+      "animated": true
     }
   ],
   "unitPlanes": [

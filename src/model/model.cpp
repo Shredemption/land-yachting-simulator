@@ -15,8 +15,11 @@
 #include "event_handler/event_handler.h"
 
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
-std::map<std::string, std::string> Model::modelMap;
+std::map<std::string, std::pair<std::string, ModelType>> Model::modelMap;
 std::string modelMapPath = "resources/models.json";
+
+JSONCONS_N_MEMBER_TRAITS(JSONModelMapData, 2, name, path);
+JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 // Model Constructor
 Model::Model(std::pair<std::string, std::string> pathShader)
@@ -395,21 +398,15 @@ void Model::loadModelMap()
         throw std::runtime_error("Could not open file: " + path);
     }
 
-    // Parse the JSON
-    jsoncons::json j;
-    try
-    {
-        j = jsoncons::json::parse(file);
-    }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Failed to parse JSON: " + std::string(e.what()));
-    }
+    JSONModelMap jsonModelMap = jsoncons::decode_json<JSONModelMap>(file);
 
-    // Create a map from the parsed JSON
-    for (const auto &kv : j["models"].object_range())
+    for (JSONModelMapData yacht : jsonModelMap.yachts)
     {
-        modelMap[kv.key()] = kv.value().as<std::string>();
+        modelMap[yacht.name] = std::make_pair(yacht.path, ModelType::yacht);
+    }
+    for (JSONModelMapData model : jsonModelMap.models)
+    {
+        modelMap[model.name] = std::make_pair(model.path, ModelType::model);
     }
 }
 
