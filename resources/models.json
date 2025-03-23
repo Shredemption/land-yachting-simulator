@@ -1,7 +1,7 @@
 {
     "models": {
-        "dn-duvel": "resources/objects/dn-duvel/dn-duvel.dae",
-        "red-piper": "resources/objects/red-piper/red-piper.dae",
-        "blue-piper": "resources/objects/blue-piper/blue-piper.dae"
+        "dn-duvel": "resources/yachts/dn-duvel/dn-duvel.dae",
+        "red-piper": "resources/yachts/red-piper/red-piper.dae",
+        "blue-piper": "resources/yachts/blue-piper/blue-piper.dae",
     }
 }
