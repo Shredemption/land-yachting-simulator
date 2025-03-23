@@ -39,7 +39,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 0.5f;
     }
 
-    if (ModelData.model->path.find("red-piper") != std::string::npos)
+    else if (ModelData.model->path.find("red-piper") != std::string::npos)
     {
         maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
@@ -51,7 +51,7 @@ Physics::Physics(ModelData &ModelData)
 
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
-        mass = 200.0f;
+        mass = 180.0f;
         bodyDragCoefficient = 0.25f;
         bodyArea = 1.0f;
 
@@ -60,7 +60,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 0.45f;
     }
 
-    if (ModelData.model->path.find("blue-piper") != std::string::npos)
+    else if (ModelData.model->path.find("blue-piper") != std::string::npos)
     {
         maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
@@ -72,13 +72,34 @@ Physics::Physics(ModelData &ModelData)
 
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
-        mass = 200.0f;
+        mass = 180.0f;
         bodyDragCoefficient = 0.25f;
         bodyArea = 1.0f;
 
-        steeringSmoothness = 3.0f;
+        steeringSmoothness = 1.5f;
         maxSteeringAngle = 25.0f;
         steeringAttenuation = 1.55f;
+    }
+    
+    else if (ModelData.model->path.find("sietske") != std::string::npos)
+    {
+        maxMastAngle = glm::radians(60.0f);
+        maxBoomAngle = glm::radians(90.0f);
+
+        maxLiftCoefficient = 1.5f;
+        optimalAngle = glm::radians(20.0f);
+        minDragCoefficient = 0.1f;
+        sailArea = 5.7f;
+
+        rollCoefficient = 0.004f;
+        rollScaling = 20.0f;
+        mass = 200.0f;
+        bodyDragCoefficient = 0.15f;
+        bodyArea = 1.0f;
+
+        steeringSmoothness = 2.0f;
+        maxSteeringAngle = 22.22f;
+        steeringAttenuation = 1.f;
     }
 }
 
