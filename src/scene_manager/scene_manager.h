@@ -3,10 +3,16 @@
 
 #include "scene/scene.h"
 
+#include <thread>
+#include <atomic>
+
 class SceneManager
 {
 public:
     static Scene *currentScene;
+    static std::atomic<bool> isLoading;
+    static std::thread loadingThread;
+    
     static std::map<std::string, std::string> sceneMap;
     static void loadSceneMap();
 
@@ -14,6 +20,7 @@ public:
     static void update();
     static void render();
     static void unload();
+    static void renderLoading();
 
     static bool onTitleScreen;
 };
