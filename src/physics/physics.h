@@ -18,6 +18,7 @@ public:
 
     static void setup(Scene &scene);
     static void update(Scene &scene);
+    static void switchControlledYacht(Scene &scene);
 
     static bool keyInputs[5];
 

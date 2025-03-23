@@ -221,7 +221,8 @@ void Physics::move()
         // if propulsion less than rollresistance
         if (sailLiftForce - sailDragForce - bodyDragForce < rollResistance)
         {
-            netForce = 0;
+            netForce = 0.0f;
+            forwardVelocity *= 0.75f;
         }
         // if propulsion greater than rollresistance
         else
@@ -258,4 +259,29 @@ void Physics::move()
     Render::debugData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
     Render::debugData.push_back(std::pair("effectiveCL", effectiveCL));
     Render::debugData.push_back(std::pair("effectiveCD", effectiveCD));
+}
+
+void Physics::switchControlledYacht(Scene &scene)
+{
+    std::string current;
+
+    for (auto &model : scene.structModels)
+    {
+        if (model.controlled && model.physics[0]->forwardVelocity <= 0.01f)
+        {
+            current = model.model->name;
+            model.controlled = false;
+        }
+    }
+
+    int currentId = find(scene.loadedYachts.begin(), scene.loadedYachts.end(), current) - scene.loadedYachts.begin();
+    int newId = (currentId + 1) % scene.loadedYachts.size();
+
+    for (auto &model : scene.structModels)
+    {
+        if (model.model->name == scene.loadedYachts[newId])
+        {
+            model.controlled = true;
+        }
+    }
 }
