@@ -11,7 +11,7 @@
 
 struct JSONModel
 {
-    std::string path = "none";
+    std::string name = "none";
     std::vector<float> scale = {1, 1, 1};
     float angle = 0;
     std::vector<float> rotationAxis = {0, 1, 0};
@@ -140,6 +140,7 @@ public:
     std::string name;
     std::vector<ModelData> structModels;
     std::unordered_map<std::string, Model> loadedModels;
+    std::vector<std::string> loadedYachts;
     std::vector<UnitPlaneData> transparentUnitPlanes;
     std::vector<UnitPlaneData> opaqueUnitPlanes;
     std::vector<GridData> grids;

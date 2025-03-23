@@ -80,7 +80,7 @@ Physics::Physics(ModelData &ModelData)
         maxSteeringAngle = 25.0f;
         steeringAttenuation = 1.55f;
     }
-    
+
     else if (ModelData.model->path.find("sietske") != std::string::npos)
     {
         maxMastAngle = glm::radians(60.0f);

@@ -22,10 +22,11 @@ JSONCONS_N_MEMBER_TRAITS(JSONModelMapData, 2, name, path);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 // Model Constructor
-Model::Model(std::pair<std::string, std::string> pathShader)
+Model::Model(std::tuple<std::string, std::string, std::string> NamePathShader)
 {
-    this->path = pathShader.first;
-    loadModel(pathShader.first, pathShader.second);
+    this->name = std::get<0>(NamePathShader);
+    this->path = std::get<1>(NamePathShader);
+    loadModel(std::get<1>(NamePathShader), std::get<2>(NamePathShader));
 }
 
 // Model Destructor
