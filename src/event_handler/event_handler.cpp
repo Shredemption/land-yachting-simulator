@@ -95,6 +95,11 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
         {
             Physics::resetState = true;
         }
+
+        if (key == GLFW_KEY_N && action == GLFW_PRESS)
+        {
+            Physics::switchControlledYacht(*SceneManager::currentScene);
+        }
     }
 
     // Toggle fullscreen on F11
