@@ -20,6 +20,24 @@ struct CachedTexture
 
 struct SkyBoxData;
 
+enum ModelType
+{
+    model,
+    yacht
+};
+
+struct JSONModelMapData
+{
+    std::string name;   
+    std::string path;
+};
+
+struct JSONModelMap
+{
+    std::vector<JSONModelMapData> yachts;
+    std::vector<JSONModelMapData> models;
+};
+
 class Model
 {
 public:
@@ -33,8 +51,7 @@ public:
     std::vector<Bone *> rootBones;
     std::string path;
 
-
-    static std::map<std::string, std::string> modelMap;
+    static std::map<std::string, std::pair<std::string, ModelType>> modelMap;
     static void loadModelMap();
 
     std::vector<Mesh> meshes;
@@ -56,7 +73,7 @@ private:
     Mesh processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy);
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
     std::string findTextureInDirectory(const std::string &directory, const std::string &typeName);
-    
+
     inline bool ends_with(std::string const &value, std::string const &ending);
 };
 

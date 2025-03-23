@@ -1,8 +1,21 @@
 {
-    "models": {
-        "dn-duvel": "resources/yachts/dn-duvel/dn-duvel.dae",
-        "red-piper": "resources/yachts/red-piper/red-piper.dae",
-        "blue-piper": "resources/yachts/blue-piper/blue-piper.dae",
-        "sietske": "resources/yachts/sietske/sietske.dae"
+  "yachts": [
+    {
+      "name": "dn-duvel",
+      "path": "resources/yachts/dn-duvel/dn-duvel.dae"
+    },
+    {
+      "name": "red-piper",
+      "path": "resources/yachts/red-piper/red-piper.dae"
+    },
+    {
+      "name": "blue-piper",
+      "path": "resources/yachts/blue-piper/blue-piper.dae"
+    },
+    {
+      "name": "sietske",
+      "path": "resources/yachts/sietske/sietske.dae"
     }
+  ],
+  "models": []
 }
