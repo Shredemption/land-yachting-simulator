@@ -14,14 +14,21 @@
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [6, 1, 0]
+      "translation": [-6, 1, 0]
     },
     {
       "path": "blue-piper",
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
-      "translation": [-6, 1, 0]
+      "translation": [-12, 2, 0]
+    },
+    {
+      "path": "sietske",
+      "scale": [1, 1, 1],
+      "angle": 0,
+      "rotationAxis": [0, 0, 1],
+      "translation": [6, 1, 0]
     }
   ],
   "unitPlanes": [
