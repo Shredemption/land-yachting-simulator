@@ -36,13 +36,14 @@ void SceneManager::load(const std::string &sceneName)
     unload();
 
     loadingThread = std::thread([sceneName]()
-                                {
+    {
         currentScene = new Scene(sceneMap[sceneName], sceneName);
 
         Camera::reset();
         Physics::setup(*currentScene);
 
-        isLoading = false; });
+        isLoading = false;
+    });
 
     loadingThread.detach();
 }
