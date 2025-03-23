@@ -21,14 +21,24 @@ bool SceneManager::onTitleScreen = false;
 
 void SceneManager::load(const std::string &sceneName)
 {
-    if (isLoading)
-    {
-        return;
-    }
+    unload();
 
     if (sceneName == "title")
     {
         onTitleScreen = true;
+    }
+
+    currentScene = new Scene(sceneMap[sceneName], sceneName);
+
+    Camera::reset();
+    Physics::setup(*currentScene);
+}
+
+void SceneManager::loadDetached(const std::string &sceneName)
+{
+    if (isLoading)
+    {
+        return;
     }
 
     isLoading = true;
@@ -36,14 +46,19 @@ void SceneManager::load(const std::string &sceneName)
     unload();
 
     loadingThread = std::thread([sceneName]()
-    {
+                                {
+
+        if (sceneName == "title")
+        {
+            onTitleScreen = true;
+        }
+
         currentScene = new Scene(sceneMap[sceneName], sceneName);
 
         Camera::reset();
         Physics::setup(*currentScene);
 
-        isLoading = false;
-    });
+        isLoading = false; });
 
     loadingThread.detach();
 }

@@ -69,6 +69,9 @@ int main()
     Model::loadModelMap();
     SceneManager::loadSceneMap();
 
+    // Load title screen Scene
+    SceneManager::load("title");
+
     // Draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -105,18 +108,10 @@ int main()
 
     Render::setup();
 
-    // Load title screen Scene
-    SceneManager::load("title");
-
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
-        if (SceneManager::isLoading)
-        {
-            SceneManager::renderLoading();
-        }
-
-        else if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
+        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
         {
             glfwWaitEvents();
             continue;
