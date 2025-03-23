@@ -12,22 +12,39 @@
 #include "camera/camera.h"
 
 Scene *SceneManager::currentScene = nullptr;
+std::atomic<bool> SceneManager::isLoading = false;
+std::thread SceneManager::loadingThread;
+
 std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
 bool SceneManager::onTitleScreen = false;
 
 void SceneManager::load(const std::string &sceneName)
 {
-    unload();
+    if (isLoading)
+    {
+        return;
+    }
 
     if (sceneName == "title")
     {
         onTitleScreen = true;
     }
 
-    currentScene = new Scene(sceneMap[sceneName], sceneName);
-    Camera::reset();
-    Physics::setup(*currentScene);
+    isLoading = true;
+
+    unload();
+
+    loadingThread = std::thread([sceneName]()
+                                {
+        currentScene = new Scene(sceneMap[sceneName], sceneName);
+
+        Camera::reset();
+        Physics::setup(*currentScene);
+
+        isLoading = false; });
+
+    loadingThread.detach();
 }
 
 void SceneManager::update()
@@ -87,4 +104,11 @@ void SceneManager::loadSceneMap()
     {
         sceneMap[kv.key()] = kv.value().as<std::string>();
     }
+}
+
+void SceneManager::renderLoading()
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    Render::renderText("Loading...", 0.1f, 0.8f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
 }
