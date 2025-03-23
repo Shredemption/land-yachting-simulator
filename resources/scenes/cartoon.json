@@ -1,16 +1,17 @@
 {
   "models": [
     {
-      "path": "dn-duvel",
+      "name": "dn-duvel",
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 2],
       "shader": "toon",
-      "animated": true
+      "animated": true,
+      "controlled": true
     },
     {
-      "path": "red-piper",
+      "name": "red-piper",
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
@@ -19,7 +20,7 @@
       "animated": true
     },
     {
-      "path": "blue-piper",
+      "name": "blue-piper",
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],
@@ -28,7 +29,7 @@
       "animated": true
     },
     {
-      "path": "sietske",
+      "name": "sietske",
       "scale": [1, 1, 1],
       "angle": 0,
       "rotationAxis": [0, 0, 1],

@@ -13,7 +13,7 @@
 #include "frame_buffer/frame_buffer.h"
 #include "file_manager/file_manager.h"
 
-JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, path, scale, angle, rotationAxis, translation, shader, animated, controlled);
+JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, scale, lod, color, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
@@ -85,13 +85,13 @@ void Scene::loadModelToScene(JSONModel model)
     ModelData loadModel;
 
     // Find model location using map
-    std::string modelPath = Model::modelMap[model.path].first;
+    std::string modelPath = Model::modelMap[model.name].first;
 
     // If model not yet loaded
     if (loadedModels.find(modelPath) == loadedModels.end())
     {
         // Load model with path and shader name
-        loadedModels.emplace(modelPath, std::make_pair(FileManager::getPath(modelPath), model.shader));
+        loadedModels.emplace(modelPath, std::make_tuple(model.name, FileManager::getPath(modelPath), model.shader));
     }
 
     // Push loaded path to model
@@ -116,6 +116,11 @@ void Scene::loadModelToScene(JSONModel model)
     loadModel.controlled = model.controlled;
 
     this->structModels.push_back(loadModel);
+
+    if (Model::modelMap[model.name].second == ModelType::yacht)
+    {
+        loadedYachts.push_back(model.name);
+    }
 }
 
 void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)

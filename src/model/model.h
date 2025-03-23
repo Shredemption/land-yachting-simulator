@@ -41,7 +41,7 @@ struct JSONModelMap
 class Model
 {
 public:
-    Model(std::pair<std::string, std::string> pathShader);
+    Model(std::tuple<std::string, std::string, std::string> NamePathShader);
     ~Model();
 
     std::map<std::string, Bone *> boneHierarchy;
@@ -50,6 +50,7 @@ public:
     std::vector<glm::mat4> boneInverseOffsets;
     std::vector<Bone *> rootBones;
     std::string path;
+    std::string name;
 
     static std::map<std::string, std::pair<std::string, ModelType>> modelMap;
     static void loadModelMap();
