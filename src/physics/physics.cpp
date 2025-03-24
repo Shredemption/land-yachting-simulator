@@ -101,6 +101,27 @@ Physics::Physics(ModelData &ModelData)
         maxSteeringAngle = 22.22f;
         steeringAttenuation = 1.f;
     }
+
+    else
+    {
+        maxMastAngle = glm::radians(1.0f);
+        maxBoomAngle = glm::radians(1.0f);
+
+        maxLiftCoefficient = 1.0f;
+        optimalAngle = glm::radians(1.0f);
+        minDragCoefficient = 1.0f;
+        sailArea = 1.0f;
+
+        rollCoefficient = 1.0f;
+        rollScaling = 1.0f;
+        mass = 1.0f;
+        bodyDragCoefficient = 1.0f;
+        bodyArea = 1.0f;
+
+        steeringSmoothness = 1.0f;
+        maxSteeringAngle = 1.0f;
+        steeringAttenuation = 1.0f;
+    }
 }
 
 void Physics::reset()

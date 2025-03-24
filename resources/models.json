@@ -5,6 +5,22 @@
       "path": "resources/yachts/dn-duvel/dn-duvel.dae"
     },
     {
+      "name": "bobbie",
+      "path": "resources/yachts/bobbie/bobbie.dae"
+    },
+    {
+      "name": "vampier",
+      "path": "resources/yachts/vampier/vampier.dae"
+    },
+    {
+      "name": "beware",
+      "path": "resources/yachts/beware/beware.dae"
+    },
+    {
+      "name": "buizerd",
+      "path": "resources/yachts/buizerd/buizerd.dae"
+    },
+    {
       "name": "red-piper",
       "path": "resources/yachts/red-piper/red-piper.dae"
     },
