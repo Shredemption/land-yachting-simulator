@@ -14,6 +14,7 @@
 Scene *SceneManager::currentScene = nullptr;
 std::atomic<bool> SceneManager::isLoading = false;
 std::thread SceneManager::loadingThread;
+GLFWwindow *SceneManager::mainWindow = nullptr;
 
 std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
@@ -30,6 +31,8 @@ void SceneManager::load(const std::string &sceneName)
 
     currentScene = new Scene(sceneMap[sceneName], sceneName);
 
+    glFlush();
+
     Camera::reset();
     Physics::setup(*currentScene);
 }
@@ -41,16 +44,33 @@ void SceneManager::loadDetached(const std::string &sceneName)
         return;
     }
 
-    isLoading = true;
+    isLoading.store(true);
 
     unload();
+
+    if (sceneName == "title")
+    {
+        onTitleScreen = true;
+    }
 
     loadingThread = std::thread([sceneName]()
                                 {
 
-        if (sceneName == "title")
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        GLFWwindow* loadContext = glfwCreateWindow(1, 1, "LoadingContext", NULL, glfwGetCurrentContext());
+        if (!loadContext)
         {
-            onTitleScreen = true;
+            std::cerr << "Failed to create OpenGL context for loading thread!" << std::endl;
+            isLoading.store(false);
+            return;
+        }
+
+        glfwMakeContextCurrent(loadContext);
+
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+            std::cerr << "Failed to initialize GLAD in loading thread!" << std::endl;
+            isLoading.store(false);
+            return;
         }
 
         currentScene = new Scene(sceneMap[sceneName], sceneName);
@@ -58,7 +78,11 @@ void SceneManager::loadDetached(const std::string &sceneName)
         Camera::reset();
         Physics::setup(*currentScene);
 
-        isLoading = false; });
+        glFinish();
+
+        glfwDestroyWindow(loadContext);      
+
+        isLoading.store(false); });
 
     loadingThread.detach();
 }
@@ -71,6 +95,7 @@ void SceneManager::update()
 
 void SceneManager::render()
 {
+    glfwMakeContextCurrent(mainWindow);
     Render::render(*currentScene);
 }
 
