@@ -31,8 +31,6 @@ void SceneManager::load(const std::string &sceneName)
 
     currentScene = new Scene(sceneMap[sceneName], sceneName);
 
-    glFlush();
-
     Camera::reset();
     Physics::setup(*currentScene);
 }
@@ -95,7 +93,6 @@ void SceneManager::update()
 
 void SceneManager::render()
 {
-    glfwMakeContextCurrent(mainWindow);
     Render::render(*currentScene);
 }
 

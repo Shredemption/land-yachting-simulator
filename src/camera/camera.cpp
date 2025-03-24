@@ -47,10 +47,10 @@ void Camera::reset()
     }
     else
     {
-        cameraPositionFree = glm::vec3(17.32f, -10.f, 10.f);
+        cameraPositionFree = glm::vec3(-0.5f, -12.f, 3.f);
         cameraPosition = glm::vec3(0.f, 0.f, 0.f);
 
-        yawFree = glm::radians(-60.0f), pitchFree = glm::radians(30.0f), rollFree = 0;
+        yawFree = glm::radians(-40.0f), pitchFree = 0, rollFree = 0;
         yaw = 0, pitch = 0, roll = 0;
         yawOffset = 0, pitchOffset = 0, rollOffset = 0;
 
