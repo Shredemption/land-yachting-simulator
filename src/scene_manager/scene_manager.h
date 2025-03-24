@@ -12,6 +12,7 @@ public:
     static Scene *currentScene;
     static std::atomic<bool> isLoading;
     static std::thread loadingThread;
+    static GLFWwindow *mainWindow;
 
     static std::map<std::string, std::string> sceneMap;
     static void loadSceneMap();

@@ -108,6 +108,8 @@ int main()
 
     Render::setup();
 
+    SceneManager::mainWindow = window;
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -115,6 +117,11 @@ int main()
         {
             glfwWaitEvents();
             continue;
+        }
+
+        if (SceneManager::isLoading.load() == true)
+        {
+            SceneManager::renderLoading();
         }
 
         else
