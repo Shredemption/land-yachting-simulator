@@ -91,7 +91,7 @@ void Render::render(Scene &scene)
             debugText = debugText + entry.first + ": " + std::to_string(entry.second) + "\n";
         }
 
-        renderText(debugText, 10.0f, 10.0f, ceil(EventHandler::screenHeight / 250.0f) / 10.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+        renderText(debugText, 0.01f, 0.01f, 1, glm::vec3(1.0f, 0.0f, 1.0f));
     }
 
     Camera::cameraMoved = false;
@@ -240,7 +240,7 @@ void Render::renderSceneTexts(Scene &scene)
 {
     for (auto text : scene.texts)
     {
-        renderText(text.text, text.position.x * EventHandler::screenHeight, text.position.y * EventHandler::screenHeight, text.scale, text.color);
+        renderText(text.text, text.position.x, text.position.y, text.scale, text.color);
     }
 }
 
@@ -738,11 +738,15 @@ void Render::initFreeType()
 
 void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color)
 {
+    x *= EventHandler::screenHeight;
+    y *= EventHandler::screenHeight;
+    scale *= EventHandler::screenHeight/1440;
+
     // Load the shader for rendering text
     Shader shader = Shader::load("text");
 
     // Set text color uniform
-    glUniform3f(glGetUniformLocation(shader.m_id, "textColor"), color.x, color.y, color.z);
+    glUniform3f(glGetUniformLocation(shader.m_id, "textColor"), color.r, color.g, color.b);
 
     // Set the projection matrix for the text shader
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(EventHandler::screenWidth), static_cast<float>(EventHandler::screenHeight), 0.0f);
