@@ -142,6 +142,7 @@ void Physics::setup(Scene &scene)
         if (scene.structModels[i].animated)
         {
             scene.structModels[i].physics.push_back(new Physics(scene.structModels[i]));
+            scene.structModels[i].physics[0]->reset();
         }
     }
 }
