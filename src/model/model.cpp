@@ -527,3 +527,11 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
         updateBoneTransformsRecursive(child, boneTransforms[bone->index], boneInverseOffsets[bone->index]);
     }
 }
+
+void Model::uploadToGPU()
+{
+    for (auto& mesh : meshes)
+    {
+        mesh.uploadToGPU();
+    }
+}

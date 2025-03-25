@@ -3,22 +3,20 @@
 
 #include "scene/scene.h"
 
-#include <thread>
-#include <atomic>
+#include <future>
 
 class SceneManager
 {
 public:
     static Scene *currentScene;
-    static std::atomic<bool> isLoading;
-    static std::thread loadingThread;
-    static GLFWwindow *mainWindow;
+    static std::future<std::shared_ptr<Scene>> pendingScene;
+    static bool isLoading;
 
     static std::map<std::string, std::string> sceneMap;
     static void loadSceneMap();
 
     static void load(const std::string &scenePath);
-    static void loadDetached(const std::string &scenePath);
+    static void loadAsync(const std::string &scenePath);
     static void update();
     static void render();
     static void unload();

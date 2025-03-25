@@ -108,8 +108,6 @@ int main()
 
     Render::setup();
 
-    SceneManager::mainWindow = window;
-
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -119,18 +117,19 @@ int main()
             continue;
         }
 
-        if (SceneManager::isLoading.load() == true)
+        if (SceneManager::isLoading)
         {
             SceneManager::renderLoading();
+            SceneManager::update();
         }
 
         else
         {
             EventHandler::update(window);
 
-            Camera::update();
-
             SceneManager::update();
+
+            Camera::update();
 
             SceneManager::render();
 

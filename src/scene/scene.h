@@ -136,6 +136,7 @@ class Scene
 {
 public:
     Scene(std::string jsonPath, std::string sceneName);
+    void uploadToGPU();
 
     std::string name;
     std::vector<ModelData> structModels;
