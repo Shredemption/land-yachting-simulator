@@ -117,15 +117,18 @@ int main()
             continue;
         }
 
-        EventHandler::update(window);
-
-        SceneManager::update();
-
         if (SceneManager::isLoading)
+        {
+            SceneManager::update();
             SceneManager::renderLoading();
+        }
 
         if (!SceneManager::isLoading)
+        {
+            SceneManager::update();
             SceneManager::render();
+            EventHandler::update(window);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
