@@ -15,6 +15,13 @@
 #include "event_handler/event_handler.h"
 
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
+std::mutex Model::textureCacheMutex;
+std::queue<PendingTexture> Model::textureQueue;
+std::mutex Model::textureQueueMutex;
+std::unordered_set<std::string> Model::pendingTextures;
+std::mutex Model::pendingTexturesMutex;
+std::mutex Model::openglMutex;
+
 std::map<std::string, std::pair<std::string, ModelType>> Model::modelMap;
 std::string modelMapPath = "resources/models.json";
 
@@ -270,27 +277,70 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
 {
     // Vector of textures to push to GPU
     std::vector<Texture> textures;
-
-    // Find texture manually
     std::string textureName = findTextureInDirectory(directory, typeName);
+
     if (!textureName.empty())
     {
-        // If texture already loaded
-        if (textureCache.find(textureName) != textureCache.end())
         {
-            // Use cached texture
-            textures.push_back(textureCache[textureName].texture);
-            textureCache[textureName].refCount++;
+            std::lock_guard<std::mutex> lock(textureCacheMutex);
+            if (textureCache.find(textureName) != textureCache.end())
+            {
+                textures.push_back(textureCache[textureName].texture);
+                textureCache[textureName].refCount++;
+                return textures;
+            }
         }
-        else
+
         {
-            // Define and load new texture to texture cache
-            Texture texture;
-            texture.id = TextureFromFile(textureName.c_str(), directory);
-            texture.type = typeName;
-            texture.path = textureName.c_str();
-            textures.push_back(texture);
-            textureCache[textureName].texture = texture;
+            std::lock_guard<std::mutex> lock(pendingTexturesMutex);
+            if (pendingTextures.find(textureName) != pendingTextures.end())
+            {
+                // Another thread is already loading this texture
+                return textures;
+            }
+            pendingTextures.insert(textureName);
+        }
+        GLuint placeholderID;
+        {
+            std::lock_guard<std::mutex> lock(openglMutex); // Ensure OpenGL calls are safe
+            placeholderID = CreatePlaceholderTexture();
+        }
+
+        Texture placeholderTexture;
+        placeholderTexture.id = placeholderID;
+        placeholderTexture.type = typeName;
+        placeholderTexture.path = textureName;
+        textures.push_back(placeholderTexture);
+
+        // Get texture location
+        std::string filename = directory + '/' + textureName;
+        int width, height, channels;
+        unsigned char *data = stbi_load(filename.c_str(), &width, &height, &channels, 0);
+
+        if (!data)
+        {
+            std::cerr << "Failed to load texture: " << filename << std::endl;
+            {
+                std::lock_guard<std::mutex> lock(pendingTexturesMutex);
+                pendingTextures.erase(textureName);
+            }
+            return textures;
+        }
+
+        PendingTexture texture;
+        texture.name = textureName;
+        texture.width = width;
+        texture.height = height;
+        texture.channels = channels;
+        texture.pixelData.assign(data, data + (width * height * 4));
+        texture.typeName = typeName;
+        texture.textureID = placeholderID;
+
+        stbi_image_free(data);
+
+        {
+            std::lock_guard<std::mutex> lock(textureQueueMutex);
+            textureQueue.push(std::move(texture));
         }
     }
 
@@ -302,52 +352,76 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
     return textures;
 }
 
-unsigned int Model::TextureFromFile(const char *name, const std::string &directory)
+GLuint Model::CreatePlaceholderTexture()
 {
-    // Get texture location
-    std::string filename = std::string(name);
-    filename = directory + '/' + filename;
-
-    // Generate empty texture
-    unsigned int textureID;
+    GLuint textureID;
     glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
-    // Load texture file
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data)
-    {
-        // Detect what kind of texture
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
+    unsigned char placeholderData[4] = {255, 0, 255, 255}; // Purple 1x1 texture (RGBA)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, placeholderData);
 
-        // Bind texture and upload
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-        // Set texture looping and scaling parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        // Unload texture
-        stbi_image_free(data);
-    }
-    else
-    {
-        // Error if texture cant be loaded
-        std::cout << "Texture failed to load at path: " << name << std::endl;
-        stbi_image_free(data);
-    }
     return textureID;
-};
+}
+
+void Model::processPendingTextures()
+{
+    std::lock_guard<std::mutex> lock(textureQueueMutex);
+    while (!textureQueue.empty())
+    {
+        PendingTexture texture = std::move(textureQueue.front());
+        textureQueue.pop();
+
+        GLuint textureID = texture.textureID;
+
+        {
+            std::lock_guard<std::mutex> lock(openglMutex);
+            glBindTexture(GL_TEXTURE_2D, textureID);
+
+            GLenum format;
+            if (texture.channels == 1)
+                format = GL_RED;
+            else if (texture.channels == 3)
+                format = GL_RGB;
+            else if (texture.channels == 4)
+                format = GL_RGBA;
+
+            glTexImage2D(GL_TEXTURE_2D, 0, format, texture.width, texture.height, 0, format, GL_UNSIGNED_BYTE, texture.pixelData.data());
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
+        auto &cached = textureCache[texture.name];
+        cached.texture = {textureID, texture.typeName, texture.name};
+        cached.refCount++;
+
+        for (auto &mesh : meshes)
+        {
+            for (auto &tex : mesh.textures)
+            {
+                if (tex.path == texture.name)
+                {
+                    tex.id = textureID;
+                }
+            }
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(pendingTexturesMutex);
+            pendingTextures.erase(texture.name);
+        }
+    }
+}
 
 std::string Model::findTextureInDirectory(const std::string &directory, const std::string &typeName)
 {
@@ -530,7 +604,9 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
 
 void Model::uploadToGPU()
 {
-    for (auto& mesh : meshes)
+    processPendingTextures();
+
+    for (auto &mesh : meshes)
     {
         mesh.uploadToGPU();
     }
