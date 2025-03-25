@@ -44,6 +44,8 @@ public:
     Model(std::tuple<std::string, std::string, std::string> NamePathShader);
     ~Model();
 
+    void uploadToGPU();
+
     std::map<std::string, Bone *> boneHierarchy;
     std::vector<glm::mat4> boneTransforms;
     std::vector<glm::mat4> boneOffsets;

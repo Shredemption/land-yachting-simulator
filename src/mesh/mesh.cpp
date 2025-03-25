@@ -8,43 +8,6 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
     this->indices = indices;
     this->textures = textures;
     this->shader = shaderName;
-
-    if (shaderName == "pbr")
-    {
-        setupPBRMesh();
-    }
-    else if (shaderName == "simple")
-    {
-        setupSimpleMesh();
-    }
-    else if (shaderName == "toon-water")
-    {
-        setupToonWaterMesh();
-    }
-    else if (shaderName == "water")
-    {
-        setupWaterMesh();
-    }
-    else if (shaderName == "water2")
-    {
-        setupWater2Mesh();
-    }
-    else if (shaderName == "skybox")
-    {
-        setupSkyBoxMesh();
-    }
-    else if (shaderName == "toon")
-    {
-        setupToonMesh();
-    }
-    else if (shaderName == "toon-terrain")
-    {
-        setupToonTerrainMesh();
-    }
-    else
-    {
-        setupDefaultMesh();
-    }
 }
 
 void Mesh::setupDefaultMesh()
@@ -470,4 +433,44 @@ unsigned int Mesh::setupSkyBoxMesh()
     glBindVertexArray(0); // Unbind VAO
 
     return skyboxVAO;
+}
+
+void Mesh::uploadToGPU()
+{
+    if (this->shader == "pbr")
+    {
+        setupPBRMesh();
+    }
+    else if (this->shader == "simple")
+    {
+        setupSimpleMesh();
+    }
+    else if (this->shader == "toon-water")
+    {
+        setupToonWaterMesh();
+    }
+    else if (this->shader == "water")
+    {
+        setupWaterMesh();
+    }
+    else if (this->shader == "water2")
+    {
+        setupWater2Mesh();
+    }
+    else if (this->shader == "skybox")
+    {
+        setupSkyBoxMesh();
+    }
+    else if (this->shader == "toon")
+    {
+        setupToonMesh();
+    }
+    else if (this->shader == "toon-terrain")
+    {
+        setupToonTerrainMesh();
+    }
+    else
+    {
+        setupDefaultMesh();
+    }
 }

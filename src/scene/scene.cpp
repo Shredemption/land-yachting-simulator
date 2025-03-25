@@ -209,3 +209,23 @@ void Scene::loadTextToScene(JSONText text)
 
     this->texts.push_back(loadText);
 }
+
+void Scene::uploadToGPU()
+{
+    for (auto &modelData : structModels)
+    {
+        modelData.model->uploadToGPU();
+    }
+    for (auto &transparentUnitPlane : transparentUnitPlanes)
+    {
+        transparentUnitPlane.unitPlane.uploadToGPU();
+    }
+    for (auto &opaqueUnitPlane : opaqueUnitPlanes)
+    {
+        opaqueUnitPlane.unitPlane.uploadToGPU();
+    }
+    for (auto &grid : grids)
+    {
+        grid.grid.uploadToGPU();
+    }
+}

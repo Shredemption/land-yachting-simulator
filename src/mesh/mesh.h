@@ -50,6 +50,7 @@ public:
     unsigned int VAO, VBO, EBO;
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName);
+    void uploadToGPU();
 
     static Mesh genUnitPlane(glm::vec3 color, std::string shaderName);
     static Mesh genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std::string shaderName);

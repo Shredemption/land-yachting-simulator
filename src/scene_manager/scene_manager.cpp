@@ -12,9 +12,8 @@
 #include "camera/camera.h"
 
 Scene *SceneManager::currentScene = nullptr;
-std::atomic<bool> SceneManager::isLoading = false;
-std::thread SceneManager::loadingThread;
-GLFWwindow *SceneManager::mainWindow = nullptr;
+std::future<std::shared_ptr<Scene>> SceneManager::pendingScene;
+bool SceneManager::isLoading = false;
 
 std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
@@ -30,20 +29,14 @@ void SceneManager::load(const std::string &sceneName)
     }
 
     currentScene = new Scene(sceneMap[sceneName], sceneName);
+    currentScene->uploadToGPU();
 
     Camera::reset();
     Physics::setup(*currentScene);
 }
 
-void SceneManager::loadDetached(const std::string &sceneName)
+void SceneManager::loadAsync(const std::string &sceneName)
 {
-    if (isLoading)
-    {
-        return;
-    }
-
-    isLoading.store(true);
-
     unload();
 
     if (sceneName == "title")
@@ -51,44 +44,37 @@ void SceneManager::loadDetached(const std::string &sceneName)
         onTitleScreen = true;
     }
 
-    loadingThread = std::thread([sceneName]()
-                                {
+    isLoading = true;
 
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        GLFWwindow* loadContext = glfwCreateWindow(1, 1, "LoadingContext", NULL, glfwGetCurrentContext());
-        if (!loadContext)
-        {
-            std::cerr << "Failed to create OpenGL context for loading thread!" << std::endl;
-            isLoading.store(false);
-            return;
-        }
+    std::future<std::shared_ptr<Scene>> futureScene = std::async(std::launch::async, [sceneName]()
+                                                                 { return std::make_shared<Scene>(sceneMap[sceneName], sceneName); });
 
-        glfwMakeContextCurrent(loadContext);
-
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            std::cerr << "Failed to initialize GLAD in loading thread!" << std::endl;
-            isLoading.store(false);
-            return;
-        }
-
-        currentScene = new Scene(sceneMap[sceneName], sceneName);
-
-        Camera::reset();
-        Physics::setup(*currentScene);
-
-        glFinish();
-
-        glfwDestroyWindow(loadContext);      
-
-        isLoading.store(false); });
-
-    loadingThread.detach();
+    pendingScene = std::move(futureScene);
 }
 
 void SceneManager::update()
 {
-    Physics::update(*currentScene);
-    Animation::updateBones(*currentScene);
+    if (isLoading && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+    {
+        // Retrieve the loaded scene
+        std::shared_ptr<Scene> loadedScene = pendingScene.get();
+        currentScene = loadedScene.get();
+
+        // Now upload scene data to OpenGL (on main thread)
+        currentScene->uploadToGPU();
+
+        Camera::reset();
+        Physics::setup(*currentScene);
+
+        // Reset future
+        pendingScene = std::future<std::shared_ptr<Scene>>();
+        isLoading = false;
+    }
+    else if (!isLoading)
+    {
+        Physics::update(*currentScene);
+        Animation::updateBones(*currentScene);
+    }
 }
 
 void SceneManager::render()
