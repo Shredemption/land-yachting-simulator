@@ -300,11 +300,8 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
             }
             pendingTextures.insert(textureName);
         }
-        GLuint placeholderID;
-        {
-            std::lock_guard<std::mutex> lock(openglMutex); // Ensure OpenGL calls are safe
-            placeholderID = CreatePlaceholderTexture();
-        }
+
+        GLuint placeholderID = 0;
 
         Texture placeholderTexture;
         placeholderTexture.id = placeholderID;
@@ -332,7 +329,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
         texture.width = width;
         texture.height = height;
         texture.channels = channels;
-        texture.pixelData.assign(data, data + (width * height * 4));
+        texture.pixelData.assign(data, data + (width * height * channels));
         texture.typeName = typeName;
         texture.textureID = placeholderID;
 
@@ -352,22 +349,6 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
     return textures;
 }
 
-GLuint Model::CreatePlaceholderTexture()
-{
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    unsigned char placeholderData[4] = {255, 0, 255, 255}; // Purple 1x1 texture (RGBA)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, placeholderData);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    return textureID;
-}
-
 void Model::processPendingTextures()
 {
     std::lock_guard<std::mutex> lock(textureQueueMutex);
@@ -376,45 +357,31 @@ void Model::processPendingTextures()
         PendingTexture texture = std::move(textureQueue.front());
         textureQueue.pop();
 
-        GLuint textureID = texture.textureID;
+        GLuint textureID;
 
-        {
-            std::lock_guard<std::mutex> lock(openglMutex);
-            glBindTexture(GL_TEXTURE_2D, textureID);
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_2D, textureID);
 
-            GLenum format;
-            if (texture.channels == 1)
-                format = GL_RED;
-            else if (texture.channels == 3)
-                format = GL_RGB;
-            else if (texture.channels == 4)
-                format = GL_RGBA;
+        GLenum format;
+        if (texture.channels == 1)
+            format = GL_RED;
+        else if (texture.channels == 3)
+            format = GL_RGB;
+        else if (texture.channels == 4)
+            format = GL_RGBA;
 
-            glTexImage2D(GL_TEXTURE_2D, 0, format, texture.width, texture.height, 0, format, GL_UNSIGNED_BYTE, texture.pixelData.data());
+        glTexImage2D(GL_TEXTURE_2D, 0, format, texture.width, texture.height, 0, format, GL_UNSIGNED_BYTE, texture.pixelData.data());
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            glGenerateMipmap(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         auto &cached = textureCache[texture.name];
         cached.texture = {textureID, texture.typeName, texture.name};
-        cached.refCount++;
-
-        for (auto &mesh : meshes)
-        {
-            for (auto &tex : mesh.textures)
-            {
-                if (tex.path == texture.name)
-                {
-                    tex.id = textureID;
-                }
-            }
-        }
 
         {
             std::lock_guard<std::mutex> lock(pendingTexturesMutex);
@@ -656,5 +623,10 @@ void Model::uploadToGPU()
     for (auto &mesh : meshes)
     {
         mesh.uploadToGPU();
+
+        for (auto &texture : mesh.textures)
+        {
+            texture.id = textureCache[texture.path].texture.id;
+        }
     }
 }
