@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <map>
 #include <vector>
+#include <queue>
+#include <mutex>
 
 #include "mesh/mesh.h"
 
@@ -38,6 +40,14 @@ struct JSONModelMap
     std::vector<JSONModelMapData> models;
 };
 
+struct PendingTexture {
+    std::string name;
+    int width, height, channels;
+    std::vector<unsigned char> pixelData;
+    std::string typeName;
+    unsigned int textureID = 0;
+};
+
 class Model
 {
 public:
@@ -61,8 +71,16 @@ public:
     std::string directory;
 
     static std::unordered_map<std::string, CachedTexture> textureCache;
+    static std::mutex textureCacheMutex;
+    static std::queue<PendingTexture> textureQueue;
+    static std::mutex textureQueueMutex;
+    static std::unordered_set<std::string> pendingTextures;
+    static std::mutex pendingTexturesMutex;
+    static std::mutex openglMutex;
 
     static unsigned int TextureFromFile(const char *name, const std::string &directory);
+    static GLuint CreatePlaceholderTexture();
+    void processPendingTextures();
     static unsigned int LoadSkyBoxTexture(SkyBoxData skybox);
 
     void generateBoneTransforms();
