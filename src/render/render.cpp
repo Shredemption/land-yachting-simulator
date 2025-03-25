@@ -740,7 +740,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 {
     x *= EventHandler::screenHeight;
     y *= EventHandler::screenHeight;
-    scale *= EventHandler::screenHeight/1440;
+    scale *= EventHandler::screenHeight/1440.0f;
 
     // Load the shader for rendering text
     Shader shader = Shader::load("text");
