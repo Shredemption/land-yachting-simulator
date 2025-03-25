@@ -79,7 +79,6 @@ public:
     static std::mutex openglMutex;
 
     static unsigned int TextureFromFile(const char *name, const std::string &directory);
-    static GLuint CreatePlaceholderTexture();
     void processPendingTextures();
     static unsigned int LoadSkyBoxTexture(SkyBoxData skybox);
 
