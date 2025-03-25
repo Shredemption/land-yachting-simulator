@@ -450,6 +450,53 @@ std::string Model::findTextureInDirectory(const std::string &directory, const st
     return ""; // Return empty if no matching texture is found
 }
 
+unsigned int Model::TextureFromFile(const char *name, const std::string &directory)
+{
+    // Get texture location
+    std::string filename = std::string(name);
+    filename = directory + '/' + filename;
+
+    // Generate empty texture
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    // Load texture file
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        // Detect what kind of texture
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        // Bind texture and upload
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // Set texture looping and scaling parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // Unload texture
+        stbi_image_free(data);
+    }
+    else
+    {
+        // Error if texture cant be loaded
+        std::cout << "Texture failed to load at path: " << name << std::endl;
+        stbi_image_free(data);
+    }
+    return textureID;
+};
+
 inline bool Model::ends_with(std::string const &value, std::string const &ending)
 {
     if (ending.size() > value.size())
