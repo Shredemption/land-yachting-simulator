@@ -79,6 +79,7 @@ void SceneManager::update()
 
 void SceneManager::render()
 {
+    Camera::update();
     Render::render(*currentScene);
 }
 
@@ -134,5 +135,5 @@ void SceneManager::renderLoading()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Render::renderText("Loading...", 0.1f, 0.8f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
+    Render::renderText("Loading...", 0.1f, 0.85f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
 }
