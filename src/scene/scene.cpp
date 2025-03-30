@@ -190,9 +190,6 @@ void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
     this->skyBox.right = loadSkyBox.right;
     this->skyBox.front = loadSkyBox.front;
     this->skyBox.back = loadSkyBox.back;
-
-    this->skyBox.textureID = Model::LoadSkyBoxTexture(this->skyBox);
-    this->skyBox.VAO = Mesh::setupSkyBoxMesh();
 }
 
 void Scene::loadTextToScene(JSONText text)
@@ -224,5 +221,10 @@ void Scene::uploadToGPU()
     for (auto &grid : grids)
     {
         grid.grid.uploadToGPU();
+    }
+    if (hasSkyBox)
+    {
+        this->skyBox.textureID = Model::LoadSkyBoxTexture(this->skyBox);
+        this->skyBox.VAO = Mesh::setupSkyBoxMesh();
     }
 }
