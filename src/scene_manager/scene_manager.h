@@ -8,7 +8,7 @@
 class SceneManager
 {
 public:
-    static Scene *currentScene;
+    static std::shared_ptr<Scene> currentScene;
     static std::future<std::shared_ptr<Scene>> pendingScene;
     static bool isLoading;
 

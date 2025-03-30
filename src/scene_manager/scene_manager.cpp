@@ -11,7 +11,7 @@
 #include "shader/shader.h"
 #include "camera/camera.h"
 
-Scene *SceneManager::currentScene = nullptr;
+std::shared_ptr<Scene> SceneManager::currentScene = nullptr;
 std::future<std::shared_ptr<Scene>> SceneManager::pendingScene;
 bool SceneManager::isLoading = false;
 
@@ -28,7 +28,7 @@ void SceneManager::load(const std::string &sceneName)
         onTitleScreen = true;
     }
 
-    currentScene = new Scene(sceneMap[sceneName], sceneName);
+    currentScene = std::make_shared<Scene>(sceneMap[sceneName], sceneName);
     currentScene->uploadToGPU();
 
     Camera::reset();
@@ -57,8 +57,7 @@ void SceneManager::update()
     if (isLoading && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
     {
         // Retrieve the loaded scene
-        std::shared_ptr<Scene> loadedScene = pendingScene.get();
-        currentScene = loadedScene.get();
+        currentScene = pendingScene.get();
 
         // Now upload scene data to OpenGL (on main thread)
         currentScene->uploadToGPU();
@@ -85,11 +84,7 @@ void SceneManager::render()
 
 void SceneManager::unload()
 {
-    if (currentScene)
-    {
-        delete currentScene;
-        currentScene = nullptr;
-    }
+    currentScene.reset();
 
     onTitleScreen = false;
 
