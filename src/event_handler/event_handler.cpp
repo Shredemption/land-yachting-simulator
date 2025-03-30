@@ -9,11 +9,12 @@
 
 // Global screen variables
 int EventHandler::xPos, EventHandler::yPos, EventHandler::screenWidth, EventHandler::screenHeight;
+int EventHandler::windowXpos, EventHandler::windowYpos, EventHandler::windowWidth, EventHandler::windowHeight;
+
 bool EventHandler::fullscreen = true;
 bool EventHandler::windowSizeChanged = false;
 bool EventHandler::firstFrame = true;
 GLFWmonitor *EventHandler::monitor;
-int EventHandler::windowXpos, EventHandler::windowYpos, EventHandler::windowWidth, EventHandler::windowHeight;
 
 // Global Time
 float EventHandler::time;
@@ -26,6 +27,7 @@ glm::vec3 EventHandler::lightPos(1000.f, -1000.f, 2000.f);
 glm::vec3 EventHandler::lightCol(1, 1, 1);
 float EventHandler::lightInsensity = 2;
 
+// Generic EventHandler updates
 void EventHandler::update(GLFWwindow *window)
 {
     time = (float)glfwGetTime();
@@ -33,6 +35,7 @@ void EventHandler::update(GLFWwindow *window)
     lastTime = time;
     frame++;
 
+    // Process Held inputs from window
     processInput(window);
 }
 
@@ -77,7 +80,7 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             }
         }
 
-        // Toggle Freecam
+        // Toggle Freecam on C
         if (key == GLFW_KEY_C && action == GLFW_PRESS)
         {
             if (Camera::freeCam)
@@ -90,12 +93,13 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             }
         }
 
-        // Reset physics
+        // Reset physics on R
         if (key == GLFW_KEY_R && action == GLFW_PRESS)
         {
             Physics::resetState = true;
         }
 
+        // Switch to next controllable yacht on N
         if (key == GLFW_KEY_N && action == GLFW_PRESS)
         {
             Physics::switchControlledYacht(*SceneManager::currentScene);
@@ -136,24 +140,20 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
 void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
     // Check if window size changed last iteration
-    if (firstFrame)
+    if (firstFrame || windowSizeChanged)
     {
         xPos = 0;
         yPos = 0;
+
+        // Reset state changed trackers
         firstFrame = false;
+        windowSizeChanged = false;
 
         // Reset mouse to 0,0
         glfwSetCursorPos(window, 0, 0);
     }
 
-    if (windowSizeChanged)
-    {
-        xPos = 0;
-        yPos = 0;
-        windowSizeChanged = false;
-        glfwSetCursorPos(window, 0, 0);
-    }
-
+    // On title screen, disable mouse input
     if (SceneManager::onTitleScreen)
     {
         xPos = 0;
@@ -166,6 +166,7 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
     xPos *= sensitvity;
     yPos *= sensitvity;
 
+    // If camera moved
     if (xPos != 0 || yPos != 0)
     {
         Camera::cameraMoved = true;
@@ -173,16 +174,20 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
         // Update yaw and pitch
         if (Camera::freeCam)
         {
-            Camera::yawFree += glm::radians(xPos); // Convert to radians
+            // Convert to radians
+            Camera::yawFree += glm::radians(xPos);
             Camera::pitchFree += glm::radians(yPos);
 
+            // Apply limits
             Camera::pitchFree = std::clamp(Camera::pitchFree, glm::radians(-89.0f), glm::radians(89.0f));
         }
         else
         {
-            Camera::yawOffset += glm::radians(xPos); // Convert to radians
+            // Convert to radians
+            Camera::yawOffset += glm::radians(xPos);
             Camera::pitchOffset += glm::radians(yPos);
 
+            // Apply limits
             Camera::yawOffset = std::clamp(Camera::yawOffset, glm::radians(-100.0f), glm::radians(100.0f));
             Camera::pitchOffset = std::clamp(Camera::pitchOffset, glm::radians(-45.0f), glm::radians(60.0f));
         }

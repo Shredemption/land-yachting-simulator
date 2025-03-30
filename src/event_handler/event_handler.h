@@ -39,4 +39,4 @@ public:
     static void framebufferSizeCallback(GLFWwindow *window, int width, int height);
 };
 
-#endif // EVENT_HANDLER_H
+#endif
