@@ -14,17 +14,24 @@
 #include "scene/scene.h"
 #include "event_handler/event_handler.h"
 
+// Texture Cache
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
 std::mutex Model::textureCacheMutex;
+
+// Texture Queue of to be loaded textures
 std::queue<PendingTexture> Model::textureQueue;
 std::mutex Model::textureQueueMutex;
+
+// Names of textures that are to be loaded
 std::unordered_set<std::string> Model::pendingTextures;
 std::mutex Model::pendingTexturesMutex;
 std::mutex Model::openglMutex;
 
+// Model map and location
 std::map<std::string, std::pair<std::string, ModelType>> Model::modelMap;
 std::string modelMapPath = "resources/models.json";
 
+// Json setups
 JSONCONS_N_MEMBER_TRAITS(JSONModelMapData, 2, name, path);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
@@ -192,6 +199,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
         // Get material
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
+        // load textures based on shader
         if (shaderName == "default")
         {
             std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "diffuse");
@@ -279,9 +287,11 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
     std::vector<Texture> textures;
     std::string textureName = findTextureInDirectory(directory, typeName);
 
+    // If texture found
     if (!textureName.empty())
     {
         {
+            // Check if texture already cached
             std::lock_guard<std::mutex> lock(textureCacheMutex);
             if (textureCache.find(textureName) != textureCache.end())
             {
@@ -292,19 +302,21 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
         }
 
         {
+            // Check if texture already pending
             std::lock_guard<std::mutex> lock(pendingTexturesMutex);
             if (pendingTextures.find(textureName) != pendingTextures.end())
             {
                 // Another thread is already loading this texture
                 return textures;
             }
+
+            // If not, add to pending
             pendingTextures.insert(textureName);
         }
 
-        GLuint placeholderID = 0;
-
+        // Placeholder texture for model loading
         Texture placeholderTexture;
-        placeholderTexture.id = placeholderID;
+        placeholderTexture.id = 0;
         placeholderTexture.type = typeName;
         placeholderTexture.path = textureName;
         textures.push_back(placeholderTexture);
@@ -324,6 +336,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
             return textures;
         }
 
+        // Save PendingTexture
         PendingTexture texture;
         texture.name = textureName;
         texture.width = width;
@@ -331,16 +344,19 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
         texture.channels = channels;
         texture.pixelData.assign(data, data + (width * height * channels));
         texture.typeName = typeName;
-        texture.textureID = placeholderID;
+        texture.textureID = 0; // Placeholder ID
 
+        // Unload data
         stbi_image_free(data);
 
         {
+            // Push texture to queue
             std::lock_guard<std::mutex> lock(textureQueueMutex);
             textureQueue.push(std::move(texture));
         }
     }
 
+    // If texture not found
     else
     {
         std::cout << "Failed to load " << typeName << " texture in " << directory << "\n";
@@ -354,11 +370,13 @@ void Model::processPendingTextures()
     std::lock_guard<std::mutex> lock(textureQueueMutex);
     while (!textureQueue.empty())
     {
+        // Take first pending texture
         PendingTexture texture = std::move(textureQueue.front());
         textureQueue.pop();
 
         GLuint textureID;
 
+        // Generate empty texture for ID and bind to it
         glGenTextures(1, &textureID);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -370,6 +388,7 @@ void Model::processPendingTextures()
         else if (texture.channels == 4)
             format = GL_RGBA;
 
+        // Upload texture properties to GL
         glTexImage2D(GL_TEXTURE_2D, 0, format, texture.width, texture.height, 0, format, GL_UNSIGNED_BYTE, texture.pixelData.data());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -380,9 +399,11 @@ void Model::processPendingTextures()
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
+        // Fix textureID in cache
         auto &cached = textureCache[texture.name];
         cached.texture = {textureID, texture.typeName, texture.name};
 
+        // Remove texture from Pending
         {
             std::lock_guard<std::mutex> lock(pendingTexturesMutex);
             pendingTextures.erase(texture.name);
@@ -489,10 +510,12 @@ void Model::loadModelMap()
 
     JSONModelMap jsonModelMap = jsoncons::decode_json<JSONModelMap>(file);
 
+    // If model classified as yacht
     for (JSONModelMapData yacht : jsonModelMap.yachts)
     {
         modelMap[yacht.name] = std::make_pair(yacht.path, ModelType::yacht);
     }
+    // If geneneric model
     for (JSONModelMapData model : jsonModelMap.models)
     {
         modelMap[model.name] = std::make_pair(model.path, ModelType::model);
@@ -513,10 +536,12 @@ unsigned int Model::LoadSkyBoxTexture(SkyBoxData skybox)
             skybox.back,
         };
 
+    // Gen and bind cubemap texture
     unsigned int textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
+    // Load texture
     int width, height, nrChannels;
     unsigned char *data;
     for (unsigned int i = 0; i < 6; i++)
@@ -536,6 +561,9 @@ unsigned int Model::LoadSkyBoxTexture(SkyBoxData skybox)
             stbi_image_free(data);
         }
     }
+
+    // Set texture parameters
+
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -565,7 +593,7 @@ void Model::generateBoneTransforms()
 
 void Model::generateBoneTransformsRecursive(Bone *bone)
 {
-
+    // Check if bone in range
     if (bone->index < 0 || bone->index >= boneTransforms.size())
     {
         std::cerr << "Error: Bone index out of range: " << bone->index << ", with name: " << bone->name << std::endl;
@@ -596,13 +624,14 @@ void Model::updateBoneTransforms()
 
 void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset)
 {
-
+    // Check if bone in range
     if (bone->index < 0 || bone->index >= boneTransforms.size())
     {
         std::cerr << "Error: Bone index out of range: " << bone->index << ", with name: " << bone->name << std::endl;
         return;
     }
 
+    // Update bone transform
     boneTransforms[bone->index] = parentTransform * parentInverseOffset * bone->offsetMatrix * bone->transform;
 
     // Recursively update the transforms of the child bones
@@ -618,12 +647,15 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
 
 void Model::uploadToGPU()
 {
+    // Process all pending textures of model
     processPendingTextures();
 
+    // Upload data for each mesh to GPU
     for (auto &mesh : meshes)
     {
         mesh.uploadToGPU();
 
+        // Update texture IDs from loaded pending textures
         for (auto &texture : mesh.textures)
         {
             texture.id = textureCache[texture.path].texture.id;

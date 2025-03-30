@@ -20,8 +20,10 @@ struct CachedTexture
     int refCount;
 };
 
+// Empty struct for json unwrapping
 struct SkyBoxData;
 
+// Types of models
 enum ModelType
 {
     model,
@@ -56,6 +58,7 @@ public:
 
     void uploadToGPU();
 
+    // Local model data
     std::map<std::string, Bone *> boneHierarchy;
     std::vector<glm::mat4> boneTransforms;
     std::vector<glm::mat4> boneOffsets;
@@ -64,12 +67,14 @@ public:
     std::string path;
     std::string name;
 
+    // Model map and load function
     static std::map<std::string, std::pair<std::string, ModelType>> modelMap;
     static void loadModelMap();
 
     std::vector<Mesh> meshes;
     std::string directory;
 
+    // Texture cache and pending lists
     static std::unordered_map<std::string, CachedTexture> textureCache;
     static std::mutex textureCacheMutex;
     static std::queue<PendingTexture> textureQueue;
@@ -78,10 +83,12 @@ public:
     static std::mutex pendingTexturesMutex;
     static std::mutex openglMutex;
 
+    // Load textures
     static unsigned int TextureFromFile(const char *name, const std::string &directory);
     void processPendingTextures();
     static unsigned int LoadSkyBoxTexture(SkyBoxData skybox);
 
+    // Generate and update bones
     void generateBoneTransforms();
     void generateBoneTransformsRecursive(Bone *bone);
     void updateBoneTransforms();
@@ -97,4 +104,4 @@ private:
     inline bool ends_with(std::string const &value, std::string const &ending);
 };
 
-#endif // MODEL_H
+#endif
