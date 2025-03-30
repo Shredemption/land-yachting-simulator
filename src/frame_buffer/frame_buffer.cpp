@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <iostream>
 
+// Global framebuffer variables
 bool FrameBuffer::Water = false;
 unsigned int FrameBuffer::reflectionFrameBuffer;
 unsigned int FrameBuffer::refractionFrameBuffer;
