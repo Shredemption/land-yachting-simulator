@@ -8,20 +8,25 @@
 class Physics
 {
 public:
+    // Constructor
     Physics(ModelData &ModelData);
     static bool resetState;
 
+    // World variables
     static glm::vec3 windDirection;
     static float windStrength;
     static float airDensity;
     static float g;
 
+    // Functions
     static void setup(Scene &scene);
     static void update(Scene &scene);
     static void switchControlledYacht(Scene &scene);
 
+    // Boolmap for tracking inputs
     static bool keyInputs[5];
 
+    // Velocity and steering variables
     glm::mat4 baseTransform;
     float steeringAngle = 0.0f;
     float steeringSmoothness;
@@ -30,6 +35,7 @@ public:
     float forwardVelocity = 0.0f;
     float wheelAngle = 0.0f;
 
+    // Mast/sail/boom angles
     float maxMastAngle;
     float maxBoomAngle;
     float MastAngle = 0.0f;
@@ -38,11 +44,13 @@ public:
     float optimalAngle;
     float SailAngle = 0.0f;
 
+    // Friction/drag coefficients
     float maxLiftCoefficient;
     float minDragCoefficient;
     float rollCoefficient;
     float rollScaling;
 
+    // Body size properties
     float sailArea;
     float mass;
     float bodyDragCoefficient;
