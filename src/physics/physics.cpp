@@ -6,7 +6,10 @@
 #include "event_handler/event_handler.h"
 #include "render/render.h"
 
+// Boolmap for input tracking
 bool Physics::keyInputs[5];
+
+// World physics properties
 glm::vec3 Physics::windDirection = glm::vec3(0.0f, -1.0f, 0.0f);
 float Physics::windStrength = 10.0f;
 float Physics::airDensity = 1.225f;
@@ -16,24 +19,31 @@ bool Physics::resetState = false;
 
 Physics::Physics(ModelData &ModelData)
 {
+    // Set base transform to 1
     baseTransform = glm::mat4(1.0f);
+
+    // Check which yacht, and apply correct properties
 
     if (ModelData.model->path.find("dn-duvel") != std::string::npos)
     {
+        // Max control angles
         maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
 
+        // Sail physics properties
         maxLiftCoefficient = 1.5f;
         optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1f;
         sailArea = 6.0f;
 
+        // Body properties
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
         mass = 250.0f;
         bodyDragCoefficient = 0.3f;
         bodyArea = 1.2f;
 
+        // Steering properties
         steeringSmoothness = 3.0f;
         maxSteeringAngle = 25.0f;
         steeringAttenuation = 0.5f;
@@ -41,20 +51,24 @@ Physics::Physics(ModelData &ModelData)
 
     else if (ModelData.model->path.find("red-piper") != std::string::npos)
     {
+        // Max control angles
         maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
 
+        // Sail physics properties
         maxLiftCoefficient = 1.3f;
         optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1f;
         sailArea = 6.8f;
 
+        // Body properties
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
         mass = 180.0f;
         bodyDragCoefficient = 0.25f;
         bodyArea = 1.0f;
 
+        // Steering properties
         steeringSmoothness = 3.0f;
         maxSteeringAngle = 25.0f;
         steeringAttenuation = 0.45f;
@@ -62,20 +76,24 @@ Physics::Physics(ModelData &ModelData)
 
     else if (ModelData.model->path.find("blue-piper") != std::string::npos)
     {
+        // Max control angles
         maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
 
+        // Sail physics properties
         maxLiftCoefficient = 1.4f;
         optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1f;
         sailArea = 6.4f;
 
+        // Body properties
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
         mass = 180.0f;
         bodyDragCoefficient = 0.25f;
         bodyArea = 1.0f;
 
+        // Steering properties
         steeringSmoothness = 1.5f;
         maxSteeringAngle = 25.0f;
         steeringAttenuation = 1.55f;
@@ -83,20 +101,24 @@ Physics::Physics(ModelData &ModelData)
 
     else if (ModelData.model->path.find("sietske") != std::string::npos)
     {
+        // Max control angles
         maxMastAngle = glm::radians(60.0f);
         maxBoomAngle = glm::radians(90.0f);
 
+        // Sail physics properties
         maxLiftCoefficient = 1.5f;
         optimalAngle = glm::radians(20.0f);
         minDragCoefficient = 0.1f;
         sailArea = 5.7f;
 
+        // Body properties
         rollCoefficient = 0.004f;
         rollScaling = 20.0f;
         mass = 200.0f;
         bodyDragCoefficient = 0.15f;
         bodyArea = 1.0f;
 
+        // Steering properties
         steeringSmoothness = 2.0f;
         maxSteeringAngle = 22.22f;
         steeringAttenuation = 1.f;
@@ -104,20 +126,24 @@ Physics::Physics(ModelData &ModelData)
 
     else
     {
+        // Max control angles
         maxMastAngle = glm::radians(1.0f);
         maxBoomAngle = glm::radians(1.0f);
 
+        // Sail physics properties
         maxLiftCoefficient = 1.0f;
         optimalAngle = glm::radians(1.0f);
         minDragCoefficient = 1.0f;
         sailArea = 1.0f;
 
+        // Body properties
         rollCoefficient = 1.0f;
         rollScaling = 1.0f;
         mass = 1.0f;
         bodyDragCoefficient = 1.0f;
         bodyArea = 1.0f;
 
+        // Steering properties
         steeringSmoothness = 1.0f;
         maxSteeringAngle = 1.0f;
         steeringAttenuation = 1.0f;
@@ -138,6 +164,7 @@ void Physics::reset()
 
 void Physics::setup(Scene &scene)
 {
+    // Setup all animated models
     for (ModelData &model : scene.structModels)
     {
         if (model.animated)
@@ -151,6 +178,7 @@ void Physics::setup(Scene &scene)
 
 void Physics::update(Scene &scene)
 {
+    // Move all controlled models
     for (ModelData &model : scene.structModels)
     {
         if (model.controlled)
@@ -162,11 +190,13 @@ void Physics::update(Scene &scene)
 
 void Physics::move()
 {
+    // Reset if needed
     if (resetState)
     {
         resetState = false;
         this->reset();
     }
+
     // Acceleration from keys
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
@@ -192,17 +222,19 @@ void Physics::move()
         forwardAcceleration += 1.f;
     }
 
+    // Clamp sail control
     sailControlFactor = std::clamp(sailControlFactor, 0.2f, 1.0f);
 
     // Find new angles for sail
     glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[1]));
     float angleToWind = glm::orientedAngle(direction, -windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
+    // Apply angles to sail setup
     float targetMastAngle = (0.5f + sailControlFactor) / 1.5f * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
     float targetBoomAngle = sailControlFactor * std::clamp(angleToWind, -maxBoomAngle, maxBoomAngle);
 
+    // Smooth angle transitions
     float smoothingFactor = 0.05f;
-
     MastAngle += smoothingFactor * (targetMastAngle - MastAngle);
     BoomAngle += smoothingFactor * (targetBoomAngle - BoomAngle);
     SailAngle = BoomAngle * (1 + 0.1 * fabs(sin(angleToWind / 2)));
@@ -289,6 +321,7 @@ void Physics::switchControlledYacht(Scene &scene)
 {
     std::string current;
 
+    // Find current controlled yacht, and stop controlling it
     for (auto &model : scene.structModels)
     {
         if (model.controlled && model.physics[0]->forwardVelocity <= 0.01f)
@@ -298,9 +331,11 @@ void Physics::switchControlledYacht(Scene &scene)
         }
     }
 
+    // Find id of current yacht in loaded yachts, increment by 1, overflow
     int currentId = find(scene.loadedYachts.begin(), scene.loadedYachts.end(), current) - scene.loadedYachts.begin();
     int newId = (currentId + 1) % scene.loadedYachts.size();
 
+    // Control new yacht
     for (auto &model : scene.structModels)
     {
         if (model.model->name == scene.loadedYachts[newId])
