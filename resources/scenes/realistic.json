@@ -73,7 +73,7 @@
       "angle": 0,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0.25],
-      "shader": "water2"
+      "shader": "water"
     },
     {
       "color": [0.78, 0.67, 0.13],

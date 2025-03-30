@@ -177,7 +177,7 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 
         if (FrameBuffer::Water == false)
         {
-            if (unitPlane.shader == "water" || unitPlane.shader == "water2")
+            if (unitPlane.shader == "water")
             {
                 FrameBuffer::WaterFrameBuffers();
             }
@@ -284,13 +284,6 @@ void Render::renderModel(UnitPlaneData unitPlane)
         if (!WaterPass)
         {
             renderWater(unitPlane.unitPlane);
-        }
-    }
-    else if (unitPlane.shader == "water2")
-    {
-        if (!WaterPass)
-        {
-            renderWater2(unitPlane.unitPlane);
         }
     }
 }
@@ -533,27 +526,6 @@ void Render::renderWater(Mesh mesh)
     glBindVertexArray(0);
 
     glDisable(GL_BLEND);
-}
-
-void Render::renderWater2(Mesh mesh)
-{
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
-
-    Shader shader = Shader::load("water2");
-    shader.setInt("reflectionTexture", 0);
-    shader.setInt("refractionTexture", 1);
-
-    shader.setVec3("cameraPosition", Camera::getPosition());
-    shader.setMat4("u_camXY", Camera::u_camXY);
-
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
 }
 
 void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
