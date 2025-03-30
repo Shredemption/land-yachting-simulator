@@ -36,7 +36,7 @@ public:
     float BoomAngle = 0.0f;
     float sailControlFactor = 1.0f;
     float optimalAngle;
-    float SailAngle;
+    float SailAngle = 0.0f;
 
     float maxLiftCoefficient;
     float minDragCoefficient;

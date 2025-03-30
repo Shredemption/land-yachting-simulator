@@ -130,6 +130,7 @@ void Physics::reset()
     sailControlFactor = 1.0f;
     MastAngle = 0.0f;
     BoomAngle = 0.0f;
+    SailAngle = 0.0f;
     steeringAngle = 0.0f;
     forwardVelocity = 0.0f;
     wheelAngle = 0.0f;
@@ -137,23 +138,24 @@ void Physics::reset()
 
 void Physics::setup(Scene &scene)
 {
-    for (int i = 0; i < scene.structModels.size(); i++)
+    for (ModelData &model : scene.structModels)
     {
-        if (scene.structModels[i].animated)
+        if (model.animated)
         {
-            scene.structModels[i].physics.push_back(new Physics(scene.structModels[i]));
-            scene.structModels[i].physics[0]->reset();
+            model.physics.clear();
+            model.physics.push_back(new Physics(model));
+            model.physics[0]->reset();
         }
     }
 }
 
 void Physics::update(Scene &scene)
 {
-    for (int i = 0; i < scene.structModels.size(); i++)
+    for (ModelData &model : scene.structModels)
     {
-        if (scene.structModels[i].controlled)
+        if (model.controlled)
         {
-            scene.structModels[i].physics[0]->move();
+            model.physics[0]->move();
         }
     }
 }
