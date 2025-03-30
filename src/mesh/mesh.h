@@ -43,6 +43,7 @@ struct Bone
 class Mesh
 {
 public:
+    // Local mesh data
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
@@ -50,20 +51,14 @@ public:
     unsigned int VAO, VBO, EBO;
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName);
-    void uploadToGPU();
-
+    
+    // Mesh generators
     static Mesh genUnitPlane(glm::vec3 color, std::string shaderName);
     static Mesh genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std::string shaderName);
     static unsigned int setupSkyBoxMesh();
 
-private:
-    void setupPBRMesh();
-    void setupDefaultMesh();
-    void setupToonMesh();
-    void setupToonTerrainMesh();
-    void setupSimpleMesh();
-    void setupToonWaterMesh();
-    void setupWaterMesh();
+    // Send mesh data to gpu
+    void uploadToGPU();
 };
 
 #endif
