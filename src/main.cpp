@@ -68,10 +68,7 @@ int main()
     SceneManager::loadSceneMap();
 
     // Load title screen Scene
-    SceneManager::load("title");
-
-    // Draw in wireframe
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    SceneManager::loadAsync("title");
 
     // Get screen dimensions
     glfwGetWindowPos(window, &EventHandler::windowXpos, &EventHandler::windowYpos);
