@@ -49,17 +49,9 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
         // Load scenes
         if (key == GLFW_KEY_1 && action == GLFW_PRESS)
         {
-            SceneManager::load("realistic");
-        }
-        if (key == GLFW_KEY_2 && action == GLFW_PRESS)
-        {
-            SceneManager::load("cartoon");
-        }
-        if (key == GLFW_KEY_3 && action == GLFW_PRESS)
-        {
             SceneManager::loadAsync("realistic");
         }
-        if (key == GLFW_KEY_4 && action == GLFW_PRESS)
+        if (key == GLFW_KEY_2 && action == GLFW_PRESS)
         {
             SceneManager::loadAsync("cartoon");
         }
