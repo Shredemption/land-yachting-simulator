@@ -46,4 +46,4 @@ private:
     }
 };
 
-#endif // FILE_MANAGER_H
+#endif
