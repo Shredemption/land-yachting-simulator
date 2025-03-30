@@ -20,9 +20,6 @@ JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
 JSONCONS_N_MEMBER_TRAITS(JSONText, 1, text, color, position, scale);
 JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, grids, skyBox, texts, bgColor);
 
-// TODO: textured unitplane
-// TODO: environment
-
 Scene::Scene(std::string jsonPath, std::string sceneName)
 {
     const std::string path = "../" + jsonPath;

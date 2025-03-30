@@ -19,8 +19,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
-// TODO: Add loading screen
-
 int main()
 {
 
