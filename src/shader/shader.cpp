@@ -22,7 +22,7 @@ Shader Shader::load(const std::string &shaderName)
         shader.init(FileManager::read("shaders/" + shaderName + ".vs"), FileManager::read("shaders/" + shaderName + ".fs"));
         loadedShaders.emplace(shaderName, shader);
 
-        if (shaderName == "water" || shaderName == "water2")
+        if (shaderName == "water")
         {
             waterLoaded = true;
         }

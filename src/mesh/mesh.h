@@ -64,7 +64,6 @@ private:
     void setupSimpleMesh();
     void setupToonWaterMesh();
     void setupWaterMesh();
-    void setupWater2Mesh();
 };
 
 #endif

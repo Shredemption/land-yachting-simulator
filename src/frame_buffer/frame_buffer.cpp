@@ -38,12 +38,12 @@ void FrameBuffer::WaterFrameBuffers()
     glGenFramebuffers(1, &reflectionFrameBuffer);
     glGenFramebuffers(1, &refractionFrameBuffer);
 
-    reflectionFBO = FrameBuffer(EventHandler::screenWidth / 4, EventHandler::screenHeight / 4);
+    reflectionFBO = FrameBuffer(EventHandler::screenWidth / 2, EventHandler::screenHeight / 2);
     FrameBuffer::bindFrameBuffer(reflectionFBO);
     reflectionFBO.createTextureAttachment();
     reflectionFBO.createDepthBufferAttachment();
 
-    refractionFBO = FrameBuffer(EventHandler::screenWidth / 8, EventHandler::screenHeight / 8);
+    refractionFBO = FrameBuffer(EventHandler::screenWidth / 2, EventHandler::screenHeight / 2);
     FrameBuffer::bindFrameBuffer(refractionFBO);
     refractionFBO.createTextureAttachment();
     refractionFBO.createDepthTextureAttachment();

@@ -55,7 +55,6 @@ private:
     static void renderSimple(Mesh mesh);
     static void renderToonWater(Mesh mesh);
     static void renderWater(Mesh mesh);
-    static void renderWater2(Mesh mesh);
 
     static void renderReflectRefract(Scene &scene, glm::vec4 clipPlane);
     static void renderTestQuad(GLuint texture, int x, int y);
