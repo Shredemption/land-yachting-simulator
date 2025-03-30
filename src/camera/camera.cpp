@@ -7,21 +7,27 @@
 
 // Global Camera Variables
 glm::vec3 Camera::worldUp(0.f, 0.f, 1.f); // World up direction
-glm::vec3 Camera::cameraPositionFree;
-glm::vec3 Camera::cameraPosition;
-float Camera::yawFree, Camera::pitchFree, Camera::rollFree;
-float Camera::yaw, Camera::pitch, Camera::roll;
-float Camera::yawOffset, Camera::pitchOffset, Camera::rollOffset;
-glm::vec3 Camera::cameraViewDirection;
-glm::vec3 Camera::cameraRight;
-glm::vec3 Camera::cameraUp;
-glm::mat4 Camera::u_view;
-glm::mat4 Camera::u_projection;
-glm::mat4 Camera::u_camXY;
+glm::vec3 Camera::cameraViewDirection, Camera::cameraRight, Camera::cameraUp;
 
+// Position and orientation of free cam
+glm::vec3 Camera::cameraPositionFree;
+float Camera::yawFree, Camera::pitchFree, Camera::rollFree;
+
+// Position and orientation of fixed cam
+glm::vec3 Camera::cameraPosition;
+float Camera::yaw, Camera::pitch, Camera::roll;
+
+// Position and orientation of user around fixed cam
+float Camera::yawOffset, Camera::pitchOffset, Camera::rollOffset;
+
+// Camera related transformation matrices
+glm::mat4 Camera::u_view, Camera::u_projection, Camera::u_camXY;
+
+// Booleans for tracking cam state
 bool Camera::cameraMoved;
 bool Camera::freeCam;
 
+// Update cam matrices from positions etc
 void Camera::update()
 {
     setCamDirection(getRotation());
@@ -31,6 +37,7 @@ void Camera::update()
     u_camXY = glm::translate(glm::mat4(1.0f), glm::vec3(position[0], position[1], 0));
 }
 
+// Reset cam to starting position/orientation
 void Camera::reset()
 {
     if (SceneManager::onTitleScreen)
@@ -62,11 +69,12 @@ void Camera::reset()
     }
 }
 
+// Set camera direction from rotation angles
 void Camera::setCamDirection(glm::vec3 rotation)
 {
-    float p = rotation[0];
-    float y = rotation[1];
-    float r = rotation[2];
+    float p = rotation[0]; // pitch
+    float y = rotation[1]; // yaw
+    float r = rotation[2]; // roll
 
     cameraViewDirection = glm::normalize(glm::vec3(cos(-p) * sin(y),
                                                    cos(-p) * cos(y),
@@ -94,6 +102,7 @@ void Camera::genViewMatrix(glm::vec3 position)
     );
 }
 
+// Get camera position
 glm::vec3 Camera::getPosition()
 {
     if (freeCam)
@@ -105,9 +114,11 @@ glm::vec3 Camera::getPosition()
         return cameraPosition;
     }
 
+    // Fallback value
     return glm::vec3(0.0f);
 }
 
+// Get camera orientation
 glm::vec3 Camera::getRotation()
 {
     if (freeCam)
@@ -119,5 +130,6 @@ glm::vec3 Camera::getRotation()
         return glm::vec3(pitch + pitchOffset, yaw + yawOffset, roll + rollOffset);
     }
 
-    return glm::vec3(0.0f, 0.0f, 0.0f);
+    // Fallback value
+    return glm::vec3(0.0f);
 }
