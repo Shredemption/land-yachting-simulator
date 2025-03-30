@@ -8,18 +8,19 @@
 
 void Animation::updateBones(Scene &scene)
 {
+    // For every model thats anymated, create bones
     for (auto ModelData : scene.structModels)
     {
         if (ModelData.animated)
         {
-            generateYachtBones(ModelData);
+            updateYachtBones(ModelData);
         };
     };
 }
 
-void Animation::generateYachtBones(ModelData &ModelData)
+void Animation::updateYachtBones(ModelData &ModelData)
 {
-
+    // Abreviations
     Model *model = ModelData.model;
     Physics *physics = ModelData.physics[0];
 
@@ -40,8 +41,10 @@ void Animation::generateYachtBones(ModelData &ModelData)
                                                                    physics->BoomAngle - physics->MastAngle, glm::vec3(0.0f, 0.0f, -1.0f));
     model->boneHierarchy["Armature_Sail"]->transform = glm::rotate(glm::mat4(1.0f), physics->SailAngle - physics->MastAngle, glm::vec3(0.0f, 0.0f, -1.0f));
 
+    // Push updates to children
     model->updateBoneTransforms();
 
+    // If controlled, make camera follow
     if (ModelData.controlled)
     {
         Camera::cameraPosition = (ModelData.u_model * model->boneTransforms[model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
