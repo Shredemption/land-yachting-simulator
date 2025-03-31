@@ -94,7 +94,13 @@ void SceneManager::update()
 
         // Reset future
         pendingScene = std::future<std::shared_ptr<Scene>>();
+        loadingState = 100;
+    }
+    // Briefly pause after loading to ensure completeness
+    else if (loadingState == 100)
+    {
         loadingState = 0;
+        Sleep(500);
     }
     // If not loading, aka running normally
     else if (loadingState == 0)
@@ -166,8 +172,9 @@ void SceneManager::renderLoading()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Completed loading steps
     if (loadingState > 1)
-        progressString += "Unloaded Previous\n";
+        progressString += "Unloaded Success\n";
     if (loadingState > 2)
         progressString += "Scene JSON Complete\n";
     if (loadingState > 3)
@@ -183,8 +190,9 @@ void SceneManager::renderLoading()
     if (loadingState > 8)
         progressString += "Skybox Complete\n";
     if (loadingState > 9)
-        progressString += "Done\n";
+        progressString += "OpenGL Upload Complete\n";
 
+    // Current loading step
     if (loadingState == 1)
         progressString += "Clearing Previous\n";
     else if (loadingState == 2)
@@ -192,19 +200,21 @@ void SceneManager::renderLoading()
     else if (loadingState == 3)
         progressString += "Loading Background Colors\n";
     else if (loadingState == 4)
-        progressString += "Loading Texts (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+        progressString += "Loading Texts [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
     else if (loadingState == 5)
-        progressString += "Loading Models (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+        progressString += "Loading Models [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
     else if (loadingState == 6)
-        progressString += "Loading Planes (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+        progressString += "Loading Planes [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
     else if (loadingState == 7)
-        progressString += "Loading Terrain Grids (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+        progressString += "Loading Terrain Grids [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
     else if (loadingState == 8)
         progressString += "Loading Skybox\n";
     else if (loadingState == 9)
-        progressString += "Finalising\n";
-    else if (loadingState == 10)
-        statusString += "Done";
+        progressString += "Uploading to OpenGL\n";
+
+    // If loading complete
+    if (loadingState == 100)
+        statusString = "Finished Loading";
 
     Render::renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
 
