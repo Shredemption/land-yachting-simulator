@@ -68,7 +68,7 @@ int main()
     SceneManager::loadSceneMap();
 
     // Load title screen Scene
-    SceneManager::loadAsync("title");
+    SceneManager::load("title");
 
     // Get screen dimensions
     glfwGetWindowPos(window, &EventHandler::windowXpos, &EventHandler::windowYpos);
