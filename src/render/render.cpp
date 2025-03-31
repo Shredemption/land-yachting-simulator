@@ -7,23 +7,30 @@
 #include "camera/camera.h"
 #include "scene_manager/scene_manager.h"
 
-glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
-
+// Global variables for quads
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
 float Render::quadVertices[] = {0};
-float Render::waterHeight = 0.25;
 
+// Water variables
+float Render::waterHeight = 0.25;
 bool Render::WaterPass = true;
+
+// Render states
 bool Render::debugMenu = false;
 std::vector<std::pair<std::string, float>> Render::debugData;
 
+glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
+
 FT_Library Render::ft;
 FT_Face Render::face;
+
+// Text variables
 GLuint Render::textVAO, Render::textVBO;
 GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
 std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 
+// Setup quads and text
 void Render::setup()
 {
     Render::initQuad();
@@ -57,6 +64,7 @@ void Render::initQuad()
     }
 }
 
+// Main render loop
 void Render::render(Scene &scene)
 {
     // Clear color buffer
@@ -66,6 +74,7 @@ void Render::render(Scene &scene)
 
     renderSceneSkyBox(scene);
 
+    // If water loaded, render buffers
     if (Shader::waterLoaded && (EventHandler::frame % 2 == 0))
     {
         WaterPass = true;
@@ -73,12 +82,16 @@ void Render::render(Scene &scene)
         WaterPass = false;
     }
 
+    // Reset clip plane
     clipPlane = {0, 0, 0, 0};
+
+    // Render rest of scene
     renderSceneModels(scene, clipPlane);
     renderSceneUnitPlanes(scene, clipPlane);
     renderSceneGrids(scene, clipPlane);
     renderSceneTexts(scene);
 
+    // Render debug data and render quads
     if (debugMenu && !SceneManager::onTitleScreen)
     {
         renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
@@ -212,23 +225,29 @@ void Render::renderSceneSkyBox(Scene &scene)
 {
     if (scene.hasSkyBox)
     {
+        // Disable depth test
         glDepthFunc(GL_LEQUAL);
         glDisable(GL_DEPTH_TEST);
 
+        // Load shader
         Shader shader = Shader::load("skybox");
 
+        // Bind skybox
         glBindVertexArray(scene.skyBox.VAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skyBox.textureID);
 
+        // Set view matrices
         shader.setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
         shader.setMat4("u_projection", Camera::u_projection);
         shader.setMat4("u_model", glm::mat4(1.0f));
 
         shader.setInt("skybox", 0);
 
+        // Draw
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        // Enable depth test
         glDepthFunc(GL_LESS);
         glEnable(GL_DEPTH_TEST);
 
