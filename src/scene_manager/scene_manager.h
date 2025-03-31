@@ -15,14 +15,17 @@ public:
     static std::map<std::string, std::string> sceneMap;
     static void loadSceneMap();
 
+    static bool onTitleScreen;
+
+    // Load scene
     static void load(const std::string &scenePath);
     static void loadAsync(const std::string &scenePath);
+    static void unload();
+
+    // Update and render functions
     static void update();
     static void render();
-    static void unload();
     static void renderLoading();
-
-    static bool onTitleScreen;
 };
 
 #endif
