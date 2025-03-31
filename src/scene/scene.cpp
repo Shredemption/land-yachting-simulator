@@ -13,6 +13,7 @@
 #include "frame_buffer/frame_buffer.h"
 #include "file_manager/file_manager.h"
 
+// Json mappings
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, scale, lod, color, angle, rotationAxis, translation, shader);
@@ -41,17 +42,19 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     // Parse json into struct
     JSONScene jsonScene = jsoncons::decode_json<JSONScene>(file);
 
-    // For each model in scene
+    // Load models from scene
     for (JSONModel model : jsonScene.models)
     {
         loadModelToScene(model);
     }
 
+    // Load unitplanes from scene
     for (JSONUnitPlane unitPlane : jsonScene.unitPlanes)
     {
         loadUnitPlaneToScene(unitPlane);
     }
 
+    // Generate Grids form scene
     for (JSONGrid grid : jsonScene.grids)
     {
         for (int i = 0; i <= grid.lod; i++)
@@ -62,17 +65,20 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
         }
     }
 
+    // Load skybox from scene
     hasSkyBox = false;
     for (JSONSkybox skybox : jsonScene.skyBox)
     {
         loadSkyBoxToScene(skybox);
     }
 
+    // Load texts from scene
     for (JSONText text : jsonScene.texts)
     {
         loadTextToScene(text);
     }
 
+    // Set background color from scene
     bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
 };
 
@@ -104,16 +110,21 @@ void Scene::loadModelToScene(JSONModel model)
             glm::vec3(model.rotationAxis[0], model.rotationAxis[1], model.rotationAxis[2])),
         glm::vec3(model.scale[0], model.scale[1], model.scale[2]));
 
+    // Model and normal matrices
     loadModel.u_model = u_model_i;
     loadModel.u_normal = glm::transpose(glm::inverse(u_model_i));
 
+    // Model shader
     loadModel.shader = model.shader;
 
+    // Model animation data
     loadModel.animated = model.animated;
     loadModel.controlled = model.controlled;
 
+    // Save model
     this->structModels.push_back(loadModel);
 
+    // If model is a yacht, save name to yachts list
     if (Model::modelMap[model.name].second == ModelType::yacht)
     {
         loadedYachts.push_back(model.name);
@@ -122,11 +133,14 @@ void Scene::loadModelToScene(JSONModel model)
 
 void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 {
+    // Empty unitplane for loading
     UnitPlaneData loadUnitPlane;
 
+    // Save color and shader
     loadUnitPlane.color = glm::vec3(unitPlane.color[0], unitPlane.color[1], unitPlane.color[2]);
     loadUnitPlane.shader = unitPlane.shader;
 
+    // Generate mesh from color and shader
     loadUnitPlane.unitPlane = Mesh::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
 
     // Generate u_model
@@ -139,11 +153,14 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
             glm::vec3(unitPlane.rotationAxis[0], unitPlane.rotationAxis[1], unitPlane.rotationAxis[2])),
         glm::vec3(unitPlane.scale[0], unitPlane.scale[1], unitPlane.scale[2]));
 
+    // Save model and normal matrices
     loadUnitPlane.u_model = u_model_i;
     loadUnitPlane.u_normal = glm::transpose(glm::inverse(u_model_i));
 
+    // Pull position data form u_model
     loadUnitPlane.position = u_model_i[3];
 
+    // Push unitplane to relevant planelist
     if (loadUnitPlane.isTransparent())
     {
         this->transparentUnitPlanes.push_back(loadUnitPlane);
@@ -156,12 +173,16 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 
 void Scene::loadGridToScene(JSONGrid grid)
 {
+    // Empty grid for loading
     GridData loadGrid;
 
+    // Save grid data
     loadGrid.color = glm::vec3(grid.color[0], grid.color[1], grid.color[2]);
     loadGrid.shader = grid.shader;
     loadGrid.lod = grid.lod;
     loadGrid.gridSize = glm::vec2(grid.gridSize[0], grid.gridSize[1]);
+
+    // Generate grid mesh
     loadGrid.grid = Mesh::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
 
     // Generate u_model
@@ -174,16 +195,20 @@ void Scene::loadGridToScene(JSONGrid grid)
                 glm::vec3(grid.scale * pow(2, loadGrid.lod), grid.scale * pow(2, loadGrid.lod), 1.0f)),
             glm::radians((float)grid.angle), glm::vec3(grid.rotationAxis[0], grid.rotationAxis[1], grid.rotationAxis[2]));
 
+    // Save model and normal matrices
     loadGrid.u_model = u_model_i;
     loadGrid.u_normal = glm::transpose(glm::inverse(u_model_i));
 
+    // Push loaded grid to scene
     this->grids.push_back(loadGrid);
 }
 
 void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
 {
+    // Track if scene has skybox
     hasSkyBox = true;
 
+    // Load skybox texture names
     this->skyBox.up = loadSkyBox.up;
     this->skyBox.down = loadSkyBox.down;
     this->skyBox.left = loadSkyBox.left;
@@ -194,18 +219,22 @@ void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
 
 void Scene::loadTextToScene(JSONText text)
 {
+    // Empty text for loading
     TextData loadText;
 
+    // Save text data
     loadText.text = text.text;
     loadText.color = glm::vec3(text.color[0], text.color[1], text.color[2]);
     loadText.position = glm::vec2(text.position[0], text.position[1]);
     loadText.scale = text.scale;
 
+    // Push text to scene
     this->texts.push_back(loadText);
 }
 
 void Scene::uploadToGPU()
 {
+    // For each type, upload data to opengl context
     for (auto &modelData : structModels)
     {
         modelData.model->uploadToGPU();
