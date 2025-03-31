@@ -112,13 +112,13 @@ int main()
             continue;
         }
 
-        if (SceneManager::isLoading)
+        if (SceneManager::loadingState > 0)
         {
             SceneManager::update();
             SceneManager::renderLoading();
         }
 
-        if (!SceneManager::isLoading)
+        if (SceneManager::loadingState == 0)
         {
             SceneManager::update();
             SceneManager::render();

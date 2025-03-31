@@ -12,6 +12,7 @@
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
 #include "file_manager/file_manager.h"
+#include "scene_manager/scene_manager.h"
 
 // Json mappings
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, animated, controlled);
@@ -42,17 +43,43 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     // Parse json into struct
     JSONScene jsonScene = jsoncons::decode_json<JSONScene>(file);
 
+    SceneManager::loadingState++;
+
+    // Set background color from scene
+    bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
+
+    SceneManager::loadingState++;
+    SceneManager::loadingProgress = {0, jsonScene.texts.size()};
+
+    // Load texts from scene
+    for (JSONText text : jsonScene.texts)
+    {
+        loadTextToScene(text);
+        SceneManager::loadingProgress.first++;
+    }
+
+    SceneManager::loadingState++;
+    SceneManager::loadingProgress = {0, jsonScene.models.size()};
+
     // Load models from scene
     for (JSONModel model : jsonScene.models)
     {
         loadModelToScene(model);
+        SceneManager::loadingProgress.first++;
     }
+
+    SceneManager::loadingState++;
+    SceneManager::loadingProgress = {0, jsonScene.unitPlanes.size()};
 
     // Load unitplanes from scene
     for (JSONUnitPlane unitPlane : jsonScene.unitPlanes)
     {
         loadUnitPlaneToScene(unitPlane);
+        SceneManager::loadingProgress.first++;
     }
+
+    SceneManager::loadingState++;
+    SceneManager::loadingProgress = {0, jsonScene.grids.size()};
 
     // Generate Grids form scene
     for (JSONGrid grid : jsonScene.grids)
@@ -63,7 +90,10 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
             loadGrid.lod = i;
             loadGridToScene(loadGrid);
         }
+        SceneManager::loadingProgress.first++;
     }
+
+    SceneManager::loadingState++;
 
     // Load skybox from scene
     hasSkyBox = false;
@@ -72,14 +102,7 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
         loadSkyBoxToScene(skybox);
     }
 
-    // Load texts from scene
-    for (JSONText text : jsonScene.texts)
-    {
-        loadTextToScene(text);
-    }
-
-    // Set background color from scene
-    bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
+    SceneManager::loadingState++;
 };
 
 void Scene::loadModelToScene(JSONModel model)

@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <windows.h>
 
 #include "physics/physics.h"
 #include "animation/animation.h"
@@ -14,13 +15,15 @@
 // Global Scene variables
 std::shared_ptr<Scene> SceneManager::currentScene = nullptr;
 std::future<std::shared_ptr<Scene>> SceneManager::pendingScene;
-bool SceneManager::isLoading = false;
 
 // Scenemap and paths
 std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
 
+// Global loading variables
 bool SceneManager::onTitleScreen = false;
+int SceneManager::loadingState = 0;
+std::pair<int, int> SceneManager::loadingProgress = {0, 0};
 
 // Load scene on main, causes freezing
 void SceneManager::load(const std::string &sceneName)
@@ -43,11 +46,15 @@ void SceneManager::load(const std::string &sceneName)
     // Setup cam and physics
     Camera::reset();
     Physics::setup(*currentScene);
+
+    loadingState = 0;
 }
 
 // Load scene in background, show loading screen
 void SceneManager::loadAsync(const std::string &sceneName)
 {
+    loadingState++;
+
     // Unload previous scene
     unload();
 
@@ -57,7 +64,7 @@ void SceneManager::loadAsync(const std::string &sceneName)
         onTitleScreen = true;
     }
 
-    isLoading = true;
+    loadingState++;
 
     // Future to store loaded scene in
     std::future<std::shared_ptr<Scene>> futureScene = std::async(std::launch::async, [sceneName]()
@@ -70,10 +77,13 @@ void SceneManager::loadAsync(const std::string &sceneName)
 void SceneManager::update()
 {
     // If background loading scene is complete
-    if (isLoading && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+    if (loadingState > 0 && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
     {
         // Retrieve the loaded scene
         currentScene = pendingScene.get();
+
+        // Render final loading screen frame
+        SceneManager::renderLoading();
 
         // Now upload scene data to OpenGL
         currentScene->uploadToGPU();
@@ -84,10 +94,10 @@ void SceneManager::update()
 
         // Reset future
         pendingScene = std::future<std::shared_ptr<Scene>>();
-        isLoading = false;
+        loadingState = 0;
     }
     // If not loading, aka running normally
-    else if (!isLoading)
+    else if (loadingState == 0)
     {
         Physics::update(*currentScene);
         Animation::updateBones(*currentScene);
@@ -106,7 +116,7 @@ void SceneManager::unload()
     // Reset scene variable. Calls destructors
     currentScene.reset();
 
-    // Clear title sceen 
+    // Clear title sceen
     onTitleScreen = false;
 
     // Clear global data from loading before loading new scene
@@ -150,8 +160,53 @@ void SceneManager::loadSceneMap()
 
 void SceneManager::renderLoading()
 {
+    std::string progressString;
+    std::string statusString = "Loading...";
     // Render loading screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Render::renderText("Loading...", 0.1f, 0.85f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    if (loadingState > 1)
+        progressString += "Unloaded Previous\n";
+    if (loadingState > 2)
+        progressString += "Scene JSON Complete\n";
+    if (loadingState > 3)
+        progressString += "Background Colors Complete\n";
+    if (loadingState > 4)
+        progressString += "Texts Complete\n";
+    if (loadingState > 5)
+        progressString += "Models Complete\n";
+    if (loadingState > 6)
+        progressString += "Planes Complete\n";
+    if (loadingState > 7)
+        progressString += "Terrain Grids Complete\n";
+    if (loadingState > 8)
+        progressString += "Skybox Complete\n";
+    if (loadingState > 9)
+        progressString += "Done\n";
+
+    if (loadingState == 1)
+        progressString += "Clearing Previous\n";
+    else if (loadingState == 2)
+        progressString += "Loading new Scene JSON\n";
+    else if (loadingState == 3)
+        progressString += "Loading Background Colors\n";
+    else if (loadingState == 4)
+        progressString += "Loading Texts (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+    else if (loadingState == 5)
+        progressString += "Loading Models (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+    else if (loadingState == 6)
+        progressString += "Loading Planes (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+    else if (loadingState == 7)
+        progressString += "Loading Terrain Grids (" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + ")\n";
+    else if (loadingState == 8)
+        progressString += "Loading Skybox\n";
+    else if (loadingState == 9)
+        progressString += "Finalising\n";
+    else if (loadingState == 10)
+        statusString += "Done";
+
+    Render::renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
+
+    Render::renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
 }
