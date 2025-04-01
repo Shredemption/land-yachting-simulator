@@ -305,16 +305,16 @@ void Physics::move()
     wheelAngle += forwardVelocity * EventHandler::deltaTime * 100;
 
     // Send values to debug
-    Render::debugData.push_back(std::pair("velocity", forwardVelocity));
-    Render::debugData.push_back(std::pair("acceleration", forwardAcceleration));
-    Render::debugData.push_back(std::pair("apparantWind", apparentWindSpeed));
-    Render::debugData.push_back(std::pair("steeringAngle", steeringAngle));
-    Render::debugData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
-    Render::debugData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
-    Render::debugData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
-    Render::debugData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
-    Render::debugData.push_back(std::pair("effectiveCL", effectiveCL));
-    Render::debugData.push_back(std::pair("effectiveCD", effectiveCD));
+    Render::debugPhysicsData.push_back(std::pair("velocity", forwardVelocity));
+    Render::debugPhysicsData.push_back(std::pair("acceleration", forwardAcceleration));
+    Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
+    Render::debugPhysicsData.push_back(std::pair("steeringAngle", steeringAngle));
+    Render::debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
+    Render::debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
+    Render::debugPhysicsData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
+    Render::debugPhysicsData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
+    Render::debugPhysicsData.push_back(std::pair("effectiveCL", effectiveCL));
+    Render::debugPhysicsData.push_back(std::pair("effectiveCD", effectiveCD));
 }
 
 void Physics::switchControlledYacht(Scene &scene)
