@@ -839,11 +839,11 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 void Render::UpdateRenderTiming(std::string name)
 {
     // === CPU TIMING ===
-    double cpuTimeMs;
+    double cpuTimeUs;
     auto nowCPU = std::chrono::high_resolution_clock::now();
     if (lastCPUTime != std::chrono::high_resolution_clock::time_point())
     {
-        cpuTimeMs = std::chrono::duration<double, std::milli>(nowCPU - lastCPUTime).count();
+        cpuTimeUs = std::chrono::duration<double, std::micro>(nowCPU - lastCPUTime).count();
     }
     lastCPUTime = nowCPU; // Update last CPU timestamp
 
@@ -865,5 +865,5 @@ void Render::UpdateRenderTiming(std::string name)
     lastGPUQuery = queryID; // Store query ID for next call
 
     if (name != "start")
-        Render::debugRenderData.push_back(std::tuple(name, static_cast<int>(cpuTimeMs), static_cast<int>(gpuTimeUs)));
+        Render::debugRenderData.push_back(std::tuple(name, static_cast<int>(cpuTimeUs), static_cast<int>(gpuTimeUs)));
 }
