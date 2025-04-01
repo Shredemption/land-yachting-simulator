@@ -20,8 +20,10 @@ class Render
 public:
     static float waterHeight;
 
-    static bool debugMenu;
-    static std::vector<std::pair<std::string, float>> debugData;
+    static bool debugPhysics;
+    static std::vector<std::pair<std::string, float>> debugPhysicsData;
+    static bool debugRender;
+    static std::vector<std::tuple<std::string, float, float>> debugRenderData;
 
     static glm::vec4 clipPlane;
 

@@ -67,16 +67,33 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             SceneManager::load("title");
         }
 
-        // Toggle DEBUG on F10
-        if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
+        // Toggle render debug on F9
+        if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
         {
-            if (Render::debugMenu)
+            Render::debugPhysics = false;
+
+            if (Render::debugRender)
             {
-                Render::debugMenu = false;
+                Render::debugRender = false;
             }
             else
             {
-                Render::debugMenu = true;
+                Render::debugRender = true;
+            }
+        }
+
+        // Toggle physics debug on F10
+        if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
+        {
+            Render::debugRender = false;
+
+            if (Render::debugPhysics)
+            {
+                Render::debugPhysics = false;
+            }
+            else
+            {
+                Render::debugPhysics = true;
             }
         }
 

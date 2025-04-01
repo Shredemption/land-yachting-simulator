@@ -16,10 +16,13 @@ float Render::waterHeight = 0.25;
 bool Render::WaterPass = true;
 
 // Render states
-bool Render::debugMenu = false;
-std::vector<std::pair<std::string, float>> Render::debugData;
+bool Render::debugPhysics = false;
+std::vector<std::pair<std::string, float>> Render::debugPhysicsData;
+bool Render::debugRender = false;
+std::vector<std::tuple<std::string, float, float>> Render::debugRenderData;
+glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
 
-glm::vec4 Render::clipPlane = glm::vec4(0, 0, 0, 0);
+glm::vec4 Render::clipPlane(0, 0, 0, 0);
 
 FT_Library Render::ft;
 FT_Face Render::face;
@@ -91,24 +94,41 @@ void Render::render(Scene &scene)
     renderSceneGrids(scene, clipPlane);
     renderSceneTexts(scene);
 
-    // Render debug data and render quads
-    if (debugMenu && !SceneManager::onTitleScreen)
+    // Render render debug
+    if (debugRender && !SceneManager::onTitleScreen)
     {
-        renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
-        renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+        if (Shader::waterLoaded)
+        {
+            renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
+            renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+        }
 
-        std::string debugText = "Debug Menu:\n";
+        std::string debugText = "Render Times:\n";
 
-        for (auto entry : debugData)
+        for (auto entry : debugRenderData)
+        {
+            debugText = debugText + std::get<0>(entry) + " - CPU: " + std::get<0>(entry) + ", GPU: " + std::get<0>(entry) + "\n";
+        }
+
+        renderText(debugText, 0.01f, 0.01f, 1, debugColor);
+    }
+
+    // Render physics debug
+    if (debugPhysics && !SceneManager::onTitleScreen)
+    {
+        std::string debugText = "Physics:\n";
+
+        for (auto entry : debugPhysicsData)
         {
             debugText = debugText + entry.first + ": " + std::to_string(entry.second) + "\n";
         }
 
-        renderText(debugText, 0.01f, 0.01f, 1, glm::vec3(1.0f, 0.0f, 1.0f));
+        renderText(debugText, 0.01f, 0.01f, 1, debugColor);
     }
 
     Camera::cameraMoved = false;
-    debugData.clear();
+    debugRenderData.clear();
+    debugPhysicsData.clear();
 }
 
 void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
@@ -731,7 +751,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 {
     x *= EventHandler::screenHeight;
     y *= EventHandler::screenHeight;
-    scale *= EventHandler::screenHeight/1440.0f;
+    scale *= EventHandler::screenHeight / 1440.0f;
 
     // Load the shader for rendering text
     Shader shader = Shader::load("text");
