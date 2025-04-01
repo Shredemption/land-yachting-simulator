@@ -1,6 +1,8 @@
 #include "render/render.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
+#include <format>
 
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
@@ -19,7 +21,7 @@ bool Render::WaterPass = true;
 bool Render::debugPhysics = false;
 std::vector<std::pair<std::string, float>> Render::debugPhysicsData;
 bool Render::debugRender = false;
-std::vector<std::tuple<std::string, float, float>> Render::debugRenderData;
+std::vector<std::tuple<std::string, int, int>> Render::debugRenderData;
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
 
 glm::vec4 Render::clipPlane(0, 0, 0, 0);
@@ -32,6 +34,10 @@ GLuint Render::textVAO, Render::textVBO;
 GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
 std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
+
+// Timing variables
+std::chrono::high_resolution_clock::time_point lastCPUTime;
+GLuint lastGPUQuery = 0;
 
 // Setup quads and text
 void Render::setup()
@@ -70,6 +76,8 @@ void Render::initQuad()
 // Main render loop
 void Render::render(Scene &scene)
 {
+    UpdateRenderTiming("start");
+
     // Clear color buffer
     glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -77,29 +85,37 @@ void Render::render(Scene &scene)
 
     renderSceneSkyBox(scene);
 
+    UpdateRenderTiming("Skybox");
+
     // If water loaded, render buffers
-    if (Shader::waterLoaded && (EventHandler::frame % 2 == 0))
+    if (Shader::waterLoaded)
     {
         WaterPass = true;
         renderReflectRefract(scene, clipPlane);
         WaterPass = false;
     }
 
+    UpdateRenderTiming("WaterPass");
+
     // Reset clip plane
     clipPlane = {0, 0, 0, 0};
 
     // Render rest of scene
     renderSceneModels(scene, clipPlane);
+    UpdateRenderTiming("Models");
     renderSceneUnitPlanes(scene, clipPlane);
+    UpdateRenderTiming("Planes");
     renderSceneGrids(scene, clipPlane);
+    UpdateRenderTiming("Grids");
     renderSceneTexts(scene);
+    UpdateRenderTiming("Text");
 
     // Render render debug
     if (debugRender && !SceneManager::onTitleScreen)
     {
         if (Shader::waterLoaded)
         {
-            renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 0, 0);
+            renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
             renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
         }
 
@@ -107,10 +123,10 @@ void Render::render(Scene &scene)
 
         for (auto entry : debugRenderData)
         {
-            debugText = debugText + std::get<0>(entry) + " - CPU: " + std::get<0>(entry) + ", GPU: " + std::get<0>(entry) + "\n";
+            debugText = debugText + std::get<0>(entry) + ":\nCPU: " + std::to_string(std::get<1>(entry)) + "\nGPU: " + std::to_string(std::get<2>(entry)) + "\n";
         }
 
-        renderText(debugText, 0.01f, 0.01f, 1, debugColor);
+        renderText(debugText, 0.01f, 0.01f, 0.75f, debugColor);
     }
 
     // Render physics debug
@@ -818,4 +834,36 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 
     // Disable blending after text rendering
     glDisable(GL_BLEND);
+}
+
+void Render::UpdateRenderTiming(std::string name)
+{
+    // === CPU TIMING ===
+    double cpuTimeMs;
+    auto nowCPU = std::chrono::high_resolution_clock::now();
+    if (lastCPUTime != std::chrono::high_resolution_clock::time_point())
+    {
+        cpuTimeMs = std::chrono::duration<double, std::milli>(nowCPU - lastCPUTime).count();
+    }
+    lastCPUTime = nowCPU; // Update last CPU timestamp
+
+    // === GPU TIMING ===
+    GLuint queryID;
+    glGenQueries(1, &queryID);
+    glBeginQuery(GL_TIME_ELAPSED, queryID);
+
+    GLuint64 gpuTimeUs;
+    if (lastGPUQuery)
+    { // Ensure there's a previous GPU query
+        GLuint64 gpuTimeNs = 0;
+        glGetQueryObjectui64v(lastGPUQuery, GL_QUERY_RESULT, &gpuTimeNs);
+        gpuTimeUs = gpuTimeNs / 1e3f;
+        glDeleteQueries(1, &lastGPUQuery); // Clean up old query
+    }
+
+    glEndQuery(GL_TIME_ELAPSED);
+    lastGPUQuery = queryID; // Store query ID for next call
+
+    if (name != "start")
+        Render::debugRenderData.push_back(std::tuple(name, static_cast<int>(cpuTimeMs), static_cast<int>(gpuTimeUs)));
 }

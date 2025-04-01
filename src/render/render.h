@@ -23,7 +23,7 @@ public:
     static bool debugPhysics;
     static std::vector<std::pair<std::string, float>> debugPhysicsData;
     static bool debugRender;
-    static std::vector<std::tuple<std::string, float, float>> debugRenderData;
+    static std::vector<std::tuple<std::string, int, int>> debugRenderData;
 
     static glm::vec4 clipPlane;
 
@@ -75,6 +75,8 @@ private:
     // Texture renderers
     static void renderReflectRefract(Scene &scene, glm::vec4 clipPlane);
     static void renderTestQuad(GLuint texture, int x, int y);
+
+    static void UpdateRenderTiming(std::string name);
 };
 
 #endif
