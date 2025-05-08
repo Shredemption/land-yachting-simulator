@@ -3,11 +3,10 @@
 #include "frame_buffer/frame_buffer.h"
 
 // Constructor to store input data
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::string shaderName)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::string shaderName)
 {
     this->vertices = vertices;
     this->indices = indices;
-    this->textures = textures;
     this->shader = shaderName;
 }
 
@@ -44,11 +43,8 @@ Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
         0, 3, 2  // Second triangle
     };
 
-    // Empty Texture
-    std::vector<Texture> textures;
-
     // Return Mesh
-    return Mesh(vertices, indices, textures, shaderName);
+    return Mesh(vertices, indices, shaderName);
 }
 
 Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std::string shaderName)
@@ -101,11 +97,8 @@ Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std
         }
     }
 
-    // Empty texture
-    std::vector<Texture> textures;
-
     // Return Mesh
-    return Mesh(vertices, indices, textures, shaderName);
+    return Mesh(vertices, indices, shaderName);
 }
 
 unsigned int Mesh::setupSkyBoxMesh()

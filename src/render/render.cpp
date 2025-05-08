@@ -119,7 +119,7 @@ void Render::render(Scene &scene)
             renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
         }
 
-        std::string debugText = "Render Times:\n";
+        std::string debugText = "Render Times: " + std::to_string(static_cast<int>(1 / EventHandler::deltaTime)) + " FPS\n";
 
         for (auto entry : debugRenderData)
         {
@@ -301,26 +301,21 @@ void Render::renderSceneTexts(Scene &scene)
 
 void Render::renderModel(ModelData model)
 {
-    if (model.shader == "toon")
+    if (model.shader == "default")
     {
-        for (auto mesh : model.model->meshes)
-        {
-            renderToon(mesh);
-        }
+        renderDefault(*model.model);
+    }
+    else if (model.shader == "toon")
+    {
+        renderToon(*model.model);
     }
     else if (model.shader == "pbr")
     {
-        for (auto mesh : model.model->meshes)
-        {
-            renderPBR(mesh);
-        }
+        renderPBR(*model.model);
     }
     else
     {
-        for (auto mesh : model.model->meshes)
-        {
-            renderDefault(mesh);
-        }
+        return;
     }
 }
 
@@ -330,10 +325,6 @@ void Render::renderModel(UnitPlaneData unitPlane)
     {
         renderSimple(unitPlane.unitPlane);
     }
-    else if (unitPlane.shader == "toon-water")
-    {
-        renderToonWater(unitPlane.unitPlane);
-    }
     else if (unitPlane.shader == "water")
     {
         if (!WaterPass)
@@ -341,61 +332,77 @@ void Render::renderModel(UnitPlaneData unitPlane)
             renderWater(unitPlane.unitPlane);
         }
     }
+    else if (unitPlane.shader == "toon-water")
+    {
+        renderToonWater(unitPlane.unitPlane);
+    }
+    else
+    {
+        return;
+    }
 }
 
 void Render::renderModel(GridData grid)
 {
-    if (grid.shader == "toon-terrain")
+    if (grid.shader == "simple")
+    {
+        renderSimple(grid.grid);
+    }
+    else if (grid.shader == "toon-terrain")
     {
         renderToonTerrain(grid.grid);
     }
     else
     {
-        renderSimple(grid.grid);
+        return;
     }
 }
 
-void Render::renderDefault(Mesh mesh)
+void Render::renderDefault(Model &model)
 {
     Shader *shader = Shader::load("default");
     unsigned int diffuseNr = 1;
     unsigned int propertiesNr = 1;
 
     // For every texture
-    for (unsigned int i = 0; i < mesh.textures.size(); i++)
+    for (unsigned int i = 0; i < model.textures.size(); i++)
     {
         // Activate texture unit before binding
         glActiveTexture(GL_TEXTURE0 + i);
 
         // Retrieve texture number and type
         std::string number;
-        std::string name = mesh.textures[i].type;
+        std::string name = model.textures[i].type;
 
         // Set appropriate number for filename (eg texture_diffuse3)
         if (name == "diffuse")
         {
             number = std::to_string(diffuseNr++);
             shader->setInt(("material." + name + number).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
         }
         if (name == "properties")
         {
             number = std::to_string(propertiesNr++);
             shader->setInt(("material." + name + number).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
         }
     }
+
     // Unload texture
     glActiveTexture(GL_TEXTURE0);
 
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    // Draw every mesh
+    for (auto mesh : model.meshes)
+    {
+        glBindVertexArray(mesh.VAO);
+        glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    }
 
     glBindVertexArray(0);
 }
 
-void Render::renderToon(Mesh mesh)
+void Render::renderToon(Model &model)
 {
     Shader *shader = Shader::load("toon");
     unsigned int highlightNr = 1;
@@ -404,35 +411,39 @@ void Render::renderToon(Mesh mesh)
     shader->setFloat("ambientLightIntensity", 1.2);
 
     // For every texture
-    for (unsigned int i = 0; i < mesh.textures.size(); i++)
+    for (unsigned int i = 0; i < model.textures.size(); i++)
     {
         // Activate texture unit before binding
         glActiveTexture(GL_TEXTURE0 + i);
 
         // Retrieve texture number and type
         std::string number;
-        std::string name = mesh.textures[i].type;
+        std::string name = model.textures[i].type;
 
         // Set appropriate number for filename (eg texture_diffuse3)
         if (name == "highlight")
         {
             number = std::to_string(highlightNr++);
             shader->setInt("highlight", i);
-            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
         }
         if (name == "shadow")
         {
             number = std::to_string(shadowNr++);
             shader->setInt("shadow", i);
-            glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
         }
     }
+
     // Unload texture
     glActiveTexture(GL_TEXTURE0);
 
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    // Draw every Mesh
+    for (auto mesh : model.meshes)
+    {
+        glBindVertexArray(mesh.VAO);
+        glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    }
 
     glBindVertexArray(0);
 }
@@ -459,7 +470,7 @@ void Render::renderToonTerrain(Mesh mesh)
     glBindVertexArray(0);
 }
 
-void Render::renderPBR(Mesh mesh) // FIXME : Not showing when rendered (but is shown wrong in reflection of water fsr)
+void Render::renderPBR(Model &model) // FIXME : Not showing when rendered (but is shown wrong in reflection of water fsr)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -470,14 +481,14 @@ void Render::renderPBR(Mesh mesh) // FIXME : Not showing when rendered (but is s
     Shader *shader = Shader::load("pbr");
 
     // For every texture
-    for (unsigned int i = 0; i < mesh.textures.size(); i++)
+    for (unsigned int i = 0; i < model.textures.size(); i++)
     {
         // Activate texture unit before binding
         glActiveTexture(GL_TEXTURE0 + i);
 
         // Retrieve texture number and type
         std::string number;
-        std::string name = mesh.textures[i].type;
+        std::string name = model.textures[i].type;
 
         // Set appropriate number for filename (eg texture_diffuse3)
         if (name == "diffuse")
@@ -493,14 +504,18 @@ void Render::renderPBR(Mesh mesh) // FIXME : Not showing when rendered (but is s
 
         // Send texture to shader
         shader->setInt(("material." + name + number).c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
     }
+
     // Unload texture
     glActiveTexture(GL_TEXTURE0);
 
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    // Draw every Mesh
+    for (auto mesh : model.meshes)
+    {
+        glBindVertexArray(mesh.VAO);
+        glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    }
 
     glBindVertexArray(0);
 }

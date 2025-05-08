@@ -13,6 +13,18 @@
 
 #include "mesh/mesh.h"
 
+struct Texture
+{
+    unsigned int id;
+    std::string type;
+    std::string path;
+
+    bool operator==(const Texture &other) const
+    {
+        return this->path == other.path; // Compare based on path or other identifiers
+    }
+};
+
 // Keep count of how many times cached texture is used
 struct CachedTexture
 {
@@ -32,7 +44,7 @@ enum ModelType
 
 struct JSONModelMapData
 {
-    std::string name;   
+    std::string name;
     std::string path;
 };
 
@@ -42,7 +54,8 @@ struct JSONModelMap
     std::vector<JSONModelMapData> models;
 };
 
-struct PendingTexture {
+struct PendingTexture
+{
     std::string name;
     int width, height, channels;
     std::vector<unsigned char> pixelData;
@@ -66,6 +79,7 @@ public:
     std::vector<Bone *> rootBones;
     std::string path;
     std::string name;
+    std::vector<Texture> textures;
 
     // Model map and load function
     static std::map<std::string, std::pair<std::string, ModelType>> modelMap;
