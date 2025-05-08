@@ -8,17 +8,16 @@ std::unordered_map<std::string, Shader> Shader::loadedShaders;
 std::string Shader::lastShader;
 bool Shader::waterLoaded = false;
 
-Shader Shader::load(const std::string &shaderName)
+Shader *Shader::load(const std::string &shaderName)
 {
     if (shaderName == lastShader)
     {
-        return loadedShaders[shaderName];
+        return &loadedShaders[shaderName];
     }
-
-    Shader shader;
 
     if (loadedShaders.find(shaderName) == loadedShaders.end())
     {
+        Shader shader;
         shader.init(FileManager::read("shaders/" + shaderName + ".vs"), FileManager::read("shaders/" + shaderName + ".fs"));
         loadedShaders.emplace(shaderName, shader);
 
@@ -28,10 +27,11 @@ Shader Shader::load(const std::string &shaderName)
         }
     }
 
-    shader = loadedShaders[shaderName];
-    shader.use();
+    lastShader = shaderName;
+    Shader *shaderPtr = &loadedShaders[shaderName];
+    shaderPtr->use();
 
-    return shader;
+    return shaderPtr;
 }
 
 void Shader::init(const std::string &vertexCode, const std::string &fragmentCode)
@@ -162,4 +162,16 @@ void Shader::checkLinkingError()
         std::cout << " Shader: Error linking shader program: " << std::endl
                   << infoLog << std::endl;
     }
+}
+
+void Shader::unload()
+{
+    // Clear global data from loading before loading new scene
+    for (auto &shaderPair : Shader::loadedShaders)
+    {
+        glDeleteProgram(shaderPair.second.m_id); // Explicitly delete the shader program from the GPU
+    }
+
+    loadedShaders.clear();
+    lastShader.clear();
 }

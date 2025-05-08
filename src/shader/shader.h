@@ -16,7 +16,8 @@
 class Shader
 {
 public:
-    static Shader load(const std::string &shaderName);
+    static Shader *load(const std::string &shaderName);
+    static void unload();
     void use();
 
     unsigned int m_id;
