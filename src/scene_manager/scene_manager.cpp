@@ -126,7 +126,7 @@ void SceneManager::unload()
     onTitleScreen = false;
 
     // Clear global data from loading before loading new scene
-    Shader::loadedShaders.clear();
+    Shader::unload();
     Shader::waterLoaded = false;
 }
 
