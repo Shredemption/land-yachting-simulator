@@ -46,26 +46,22 @@ Model::Model(std::tuple<std::string, std::string, std::string> NamePathShader)
 // Model Destructor
 Model::~Model()
 {
-    // For every mesh
-    for (const auto &mesh : meshes)
+    // For every texture
+    for (const auto &texture : textures)
     {
-        // For every texture in mesh
-        for (const auto &texture : mesh.textures)
+        // Check if texture still in textureCache
+        auto iteration = textureCache.find(texture.path);
+        if (iteration != textureCache.end())
         {
-            // Check if texture still in textureCache
-            auto iteration = textureCache.find(texture.path);
-            if (iteration != textureCache.end())
-            {
-                // If texture in cache, decrement count
-                iteration->second.refCount--;
+            // If texture in cache, decrement count
+            iteration->second.refCount--;
 
-                // If count 0
-                if (iteration->second.refCount == 0)
-                {
-                    // Remove unload from GPU and remove from cache
-                    glDeleteTextures(1, &iteration->second.texture.id);
-                    textureCache.erase(iteration);
-                }
+            // If count 0
+            if (iteration->second.refCount == 0)
+            {
+                // Remove unload from GPU and remove from cache
+                glDeleteTextures(1, &iteration->second.texture.id);
+                textureCache.erase(iteration);
             }
         }
     }
@@ -143,7 +139,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures;
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -186,54 +181,113 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
 
         vertices.push_back(vertex);
     }
-    // Process Indx
+
+    // Process Indices
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
+
     // Process Mats
     if (mesh->mMaterialIndex >= 0)
     {
-        // Get material
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        // load textures based on shader
+        // Load textures based on shader
         if (shaderName == "default")
         {
+            // Check and add diffuse maps if not already loaded
             std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "diffuse");
-            textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+            for (const auto &texture : diffuseMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
 
+            // Check and add normal maps if not already loaded
             std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_UNKNOWN, "properties");
-            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+            for (const auto &texture : normalMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
         }
 
         if (shaderName == "toon")
         {
+            // Check and add toon textures (e.g., highlight and shadow) if not already loaded
             std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "highlight");
-            textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+            for (const auto &texture : diffuseMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
 
             std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_UNKNOWN, "shadow");
-            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+            for (const auto &texture : normalMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
         }
 
         if (shaderName == "pbr")
         {
+            // Check and add PBR textures (diffuse, normal, specular, roughness, ao) if not already loaded
             std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "diffuse");
-            textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+            for (const auto &texture : diffuseMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
 
             std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_NORMALS, "normal");
-            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+            for (const auto &texture : normalMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
 
             std::vector<Texture> specularMaps = loadMaterialTexture(material, aiTextureType_SPECULAR, "specular");
-            textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+            for (const auto &texture : specularMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
 
             std::vector<Texture> roughnessMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
-            textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+            for (const auto &texture : roughnessMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
 
             std::vector<Texture> aoMaps = loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, "ao");
-            textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
+            for (const auto &texture : aoMaps)
+            {
+                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
+                {
+                    textures.push_back(texture);
+                }
+            }
         }
     }
 
@@ -277,14 +331,14 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
         boneHierarchy.erase(it); // Remove the "Scene" bone from the hierarchy
     }
 
-    Mesh loadedMesh = Mesh(vertices, indices, textures, shaderName);
+    Mesh loadedMesh = Mesh(vertices, indices, shaderName);
     return loadedMesh;
 }
 
 std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName)
 {
     // Vector of textures to push to GPU
-    std::vector<Texture> textures;
+    std::vector<Texture> loadTextures;
     std::string textureName = findTextureInDirectory(directory, typeName);
 
     // If texture found
@@ -295,9 +349,9 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
             std::lock_guard<std::mutex> lock(textureCacheMutex);
             if (textureCache.find(textureName) != textureCache.end())
             {
-                textures.push_back(textureCache[textureName].texture);
+                loadTextures.push_back(textureCache[textureName].texture);
                 textureCache[textureName].refCount++;
-                return textures;
+                return loadTextures;
             }
         }
 
@@ -307,7 +361,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
             if (pendingTextures.find(textureName) != pendingTextures.end())
             {
                 // Another thread is already loading this texture
-                return textures;
+                return loadTextures;
             }
 
             // If not, add to pending
@@ -319,7 +373,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
         placeholderTexture.id = 0;
         placeholderTexture.type = typeName;
         placeholderTexture.path = textureName;
-        textures.push_back(placeholderTexture);
+        loadTextures.push_back(placeholderTexture);
 
         // Get texture location
         std::string filename = directory + '/' + textureName;
@@ -333,7 +387,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
                 std::lock_guard<std::mutex> lock(pendingTexturesMutex);
                 pendingTextures.erase(textureName);
             }
-            return textures;
+            return loadTextures;
         }
 
         // Save PendingTexture
@@ -362,7 +416,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
         std::cout << "Failed to load " << typeName << " texture in " << directory << "\n";
     }
 
-    return textures;
+    return loadTextures;
 }
 
 void Model::processPendingTextures()
@@ -650,15 +704,15 @@ void Model::uploadToGPU()
     // Process all pending textures of model
     processPendingTextures();
 
+    // Update texture IDs from loaded pending textures
+    for (auto &texture : textures)
+    {
+        texture.id = textureCache[texture.path].texture.id;
+    }
+
     // Upload data for each mesh to GPU
     for (auto &mesh : meshes)
     {
         mesh.uploadToGPU();
-
-        // Update texture IDs from loaded pending textures
-        for (auto &texture : mesh.textures)
-        {
-            texture.id = textureCache[texture.path].texture.id;
-        }
     }
 }

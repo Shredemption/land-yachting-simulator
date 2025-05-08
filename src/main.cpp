@@ -54,7 +54,7 @@ int main()
     glfwMakeContextCurrent(window);
 
     // Set swap interval
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     // GLAD loads all OpenGL pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -89,6 +89,9 @@ int main()
     // Enable Depth buffer (Z-buffer)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    // Wireframe Mode
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Set window to fullscreen by default
     if (EventHandler::fullscreen)
