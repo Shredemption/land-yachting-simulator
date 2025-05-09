@@ -54,7 +54,7 @@ int main()
     glfwMakeContextCurrent(window);
 
     // Set swap interval
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     // GLAD loads all OpenGL pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
