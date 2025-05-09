@@ -2,6 +2,7 @@
     "scenes": {
         "title": "resources/scenes/main-menu.json",
         "cartoon": "resources/scenes/cartoon.json",
-        "realistic": "resources/scenes/realistic.json"
+        "realistic": "resources/scenes/realistic.json",
+        "test": "resources/scenes/test.json"
     }
 }

@@ -2,7 +2,7 @@
   "bgColor": [0.5, 0, 0],
   "texts": [
     {
-      "text": "Land Yachting Simulator\n\n[1] Load Realistic Scene\n[2] Load Cartoon Scene",
+      "text": "Land Yachting Simulator\n\n[1] Load Realistic Scene\n[2] Load Cartoon Scene\n[T] Load Test Scene",
       "position": [0.05, 0.05]
     }
   ],

@@ -58,6 +58,10 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
         {
             SceneManager::loadAsync("cartoon");
         }
+        if (key == GLFW_KEY_T && action == GLFW_PRESS)
+        {
+            SceneManager::loadAsync("test");
+        }
     }
     else
     {
