@@ -93,6 +93,10 @@ void Model::loadModel(std::string path, std::string shaderName)
     directory = path.substr(0, path.find_last_of('/'));
     processNode(scene->mRootNode, scene, shaderName);
 
+    // Combine meshes into one
+    combineMeshes(scene, shaderName);
+
+    // Generate initial bone positions
     generateBoneTransforms();
 }
 
@@ -333,6 +337,112 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
 
     Mesh loadedMesh = Mesh(vertices, indices, shaderName);
     return loadedMesh;
+}
+
+void Model::combineMeshes(const aiScene *scene, std::string shaderName)
+{
+    std::vector<Vertex> allVertices;
+    std::vector<unsigned int> allIndices;
+
+    unsigned int indexOffset = 0;
+
+    for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+    {
+        aiMesh *mesh = scene->mMeshes[i];
+
+        std::vector<Vertex> meshVertices;
+        std::vector<unsigned int> meshIndices;
+
+        // Process meshes vertices
+        for (unsigned int j = 0; j < mesh->mNumVertices; j++)
+        {
+            Vertex vertex;
+            // Process vertex positions, normals, tangents, etc.
+            glm::vec3 vector;
+            vector.x = mesh->mVertices[j].x;
+            vector.y = mesh->mVertices[j].y;
+            vector.z = mesh->mVertices[j].z;
+            vertex.Position = vector;
+
+            vector.x = mesh->mNormals[j].x;
+            vector.y = mesh->mNormals[j].y;
+            vector.z = mesh->mNormals[j].z;
+            vertex.Normal = vector;
+
+            vector.x = mesh->mTangents[j].x;
+            vector.y = mesh->mTangents[j].y;
+            vector.z = mesh->mTangents[j].z;
+            vertex.Tangent = vector;
+
+            vector.x = mesh->mBitangents[j].x;
+            vector.y = mesh->mBitangents[j].y;
+            vector.z = mesh->mBitangents[j].z;
+            vertex.Bitangent = vector;
+
+            if (mesh->mTextureCoords[0]) // Texture coords
+            {
+                glm::vec2 vec;
+                vec.x = mesh->mTextureCoords[0][j].x;
+                vec.y = mesh->mTextureCoords[0][j].y;
+                vertex.TexCoords = vec;
+            }
+            else
+            {
+                vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            }
+
+            meshVertices.push_back(vertex);
+        }
+
+        // Process indices with offset
+        for (unsigned int j = 0; j < mesh->mNumFaces; ++j)
+        {
+            aiFace face = mesh->mFaces[j];
+            for (unsigned int k = 0; k < face.mNumIndices; ++k)
+            {
+                meshIndices.push_back(face.mIndices[k] + indexOffset);
+            }
+        }
+
+        // Append the current mesh's vertices and indices to the combined lists
+        allVertices.insert(allVertices.end(), meshVertices.begin(), meshVertices.end());
+        allIndices.insert(allIndices.end(), meshIndices.begin(), meshIndices.end());
+
+        // Process bone weights and update bone hierarchy
+        for (unsigned int b = 0; b < mesh->mNumBones; ++b)
+        {
+            aiBone *bone = mesh->mBones[b];
+            std::string boneName = bone->mName.C_Str();
+
+            int boneIndex = boneHierarchy[boneName]->index;
+
+            for (unsigned int w = 0; w < bone->mNumWeights; ++w)
+            {
+                aiVertexWeight weight = bone->mWeights[w];
+                unsigned int globalVertexID = weight.mVertexId + indexOffset;
+                float weightValue = weight.mWeight;
+
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (allVertices[globalVertexID].Weights[i] == 0.0f)
+                    {
+                        allVertices[globalVertexID].BoneIDs[i] = boneIndex;
+                        allVertices[globalVertexID].Weights[i] = weightValue;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Update index offset
+        indexOffset += meshVertices.size();
+    }
+
+    // Now create a single combined mesh
+    Mesh combinedMesh = Mesh(allVertices, allIndices, shaderName);
+
+    meshes.clear();
+    meshes.push_back(combinedMesh); // Replace the old meshes with the combined one
 }
 
 std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName)
