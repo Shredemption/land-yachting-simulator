@@ -14,13 +14,8 @@ fs_in;
 uniform vec3 lightCol;
 uniform float lightIntensity;
 
-struct Material
-{
-    sampler2D diffuse1;
-    sampler2D properties1;
-};
-
-uniform Material material;
+uniform int textureLayers[4];
+uniform sampler2DArray textureArray;
 
 const float ambientLight = 0.5;
 const float diffuseStrength = 1;
@@ -35,9 +30,9 @@ float G1(float NdotX, float k)
 void main()
 {
     // Sample textures
-    vec3 albedo = texture(material.diffuse1, fs_in.TexCoords).rgb;
+    vec3 albedo = texture(textureArray, vec3(fs_in.TexCoords, textureLayers[0])).rgb;
 
-    vec4 properties = texture(material.properties1, fs_in.TexCoords);
+    vec4 properties = texture(textureArray, vec3(fs_in.TexCoords, textureLayers[1]));
 
     float metallic = properties.r;
     float roughness = properties.g;

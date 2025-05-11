@@ -153,6 +153,12 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
     {
         Shader *shader = Shader::load(model.shader);
 
+        // Activate and Bind texture array
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, Model::textureArrayID);
+        shader->setInt("textureArray", 0);
+
         // Send light and view position to relevant shader
         shader->setVec3("lightPos", EventHandler::lightPos);
         shader->setVec3("viewPos", Camera::getPosition());
@@ -360,33 +366,15 @@ void Render::renderDefault(Model &model)
     unsigned int diffuseNr = 1;
     unsigned int propertiesNr = 1;
 
-    // For every texture
-    for (unsigned int i = 0; i < model.textures.size(); i++)
+    // Set texture layer indices
+    std::vector<int> textureIndices;
+
+    for (unsigned int i = 0; i < model.textures.size(); ++i)
     {
-        // Activate texture unit before binding
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        // Retrieve texture number and type
-        std::string number;
-        std::string name = model.textures[i].type;
-
-        // Set appropriate number for filename (eg texture_diffuse3)
-        if (name == "diffuse")
-        {
-            number = std::to_string(diffuseNr++);
-            shader->setInt(("material." + name + number).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
-        }
-        if (name == "properties")
-        {
-            number = std::to_string(propertiesNr++);
-            shader->setInt(("material." + name + number).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
-        }
+        textureIndices.push_back(model.textures[i].index);
     }
 
-    // Unload texture
-    glActiveTexture(GL_TEXTURE0);
+    shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
 
     // Draw every mesh
     for (auto mesh : model.meshes)
@@ -406,33 +394,16 @@ void Render::renderToon(Model &model)
 
     shader->setFloat("ambientLightIntensity", 1.2);
 
-    // For every texture
-    for (unsigned int i = 0; i < model.textures.size(); i++)
+    // Set texture layer indices
+    std::vector<int> textureIndices;
+
+    for (unsigned int i = 0; i < model.textures.size(); ++i)
     {
-        // Activate texture unit before binding
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        // Retrieve texture number and type
-        std::string number;
-        std::string name = model.textures[i].type;
-
-        // Set appropriate number for filename (eg texture_diffuse3)
-        if (name == "highlight")
-        {
-            number = std::to_string(highlightNr++);
-            shader->setInt("highlight", i);
-            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
-        }
-        if (name == "shadow")
-        {
-            number = std::to_string(shadowNr++);
-            shader->setInt("shadow", i);
-            glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
-        }
+        textureIndices.push_back(model.textures[i].index);
     }
 
-    // Unload texture
-    glActiveTexture(GL_TEXTURE0);
+    shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
+
 
     // Draw every Mesh
     for (auto mesh : model.meshes)
@@ -449,7 +420,7 @@ void Render::renderToonTerrain(Mesh mesh)
     Texture heightmap = LoadStandaloneTexture("heightmap.jpg");
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, heightmap.id);
+    glBindTexture(GL_TEXTURE_2D, heightmap.index);
 
     Shader *shader = Shader::load("toon-terrain");
 
@@ -482,11 +453,11 @@ void Render::renderToonWater(Mesh mesh)
     Texture height = LoadStandaloneTexture("heightmap.jpg");
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, DuDv.id);
+    glBindTexture(GL_TEXTURE_2D, DuDv.index);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, normal.id);
+    glBindTexture(GL_TEXTURE_2D, normal.index);
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, height.id);
+    glBindTexture(GL_TEXTURE_2D, height.index);
 
     Shader *shader = Shader::load("toon-water");
 
@@ -514,9 +485,9 @@ void Render::renderWater(Mesh mesh)
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, DuDv.id);
+    glBindTexture(GL_TEXTURE_2D, DuDv.index);
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, normal.id);
+    glBindTexture(GL_TEXTURE_2D, normal.index);
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.depthTexture);
 
@@ -621,7 +592,7 @@ Texture Render::LoadStandaloneTexture(std::string fileName)
     {
         // Define and load new texture to texture cache
         Texture texture;
-        texture.id = Model::TextureFromFile(fileName.c_str(), "../resources/textures");
+        texture.index = Model::TextureFromFile(fileName.c_str(), "../resources/textures");
         texture.type = "standalone";
         texture.path = fileName.c_str();
 

@@ -13,16 +13,16 @@ fs_in;
 const float stepMin = 0.4;
 const float stepMax = 0.45;
 
-uniform sampler2D diffuse;
-uniform sampler2D shadow;
+uniform int textureLayers[4];
+uniform sampler2DArray textureArray;
 
 uniform float ambientLightIntensity;
 
 void main()
 {
-    vec4 highlight = texture(diffuse, fs_in.TexCoords);
-    vec4 shadow = texture(shadow, fs_in.TexCoords);
-
+    vec4 highlight = texture(textureArray, vec3(fs_in.TexCoords, textureLayers[0]));
+    vec4 shadow = texture(textureArray, vec3(fs_in.TexCoords, textureLayers[1]));
+    
     float lightFactor = smoothstep(stepMin, stepMax, dot(fs_in.Normal, fs_in.lightDir));
 
     FragColor = mix(shadow, highlight, lightFactor);

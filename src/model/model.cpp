@@ -14,9 +14,11 @@
 #include "scene/scene.h"
 #include "event_handler/event_handler.h"
 
-// Texture Cache
+// Texture Cache and Array
 std::unordered_map<std::string, CachedTexture> Model::textureCache;
 std::mutex Model::textureCacheMutex;
+GLuint Model::textureArrayID;
+std::unordered_map<std::string, int> Model::textureLayerMap;
 
 // Texture Queue of to be loaded textures
 std::queue<PendingTexture> Model::textureQueue;
@@ -46,25 +48,6 @@ Model::Model(std::tuple<std::string, std::string, std::string> NamePathShader)
 // Model Destructor
 Model::~Model()
 {
-    // For every texture
-    for (const auto &texture : textures)
-    {
-        // Check if texture still in textureCache
-        auto iteration = textureCache.find(texture.path);
-        if (iteration != textureCache.end())
-        {
-            // If texture in cache, decrement count
-            iteration->second.refCount--;
-
-            // If count 0
-            if (iteration->second.refCount == 0)
-            {
-                // Remove unload from GPU and remove from cache
-                glDeleteTextures(1, &iteration->second.texture.id);
-                textureCache.erase(iteration);
-            }
-        }
-    }
 
     // Release mesh VAO, VBO and EBO from GPU
     glDeleteBuffers(1, &meshes[0].VBO);
@@ -94,7 +77,7 @@ void Model::loadModel(std::string path, std::string shaderName)
     processNode(scene->mRootNode, scene, shaderName);
 
     // Combine meshes into one
-    combineMeshes(scene, shaderName);
+    // combineMeshes(scene, shaderName);
 
     // Generate initial bone positions
     generateBoneTransforms();
@@ -406,17 +389,6 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
     if (!textureName.empty())
     {
         {
-            // Check if texture already cached
-            std::lock_guard<std::mutex> lock(textureCacheMutex);
-            if (textureCache.find(textureName) != textureCache.end())
-            {
-                loadTextures.push_back(textureCache[textureName].texture);
-                textureCache[textureName].refCount++;
-                return loadTextures;
-            }
-        }
-
-        {
             // Check if texture already pending
             std::lock_guard<std::mutex> lock(pendingTexturesMutex);
             if (pendingTextures.find(textureName) != pendingTextures.end())
@@ -431,7 +403,7 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
 
         // Placeholder texture for model loading
         Texture placeholderTexture;
-        placeholderTexture.id = 0;
+        placeholderTexture.index = 0;
         placeholderTexture.type = typeName;
         placeholderTexture.path = textureName;
         loadTextures.push_back(placeholderTexture);
@@ -483,47 +455,71 @@ std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType t
 void Model::processPendingTextures()
 {
     std::lock_guard<std::mutex> lock(textureQueueMutex);
+    std::vector<PendingTexture> textures;
+
     while (!textureQueue.empty())
     {
-        // Take first pending texture
-        PendingTexture texture = std::move(textureQueue.front());
+        textures.push_back(textureQueue.front());
         textureQueue.pop();
+    }
 
-        GLuint textureID;
+    if (textures.empty())
+        return;
 
-        // Generate empty texture for ID and bind to it
-        glGenTextures(1, &textureID);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+    int texWidth = textures[0].width;
+    int texHeight = textures[0].height;
+    int texChannels = textures[0].channels;
 
-        GLenum format;
-        if (texture.channels == 1)
-            format = GL_RED;
-        else if (texture.channels == 3)
-            format = GL_RGB;
-        else if (texture.channels == 4)
-            format = GL_RGBA;
-
-        // Upload texture properties to GL
-        glTexImage2D(GL_TEXTURE_2D, 0, format, texture.width, texture.height, 0, format, GL_UNSIGNED_BYTE, texture.pixelData.data());
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        // Fix textureID in cache
-        auto &cached = textureCache[texture.name];
-        cached.texture = {textureID, texture.typeName, texture.name};
-
-        // Remove texture from Pending
+    for (const auto &tex : textures)
+    {
+        if (tex.width != texWidth || tex.height != texHeight || tex.channels != texChannels)
         {
-            std::lock_guard<std::mutex> lock(pendingTexturesMutex);
-            pendingTextures.erase(texture.name);
+            std::cerr << "Inconsistent texture dimensions or formats!\n";
+            return;
         }
     }
+
+    glGenTextures(1, &textureArrayID);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayID);
+
+    GLenum internalFormat = (texChannels == 4) ? GL_RGBA8 : GL_RGB8;
+    GLenum format = (texChannels == 4) ? GL_RGBA : GL_RGB;
+
+    // Allocate 3D texture storage
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, texWidth, texHeight, static_cast<GLsizei>(textures.size()), 0, format, GL_UNSIGNED_BYTE, nullptr);
+
+    // Upload each layer
+    for (size_t i = 0; i < textures.size(); ++i)
+    {
+        const auto &tex = textures[i];
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
+                        0, 0, i,
+                        texWidth, texHeight, 1,
+                        format, GL_UNSIGNED_BYTE,
+                        tex.pixelData.data());
+    }
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
+    // Texture layer map
+    for (size_t i = 0; i < textures.size(); ++i)
+    {
+        textureLayerMap[textures[i].name] = static_cast<int>(i);
+    }
+}
+
+void Model::unloadTextures()
+{
+    glDeleteTextures(1, &textureArrayID);
+    textureArrayID = 0;
+
+    textureCache.clear();
+    pendingTextures.clear();
 }
 
 std::string Model::findTextureInDirectory(const std::string &directory, const std::string &typeName)
@@ -765,10 +761,11 @@ void Model::uploadToGPU()
     // Process all pending textures of model
     processPendingTextures();
 
-    // Update texture IDs from loaded pending textures
+    // Assign texture array indices
     for (auto &texture : textures)
     {
-        texture.id = textureCache[texture.path].texture.id;
+        auto it = textureLayerMap.find(texture.path);
+        texture.index = (it != textureLayerMap.end()) ? it->second : 0;
     }
 
     // Upload data for each mesh to GPU
