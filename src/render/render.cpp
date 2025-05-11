@@ -39,6 +39,9 @@ std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 std::chrono::high_resolution_clock::time_point lastCPUTime;
 GLuint lastGPUQuery = 0;
 
+// Debug values
+float Render::FPS;
+
 // Setup quads and text
 void Render::setup()
 {
@@ -119,7 +122,9 @@ void Render::render(Scene &scene)
             renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
         }
 
-        std::string debugText = "Render Times: " + std::to_string(static_cast<int>(1 / EventHandler::deltaTime)) + " FPS\n";
+        FPS = (0.9 * FPS + 0.1 / EventHandler::deltaTime);
+
+        std::string debugText = "Render Times: " + std::to_string(static_cast<int>(FPS)) + " FPS\n";
 
         for (auto entry : debugRenderData)
         {

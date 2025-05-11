@@ -51,6 +51,8 @@ private:
 
     static bool WaterPass;
 
+    static float FPS;
+
     // Class renderers
     static void renderSceneModels(Scene &scene, glm::vec4 clipPlane);
     static void renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane);
