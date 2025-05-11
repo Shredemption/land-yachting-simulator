@@ -244,55 +244,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
                 }
             }
         }
-
-        if (shaderName == "pbr")
-        {
-            // Check and add PBR textures (diffuse, normal, specular, roughness, ao) if not already loaded
-            std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "diffuse");
-            for (const auto &texture : diffuseMaps)
-            {
-                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
-                {
-                    textures.push_back(texture);
-                }
-            }
-
-            std::vector<Texture> normalMaps = loadMaterialTexture(material, aiTextureType_NORMALS, "normal");
-            for (const auto &texture : normalMaps)
-            {
-                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
-                {
-                    textures.push_back(texture);
-                }
-            }
-
-            std::vector<Texture> specularMaps = loadMaterialTexture(material, aiTextureType_SPECULAR, "specular");
-            for (const auto &texture : specularMaps)
-            {
-                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
-                {
-                    textures.push_back(texture);
-                }
-            }
-
-            std::vector<Texture> roughnessMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
-            for (const auto &texture : roughnessMaps)
-            {
-                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
-                {
-                    textures.push_back(texture);
-                }
-            }
-
-            std::vector<Texture> aoMaps = loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, "ao");
-            for (const auto &texture : aoMaps)
-            {
-                if (std::find(textures.begin(), textures.end(), texture) == textures.end()) // Texture not found
-                {
-                    textures.push_back(texture);
-                }
-            }
-        }
     }
 
     // Process Bone ID's

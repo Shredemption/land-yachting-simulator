@@ -309,10 +309,6 @@ void Render::renderModel(ModelData model)
     {
         renderToon(*model.model);
     }
-    else if (model.shader == "pbr")
-    {
-        renderPBR(*model.model);
-    }
     else
     {
         return;
@@ -466,56 +462,6 @@ void Render::renderToonTerrain(Mesh mesh)
     // Draw Mesh
     glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
-}
-
-void Render::renderPBR(Model &model) // FIXME : Not showing when rendered (but is shown wrong in reflection of water fsr)
-{
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    unsigned int normalNr = 1;
-    unsigned int roughnessNr = 1;
-    unsigned int aoNr = 1;
-
-    Shader *shader = Shader::load("pbr");
-
-    // For every texture
-    for (unsigned int i = 0; i < model.textures.size(); i++)
-    {
-        // Activate texture unit before binding
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        // Retrieve texture number and type
-        std::string number;
-        std::string name = model.textures[i].type;
-
-        // Set appropriate number for filename (eg texture_diffuse3)
-        if (name == "diffuse")
-            number = std::to_string(diffuseNr++);
-        else if (name == "specular")
-            number = std::to_string(specularNr++);
-        else if (name == "normal")
-            number = std::to_string(normalNr++);
-        else if (name == "roughness")
-            number = std::to_string(roughnessNr++);
-        else if (name == "ao")
-            number = std::to_string(aoNr++);
-
-        // Send texture to shader
-        shader->setInt(("material." + name + number).c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, model.textures[i].id);
-    }
-
-    // Unload texture
-    glActiveTexture(GL_TEXTURE0);
-
-    // Draw every Mesh
-    for (auto mesh : model.meshes)
-    {
-        glBindVertexArray(mesh.VAO);
-        glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-    }
 
     glBindVertexArray(0);
 }
