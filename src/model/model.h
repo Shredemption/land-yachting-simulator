@@ -15,7 +15,7 @@
 
 struct Texture
 {
-    unsigned int id;
+    unsigned int index;
     std::string type;
     std::string path;
 
@@ -88,9 +88,13 @@ public:
     std::vector<Mesh> meshes;
     std::string directory;
 
-    // Texture cache and pending lists
+    // Texture cache and Array
     static std::unordered_map<std::string, CachedTexture> textureCache;
     static std::mutex textureCacheMutex;
+    static GLuint textureArrayID;
+    static std::unordered_map<std::string, int> textureLayerMap;
+
+    // Pending Textures
     static std::queue<PendingTexture> textureQueue;
     static std::mutex textureQueueMutex;
     static std::unordered_set<std::string> pendingTextures;
@@ -101,6 +105,7 @@ public:
     static unsigned int TextureFromFile(const char *name, const std::string &directory);
     void processPendingTextures();
     static unsigned int LoadSkyBoxTexture(SkyBoxData skybox);
+    static void unloadTextures();
 
     // Generate and update bones
     void generateBoneTransforms();
