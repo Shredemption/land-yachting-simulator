@@ -152,11 +152,6 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
     for (auto model : scene.structModels)
     {
         Shader *shader = Shader::load(model.shader);
-
-        // Activate and Bind texture array
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, Model::textureArrayID);
         shader->setInt("textureArray", 0);
 
         // Send light and view position to relevant shader
@@ -276,7 +271,7 @@ void Render::renderSceneSkyBox(Scene &scene)
 
         // Bind skybox
         glBindVertexArray(scene.skyBox.VAO);
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skyBox.textureID);
 
         // Set view matrices
@@ -284,7 +279,7 @@ void Render::renderSceneSkyBox(Scene &scene)
         shader->setMat4("u_projection", Camera::u_projection);
         shader->setMat4("u_model", glm::mat4(1.0f));
 
-        shader->setInt("skybox", 0);
+        shader->setInt("skybox", 1);
 
         // Draw
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -404,7 +399,6 @@ void Render::renderToon(Model &model)
 
     shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
 
-
     // Draw every Mesh
     for (auto mesh : model.meshes)
     {
@@ -419,16 +413,16 @@ void Render::renderToonTerrain(Mesh mesh)
 {
     Texture heightmap = LoadStandaloneTexture("heightmap.jpg");
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, heightmap.index);
 
     Shader *shader = Shader::load("toon-terrain");
 
     shader->setMat4("u_camXY", Camera::u_camXY);
-    shader->setInt("heightmap", 0);
+    shader->setInt("heightmap", 2);
 
     // Unload texture
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE2);
 
     // Draw Mesh
     glBindVertexArray(mesh.VAO);
@@ -452,18 +446,18 @@ void Render::renderToonWater(Mesh mesh)
     Texture normal = LoadStandaloneTexture("waterNormal.png");
     Texture height = LoadStandaloneTexture("heightmap.jpg");
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, DuDv.index);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, normal.index);
+    glBindTexture(GL_TEXTURE_2D, DuDv.index);
     glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, normal.index);
+    glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, height.index);
 
     Shader *shader = Shader::load("toon-water");
 
-    shader->setInt("toonWater", 0);
-    shader->setInt("normalMap", 1);
-    shader->setInt("heightmap", 2);
+    shader->setInt("toonWater", 1);
+    shader->setInt("normalMap", 2);
+    shader->setInt("heightmap", 3);
     shader->setFloat("moveOffset", EventHandler::time);
     shader->setMat4("u_camXY", Camera::u_camXY);
 
@@ -480,23 +474,23 @@ void Render::renderWater(Mesh mesh)
     Texture DuDv = LoadStandaloneTexture("waterDUDV.png");
     Texture normal = LoadStandaloneTexture("waterNormal.png");
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
+    glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, DuDv.index);
+    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, normal.index);
+    glBindTexture(GL_TEXTURE_2D, DuDv.index);
     glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, normal.index);
+    glActiveTexture(GL_TEXTURE5);
     glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.depthTexture);
 
     Shader *shader = Shader::load("water");
-    shader->setInt("reflectionTexture", 0);
-    shader->setInt("refractionTexture", 1);
-    shader->setInt("dudvMap", 2);
-    shader->setInt("normalMap", 3);
-    shader->setInt("depthMap", 4);
+    shader->setInt("reflectionTexture", 1);
+    shader->setInt("refractionTexture", 2);
+    shader->setInt("dudvMap", 3);
+    shader->setInt("normalMap", 4);
+    shader->setInt("depthMap", 5);
     shader->setFloat("moveOffset", EventHandler::time);
     shader->setVec3("cameraPosition", Camera::getPosition());
     shader->setVec3("lightPos", EventHandler::lightPos);
@@ -562,12 +556,12 @@ void Render::renderTestQuad(GLuint texture, int x, int y)
 {
     glViewport(x, y, EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
 
-    Shader *quadShader = Shader::load("gui");
-    quadShader->setInt("screenTexture", 0);
-
     // Bind the framebuffer texture
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture);
+
+    Shader *quadShader = Shader::load("gui");
+    quadShader->setInt("screenTexture", 1);
 
     // Render the quad
     glBindVertexArray(quadVAO);

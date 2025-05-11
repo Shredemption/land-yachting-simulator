@@ -511,6 +511,10 @@ void Model::processPendingTextures()
     {
         textureLayerMap[textures[i].name] = static_cast<int>(i);
     }
+
+    // Activate and Bind texture array
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, Model::textureArrayID);
 }
 
 void Model::unloadTextures()
