@@ -67,7 +67,6 @@ private:
     static void renderDefault(Model &model);
     static void renderToon(Model &model);
     static void renderToonTerrain(Mesh mesh);
-    static void renderPBR(Model &model);
     static void renderSimple(Mesh mesh);
     static void renderToonWater(Mesh mesh);
     static void renderWater(Mesh mesh);
