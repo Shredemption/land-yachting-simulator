@@ -25,7 +25,6 @@ struct Bone
     int index;
     glm::mat4 offsetMatrix;
     glm::mat4 transform = glm::mat4(1.0f);
-    glm::mat4 globalTransform;
     Bone *parent;
     std::vector<Bone *> children;
 

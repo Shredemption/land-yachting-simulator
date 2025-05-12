@@ -13,7 +13,7 @@ public:
     static bool resetState;
 
     // World variables
-    static glm::vec3 windDirection;
+    static glm::vec3 windSourceDirection;
     static float windStrength;
     static float airDensity;
     static float g;
@@ -28,6 +28,7 @@ public:
 
     // Velocity and steering variables
     glm::mat4 baseTransform;
+    glm::mat4 transform;
     float steeringAngle = 0.0f;
     float steeringSmoothness;
     float maxSteeringAngle;
@@ -58,7 +59,7 @@ public:
 
 private:
     void move();
-    void reset();
+    void reset(ModelData &modelData);
 };
 
 #endif
