@@ -3,7 +3,7 @@
     {
       "name": "dn-duvel",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 2],
       "shader": "toon",
@@ -13,7 +13,7 @@
     {
       "name": "bobbie",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-6, -1, 2],
       "shader": "toon",
@@ -22,7 +22,7 @@
     {
       "name": "vampier",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-12, -2, 2],
       "shader": "toon",
@@ -31,7 +31,7 @@
     {
       "name": "beware",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-18, -3, 2],
       "shader": "toon",
@@ -40,7 +40,7 @@
     {
       "name": "buizerd",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-24, -4, 2],
       "shader": "toon",
@@ -49,7 +49,7 @@
     {
       "name": "red-piper",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-30, -5, 2],
       "shader": "toon",
@@ -58,7 +58,7 @@
     {
       "name": "blue-piper",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-36, -6, 2],
       "shader": "toon",
@@ -67,7 +67,7 @@
     {
       "name": "sietske",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-42, -7, 2],
       "shader": "toon",
@@ -78,7 +78,7 @@
     {
       "color": [0.208, 0.502, 0.988],
       "scale": [2000, 2000, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0.25],
       "shader": "toon-water"
@@ -88,7 +88,7 @@
     {
       "color": [0.39, 0.84, 0.21],
       "gridSize": [100, 100],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0],
       "scale": 0.5,
