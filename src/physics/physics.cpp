@@ -24,7 +24,7 @@ Physics::Physics(ModelData &ModelData)
 
     // Check which yacht, and apply correct properties
 
-    if (ModelData.model->path.find("dn-duvel") != std::string::npos)
+    if (ModelData.model->name == "dn-duvel")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);
@@ -49,7 +49,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 0.5f;
     }
 
-    else if (ModelData.model->path.find("red-piper") != std::string::npos)
+    else if (ModelData.model->name == "red-piper")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);
@@ -74,7 +74,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 0.45f;
     }
 
-    else if (ModelData.model->path.find("blue-piper") != std::string::npos)
+    else if (ModelData.model->name == "blue-piper")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);
@@ -99,7 +99,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 1.55f;
     }
 
-    else if (ModelData.model->path.find("sietske") != std::string::npos)
+    else if (ModelData.model->name == "sietske")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);

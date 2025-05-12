@@ -111,17 +111,24 @@ void Scene::loadModelToScene(JSONModel model)
     ModelData loadModel;
 
     // Find model location using map
-    std::string modelPath = Model::modelMap[model.name].mainPath;
+    auto &modelEntry = Model::modelMap[model.name];
+
+    std::vector<std::string> paths = { FileManager::getPath(modelEntry.mainPath) };
+
+    for (auto lodPath : modelEntry.lodPaths)
+    {
+        paths.push_back(FileManager::getPath(lodPath));
+    }
 
     // If model not yet loaded
-    if (loadedModels.find(modelPath) == loadedModels.end())
+    if (loadedModels.find(modelEntry.mainPath) == loadedModels.end())
     {
         // Load model with path and shader name
-        loadedModels.emplace(modelPath, std::make_tuple(model.name, FileManager::getPath(modelPath), model.shader));
+        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, model.shader));
     }
 
     // Push loaded path to model
-    loadModel.model = &loadedModels.at(modelPath);
+    loadModel.model = &loadedModels.at(modelEntry.mainPath);
 
     // Generate u_model
     glm::mat4 u_model_i = glm::scale(

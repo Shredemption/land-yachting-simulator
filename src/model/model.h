@@ -38,6 +38,7 @@ struct SkyBoxData;
 struct JSONModelMapEntry
 {
     std::string mainPath;
+    std::vector<std::string> lodPaths = {};
     std::string type = "model";
 };
 
@@ -59,7 +60,7 @@ struct PendingTexture
 class Model
 {
 public:
-    Model(std::tuple<std::string, std::string, std::string> NamePathShader);
+    Model(std::tuple<std::string, std::vector<std::string>, std::string> name_paths_shader);
     ~Model();
 
     void uploadToGPU();
@@ -70,7 +71,7 @@ public:
     std::vector<glm::mat4> boneOffsets;
     std::vector<glm::mat4> boneInverseOffsets;
     std::vector<Bone *> rootBones;
-    std::string path;
+    std::vector<std::string> paths;
     std::string name;
     std::vector<Texture> textures;
 
@@ -78,7 +79,7 @@ public:
     static std::map<std::string, JSONModelMapEntry> modelMap;
     static void loadModelMap();
 
-    std::vector<Mesh> meshes;
+    std::vector<std::vector<Mesh>> lodMeshes;
     std::string directory;
 
     // Texture cache and Array
@@ -107,8 +108,8 @@ public:
     void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset);
 
 private:
-    void loadModel(std::string path, std::string shaderName);
-    void processNode(aiNode *node, const aiScene *scene, std::string shaderName, Bone *parentBone = nullptr);
+    void loadModel(const std::vector<std::string> &lodPaths, std::string shaderName);
+    void processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<Mesh> &targetMeshList, Bone *parentBone = nullptr);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy);
     void combineMeshes(const aiScene *scene, std::string shaderName);
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
