@@ -3,7 +3,7 @@
     {
       "name": "dn-duvel",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0],
       "animated": true,
@@ -12,7 +12,7 @@
     {
       "name": "bobbie",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-6, -1, 0],
       "animated": true
@@ -20,7 +20,7 @@
     {
       "name": "vampier",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-12, -2, 0],
       "animated": true
@@ -28,7 +28,7 @@
     {
       "name": "beware",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-18, -3, 0],
       "animated": true
@@ -36,7 +36,7 @@
     {
       "name": "buizerd",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-24, -4, 0],
       "animated": true
@@ -44,7 +44,7 @@
     {
       "name": "red-piper",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-30, -5, 0],
       "animated": true
@@ -52,7 +52,7 @@
     {
       "name": "blue-piper",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-36, -6, 0],
       "animated": true
@@ -60,7 +60,7 @@
     {
       "name": "sietske",
       "scale": [1, 1, 1],
-      "angle": 0,
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-42, -7, 0],
       "animated": true
