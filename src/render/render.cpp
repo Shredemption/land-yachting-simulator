@@ -92,7 +92,7 @@ void Render::render(Scene &scene)
     UpdateRenderTiming("Skybox");
 
     // If water loaded, render buffers
-    if (Shader::waterLoaded)
+    if (Shader::waterLoaded && EventHandler::frame % 2 == 0)
     {
         WaterPass = true;
         renderReflectRefract(scene, clipPlane);
