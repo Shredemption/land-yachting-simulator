@@ -112,7 +112,6 @@ private:
     void loadModel(const std::vector<std::string> &lodPaths, std::string shaderName);
     void processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<Mesh> &targetMeshList, Bone *parentBone = nullptr);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy);
-    void combineMeshes(const aiScene *scene, std::string shaderName);
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
     std::string findTextureInDirectory(const std::string &directory, const std::string &typeName);
 
