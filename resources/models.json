@@ -2,7 +2,8 @@
   "models": {
     "dn-duvel": {
       "type": "yacht",
-      "mainPath": "resources/yachts/dn-duvel/dn-duvel.dae"
+      "mainPath": "resources/yachts/dn-duvel/dn-duvel.dae",
+      "lodPaths": ["resources/yachts/dn-duvel/dn-duvel-lod1.dae"]
     },
     "bobbie": {
       "type": "yacht",

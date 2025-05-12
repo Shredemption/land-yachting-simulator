@@ -377,7 +377,7 @@ void Render::renderDefault(Model &model)
     shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
 
     // Draw every mesh
-    for (auto mesh : model.meshes)
+    for (auto mesh : model.lodMeshes.back())
     {
         glBindVertexArray(mesh.VAO);
         glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -405,7 +405,7 @@ void Render::renderToon(Model &model)
     shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
 
     // Draw every Mesh
-    for (auto mesh : model.meshes)
+    for (auto mesh : model.lodMeshes.back())
     {
         glBindVertexArray(mesh.VAO);
         glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);

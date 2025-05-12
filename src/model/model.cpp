@@ -34,56 +34,69 @@ std::map<std::string, JSONModelMapEntry> Model::modelMap;
 std::string modelMapPath = "resources/models.json";
 
 // Json setups
-JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, type);
+JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 // Model Constructor
-Model::Model(std::tuple<std::string, std::string, std::string> NamePathShader)
+Model::Model(std::tuple<std::string, std::vector<std::string>, std::string> name_paths_shader)
 {
-    this->name = std::get<0>(NamePathShader);
-    this->path = std::get<1>(NamePathShader);
-    loadModel(std::get<1>(NamePathShader), std::get<2>(NamePathShader));
+    this->name = std::get<0>(name_paths_shader);
+    this->paths = std::get<1>(name_paths_shader);
+
+    loadModel(paths, std::get<2>(name_paths_shader));
 }
 
 // Model Destructor
 Model::~Model()
 {
-
-    // Release mesh VAO, VBO and EBO from GPU
-    glDeleteBuffers(1, &meshes[0].VBO);
-    glDeleteBuffers(1, &meshes[0].EBO);
-    glDeleteVertexArrays(1, &meshes[0].VAO);
-
-    // Ensure meshes vector clears properly
-    meshes.clear();
-}
-
-void Model::loadModel(std::string path, std::string shaderName)
-{
-    // Define importer and open file
-    Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-
-    // If scene null, scene flagged as incomplete, or root node null
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    for (auto &meshes : lodMeshes)
     {
-        // Show error
-        std::cout << "Assimp Error: " << importer.GetErrorString() << std::endl;
-        return;
+        for (auto &mesh : meshes)
+        {
+            // Release mesh VAO, VBO and EBO from GPU
+            glDeleteBuffers(1, &mesh.VBO);
+            glDeleteBuffers(1, &mesh.EBO);
+            glDeleteVertexArrays(1, &mesh.VAO);
+        }
     }
 
-    // Open full node recursion
-    directory = path.substr(0, path.find_last_of('/'));
-    processNode(scene->mRootNode, scene, shaderName);
+    // Ensure meshes vector clears properly
+    lodMeshes.clear();
+}
 
-    // Combine meshes into one
-    // combineMeshes(scene, shaderName);
+void Model::loadModel(const std::vector<std::string> &lodPaths, std::string shaderName)
+{
+    for (size_t i = 0; i < lodPaths.size(); i++)
+    {
+        // Define importer and open file
+        Assimp::Importer importer;
+        const aiScene *scene = importer.ReadFile(lodPaths[i], aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+
+        // If scene null, scene flagged as incomplete, or root node null
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+        {
+            std::cout << "Assimp Error (" << lodPaths[i] << "): " << importer.GetErrorString() << std::endl;
+            continue;
+        }
+
+        // Open full node recursion
+        directory = lodPaths[i].substr(0, lodPaths[i].find_last_of('/'));
+
+        std::vector<Mesh> lodLevelMeshes;
+
+        processNode(scene->mRootNode, scene, shaderName, lodLevelMeshes, nullptr);
+
+        // Combine meshes into one
+        // combineMeshes(scene, shaderName);
+
+        lodMeshes.push_back(std::move(lodLevelMeshes));
+    }
 
     // Generate initial bone positions
     generateBoneTransforms();
 }
 
-void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderName, Bone *parentBone)
+void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<Mesh> &targetMeshList, Bone *parentBone)
 {
     // Get node name
     std::string nodeName = node->mName.C_Str();
@@ -91,19 +104,23 @@ void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderNa
     // If node is armatrue, extract bone
     if (nodeName.rfind("Armature", 0) == 0)
     {
-        Bone *currentBone = new Bone(nodeName, boneHierarchy.size() - 1, glm::mat4(1.0f));
-        boneHierarchy.emplace(nodeName, currentBone);
+        if (boneHierarchy.find(nodeName) == boneHierarchy.end())
+        {
+            Bone *currentBone = new Bone(nodeName, boneHierarchy.size() - 1, glm::mat4(1.0f));
+            boneHierarchy.emplace(nodeName, currentBone);
 
-        if (parentBone)
-        {
-            parentBone->children.push_back(currentBone);
-            currentBone->parent = parentBone;
-        }
-        else
-        {
-            rootBones.push_back(currentBone);
+            if (parentBone)
+            {
+                parentBone->children.push_back(currentBone);
+                currentBone->parent = parentBone;
+            }
+            else
+            {
+                rootBones.push_back(currentBone);
+            }
         }
     }
+
     // Else extract meshes
     else
     {
@@ -111,14 +128,14 @@ void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderNa
         {
             unsigned int meshIndex = node->mMeshes[i];
             aiMesh *mesh = scene->mMeshes[meshIndex];
-            meshes.push_back(processMesh(mesh, scene, shaderName, boneHierarchy));
+            targetMeshList.push_back(processMesh(mesh, scene, shaderName, boneHierarchy));
         }
     }
 
     // Recursively process children
     for (unsigned int i = 0; i < node->mNumChildren; ++i)
     {
-        processNode(node->mChildren[i], scene, shaderName, boneHierarchy[nodeName]);
+        processNode(node->mChildren[i], scene, shaderName, targetMeshList, boneHierarchy[nodeName]);
     }
 }
 
@@ -273,111 +290,111 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
     return loadedMesh;
 }
 
-void Model::combineMeshes(const aiScene *scene, std::string shaderName)
-{
-    std::vector<Vertex> allVertices;
-    std::vector<unsigned int> allIndices;
+// void Model::combineMeshes(const aiScene *scene, std::string shaderName)
+// {
+//     std::vector<Vertex> allVertices;
+//     std::vector<unsigned int> allIndices;
 
-    unsigned int indexOffset = 0;
+//     unsigned int indexOffset = 0;
 
-    for (unsigned int i = 0; i < scene->mNumMeshes; i++)
-    {
-        aiMesh *mesh = scene->mMeshes[i];
+//     for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+//     {
+//         aiMesh *mesh = scene->mMeshes[i];
 
-        std::vector<Vertex> meshVertices;
-        std::vector<unsigned int> meshIndices;
+//         std::vector<Vertex> meshVertices;
+//         std::vector<unsigned int> meshIndices;
 
-        // Process meshes vertices
-        for (unsigned int j = 0; j < mesh->mNumVertices; j++)
-        {
-            Vertex vertex;
-            // Process vertex positions, normals, tangents, etc.
-            glm::vec3 vector;
-            vector.x = mesh->mVertices[j].x;
-            vector.y = mesh->mVertices[j].y;
-            vector.z = mesh->mVertices[j].z;
-            vertex.Position = vector;
+//         // Process meshes vertices
+//         for (unsigned int j = 0; j < mesh->mNumVertices; j++)
+//         {
+//             Vertex vertex;
+//             // Process vertex positions, normals, tangents, etc.
+//             glm::vec3 vector;
+//             vector.x = mesh->mVertices[j].x;
+//             vector.y = mesh->mVertices[j].y;
+//             vector.z = mesh->mVertices[j].z;
+//             vertex.Position = vector;
 
-            vector.x = mesh->mNormals[j].x;
-            vector.y = mesh->mNormals[j].y;
-            vector.z = mesh->mNormals[j].z;
-            vertex.Normal = vector;
+//             vector.x = mesh->mNormals[j].x;
+//             vector.y = mesh->mNormals[j].y;
+//             vector.z = mesh->mNormals[j].z;
+//             vertex.Normal = vector;
 
-            vector.x = mesh->mTangents[j].x;
-            vector.y = mesh->mTangents[j].y;
-            vector.z = mesh->mTangents[j].z;
-            vertex.Tangent = vector;
+//             vector.x = mesh->mTangents[j].x;
+//             vector.y = mesh->mTangents[j].y;
+//             vector.z = mesh->mTangents[j].z;
+//             vertex.Tangent = vector;
 
-            vector.x = mesh->mBitangents[j].x;
-            vector.y = mesh->mBitangents[j].y;
-            vector.z = mesh->mBitangents[j].z;
-            vertex.Bitangent = vector;
+//             vector.x = mesh->mBitangents[j].x;
+//             vector.y = mesh->mBitangents[j].y;
+//             vector.z = mesh->mBitangents[j].z;
+//             vertex.Bitangent = vector;
 
-            if (mesh->mTextureCoords[0]) // Texture coords
-            {
-                glm::vec2 vec;
-                vec.x = mesh->mTextureCoords[0][j].x;
-                vec.y = mesh->mTextureCoords[0][j].y;
-                vertex.TexCoords = vec;
-            }
-            else
-            {
-                vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-            }
+//             if (mesh->mTextureCoords[0]) // Texture coords
+//             {
+//                 glm::vec2 vec;
+//                 vec.x = mesh->mTextureCoords[0][j].x;
+//                 vec.y = mesh->mTextureCoords[0][j].y;
+//                 vertex.TexCoords = vec;
+//             }
+//             else
+//             {
+//                 vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+//             }
 
-            meshVertices.push_back(vertex);
-        }
+//             meshVertices.push_back(vertex);
+//         }
 
-        // Process indices with offset
-        for (unsigned int j = 0; j < mesh->mNumFaces; ++j)
-        {
-            aiFace face = mesh->mFaces[j];
-            for (unsigned int k = 0; k < face.mNumIndices; ++k)
-            {
-                meshIndices.push_back(face.mIndices[k] + indexOffset);
-            }
-        }
+//         // Process indices with offset
+//         for (unsigned int j = 0; j < mesh->mNumFaces; ++j)
+//         {
+//             aiFace face = mesh->mFaces[j];
+//             for (unsigned int k = 0; k < face.mNumIndices; ++k)
+//             {
+//                 meshIndices.push_back(face.mIndices[k] + indexOffset);
+//             }
+//         }
 
-        // Append the current mesh's vertices and indices to the combined lists
-        allVertices.insert(allVertices.end(), meshVertices.begin(), meshVertices.end());
-        allIndices.insert(allIndices.end(), meshIndices.begin(), meshIndices.end());
+//         // Append the current mesh's vertices and indices to the combined lists
+//         allVertices.insert(allVertices.end(), meshVertices.begin(), meshVertices.end());
+//         allIndices.insert(allIndices.end(), meshIndices.begin(), meshIndices.end());
 
-        // Process bone weights and update bone hierarchy
-        for (unsigned int b = 0; b < mesh->mNumBones; ++b)
-        {
-            aiBone *bone = mesh->mBones[b];
-            std::string boneName = bone->mName.C_Str();
+//         // Process bone weights and update bone hierarchy
+//         for (unsigned int b = 0; b < mesh->mNumBones; ++b)
+//         {
+//             aiBone *bone = mesh->mBones[b];
+//             std::string boneName = bone->mName.C_Str();
 
-            int boneIndex = boneHierarchy[boneName]->index;
+//             int boneIndex = boneHierarchy[boneName]->index;
 
-            for (unsigned int w = 0; w < bone->mNumWeights; ++w)
-            {
-                aiVertexWeight weight = bone->mWeights[w];
-                unsigned int globalVertexID = weight.mVertexId + indexOffset;
-                float weightValue = weight.mWeight;
+//             for (unsigned int w = 0; w < bone->mNumWeights; ++w)
+//             {
+//                 aiVertexWeight weight = bone->mWeights[w];
+//                 unsigned int globalVertexID = weight.mVertexId + indexOffset;
+//                 float weightValue = weight.mWeight;
 
-                for (int i = 0; i < 4; ++i)
-                {
-                    if (allVertices[globalVertexID].Weights[i] == 0.0f)
-                    {
-                        allVertices[globalVertexID].BoneIDs[i] = boneIndex;
-                        allVertices[globalVertexID].Weights[i] = weightValue;
-                        break;
-                    }
-                }
-            }
-        }
+//                 for (int i = 0; i < 4; ++i)
+//                 {
+//                     if (allVertices[globalVertexID].Weights[i] == 0.0f)
+//                     {
+//                         allVertices[globalVertexID].BoneIDs[i] = boneIndex;
+//                         allVertices[globalVertexID].Weights[i] = weightValue;
+//                         break;
+//                     }
+//                 }
+//             }
+//         }
 
-        // Update index offset
-        indexOffset += meshVertices.size();
-    }
+//         // Update index offset
+//         indexOffset += meshVertices.size();
+//     }
 
-    // Now create a single combined mesh
-    Mesh combinedMesh = Mesh(allVertices, allIndices, shaderName);
+//     // Now create a single combined mesh
+//     Mesh combinedMesh = Mesh(allVertices, allIndices, shaderName);
 
-    meshes.clear();
-    meshes.push_back(combinedMesh); // Replace the old meshes with the combined one
-}
+//     meshes.clear();
+//     meshes.push_back(combinedMesh); // Replace the old meshes with the combined one
+// }
 
 std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName)
 {
@@ -773,8 +790,11 @@ void Model::uploadToGPU()
     }
 
     // Upload data for each mesh to GPU
-    for (auto &mesh : meshes)
+    for (auto &meshes : lodMeshes)
     {
-        mesh.uploadToGPU();
+        for (auto &mesh : meshes)
+        {
+            mesh.uploadToGPU();
+        }
     }
 }
