@@ -82,6 +82,7 @@ struct ModelData
     bool animated;
     bool controlled;
     std::vector<Physics *> physics;
+    glm::mat4 u_baseTransform;
 };
 
 struct UnitPlaneData

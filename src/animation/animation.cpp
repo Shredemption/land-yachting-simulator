@@ -9,7 +9,7 @@
 void Animation::updateBones(Scene &scene)
 {
     // For every model thats anymated, create bones
-    for (auto ModelData : scene.structModels)
+    for (auto &ModelData : scene.structModels)
     {
         if (ModelData.animated)
         {
@@ -25,7 +25,7 @@ void Animation::updateYachtBones(ModelData &ModelData)
     Physics *physics = ModelData.physics[0];
 
     // Body Transform
-    model->boneHierarchy["Armature_Body"]->transform = physics->baseTransform;
+    ModelData.u_model = ModelData.u_baseTransform * physics->baseTransform;
 
     // Wheel transforms
     model->boneHierarchy["Armature_Fork"]->transform = glm::rotate(glm::mat4(1.0f), glm::radians(physics->steeringAngle * 2), glm::vec3(0.0f, -1.0f, 0.0f));

@@ -143,6 +143,7 @@ void Scene::loadModelToScene(JSONModel model)
     // Model and normal matrices
     loadModel.u_model = u_model_i;
     loadModel.u_normal = glm::transpose(glm::inverse(u_model_i));
+    loadModel.u_baseTransform = u_model_i;
 
     // Model shader
     loadModel.shader = model.shader;
