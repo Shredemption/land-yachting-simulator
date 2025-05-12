@@ -10,7 +10,7 @@
 bool Physics::keyInputs[5];
 
 // World physics properties
-glm::vec3 Physics::windDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+glm::vec3 Physics::windSourceDirection = glm::vec3(0.0f, -1.0f, 0.0f);
 float Physics::windStrength = 10.0f;
 float Physics::airDensity = 1.225f;
 float Physics::g = 9.81f;
@@ -150,9 +150,9 @@ Physics::Physics(ModelData &ModelData)
     }
 }
 
-void Physics::reset()
+void Physics::reset(ModelData &modelData)
 {
-    baseTransform = glm::mat4(1.0f);
+    baseTransform = modelData.u_model;
     sailControlFactor = 1.0f;
     MastAngle = 0.0f;
     BoomAngle = 0.0f;
@@ -171,7 +171,7 @@ void Physics::setup(Scene &scene)
         {
             model.physics.clear();
             model.physics.push_back(new Physics(model));
-            model.physics[0]->reset();
+            model.physics[0]->reset(model);
         }
     }
 }
@@ -183,6 +183,12 @@ void Physics::update(Scene &scene)
     {
         if (model.controlled)
         {
+            // Reset if needed
+            if (resetState)
+            {
+                resetState = false;
+                model.physics[0]->reset(model);
+            }
             model.physics[0]->move();
         }
     }
@@ -190,13 +196,6 @@ void Physics::update(Scene &scene)
 
 void Physics::move()
 {
-    // Reset if needed
-    if (resetState)
-    {
-        resetState = false;
-        this->reset();
-    }
-
     // Acceleration from keys
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
@@ -227,7 +226,7 @@ void Physics::move()
 
     // Find new angles for sail
     glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[1]));
-    float angleToWind = glm::orientedAngle(direction, -windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
+    float angleToWind = glm::orientedAngle(direction, windSourceDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Apply angles to sail setup
     float targetMastAngle = (0.5f + sailControlFactor) / 1.5f * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
@@ -240,7 +239,7 @@ void Physics::move()
     SailAngle = BoomAngle * (1 + 0.1 * fabs(sin(angleToWind / 2)));
 
     // Apparent wind direction
-    glm::vec3 apparentWind = windDirection * windStrength - direction * forwardVelocity;
+    glm::vec3 apparentWind = -windSourceDirection * windStrength - direction * forwardVelocity;
     float apparentWindSpeed = glm::length(apparentWind);
     glm::vec3 apparentWindDirection = glm::normalize(apparentWind);
 
@@ -300,7 +299,7 @@ void Physics::move()
     float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
 
     // Transform with velocities
-    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(effectiveSteeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, -1.0f));
+    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(effectiveSteeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, 1.0f));
     baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
     wheelAngle += forwardVelocity * EventHandler::deltaTime * 100;
 
