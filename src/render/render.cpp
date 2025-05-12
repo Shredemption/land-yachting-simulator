@@ -382,6 +382,8 @@ void Render::renderDefault(Model &model)
     size_t lodIndex = 0;
     if (model.distanceFromCamera > lodDistance)
         lodIndex = 1;
+    if (SceneManager::onTitleScreen)
+        lodIndex = 0;
 
     // Draw every mesh
     for (auto mesh : model.lodMeshes[lodIndex])
@@ -414,6 +416,8 @@ void Render::renderToon(Model &model)
     size_t lodIndex = 0;
     if (model.distanceFromCamera > lodDistance)
         lodIndex = 1;
+    if (SceneManager::onTitleScreen)
+        lodIndex = 0;
 
     // Draw every Mesh
     for (auto mesh : model.lodMeshes[lodIndex])
