@@ -44,14 +44,13 @@ enum ModelType
 
 struct JSONModelMapData
 {
-    std::string name;
     std::string path;
 };
 
 struct JSONModelMap
 {
-    std::vector<JSONModelMapData> yachts;
-    std::vector<JSONModelMapData> models;
+    std::map<std::string, JSONModelMapData> yachts;
+    std::map<std::string, JSONModelMapData> models;
 };
 
 struct PendingTexture

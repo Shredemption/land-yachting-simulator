@@ -34,7 +34,7 @@ std::map<std::string, std::pair<std::string, ModelType>> Model::modelMap;
 std::string modelMapPath = "resources/models.json";
 
 // Json setups
-JSONCONS_N_MEMBER_TRAITS(JSONModelMapData, 2, name, path);
+JSONCONS_N_MEMBER_TRAITS(JSONModelMapData, 0, path);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 // Model Constructor
@@ -626,14 +626,14 @@ void Model::loadModelMap()
     JSONModelMap jsonModelMap = jsoncons::decode_json<JSONModelMap>(file);
 
     // If model classified as yacht
-    for (JSONModelMapData yacht : jsonModelMap.yachts)
+    for (const auto &[name, data] : jsonModelMap.yachts)
     {
-        modelMap[yacht.name] = std::make_pair(yacht.path, ModelType::yacht);
+        modelMap[name] = std::make_pair(data.path, ModelType::yacht);
     }
     // If geneneric model
-    for (JSONModelMapData model : jsonModelMap.models)
+    for (const auto &[name, data] : jsonModelMap.models)
     {
-        modelMap[model.name] = std::make_pair(model.path, ModelType::model);
+        modelMap[name] = std::make_pair(data.path, ModelType::model);
     }
 }
 
