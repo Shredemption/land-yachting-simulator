@@ -1,37 +1,29 @@
 {
-  "yachts": [
-    {
-      "name": "dn-duvel",
+  "yachts": {
+    "dn-duvel": {
       "path": "resources/yachts/dn-duvel/dn-duvel.dae"
     },
-    {
-      "name": "bobbie",
+    "bobbie": {
       "path": "resources/yachts/bobbie/bobbie.dae"
     },
-    {
-      "name": "vampier",
+    "vampier": {
       "path": "resources/yachts/vampier/vampier.dae"
     },
-    {
-      "name": "beware",
+    "beware": {
       "path": "resources/yachts/beware/beware.dae"
     },
-    {
-      "name": "buizerd",
+    "buizerd": {
       "path": "resources/yachts/buizerd/buizerd.dae"
     },
-    {
-      "name": "red-piper",
+    "red-piper": {
       "path": "resources/yachts/red-piper/red-piper.dae"
     },
-    {
-      "name": "blue-piper",
+    "blue-piper": {
       "path": "resources/yachts/blue-piper/blue-piper.dae"
     },
-    {
-      "name": "sietske",
+    "sietske": {
       "path": "resources/yachts/sietske/sietske.dae"
     }
-  ],
-  "models": []
+  },
+  "models": {}
 }
