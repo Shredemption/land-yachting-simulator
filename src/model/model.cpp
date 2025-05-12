@@ -30,11 +30,11 @@ std::mutex Model::pendingTexturesMutex;
 std::mutex Model::openglMutex;
 
 // Model map and location
-std::map<std::string, std::pair<std::string, ModelType>> Model::modelMap;
+std::map<std::string, JSONModelMapEntry> Model::modelMap;
 std::string modelMapPath = "resources/models.json";
 
 // Json setups
-JSONCONS_N_MEMBER_TRAITS(JSONModelMapData, 0, path);
+JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, type);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 // Model Constructor
@@ -628,12 +628,12 @@ void Model::loadModelMap()
     // If model classified as yacht
     for (const auto &[name, data] : jsonModelMap.yachts)
     {
-        modelMap[name] = std::make_pair(data.path, ModelType::yacht);
+        modelMap[name] = data;
     }
     // If geneneric model
     for (const auto &[name, data] : jsonModelMap.models)
     {
-        modelMap[name] = std::make_pair(data.path, ModelType::model);
+        modelMap[name] = data;
     }
 }
 

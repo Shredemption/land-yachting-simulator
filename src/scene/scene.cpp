@@ -111,7 +111,7 @@ void Scene::loadModelToScene(JSONModel model)
     ModelData loadModel;
 
     // Find model location using map
-    std::string modelPath = Model::modelMap[model.name].first;
+    std::string modelPath = Model::modelMap[model.name].mainPath;
 
     // If model not yet loaded
     if (loadedModels.find(modelPath) == loadedModels.end())
@@ -148,7 +148,7 @@ void Scene::loadModelToScene(JSONModel model)
     this->structModels.push_back(loadModel);
 
     // If model is a yacht, save name to yachts list
-    if (Model::modelMap[model.name].second == ModelType::yacht)
+    if (Model::modelMap[model.name].type == "yacht")
     {
         loadedYachts.push_back(model.name);
     }

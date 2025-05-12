@@ -1,29 +1,36 @@
 {
-  "yachts": {
+  "models": {
     "dn-duvel": {
-      "path": "resources/yachts/dn-duvel/dn-duvel.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/dn-duvel/dn-duvel.dae"
     },
     "bobbie": {
-      "path": "resources/yachts/bobbie/bobbie.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/bobbie/bobbie.dae"
     },
     "vampier": {
-      "path": "resources/yachts/vampier/vampier.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/vampier/vampier.dae"
     },
     "beware": {
-      "path": "resources/yachts/beware/beware.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/beware/beware.dae"
     },
     "buizerd": {
-      "path": "resources/yachts/buizerd/buizerd.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/buizerd/buizerd.dae"
     },
     "red-piper": {
-      "path": "resources/yachts/red-piper/red-piper.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/red-piper/red-piper.dae"
     },
     "blue-piper": {
-      "path": "resources/yachts/blue-piper/blue-piper.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/blue-piper/blue-piper.dae"
     },
     "sietske": {
-      "path": "resources/yachts/sietske/sietske.dae"
+      "type": "yacht",
+      "mainPath": "resources/yachts/sietske/sietske.dae"
     }
-  },
-  "models": {}
+  }
 }
