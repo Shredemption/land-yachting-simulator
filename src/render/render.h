@@ -26,6 +26,7 @@ public:
     static std::vector<std::tuple<std::string, int, int>> debugRenderData;
 
     static glm::vec4 clipPlane;
+    static float lodDistance;
 
     static FT_Library ft;
     static FT_Face face;

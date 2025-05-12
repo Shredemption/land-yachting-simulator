@@ -25,6 +25,7 @@ std::vector<std::tuple<std::string, int, int>> Render::debugRenderData;
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
 
 glm::vec4 Render::clipPlane(0, 0, 0, 0);
+float Render::lodDistance = 10.0f;
 
 FT_Library Render::ft;
 FT_Face Render::face;
@@ -307,6 +308,8 @@ void Render::renderSceneTexts(Scene &scene)
 
 void Render::renderModel(ModelData model)
 {
+    model.model->distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
+
     if (model.shader == "default")
     {
         renderDefault(*model.model);
@@ -376,8 +379,12 @@ void Render::renderDefault(Model &model)
 
     shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
 
+    size_t lodIndex = 0;
+    if (model.distanceFromCamera > lodDistance)
+        lodIndex = 1;
+
     // Draw every mesh
-    for (auto mesh : model.lodMeshes.back())
+    for (auto mesh : model.lodMeshes[lodIndex])
     {
         glBindVertexArray(mesh.VAO);
         glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -404,8 +411,12 @@ void Render::renderToon(Model &model)
 
     shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
 
+    size_t lodIndex = 0;
+    if (model.distanceFromCamera > lodDistance)
+        lodIndex = 1;
+
     // Draw every Mesh
-    for (auto mesh : model.lodMeshes.back())
+    for (auto mesh : model.lodMeshes[lodIndex])
     {
         glBindVertexArray(mesh.VAO);
         glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
