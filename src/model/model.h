@@ -35,22 +35,16 @@ struct CachedTexture
 // Empty struct for json unwrapping
 struct SkyBoxData;
 
-// Types of models
-enum ModelType
+struct JSONModelMapEntry
 {
-    model,
-    yacht
-};
-
-struct JSONModelMapData
-{
-    std::string path;
+    std::string mainPath;
+    std::string type = "model";
 };
 
 struct JSONModelMap
 {
-    std::map<std::string, JSONModelMapData> yachts;
-    std::map<std::string, JSONModelMapData> models;
+    std::map<std::string, JSONModelMapEntry> yachts;
+    std::map<std::string, JSONModelMapEntry> models;
 };
 
 struct PendingTexture
@@ -81,7 +75,7 @@ public:
     std::vector<Texture> textures;
 
     // Model map and load function
-    static std::map<std::string, std::pair<std::string, ModelType>> modelMap;
+    static std::map<std::string, JSONModelMapEntry> modelMap;
     static void loadModelMap();
 
     std::vector<Mesh> meshes;
