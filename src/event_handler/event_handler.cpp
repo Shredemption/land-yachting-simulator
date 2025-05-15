@@ -71,33 +71,42 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             SceneManager::load("title");
         }
 
-        // Toggle render debug on F9
+        // Toggle FPS debug on F9
         if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
         {
-            Render::debugPhysics = false;
-
-            if (Render::debugRender)
+            if (Render::debugState == dbFPS)
             {
-                Render::debugRender = false;
+                Render::debugState = dbNone;
             }
             else
             {
-                Render::debugRender = true;
+                Render::debugState = dbFPS;
             }
         }
 
-        // Toggle physics debug on F10
+        // Toggle render debug on F10
         if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
         {
-            Render::debugRender = false;
-
-            if (Render::debugPhysics)
+            if (Render::debugState == dbRender)
             {
-                Render::debugPhysics = false;
+                Render::debugState = dbNone;
             }
             else
             {
-                Render::debugPhysics = true;
+                Render::debugState = dbRender;
+            }
+        }
+
+        // Toggle physics debug on F11
+        if (key == GLFW_KEY_F11 && action == GLFW_PRESS)
+        {
+            if (Render::debugState == dbPhysics)
+            {
+                Render::debugState = dbNone;
+            }
+            else
+            {
+                Render::debugState = dbPhysics;
             }
         }
 
@@ -127,8 +136,8 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
         }
     }
 
-    // Toggle fullscreen on F11
-    if (key == GLFW_KEY_F11 && action == GLFW_PRESS)
+    // Toggle fullscreen on F12
+    if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
     {
         if (fullscreen)
         {

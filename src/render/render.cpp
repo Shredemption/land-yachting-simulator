@@ -18,10 +18,10 @@ float Render::waterHeight = 0.25;
 bool Render::WaterPass = true;
 
 // Render states
-bool Render::debugPhysics = false;
-std::vector<std::pair<std::string, float>> Render::debugPhysicsData;
-bool Render::debugRender = false;
+debugState Render::debugState;
+float Render::FPS = 0.0f;
 std::vector<std::tuple<std::string, int, int>> Render::debugRenderData;
+std::vector<std::pair<std::string, float>> Render::debugPhysicsData;
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
 
 glm::vec4 Render::clipPlane(0, 0, 0, 0);
@@ -39,9 +39,6 @@ std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 // Timing variables
 std::chrono::high_resolution_clock::time_point lastCPUTime;
 GLuint lastGPUQuery = 0;
-
-// Debug values
-float Render::FPS;
 
 // Setup quads and text
 void Render::setup()
@@ -92,7 +89,7 @@ void Render::render(Scene &scene)
     UpdateRenderTiming("Skybox");
 
     // If water loaded, render buffers
-    if (Shader::waterLoaded && EventHandler::frame % 2 == 0)
+    if (Shader::waterLoaded && EventHandler::frame % 3 == 0)
     {
         WaterPass = true;
         renderReflectRefract(scene, clipPlane);
@@ -114,38 +111,50 @@ void Render::render(Scene &scene)
     renderSceneTexts(scene);
     UpdateRenderTiming("Text");
 
-    // Render render debug
-    if (debugRender && !SceneManager::onTitleScreen)
+    if (!SceneManager::onTitleScreen)
     {
-        if (Shader::waterLoaded)
+        // Set debug data
+        std::string debugText;
+        FPS = (0.9f * FPS + 0.1f / EventHandler::deltaTime);
+
+        // Select which debug renderer to use
+        switch (debugState)
         {
-            renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
-            renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+        case dbNone:
+            break;
+
+        case dbFPS:
+            renderText(std::to_string(static_cast<int>(FPS)), 0.01f, 0.01f, 0.75f, debugColor);
+            break;
+
+        case dbRender:
+            if (Shader::waterLoaded)
+            {
+                renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
+                renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
+            }
+
+            debugText = "Render Times: " + std::to_string(static_cast<int>(FPS)) + " FPS\n";
+
+            for (auto entry : debugRenderData)
+            {
+                debugText = debugText + std::get<0>(entry) + ":\nCPU: " + std::to_string(std::get<1>(entry)) + "\nGPU: " + std::to_string(std::get<2>(entry)) + "\n";
+            }
+
+            renderText(debugText, 0.01f, 0.01f, 0.75f, debugColor);
+            break;
+
+        case dbPhysics:
+            debugText = "Physics:\n";
+
+            for (auto entry : debugPhysicsData)
+            {
+                debugText = debugText + entry.first + ": " + std::to_string(entry.second) + "\n";
+            }
+
+            renderText(debugText, 0.01f, 0.01f, 1, debugColor);
+            break;
         }
-
-        FPS = (0.9 * FPS + 0.1 / EventHandler::deltaTime);
-
-        std::string debugText = "Render Times: " + std::to_string(static_cast<int>(FPS)) + " FPS\n";
-
-        for (auto entry : debugRenderData)
-        {
-            debugText = debugText + std::get<0>(entry) + ":\nCPU: " + std::to_string(std::get<1>(entry)) + "\nGPU: " + std::to_string(std::get<2>(entry)) + "\n";
-        }
-
-        renderText(debugText, 0.01f, 0.01f, 0.75f, debugColor);
-    }
-
-    // Render physics debug
-    if (debugPhysics && !SceneManager::onTitleScreen)
-    {
-        std::string debugText = "Physics:\n";
-
-        for (auto entry : debugPhysicsData)
-        {
-            debugText = debugText + entry.first + ": " + std::to_string(entry.second) + "\n";
-        }
-
-        renderText(debugText, 0.01f, 0.01f, 1, debugColor);
     }
 
     Camera::cameraMoved = false;
