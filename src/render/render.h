@@ -15,15 +15,23 @@ struct Character
     glm::vec4 TexCoords; // (x, y, width, height)
 };
 
+enum debugState
+{
+    dbNone,
+    dbFPS,
+    dbRender,
+    dbPhysics,
+};
+
 class Render
 {
 public:
     static float waterHeight;
 
-    static bool debugPhysics;
-    static std::vector<std::pair<std::string, float>> debugPhysicsData;
-    static bool debugRender;
+    static debugState debugState;
+    static float FPS;
     static std::vector<std::tuple<std::string, int, int>> debugRenderData;
+    static std::vector<std::pair<std::string, float>> debugPhysicsData;
 
     static glm::vec4 clipPlane;
     static float lodDistance;
@@ -51,8 +59,6 @@ private:
     static float quadVertices[];
 
     static bool WaterPass;
-
-    static float FPS;
 
     // Class renderers
     static void renderSceneModels(Scene &scene, glm::vec4 clipPlane);
