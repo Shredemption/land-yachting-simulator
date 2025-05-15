@@ -23,6 +23,7 @@ float Render::FPS = 0.0f;
 std::vector<std::tuple<std::string, int, int>> Render::debugRenderData;
 std::vector<std::pair<std::string, float>> Render::debugPhysicsData;
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
+std::function<void(std::string)> updateTimingFunc = [](std::string) {};
 
 glm::vec4 Render::clipPlane(0, 0, 0, 0);
 float Render::lodDistance = 10.0f;
@@ -77,7 +78,13 @@ void Render::initQuad()
 // Main render loop
 void Render::render(Scene &scene)
 {
-    UpdateRenderTiming("start");
+    if (debugState == dbRender)
+        updateTimingFunc = [](std::string name)
+        { Render::UpdateRenderTiming(name); };
+    else
+        updateTimingFunc = [](std::string) {}; // No-op
+
+    updateTimingFunc("start");
 
     // Clear color buffer
     glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.0f);
@@ -86,7 +93,7 @@ void Render::render(Scene &scene)
 
     renderSceneSkyBox(scene);
 
-    UpdateRenderTiming("Skybox");
+    updateTimingFunc("Skybox");
 
     // If water loaded, render buffers
     if (Shader::waterLoaded && EventHandler::frame % 3 == 0)
@@ -96,20 +103,20 @@ void Render::render(Scene &scene)
         WaterPass = false;
     }
 
-    UpdateRenderTiming("WaterPass");
+    updateTimingFunc("WaterPass");
 
     // Reset clip plane
     clipPlane = {0, 0, 0, 0};
 
     // Render rest of scene
     renderSceneModels(scene, clipPlane);
-    UpdateRenderTiming("Models");
+    updateTimingFunc("Models");
     renderSceneUnitPlanes(scene, clipPlane);
-    UpdateRenderTiming("Planes");
+    updateTimingFunc("Planes");
     renderSceneGrids(scene, clipPlane);
-    UpdateRenderTiming("Grids");
+    updateTimingFunc("Grids");
     renderSceneTexts(scene);
-    UpdateRenderTiming("Text");
+    updateTimingFunc("Text");
 
     if (!SceneManager::onTitleScreen)
     {
