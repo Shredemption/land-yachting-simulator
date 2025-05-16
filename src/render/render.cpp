@@ -41,6 +41,10 @@ std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 std::chrono::high_resolution_clock::time_point lastCPUTime;
 GLuint lastGPUQuery = 0;
 
+// Track current and last used shader
+Shader *shader;
+Shader *lastShader = nullptr;
+
 // Setup quads and text
 void Render::setup()
 {
@@ -173,27 +177,36 @@ void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
 {
     for (auto model : scene.structModels)
     {
-        Shader *shader = Shader::load(model.shader);
-        shader->setInt("textureArray", 0);
+        shader = Shader::load(model.shader);
 
-        // Send light and view position to relevant shader
-        shader->setVec3("lightPos", EventHandler::lightPos);
-        shader->setVec3("viewPos", Camera::getPosition());
-        shader->setFloat("lightIntensity", EventHandler::lightInsensity);
-        shader->setVec3("lightCol", EventHandler::lightCol);
+        if (shader != lastShader)
+        {
+            // Set texture array index
+            shader->setInt("textureArray", 0);
 
-        // Apply view and projection to whole scene
-        shader->setMat4("u_view", Camera::u_view);
-        shader->setMat4("u_projection", Camera::u_projection);
+            // Send light and view position to shader
+            shader->setVec3("lightPos", EventHandler::lightPos);
+            shader->setVec3("viewPos", Camera::getPosition());
+            shader->setFloat("lightIntensity", EventHandler::lightInsensity);
+            shader->setVec3("lightCol", EventHandler::lightCol);
+
+            // Apply view and projection to whole scene
+            shader->setMat4("u_view", Camera::u_view);
+            shader->setMat4("u_projection", Camera::u_projection);
+
+            // Set clipping plane
+            shader->setVec4("location_plane", clipPlane);
+
+            lastShader = shader;
+        }
 
         // Set model matrix for model and draw
         shader->setMat4("u_model", model.u_model);
         shader->setMat4("u_normal", model.u_normal);
 
-        shader->setVec4("location_plane", clipPlane);
-
         // Set animation state and bone stuff
         shader->setBool("animated", model.animated);
+
         if (model.animated)
         {
             shader->setMat4Array("u_boneTransforms", model.model->boneTransforms);
@@ -209,17 +222,23 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
     // Render opaque planes
     for (auto unitPlane : scene.opaqueUnitPlanes)
     {
-        Shader *shader = Shader::load(unitPlane.shader);
+        shader = Shader::load(unitPlane.shader);
 
-        // Apply view and projection to whole scene
-        shader->setMat4("u_view", Camera::u_view);
-        shader->setMat4("u_projection", Camera::u_projection);
+        if (shader != lastShader)
+        {
+            // Apply view and projection to whole scene
+            shader->setMat4("u_view", Camera::u_view);
+            shader->setMat4("u_projection", Camera::u_projection);
+
+            // Clipping Plane
+            shader->setVec4("location_plane", clipPlane);
+
+            lastShader = shader;
+        }
 
         // Set model matrix for model and draw
         shader->setMat4("u_model", unitPlane.u_model);
         shader->setMat4("u_normal", unitPlane.u_normal);
-
-        shader->setVec4("location_plane", clipPlane);
 
         renderModel(unitPlane);
     }
@@ -235,17 +254,23 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
     // Render transparent planes
     for (auto unitPlane : scene.transparentUnitPlanes)
     {
-        Shader *shader = Shader::load(unitPlane.shader);
+        shader = Shader::load(unitPlane.shader);
 
-        // Apply view and projection to whole scene
-        shader->setMat4("u_view", Camera::u_view);
-        shader->setMat4("u_projection", Camera::u_projection);
+        if (shader != lastShader)
+        {
+            // Apply view and projection to whole scene
+            shader->setMat4("u_view", Camera::u_view);
+            shader->setMat4("u_projection", Camera::u_projection);
+
+            // Clipping Plane
+            shader->setVec4("location_plane", clipPlane);
+
+            lastShader = shader;
+        }
 
         // Set model matrix for model and draw
         shader->setMat4("u_model", unitPlane.u_model);
         shader->setMat4("u_normal", unitPlane.u_normal);
-
-        shader->setVec4("location_plane", clipPlane);
 
         if (FrameBuffer::Water == false)
         {
@@ -262,17 +287,23 @@ void Render::renderSceneGrids(Scene &scene, glm::vec4 clipPlane)
 {
     for (auto grid : scene.grids)
     {
-        Shader *shader = Shader::load(grid.shader);
+        shader = Shader::load(grid.shader);
 
-        // Apply view and projection to whole scene
-        shader->setMat4("u_view", Camera::u_view);
-        shader->setMat4("u_projection", Camera::u_projection);
+        if (shader != lastShader)
+        {
+            // Apply view and projection to whole scene
+            shader->setMat4("u_view", Camera::u_view);
+            shader->setMat4("u_projection", Camera::u_projection);
+
+            // Clipping Plane
+            shader->setVec4("location_plane", clipPlane);
+
+            lastShader = shader;
+        }
 
         // Set model matrix for model and draw
         shader->setMat4("u_model", grid.u_model);
         shader->setMat4("u_normal", grid.u_normal);
-
-        shader->setVec4("location_plane", clipPlane);
 
         shader->setFloat("lod", grid.lod);
 
@@ -289,7 +320,7 @@ void Render::renderSceneSkyBox(Scene &scene)
         glDisable(GL_DEPTH_TEST);
 
         // Load shader
-        Shader *shader = Shader::load("skybox");
+        shader = Shader::load("skybox");
 
         // Bind skybox
         glBindVertexArray(scene.skyBox.VAO);
@@ -302,6 +333,8 @@ void Render::renderSceneSkyBox(Scene &scene)
         shader->setMat4("u_model", glm::mat4(1.0f));
 
         shader->setInt("skybox", 1);
+
+        lastShader = shader;
 
         // Draw
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -381,7 +414,6 @@ void Render::renderModel(GridData grid)
 
 void Render::renderDefault(Model &model)
 {
-    Shader *shader = Shader::load("default");
     unsigned int diffuseNr = 1;
     unsigned int propertiesNr = 1;
 
@@ -413,11 +445,8 @@ void Render::renderDefault(Model &model)
 
 void Render::renderToon(Model &model)
 {
-    Shader *shader = Shader::load("toon");
     unsigned int highlightNr = 1;
     unsigned int shadowNr = 1;
-
-    shader->setFloat("ambientLightIntensity", 1.2);
 
     // Set texture layer indices
     std::vector<int> textureIndices;
@@ -451,8 +480,6 @@ void Render::renderToonTerrain(Mesh mesh)
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, heightmap.index);
-
-    Shader *shader = Shader::load("toon-terrain");
 
     shader->setMat4("u_camXY", Camera::u_camXY);
     shader->setInt("heightmap", 2);
@@ -489,8 +516,6 @@ void Render::renderToonWater(Mesh mesh)
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, height.index);
 
-    Shader *shader = Shader::load("toon-water");
-
     shader->setInt("toonWater", 1);
     shader->setInt("normalMap", 2);
     shader->setInt("heightmap", 3);
@@ -521,7 +546,6 @@ void Render::renderWater(Mesh mesh)
     glActiveTexture(GL_TEXTURE5);
     glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.depthTexture);
 
-    Shader *shader = Shader::load("water");
     shader->setInt("reflectionTexture", 1);
     shader->setInt("refractionTexture", 2);
     shader->setInt("dudvMap", 3);
@@ -734,12 +758,17 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     // Load the shader for rendering text
     Shader *shader = Shader::load("text");
 
+    if (shader != lastShader)
+    {
+        // Set the projection matrix for the text shader
+        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(EventHandler::screenWidth), static_cast<float>(EventHandler::screenHeight), 0.0f);
+        shader->setMat4("projection", projection);
+
+        lastShader = shader;
+    }
+
     // Set text color uniform
     shader->setVec3("textColor", color.r, color.g, color.b);
-
-    // Set the projection matrix for the text shader
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(EventHandler::screenWidth), static_cast<float>(EventHandler::screenHeight), 0.0f);
-    shader->setMat4("projection", projection);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textTexture);
