@@ -10,27 +10,29 @@ bool Shader::waterLoaded = false;
 
 Shader *Shader::load(const std::string &shaderName)
 {
+    Shader *shaderPtr;
     if (shaderName == lastShader)
     {
-        return &loadedShaders[shaderName];
+        shaderPtr = &loadedShaders[shaderName];
     }
-
-    if (loadedShaders.find(shaderName) == loadedShaders.end())
+    else
     {
-        Shader shader;
-        shader.init(FileManager::read("shaders/" + shaderName + ".vs"), FileManager::read("shaders/" + shaderName + ".fs"));
-        loadedShaders.emplace(shaderName, shader);
-
-        if (shaderName == "water")
+        if (loadedShaders.find(shaderName) == loadedShaders.end())
         {
-            waterLoaded = true;
+            Shader shader;
+            shader.init(FileManager::read("shaders/" + shaderName + ".vs"), FileManager::read("shaders/" + shaderName + ".fs"));
+            loadedShaders.emplace(shaderName, shader);
+
+            if (shaderName == "water")
+            {
+                waterLoaded = true;
+            }
         }
+
+        lastShader = shaderName;
+        shaderPtr = &loadedShaders[shaderName];
+        shaderPtr->use();
     }
-
-    lastShader = shaderName;
-    Shader *shaderPtr = &loadedShaders[shaderName];
-    shaderPtr->use();
-
     return shaderPtr;
 }
 
@@ -61,7 +63,6 @@ void Shader::setIntArray(const std::string &name, const int *value, size_t count
 {
     glUniform1iv(glGetUniformLocation(m_id, name.c_str()), count, value);
 }
-
 
 void Shader::setFloat(const std::string &name, float value) const
 {

@@ -16,7 +16,7 @@ const float stepMax = 0.45;
 uniform int textureLayers[4];
 uniform sampler2DArray textureArray;
 
-uniform float ambientLightIntensity;
+float ambientLightIntensity = 1.2;
 
 void main()
 {
