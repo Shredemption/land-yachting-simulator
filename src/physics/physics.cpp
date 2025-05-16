@@ -40,7 +40,7 @@ Physics::Physics(ModelData &ModelData)
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
         mass = 250.0f;
-        bodyDragCoefficient = 0.3f;
+        bodyDragCoefficient = 0.4f;
         bodyArea = 1.2f;
 
         // Steering properties
@@ -65,7 +65,7 @@ Physics::Physics(ModelData &ModelData)
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
         mass = 180.0f;
-        bodyDragCoefficient = 0.25f;
+        bodyDragCoefficient = 0.35f;
         bodyArea = 1.0f;
 
         // Steering properties
@@ -90,7 +90,7 @@ Physics::Physics(ModelData &ModelData)
         rollCoefficient = 0.005f;
         rollScaling = 15.0f;
         mass = 180.0f;
-        bodyDragCoefficient = 0.25f;
+        bodyDragCoefficient = 0.35f;
         bodyArea = 1.0f;
 
         // Steering properties
@@ -115,7 +115,7 @@ Physics::Physics(ModelData &ModelData)
         rollCoefficient = 0.004f;
         rollScaling = 20.0f;
         mass = 200.0f;
-        bodyDragCoefficient = 0.15f;
+        bodyDragCoefficient = 0.2f;
         bodyArea = 1.0f;
 
         // Steering properties
