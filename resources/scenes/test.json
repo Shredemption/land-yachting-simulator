@@ -7,8 +7,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0],
       "animated": true,
-      "controlled": true,
-      "shader": "toon"
+      "controlled": true
     },
     {
       "name": "bobbie",
@@ -16,8 +15,7 @@
       "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-6, -1, 0],
-      "animated": true,
-      "shader": "toon"
+      "animated": true
     },
     {
       "name": "vampier",
@@ -25,8 +23,7 @@
       "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-12, -2, 0],
-      "animated": true,
-      "shader": "toon"
+      "animated": true
     },
     {
       "name": "beware",
@@ -34,8 +31,7 @@
       "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-18, -3, 0],
-      "animated": true,
-      "shader": "toon"
+      "animated": true
     },
     {
       "name": "buizerd",
@@ -43,8 +39,7 @@
       "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-24, -4, 0],
-      "animated": true,
-      "shader": "toon"
+      "animated": true
     },
     {
       "name": "red-piper",
@@ -52,8 +47,7 @@
       "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-30, -5, 0],
-      "animated": true,
-      "shader": "toon"
+      "animated": true
     },
     {
       "name": "blue-piper",
@@ -61,8 +55,7 @@
       "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-36, -6, 0],
-      "animated": true,
-      "shader": "toon"
+      "animated": true
     },
     {
       "name": "sietske",
@@ -70,8 +63,7 @@
       "angle": 180,
       "rotationAxis": [0, 0, 1],
       "translation": [-42, -7, 0],
-      "animated": true,
-      "shader": "toon"
+      "animated": true
     }
   ]
 }
