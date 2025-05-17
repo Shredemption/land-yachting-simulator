@@ -4,33 +4,33 @@
 
 #include "file_manager/file_manager.h"
 
-std::unordered_map<std::string, Shader> Shader::loadedShaders;
-std::string Shader::lastShader;
+std::unordered_map<shaderID, Shader> Shader::loadedShaders;
+shaderID Shader::lastShader;
 bool Shader::waterLoaded = false;
 
-Shader *Shader::load(const std::string &shaderName)
+Shader *Shader::load(const shaderID shaderID)
 {
     Shader *shaderPtr;
-    if (shaderName == lastShader)
+    if (shaderID == lastShader)
     {
-        shaderPtr = &loadedShaders[shaderName];
+        shaderPtr = &loadedShaders[shaderID];
     }
     else
     {
-        if (loadedShaders.find(shaderName) == loadedShaders.end())
+        if (loadedShaders.find(shaderID) == loadedShaders.end())
         {
             Shader shader;
-            shader.init(FileManager::read("shaders/" + shaderName + ".vs"), FileManager::read("shaders/" + shaderName + ".fs"));
-            loadedShaders.emplace(shaderName, shader);
+            shader.init(FileManager::read("shaders/" + NameFromShader(shaderID) + ".vs"), FileManager::read("shaders/" + NameFromShader(shaderID) + ".fs"));
+            loadedShaders.emplace(shaderID, shader);
 
-            if (shaderName == "water")
+            if (shaderID == shaderID::shWater)
             {
                 waterLoaded = true;
             }
         }
 
-        lastShader = shaderName;
-        shaderPtr = &loadedShaders[shaderName];
+        lastShader = shaderID;
+        shaderPtr = &loadedShaders[shaderID];
         shaderPtr->use();
     }
     return shaderPtr;
@@ -180,5 +180,39 @@ void Shader::unload()
     }
 
     loadedShaders.clear();
-    lastShader.clear();
+    lastShader = shaderID::shNone;
+}
+
+shaderID Shader::ShaderFromName(const std::string shaderName)
+{
+    static const std::unordered_map<std::string, shaderID> typeMap = {
+        {"default", shaderID::shDefault},
+        {"gui", shaderID::shGui},
+        {"simple", shaderID::shSimple},
+        {"text", shaderID::shText},
+        {"water", shaderID::shWater},
+        {"skybox", shaderID::shSkybox},
+        {"toon", shaderID::shToon},
+        {"toon-terrain", shaderID::shToonTerrain},
+        {"toon-water", shaderID::shToonWater}};
+
+    auto it = typeMap.find(shaderName);
+    return it != typeMap.end() ? it->second : shaderID::shNone;
+}
+
+std::string Shader::NameFromShader(const shaderID shader)
+{
+    static const std::unordered_map<shaderID, std::string> typeMap = {
+        {shaderID::shDefault, "default"},
+        {shaderID::shGui, "gui"},
+        {shaderID::shSimple, "simple"},
+        {shaderID::shText, "text"},
+        {shaderID::shWater, "water"},
+        {shaderID::shSkybox, "skybox"},
+        {shaderID::shToon, "toon"},
+        {shaderID::shToonTerrain, "toon-terrain"},
+        {shaderID::shToonWater, "toon-water"}};
+
+    auto it = typeMap.find(shader);
+    return it != typeMap.end() ? it->second : "";
 }

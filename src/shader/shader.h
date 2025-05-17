@@ -13,12 +13,29 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+enum shaderID
+{
+    shNone,
+    shDefault,
+    shGui,
+    shSimple,
+    shText,
+    shWater,
+    shSkybox,
+    shToon,
+    shToonTerrain,
+    shToonWater,
+};
+
 class Shader
 {
 public:
-    static Shader *load(const std::string &shaderName);
+    static Shader *load(const shaderID shaderID);
     static void unload();
     void use();
+
+    static shaderID ShaderFromName(const std::string shaderName);
+    static std::string NameFromShader(const shaderID shader);
 
     unsigned int m_id;
 
@@ -37,9 +54,9 @@ public:
     void setMat4(const std::string &name, const glm::mat4 &mat) const;
     void setMat4Array(const std::string &name, const std::vector<glm::mat4> &mats) const;
 
-    static std::unordered_map<std::string, Shader> loadedShaders;
+    static std::unordered_map<shaderID, Shader> loadedShaders;
 
-    static std::string lastShader;
+    static shaderID lastShader;
     static bool waterLoaded;
 
 private:

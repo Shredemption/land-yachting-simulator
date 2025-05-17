@@ -38,7 +38,7 @@ JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 // Model Constructor
-Model::Model(std::tuple<std::string, std::vector<std::string>, std::string> name_paths_shader)
+Model::Model(std::tuple<std::string, std::vector<std::string>, shaderID> name_paths_shader)
 {
     this->name = std::get<0>(name_paths_shader);
     this->paths = std::get<1>(name_paths_shader);
@@ -66,7 +66,7 @@ Model::~Model()
     lodMeshes.clear();
 }
 
-void Model::loadModel(const std::vector<std::string> &lodPaths, std::string shaderName)
+void Model::loadModel(const std::vector<std::string> &lodPaths, shaderID &shader)
 {
     for (size_t i = 0; i < lodPaths.size(); i++)
     {
@@ -86,7 +86,7 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, std::string shad
 
         std::vector<MeshVariant> lodLevelMeshes;
 
-        processNode(scene->mRootNode, scene, shaderName, lodLevelMeshes, nullptr);
+        processNode(scene->mRootNode, scene, shader, lodLevelMeshes, nullptr);
 
         // Mesh combinedMesh = combineMeshes(lodLevelMeshes);
         // lodMeshes.push_back({std::move(combinedMesh)});
@@ -98,7 +98,7 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, std::string shad
     generateBoneTransforms();
 }
 
-void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<MeshVariant> &targetMeshList, Bone *parentBone)
+void Model::processNode(aiNode *node, const aiScene *scene, shaderID &shader, std::vector<MeshVariant> &targetMeshList, Bone *parentBone)
 {
     // Get node name
     std::string nodeName = node->mName.C_Str();
@@ -130,22 +130,22 @@ void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderNa
         {
             unsigned int meshIndex = node->mMeshes[i];
             aiMesh *mesh = scene->mMeshes[meshIndex];
-            targetMeshList.push_back(processMesh(mesh, scene, shaderName, boneHierarchy));
+            targetMeshList.push_back(processMesh(mesh, scene, shader, boneHierarchy));
         }
     }
 
     // Recursively process children
     for (unsigned int i = 0; i < node->mNumChildren; ++i)
     {
-        processNode(node->mChildren[i], scene, shaderName, targetMeshList, boneHierarchy[nodeName]);
+        processNode(node->mChildren[i], scene, shader, targetMeshList, boneHierarchy[nodeName]);
     }
 }
 
-MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy)
+MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &shader, std::map<std::string, Bone *> &boneHierarchy)
 {
     std::vector<unsigned int> indices;
 
-    bool isAnimated = (shaderName == "default" || shaderName == "toon");
+    bool isAnimated = (shader == shaderID::shDefault || shader == shaderID::shToon);
 
     // Process Indices
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -207,9 +207,9 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string s
             boneHierarchy.erase(it); // Remove the "Scene" bone from the hierarchy
         }
 
-        loadTexturesForShader(mesh, scene, shaderName);
+        loadTexturesForShader(mesh, scene, shader);
 
-        return Mesh<VertexAnimated>(vertices, indices, shaderName);
+        return Mesh<VertexAnimated>(vertices, indices, shader);
     }
 
     else
@@ -230,9 +230,9 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string s
                 vertex.TexCoords = glm::vec2(0.0f);
         }
 
-        loadTexturesForShader(mesh, scene, shaderName);
+        loadTexturesForShader(mesh, scene, shader);
 
-        return Mesh<VertexTextured>(vertices, indices, shaderName);
+        return Mesh<VertexTextured>(vertices, indices, shader);
     }
 }
 
@@ -263,7 +263,7 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string s
 //     return Mesh(allVertices, allIndices, shaderName);
 // }
 
-void Model::loadTexturesForShader(aiMesh *mesh, const aiScene *scene, const std::string &shaderName)
+void Model::loadTexturesForShader(aiMesh *mesh, const aiScene *scene, const shaderID &shader)
 {
     // Process Mats
     if (mesh->mMaterialIndex >= 0)
@@ -271,7 +271,7 @@ void Model::loadTexturesForShader(aiMesh *mesh, const aiScene *scene, const std:
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
         // Load textures based on shader
-        if (shaderName == "default")
+        if (shader == shaderID::shDefault)
         {
             // Check and add diffuse maps if not already loaded
             std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "diffuse");
@@ -294,7 +294,7 @@ void Model::loadTexturesForShader(aiMesh *mesh, const aiScene *scene, const std:
             }
         }
 
-        if (shaderName == "toon")
+        if (shader == shaderID::shToon)
         {
             // Check and add toon textures (e.g., highlight and shadow) if not already loaded
             std::vector<Texture> diffuseMaps = loadMaterialTexture(material, aiTextureType_DIFFUSE, "highlight");

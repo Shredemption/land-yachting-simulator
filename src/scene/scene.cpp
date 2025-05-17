@@ -124,7 +124,7 @@ void Scene::loadModelToScene(JSONModel model)
     if (loadedModels.find(modelEntry.mainPath) == loadedModels.end())
     {
         // Load model with path and shader name
-        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, model.shader));
+        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, Shader::ShaderFromName(model.shader)));
     }
 
     // Push loaded path to model
@@ -145,7 +145,7 @@ void Scene::loadModelToScene(JSONModel model)
     loadModel.u_normal = glm::transpose(glm::inverse(u_model_i));
 
     // Model shader
-    loadModel.shader = model.shader;
+    loadModel.shader = Shader::ShaderFromName(model.shader);
 
     // Model animation data
     loadModel.animated = model.animated;
@@ -168,7 +168,7 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 
     // Save color and shader
     loadUnitPlane.color = glm::vec3(unitPlane.color[0], unitPlane.color[1], unitPlane.color[2]);
-    loadUnitPlane.shader = unitPlane.shader;
+    loadUnitPlane.shader = Shader::ShaderFromName(unitPlane.shader);
 
     // Generate mesh from color and shader
     if (unitPlane.shader == "simple")
@@ -211,7 +211,7 @@ void Scene::loadGridToScene(JSONGrid grid)
 
     // Save grid data
     loadGrid.color = glm::vec3(grid.color[0], grid.color[1], grid.color[2]);
-    loadGrid.shader = grid.shader;
+    loadGrid.shader = Shader::ShaderFromName(grid.shader);
     loadGrid.lod = grid.lod;
     loadGrid.gridSize = glm::vec2(grid.gridSize[0], grid.gridSize[1]);
 
