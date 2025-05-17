@@ -434,14 +434,7 @@ void Render::renderDefault(Model &model)
     if (SceneManager::onTitleScreen)
         lodIndex = 0;
 
-    // Draw every mesh
-    for (auto mesh : model.lodMeshes[lodIndex])
-    {
-        glBindVertexArray(mesh.VAO);
-        glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-    }
-
-    glBindVertexArray(0);
+    model.draw(lodIndex);
 }
 
 void Render::renderToon(Model &model)
@@ -465,17 +458,10 @@ void Render::renderToon(Model &model)
     if (SceneManager::onTitleScreen)
         lodIndex = 0;
 
-    // Draw every Mesh
-    for (auto mesh : model.lodMeshes[lodIndex])
-    {
-        glBindVertexArray(mesh.VAO);
-        glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-    }
-
-    glBindVertexArray(0);
+    model.draw(lodIndex);
 }
 
-void Render::renderToonTerrain(Mesh mesh)
+void Render::renderToonTerrain(const MeshVariant &mesh)
 {
     Texture heightmap = LoadStandaloneTexture("heightmap.jpg");
 
@@ -488,23 +474,19 @@ void Render::renderToonTerrain(Mesh mesh)
     // Unload texture
     glActiveTexture(GL_TEXTURE2);
 
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
+    std::visit([](auto &actualMesh)
+               { actualMesh.draw(); },
+               mesh);
 }
 
-void Render::renderSimple(Mesh mesh)
+void Render::renderSimple(const MeshVariant &mesh)
 {
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
+    std::visit([](auto &actualMesh)
+               { actualMesh.draw(); },
+               mesh);
 }
 
-void Render::renderToonWater(Mesh mesh)
+void Render::renderToonWater(const MeshVariant &mesh)
 {
     Texture DuDv = LoadStandaloneTexture("toonWater.jpeg");
     Texture normal = LoadStandaloneTexture("waterNormal.png");
@@ -523,14 +505,12 @@ void Render::renderToonWater(Mesh mesh)
     shader->setFloat("moveOffset", EventHandler::time);
     shader->setMat4("u_camXY", Camera::u_camXY);
 
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
+    std::visit([](auto &actualMesh)
+               { actualMesh.draw(); },
+               mesh);
 }
 
-void Render::renderWater(Mesh mesh)
+void Render::renderWater(const MeshVariant &mesh)
 {
     // Load surface textures
     Texture DuDv = LoadStandaloneTexture("waterDUDV.png");
@@ -561,11 +541,9 @@ void Render::renderWater(Mesh mesh)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Draw Mesh
-    glBindVertexArray(mesh.VAO);
-    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
+    std::visit([](auto &actualMesh)
+               { actualMesh.draw(); },
+               mesh);
 
     glDisable(GL_BLEND);
 }

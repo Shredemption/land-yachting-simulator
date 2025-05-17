@@ -10,6 +10,7 @@
 #include <vector>
 #include <queue>
 #include <mutex>
+#include <variant>
 
 #include "mesh/mesh.h"
 
@@ -57,6 +58,11 @@ struct PendingTexture
     unsigned int textureID = 0;
 };
 
+using MeshVariant = std::variant<
+    Mesh<VertexAnimated>,
+    Mesh<VertexSimple>,
+    Mesh<VertexTextured>>;
+
 class Model
 {
 public:
@@ -79,7 +85,7 @@ public:
     static std::map<std::string, JSONModelMapEntry> modelMap;
     static void loadModelMap();
 
-    std::vector<std::vector<Mesh>> lodMeshes;
+    std::vector<std::vector<MeshVariant>> lodMeshes;
     float distanceFromCamera;
     std::string directory;
 
@@ -108,11 +114,15 @@ public:
     void updateBoneTransforms();
     void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset);
 
+    // Draw meshes in model
+    void draw(int lodIndex);
+
 private:
     void loadModel(const std::vector<std::string> &lodPaths, std::string shaderName);
-    void processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<Mesh> &targetMeshList, Bone *parentBone = nullptr);
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy);
-    Mesh combineMeshes(const std::vector<Mesh> &meshes);
+    void processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<MeshVariant> &targetMeshList, Bone *parentBone = nullptr);
+    MeshVariant processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy);
+    // Mesh combineMeshes(const std::vector<Mesh> &meshes);
+    void loadTexturesForShader(aiMesh *mesh, const aiScene *scene, const std::string &shaderName);
     std::vector<Texture> loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName);
     std::string findTextureInDirectory(const std::string &directory, const std::string &typeName);
 

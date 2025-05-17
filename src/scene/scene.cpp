@@ -113,7 +113,7 @@ void Scene::loadModelToScene(JSONModel model)
     // Find model location using map
     auto &modelEntry = Model::modelMap[model.name];
 
-    std::vector<std::string> paths = { FileManager::getPath(modelEntry.mainPath) };
+    std::vector<std::string> paths = {FileManager::getPath(modelEntry.mainPath)};
 
     for (auto lodPath : modelEntry.lodPaths)
     {
@@ -171,7 +171,10 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     loadUnitPlane.shader = unitPlane.shader;
 
     // Generate mesh from color and shader
-    loadUnitPlane.unitPlane = Mesh::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
+    if (unitPlane.shader == "simple")
+        loadUnitPlane.unitPlane = Mesh<VertexSimple>::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
+    else
+        loadUnitPlane.unitPlane = Mesh<VertexTextured>::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
 
     // Generate u_model
     glm::mat4 u_model_i = glm::scale(
@@ -213,7 +216,10 @@ void Scene::loadGridToScene(JSONGrid grid)
     loadGrid.gridSize = glm::vec2(grid.gridSize[0], grid.gridSize[1]);
 
     // Generate grid mesh
-    loadGrid.grid = Mesh::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
+    if (grid.shader == "toon-terrain")
+        loadGrid.grid = Mesh<VertexSimple>::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
+    else
+        loadGrid.grid = Mesh<VertexTextured>::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
 
     // Generate u_model
     glm::mat4 u_model_i =
@@ -271,19 +277,25 @@ void Scene::uploadToGPU()
     }
     for (auto &transparentUnitPlane : transparentUnitPlanes)
     {
-        transparentUnitPlane.unitPlane.uploadToGPU();
+        std::visit([](auto &mesh)
+                   { mesh.uploadToGPU(); },
+                   transparentUnitPlane.unitPlane);
     }
     for (auto &opaqueUnitPlane : opaqueUnitPlanes)
     {
-        opaqueUnitPlane.unitPlane.uploadToGPU();
+        std::visit([](auto &mesh)
+                   { mesh.uploadToGPU(); },
+                   opaqueUnitPlane.unitPlane);
     }
     for (auto &grid : grids)
     {
-        grid.grid.uploadToGPU();
+        std::visit([](auto &mesh)
+                   { mesh.uploadToGPU(); },
+                   grid.grid);
     }
     if (hasSkyBox)
     {
         this->skyBox.textureID = Model::LoadSkyBoxTexture(this->skyBox);
-        this->skyBox.VAO = Mesh::setupSkyBoxMesh();
+        this->skyBox.VAO = Mesh<VertexSkybox>::setupSkyBoxMesh();
     }
 }
