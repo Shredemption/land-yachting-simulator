@@ -90,7 +90,7 @@ struct UnitPlaneData
     glm::mat4 u_model;
     glm::mat3 u_normal;
     std::string shader;
-    Mesh unitPlane = Mesh::genUnitPlane(color, shader);
+    MeshVariant unitPlane = Mesh<VertexTextured>::genUnitPlane(color, shader);
 
     // Data from transparent rendering
     glm::vec3 position;
@@ -109,7 +109,7 @@ struct GridData
     std::string shader;
     glm::vec2 gridSize;
     float lod;
-    Mesh grid = Mesh::genGrid(gridSize.x, gridSize.y, lod, color, shader);
+    MeshVariant grid = Mesh<VertexTextured>::genGrid(gridSize.x, gridSize.y, lod, color, shader);
 };
 
 struct SkyBoxData

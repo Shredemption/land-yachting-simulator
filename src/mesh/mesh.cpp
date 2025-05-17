@@ -3,23 +3,25 @@
 #include "frame_buffer/frame_buffer.h"
 
 // Constructor to store input data
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::string shaderName)
+template <typename VertexType>
+Mesh<VertexType>::Mesh(std::vector<VertexType> &vertices, std::vector<unsigned int> &indices, std::string &shaderName)
 {
     this->vertices = vertices;
     this->indices = indices;
     this->shader = shaderName;
 }
 
-Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
+template <typename VertexType>
+Mesh<VertexType> Mesh<VertexType>::genUnitPlane(glm::vec3 color, std::string shaderName)
 {
+    std::vector<VertexType> vertices;
+
     std::vector<glm::vec3> Positions = {
         {-0.5f, 0.5f, 0.0f},
         {0.5f, 0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {-0.5f, -0.5f, 0.0f},
     };
-
-    std::vector<Vertex> vertices;
 
     std::vector<glm::vec2> TexCoords = {
         {0.f, 0.f},
@@ -30,10 +32,18 @@ Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
 
     for (int i = 0; i < Positions.size(); i++)
     {
-        Vertex vertex;
+        VertexType vertex;
         vertex.Position = Positions[i];
-        vertex.Color = color;
-        vertex.TexCoords = TexCoords[i];
+
+        // Check vertex type and save relevant data
+        if constexpr (std::is_same_v<VertexType, VertexSimple>)
+        {
+            vertex.Color = color;
+        }
+        else if constexpr (std::is_same_v<VertexType, VertexTextured>)
+        {
+            vertex.TexCoords = TexCoords[i];
+        }
 
         vertices.push_back(vertex);
     }
@@ -47,9 +57,10 @@ Mesh Mesh::genUnitPlane(glm::vec3 color, std::string shaderName)
     return Mesh(vertices, indices, shaderName);
 }
 
-Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std::string shaderName)
+template <typename VertexType>
+Mesh<VertexType> Mesh<VertexType>::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std::string shaderName)
 {
-    std::vector<Vertex> vertices;
+    std::vector<VertexType> vertices;
     std::vector<unsigned int> indices;
 
     // Make hole if LOD !=0
@@ -64,10 +75,18 @@ Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std
     {
         for (int x = 0; x <= gridSizeX; x++)
         {
-            Vertex vertex;
+            VertexType vertex;
             vertex.Position = glm::vec3(x - 0.5f * gridSizeX, y - 0.5f * gridSizeY, 0.0f);
-            vertex.Color = color;
-            vertex.TexCoords = glm::vec2((float)x / gridSizeX, (float)y / gridSizeY);
+
+            // Check vertex type and save relevant data
+            if constexpr (std::is_same_v<VertexType, VertexSimple>)
+            {
+                vertex.Color = color;
+            }
+            else if constexpr (std::is_same_v<VertexType, VertexTextured>)
+            {
+                vertex.TexCoords = glm::vec2((float)x / gridSizeX, (float)y / gridSizeY);
+            }
 
             vertices.push_back(vertex);
         }
@@ -101,7 +120,8 @@ Mesh Mesh::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std
     return Mesh(vertices, indices, shaderName);
 }
 
-unsigned int Mesh::setupSkyBoxMesh()
+template <>
+unsigned int Mesh<VertexSkybox>::setupSkyBoxMesh()
 {
     float skyboxVertices[] = {
         // Front face (towards -Y)
@@ -173,85 +193,90 @@ unsigned int Mesh::setupSkyBoxMesh()
     return skyboxVAO;
 }
 
-void Mesh::uploadToGPU()
+template <typename VertexType>
+void Mesh<VertexType>::uploadToGPU()
 {
-    if (this->shader == "skybox")
+    if constexpr (std::is_same_v<VertexType, VertexSkybox>)
     {
         setupSkyBoxMesh();
-        return;
     }
+    else
+    {
 
-    // Generate empty buffer data
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+        // Generate empty buffer data
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
 
-    // Bind Vertex Array Object
+        // Bind Vertex Array Object
+        glBindVertexArray(VAO);
+
+        // Send vertices of mesh to GPU
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexType), vertices.data(), GL_STATIC_DRAW);
+
+        // Send element indices to GPU
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+        setupVertexAttributes();
+
+        // Unbind vertex array
+        glBindVertexArray(0);
+    }
+}
+
+template <typename VertexType>
+void Mesh<VertexType>::draw() const
+{
     glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
 
-    // Send vertices of mesh to GPU
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-
-    // Send Send element indices to GPU
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-
-    // vertex positions
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Position));
-
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-    glDisableVertexAttribArray(3);
-    glDisableVertexAttribArray(4);
-
-    if (this->shader == "default")
-    {
-        // vertex normals
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Normal));
-        // vertex texture coords
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
-        // vertex bone IDs
-        glEnableVertexAttribArray(3);
-        glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (void *)offsetof(Vertex, BoneIDs));
-        // vertex bone weights
-        glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Weights));
-    }
-
-    else if (this->shader == "toon")
-    {
-        // vertex normals
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Normal));
-        // vertex texture coords
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
-        // vertex bone IDs
-        glEnableVertexAttribArray(3);
-        glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (void *)offsetof(Vertex, BoneIDs));
-        // vertex bone weights
-        glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Weights));
-    }
-
-    else if (this->shader == "toon-terrain")
-    {
-        // vertex texture coords
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
-    }
-
-    else if (this->shader == "simple")
-    {
-        // vertex colors
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Color));
-    }
-
-    // Unbind vertex array
     glBindVertexArray(0);
 }
+
+template <>
+void Mesh<VertexAnimated>::setupVertexAttributes()
+{
+    glEnableVertexAttribArray(0); // Position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnimated), (void *)offsetof(VertexAnimated, Position));
+
+    glEnableVertexAttribArray(1); // Normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnimated), (void *)offsetof(VertexAnimated, Normal));
+
+    glEnableVertexAttribArray(2); // TexCoords
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexAnimated), (void *)offsetof(VertexAnimated, TexCoords));
+
+    glEnableVertexAttribArray(3); // Bone IDs (integers!)
+    glVertexAttribIPointer(3, 4, GL_INT, sizeof(VertexAnimated), (void *)offsetof(VertexAnimated, BoneIDs));
+
+    glEnableVertexAttribArray(4); // Weights
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(VertexAnimated), (void *)offsetof(VertexAnimated, Weights));
+}
+
+template <>
+void Mesh<VertexTextured>::setupVertexAttributes()
+{
+    glEnableVertexAttribArray(0); // Position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void *)offsetof(VertexTextured, Position));
+
+    glEnableVertexAttribArray(1); // Normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void *)offsetof(VertexTextured, Normal));
+
+    glEnableVertexAttribArray(2); // TexCoords
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void *)offsetof(VertexTextured, TexCoords));
+}
+
+template <>
+void Mesh<VertexSimple>::setupVertexAttributes()
+{
+    glEnableVertexAttribArray(0); // Position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void *)offsetof(VertexSimple, Position));
+
+    glEnableVertexAttribArray(1); // Color
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void *)offsetof(VertexSimple, Color));
+}
+
+template class Mesh<VertexAnimated>;
+template class Mesh<VertexTextured>;
+template class Mesh<VertexSimple>;

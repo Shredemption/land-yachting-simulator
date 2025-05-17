@@ -75,10 +75,10 @@ private:
     // Shader renderers
     static void renderDefault(Model &model);
     static void renderToon(Model &model);
-    static void renderToonTerrain(Mesh mesh);
-    static void renderSimple(Mesh mesh);
-    static void renderToonWater(Mesh mesh);
-    static void renderWater(Mesh mesh);
+    static void renderToonTerrain(const MeshVariant &mesh);
+    static void renderSimple(const MeshVariant &mesh);
+    static void renderToonWater(const MeshVariant &mesh);
+    static void renderWater(const MeshVariant &mesh);
 
     // Texture renderers
     static void renderReflectRefract(Scene &scene, glm::vec4 clipPlane);

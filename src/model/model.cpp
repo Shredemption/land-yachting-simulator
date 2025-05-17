@@ -51,12 +51,14 @@ Model::~Model()
 {
     for (auto &meshes : lodMeshes)
     {
-        for (auto &mesh : meshes)
+        for (auto &meshVariant : meshes)
         {
-            // Release mesh VAO, VBO and EBO from GPU
-            glDeleteBuffers(1, &mesh.VBO);
-            glDeleteBuffers(1, &mesh.EBO);
-            glDeleteVertexArrays(1, &mesh.VAO);
+            std::visit([](auto &mesh)
+                       {
+                // Release mesh VAO, VBO and EBO from GPU
+                glDeleteBuffers(1, &mesh.VBO);
+                glDeleteBuffers(1, &mesh.EBO);
+                glDeleteVertexArrays(1, &mesh.VAO); }, meshVariant);
         }
     }
 
@@ -82,7 +84,7 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, std::string shad
         // Open full node recursion
         directory = lodPaths[i].substr(0, lodPaths[i].find_last_of('/'));
 
-        std::vector<Mesh> lodLevelMeshes;
+        std::vector<MeshVariant> lodLevelMeshes;
 
         processNode(scene->mRootNode, scene, shaderName, lodLevelMeshes, nullptr);
 
@@ -96,7 +98,7 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, std::string shad
     generateBoneTransforms();
 }
 
-void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<Mesh> &targetMeshList, Bone *parentBone)
+void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderName, std::vector<MeshVariant> &targetMeshList, Bone *parentBone)
 {
     // Get node name
     std::string nodeName = node->mName.C_Str();
@@ -139,61 +141,130 @@ void Model::processNode(aiNode *node, const aiScene *scene, std::string shaderNa
     }
 }
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy)
+MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderName, std::map<std::string, Bone *> &boneHierarchy)
 {
-    std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
 
-    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-    {
-        Vertex vertex;
-        // Process vertex positions
-        glm::vec3 vector;
-        vector.x = mesh->mVertices[i].x;
-        vector.y = mesh->mVertices[i].y;
-        vector.z = mesh->mVertices[i].z;
-        vertex.Position = vector;
-
-        // Process normals
-        vector.x = mesh->mNormals[i].x;
-        vector.y = mesh->mNormals[i].y;
-        vector.z = mesh->mNormals[i].z;
-        vertex.Normal = vector;
-
-        // Process Tangent
-        vector.x = mesh->mTangents[i].x;
-        vector.y = mesh->mTangents[i].y;
-        vector.z = mesh->mTangents[i].z;
-        vertex.Tangent = vector;
-
-        // Process Bitangent
-        vector.x = mesh->mBitangents[i].x;
-        vector.y = mesh->mBitangents[i].y;
-        vector.z = mesh->mBitangents[i].z;
-        vertex.Bitangent = vector;
-
-        // Process texture coords
-        if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
-        {
-            glm::vec2 vec;
-            vec.x = mesh->mTextureCoords[0][i].x;
-            vec.y = mesh->mTextureCoords[0][i].y;
-            vertex.TexCoords = vec;
-        }
-        else
-            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-
-        vertices.push_back(vertex);
-    }
+    bool isAnimated = (shaderName == "default" || shaderName == "toon");
 
     // Process Indices
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
-        for (unsigned int j = 0; j < face.mNumIndices; j++)
-            indices.push_back(face.mIndices[j]);
+        indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
     }
 
+    if (isAnimated)
+    {
+        std::vector<VertexAnimated> vertices(mesh->mNumVertices);
+
+        // Pull vertex data
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        {
+            VertexAnimated &vertex = vertices[i];
+            vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+            vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+
+            // If texture present
+            if (mesh->mTextureCoords[0])
+                vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+            else
+                vertex.TexCoords = glm::vec2(0.0f);
+        }
+
+        // Process Bone ID's
+        for (unsigned int i = 0; i < mesh->mNumBones; i++)
+        {
+            aiBone *bone = mesh->mBones[i];
+            std::string boneName = bone->mName.C_Str();
+            glm::mat4 offsetMatrix = glm::transpose(glm::make_mat4(&bone->mOffsetMatrix.a1));
+            boneHierarchy[boneName]->offsetMatrix = glm::inverse(offsetMatrix);
+            int boneIndex = boneHierarchy[boneName]->index;
+
+            // Process weights per bone
+            for (unsigned int j = 0; j < bone->mNumWeights; j++)
+            {
+                int vertexID = bone->mWeights[j].mVertexId;
+                float weightValue = bone->mWeights[j].mWeight;
+
+                // Add this bone's influence to the vertex
+                for (int k = 0; k < 4; k++)
+                {
+                    if (vertices[vertexID].Weights[k] == 0.0f)
+                    { // Find an empty slot
+                        vertices[vertexID].BoneIDs[k] = boneIndex;
+                        vertices[vertexID].Weights[k] = weightValue;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Remove "Scene" bone if it is present
+        auto it = boneHierarchy.find("Scene");
+        if (it != boneHierarchy.end())
+        {
+            boneHierarchy.erase(it); // Remove the "Scene" bone from the hierarchy
+        }
+
+        loadTexturesForShader(mesh, scene, shaderName);
+
+        return Mesh<VertexAnimated>(vertices, indices, shaderName);
+    }
+
+    else
+    {
+        std::vector<VertexTextured> vertices(mesh->mNumVertices);
+
+        // Pull vertex data
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        {
+            VertexTextured &vertex = vertices[i];
+            vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+            vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+
+            // If texture present
+            if (mesh->mTextureCoords[0])
+                vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+            else
+                vertex.TexCoords = glm::vec2(0.0f);
+        }
+
+        loadTexturesForShader(mesh, scene, shaderName);
+
+        return Mesh<VertexTextured>(vertices, indices, shaderName);
+    }
+}
+
+// Mesh Model::combineMeshes(const std::vector<Mesh> &meshes)
+// {
+//     if (meshes.empty())
+//         return Mesh({}, {}, "");
+
+//     std::vector<Vertex> allVertices;
+//     std::vector<unsigned int> allIndices;
+
+//     unsigned int indexOffset = 0;
+//     ;
+//     std::string shaderName = meshes[0].shader;
+
+//     for (const Mesh &mesh : meshes)
+//     {
+//         allVertices.insert(allVertices.end(), mesh.vertices.begin(), mesh.vertices.end());
+
+//         for (unsigned int idx : mesh.indices)
+//         {
+//             allIndices.push_back(idx + indexOffset);
+//         }
+
+//         indexOffset += mesh.vertices.size();
+//     }
+
+//     return Mesh(allVertices, allIndices, shaderName);
+// }
+
+void Model::loadTexturesForShader(aiMesh *mesh, const aiScene *scene, const std::string &shaderName)
+{
     // Process Mats
     if (mesh->mMaterialIndex >= 0)
     {
@@ -245,76 +316,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
             }
         }
     }
-
-    // Process Bone ID's
-    for (unsigned int i = 0; i < mesh->mNumBones; i++)
-    {
-        aiBone *bone = mesh->mBones[i];
-        std::string boneName = bone->mName.C_Str();
-
-        glm::mat4 offsetMatrix = glm::transpose(glm::make_mat4(&bone->mOffsetMatrix.a1));
-
-        boneHierarchy[boneName]->offsetMatrix = glm::inverse(offsetMatrix);
-
-        int boneIndex = boneHierarchy[boneName]->index;
-
-        // Process weights per bone
-        for (unsigned int j = 0; j < bone->mNumWeights; j++)
-        {
-            aiVertexWeight weight = bone->mWeights[j];
-            int vertexID = weight.mVertexId;
-            float weightValue = weight.mWeight;
-
-            // Add this bone's influence to the vertex
-            auto &vertex = vertices[vertexID];
-            for (int k = 0; k < 4; k++)
-            {
-                if (vertex.Weights[k] == 0.0f)
-                { // Find an empty slot
-                    vertex.BoneIDs[k] = boneIndex;
-                    vertex.Weights[k] = weightValue;
-                    break;
-                }
-            }
-        }
-    }
-
-    // Remove "Scene" bone if it is present
-    auto it = boneHierarchy.find("Scene");
-    if (it != boneHierarchy.end())
-    {
-        boneHierarchy.erase(it); // Remove the "Scene" bone from the hierarchy
-    }
-
-    Mesh loadedMesh = Mesh(vertices, indices, shaderName);
-    return loadedMesh;
-}
-
-Mesh Model::combineMeshes(const std::vector<Mesh> &meshes)
-{
-    if (meshes.empty())
-        return Mesh({}, {}, "");
-
-    std::vector<Vertex> allVertices;
-    std::vector<unsigned int> allIndices;
-
-    unsigned int indexOffset = 0;
-    ;
-    std::string shaderName = meshes[0].shader;
-
-    for (const Mesh &mesh : meshes)
-    {
-        allVertices.insert(allVertices.end(), mesh.vertices.begin(), mesh.vertices.end());
-
-        for (unsigned int idx : mesh.indices)
-        {
-            allIndices.push_back(idx + indexOffset);
-        }
-
-        indexOffset += mesh.vertices.size();
-    }
-
-    return Mesh(allVertices, allIndices, shaderName);
 }
 
 std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName)
@@ -713,9 +714,25 @@ void Model::uploadToGPU()
     // Upload data for each mesh to GPU
     for (auto &meshes : lodMeshes)
     {
-        for (auto &mesh : meshes)
+        for (auto &meshVariant : meshes)
         {
-            mesh.uploadToGPU();
+            std::visit([](auto &mesh)
+                       { mesh.uploadToGPU(); },
+                       meshVariant);
         }
     }
+}
+
+void Model::draw(int lodIndex)
+{
+    for (auto meshVariant : this->lodMeshes[lodIndex])
+    {
+        std::visit([](auto &mesh)
+                   {
+            glBindVertexArray(mesh.VAO);
+            glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0); },
+                   meshVariant);
+    }
+
+    glBindVertexArray(0);
 }
