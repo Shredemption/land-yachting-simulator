@@ -171,6 +171,7 @@ void Render::render(Scene &scene)
     Camera::cameraMoved = false;
     debugRenderData.clear();
     debugPhysicsData.clear();
+    lastShader = nullptr;
 }
 
 void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
