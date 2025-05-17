@@ -86,6 +86,9 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, std::string shad
 
         processNode(scene->mRootNode, scene, shaderName, lodLevelMeshes, nullptr);
 
+        // Mesh combinedMesh = combineMeshes(lodLevelMeshes);
+        // lodMeshes.push_back({std::move(combinedMesh)});
+
         lodMeshes.push_back(std::move(lodLevelMeshes));
     }
 
@@ -285,6 +288,33 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, std::string shaderNa
 
     Mesh loadedMesh = Mesh(vertices, indices, shaderName);
     return loadedMesh;
+}
+
+Mesh Model::combineMeshes(const std::vector<Mesh> &meshes)
+{
+    if (meshes.empty())
+        return Mesh({}, {}, "");
+
+    std::vector<Vertex> allVertices;
+    std::vector<unsigned int> allIndices;
+
+    unsigned int indexOffset = 0;
+    ;
+    std::string shaderName = meshes[0].shader;
+
+    for (const Mesh &mesh : meshes)
+    {
+        allVertices.insert(allVertices.end(), mesh.vertices.begin(), mesh.vertices.end());
+
+        for (unsigned int idx : mesh.indices)
+        {
+            allIndices.push_back(idx + indexOffset);
+        }
+
+        indexOffset += mesh.vertices.size();
+    }
+
+    return Mesh(allVertices, allIndices, shaderName);
 }
 
 std::vector<Texture> Model::loadMaterialTexture(aiMaterial *mat, aiTextureType type, std::string typeName)
