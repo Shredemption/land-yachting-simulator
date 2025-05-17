@@ -275,7 +275,7 @@ void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
 
         if (FrameBuffer::Water == false)
         {
-            if (unitPlane.shader == "water")
+            if (unitPlane.shader == shaderID::shWater)
             {
                 FrameBuffer::WaterFrameBuffers();
             }
@@ -321,7 +321,7 @@ void Render::renderSceneSkyBox(Scene &scene)
         glDisable(GL_DEPTH_TEST);
 
         // Load shader
-        shader = Shader::load("skybox");
+        shader = Shader::load(shaderID::shSkybox);
 
         // Bind skybox
         glBindVertexArray(scene.skyBox.VAO);
@@ -360,11 +360,11 @@ void Render::renderModel(ModelData model)
 {
     model.model->distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
 
-    if (model.shader == "default")
+    if (model.shader == shaderID::shDefault)
     {
         renderDefault(*model.model);
     }
-    else if (model.shader == "toon")
+    else if (model.shader == shaderID::shToon)
     {
         renderToon(*model.model);
     }
@@ -376,18 +376,18 @@ void Render::renderModel(ModelData model)
 
 void Render::renderModel(UnitPlaneData unitPlane)
 {
-    if (unitPlane.shader == "simple")
+    if (unitPlane.shader == shaderID::shSimple)
     {
         renderSimple(unitPlane.unitPlane);
     }
-    else if (unitPlane.shader == "water")
+    else if (unitPlane.shader == shaderID::shWater)
     {
         if (!WaterPass)
         {
             renderWater(unitPlane.unitPlane);
         }
     }
-    else if (unitPlane.shader == "toon-water")
+    else if (unitPlane.shader == shaderID::shToonWater)
     {
         renderToonWater(unitPlane.unitPlane);
     }
@@ -399,11 +399,11 @@ void Render::renderModel(UnitPlaneData unitPlane)
 
 void Render::renderModel(GridData grid)
 {
-    if (grid.shader == "simple")
+    if (grid.shader == shaderID::shSimple)
     {
         renderSimple(grid.grid);
     }
-    else if (grid.shader == "toon-terrain")
+    else if (grid.shader == shaderID::shToonTerrain)
     {
         renderToonTerrain(grid.grid);
     }
@@ -599,7 +599,7 @@ void Render::renderTestQuad(GLuint texture, int x, int y)
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    Shader *quadShader = Shader::load("gui");
+    Shader *quadShader = Shader::load(shaderID::shGui);
     quadShader->setInt("screenTexture", 1);
 
     // Render the quad
@@ -735,7 +735,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     scale *= EventHandler::screenHeight / 1440.0f;
 
     // Load the shader for rendering text
-    Shader *shader = Shader::load("text");
+    Shader *shader = Shader::load(shaderID::shText);
 
     if (shader != lastShader)
     {

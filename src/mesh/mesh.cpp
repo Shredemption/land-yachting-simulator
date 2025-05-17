@@ -4,15 +4,15 @@
 
 // Constructor to store input data
 template <typename VertexType>
-Mesh<VertexType>::Mesh(std::vector<VertexType> &vertices, std::vector<unsigned int> &indices, std::string &shaderName)
+Mesh<VertexType>::Mesh(std::vector<VertexType> &vertices, std::vector<unsigned int> &indices, shaderID &shader)
 {
     this->vertices = vertices;
     this->indices = indices;
-    this->shader = shaderName;
+    this->shader = shader;
 }
 
 template <typename VertexType>
-Mesh<VertexType> Mesh<VertexType>::genUnitPlane(glm::vec3 color, std::string shaderName)
+Mesh<VertexType> Mesh<VertexType>::genUnitPlane(glm::vec3 &color, shaderID &shader)
 {
     std::vector<VertexType> vertices;
 
@@ -54,11 +54,11 @@ Mesh<VertexType> Mesh<VertexType>::genUnitPlane(glm::vec3 color, std::string sha
     };
 
     // Return Mesh
-    return Mesh(vertices, indices, shaderName);
+    return Mesh(vertices, indices, shader);
 }
 
 template <typename VertexType>
-Mesh<VertexType> Mesh<VertexType>::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, std::string shaderName)
+Mesh<VertexType> Mesh<VertexType>::genGrid(int gridSizeX, int gridSizeY, float lod, glm::vec3 color, shaderID &shader)
 {
     std::vector<VertexType> vertices;
     std::vector<unsigned int> indices;
@@ -117,7 +117,7 @@ Mesh<VertexType> Mesh<VertexType>::genGrid(int gridSizeX, int gridSizeY, float l
     }
 
     // Return Mesh
-    return Mesh(vertices, indices, shaderName);
+    return Mesh(vertices, indices, shader);
 }
 
 template <>
@@ -202,7 +202,6 @@ void Mesh<VertexType>::uploadToGPU()
     }
     else
     {
-
         // Generate empty buffer data
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);

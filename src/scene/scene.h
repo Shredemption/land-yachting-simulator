@@ -78,7 +78,7 @@ struct ModelData
     Model *model;
     glm::mat4 u_model;
     glm::mat3 u_normal;
-    std::string shader;
+    shaderID shader;
     bool animated;
     bool controlled;
     std::vector<Physics *> physics;
@@ -89,7 +89,7 @@ struct UnitPlaneData
     glm::vec3 color;
     glm::mat4 u_model;
     glm::mat3 u_normal;
-    std::string shader;
+    shaderID shader;
     MeshVariant unitPlane = Mesh<VertexTextured>::genUnitPlane(color, shader);
 
     // Data from transparent rendering
@@ -97,7 +97,7 @@ struct UnitPlaneData
     bool isTransparent() const
     {
         // Add logic to check whether the shader is transparent or not
-        return (shader == "water");
+        return (shader == shaderID::shWater);
     }
 };
 
@@ -106,7 +106,7 @@ struct GridData
     glm::vec3 color;
     glm::mat4 u_model;
     glm::mat3 u_normal;
-    std::string shader;
+    shaderID shader;
     glm::vec2 gridSize;
     float lod;
     MeshVariant grid = Mesh<VertexTextured>::genGrid(gridSize.x, gridSize.y, lod, color, shader);
