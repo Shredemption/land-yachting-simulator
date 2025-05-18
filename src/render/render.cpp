@@ -25,7 +25,7 @@ glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
 std::function<void(std::string)> updateTimingFunc = [](std::string) {};
 
 glm::vec4 Render::clipPlane(0, 0, 0, 0);
-float Render::lodDistance = 10.0f;
+float Render::lodDistance = 30.0f;
 
 FT_Library Render::ft;
 FT_Face Render::face;
