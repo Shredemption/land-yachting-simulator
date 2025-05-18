@@ -12,6 +12,9 @@ public:
     Physics(ModelData &ModelData);
     static bool resetState;
 
+    static const float tickRate;
+    static float accumulator;
+
     // World variables
     static glm::vec3 windSourceDirection;
     static float windStrength;
@@ -28,23 +31,22 @@ public:
     static bool keyInputs[5];
 
     // Velocity and steering variables
-    glm::mat4 baseTransform;
-    glm::mat4 transform;
-    float steeringAngle = 0.0f;
+    glm::mat4 baseTransform, prevBaseTransform;
+    float steeringAngle = 0.0f, prevSteeringAngle;
     float steeringSmoothness;
     float maxSteeringAngle;
     float steeringAttenuation;
     float forwardVelocity = 0.0f;
-    float wheelAngle = 0.0f;
+    float wheelAngle = 0.0f, prevWheelAngle;
 
     // Mast/sail/boom angles
     float maxMastAngle;
     float maxBoomAngle;
-    float MastAngle = 0.0f;
-    float BoomAngle = 0.0f;
+    float MastAngle = 0.0f, prevMastAngle;
+    float BoomAngle = 0.0f, prevBoomAngle;
     float sailControlFactor = 1.0f;
     float optimalAngle;
-    float SailAngle = 0.0f;
+    float SailAngle = 0.0f, prevSailAngle;
 
     // Friction/drag coefficients
     float maxLiftCoefficient;
