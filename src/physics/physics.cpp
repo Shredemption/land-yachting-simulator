@@ -301,6 +301,7 @@ void Physics::move(bool &controlled)
     // Send values to debug
     if (controlled)
     {
+        Render::debugPhysicsData.clear();
         Render::debugPhysicsData.push_back(std::pair("velocity", forwardVelocity));
         Render::debugPhysicsData.push_back(std::pair("acceleration", forwardAcceleration));
         Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
