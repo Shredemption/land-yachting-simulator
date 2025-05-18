@@ -5,6 +5,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <memory>
+
 #include "scene/scene.h"
 
 struct Character
@@ -19,19 +21,30 @@ enum debugState
 {
     dbNone,
     dbFPS,
-    dbRender,
-    dbPhysics,
+    dbPhysics
+};
+
+enum RenderType
+{
+    rtModel,
+    rtOpaquePlane,
+    rtTransparentPlane,
+    rtGrid
 };
 
 struct RenderCommand
 {
+    RenderType type;
+
     shaderID shader;
-    std::vector<MeshVariant> *meshes;
+    std::shared_ptr<std::vector<MeshVariant>> meshes;
 
     std::vector<int> textureLayers;
 
     glm::mat4 modelMatrix;
     glm::mat4 normalMatrix;
+
+    int lod;
 
     bool animated = false;
     const std::vector<glm::mat4> *boneTransforms = nullptr;
@@ -45,7 +58,6 @@ public:
 
     static debugState debugState;
     static float FPS;
-    static std::vector<std::tuple<std::string, int, int>> debugRenderData;
     static std::vector<std::pair<std::string, float>> debugPhysicsData;
 
     static glm::vec4 clipPlane;
@@ -63,7 +75,6 @@ public:
     static void initQuad();
     static void prepareRender();
     static void executeRender();
-    static void render(Scene &scene);
 
     static Texture LoadStandaloneTexture(std::string fileName);
 
@@ -78,30 +89,17 @@ private:
     static bool WaterPass;
 
     // Class renderers
-    static void renderSceneModels(Scene &scene, glm::vec4 clipPlane);
-    static void renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane);
-    static void renderSceneGrids(Scene &scene, glm::vec4 clipPlane);
-    static void renderSceneSkyBox(Scene &scene);
-    static void renderSceneTexts(Scene &scene);
-
-    // Type renderers
-    static void renderModel(ModelData model);
-    static void renderModel(UnitPlaneData unitPlane);
-    static void renderModel(GridData grid);
-
-    // Shader renderers
-    static void renderDefault(Model &model);
-    static void renderToon(Model &model);
-    static void renderToonTerrain(const MeshVariant &mesh);
-    static void renderSimple(const MeshVariant &mesh);
-    static void renderToonWater(const MeshVariant &mesh);
-    static void renderWater(const MeshVariant &mesh);
+    static void renderObjects();
+    static void renderModel(const RenderCommand &cmd);
+    static void renderOpaquePlane(const RenderCommand &cmd);
+    static void renderTransparentPlane(const RenderCommand &cmd);
+    static void renderGrid(const RenderCommand &cmd);
+    static void renderSceneSkyBox();
+    static void renderSceneTexts();
 
     // Texture renderers
-    static void renderReflectRefract(Scene &scene, glm::vec4 clipPlane);
+    static void renderReflectRefract();
     static void renderTestQuad(GLuint texture, int x, int y);
-
-    static void UpdateRenderTiming(std::string name);
 };
 
 #endif
