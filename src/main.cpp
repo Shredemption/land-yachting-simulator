@@ -153,8 +153,9 @@ int main()
             }
             ThreadManager::animationCV.notify_one();
 
-            // Render scene
-            SceneManager::render();
+            // Update cam and render
+            Camera::update();
+            Render::render(*SceneManager::currentScene);
         }
 
         glfwSwapBuffers(window);
