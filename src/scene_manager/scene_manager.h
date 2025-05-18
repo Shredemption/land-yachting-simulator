@@ -27,7 +27,7 @@ public:
     static void unload();
 
     // Update and render functions
-    static void update();
+    static void checkLoading();
     static void render();
     static void renderLoading();
 };

@@ -16,6 +16,8 @@
 #include "scene_manager/scene_manager.h"
 #include "camera/camera.h"
 #include "render/render.h"
+#include "physics/physics.h"
+#include "thread_manager/thread_manager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -106,6 +108,8 @@ int main()
 
     Render::setup();
 
+    ThreadManager::startup();
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -117,20 +121,47 @@ int main()
 
         if (SceneManager::loadingState > 0)
         {
-            SceneManager::update();
+            // Check loading state
+            SceneManager::checkLoading();
+
+            // Render loading screen
             SceneManager::renderLoading();
         }
 
         if (SceneManager::loadingState == 0)
         {
-            SceneManager::update();
-            SceneManager::render();
+            // Update Events
             EventHandler::update(window);
+
+            // Update Physics
+            Physics::accumulator += EventHandler::deltaTime;
+            if (Physics::accumulator >= Physics::tickRate)
+            {
+                {
+                    std::lock_guard lock(ThreadManager::physicsMutex);
+                    ThreadManager::physicsTrigger = true;
+                }
+                ThreadManager::physicsCV.notify_one();
+
+                Physics::accumulator -= Physics::tickRate;
+            }
+
+            // Update Animations
+            {
+                std::lock_guard lock(ThreadManager::animationMutex);
+                ThreadManager::animationTrigger = true;
+            }
+            ThreadManager::animationCV.notify_one();
+
+            // Render scene
+            SceneManager::render();
         }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    ThreadManager::shutdown();
 
     SceneManager::unload();
 

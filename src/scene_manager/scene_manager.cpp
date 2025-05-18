@@ -75,7 +75,7 @@ void SceneManager::loadAsync(const std::string &sceneName)
     pendingScene = std::move(futureScene);
 }
 
-void SceneManager::update()
+void SceneManager::checkLoading()
 {
     // If background loading scene is complete
     if (loadingState > 0 && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
@@ -102,56 +102,6 @@ void SceneManager::update()
     {
         loadingState = 0;
         Sleep(500);
-    }
-    // If not loading, aka running normally
-    else if (loadingState == 0)
-    {
-        Physics::accumulator += EventHandler::deltaTime;
-
-        while (Physics::accumulator >= Physics::tickRate)
-        {
-            // -- UPDATE PHYSICS --
-            std::vector<std::future<void>> physicsFuture;
-
-            // Create a future physics for each yacht
-            for (ModelData &model : currentScene.get()->structModels)
-            {
-                if (!model.physics.empty())
-                {
-                    physicsFuture.push_back(std::async(std::launch::async, [&model]()
-                                                       { model.physics[0]->move(model.controlled); }));
-                }
-            }
-            // Wait for them all to finish
-            if (!physicsFuture.empty())
-            {
-                for (auto &f : physicsFuture)
-                    f.get();
-            }
-
-            Physics::accumulator -= Physics::tickRate;
-        }
-
-        float alpha = Physics::accumulator / Physics::tickRate;
-
-        // -- UPDATE ANIMATIONS --
-        std::vector<std::future<void>> animationFuture;
-
-        // For every model thats animated, create future
-        for (ModelData &model : currentScene.get()->structModels)
-        {
-            if (model.animated)
-            {
-                animationFuture.push_back(std::async(std::launch::async, [&model, &alpha]()
-                                                     { Animation::updateYachtBones(model, alpha); }));
-            }
-        }
-
-        if (!animationFuture.empty())
-        {
-            for (auto &f : animationFuture)
-                f.get();
-        }
     }
 }
 
