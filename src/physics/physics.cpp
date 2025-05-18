@@ -3,7 +3,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-#include "event_handler/event_handler.h"
 #include "render/render.h"
 
 // Boolmap for input tracking
@@ -16,6 +15,9 @@ float Physics::airDensity = 1.225f;
 float Physics::g = 9.81f;
 
 bool Physics::resetState = false;
+
+const float Physics::tickRate = 1.0f / 20.0f;
+float Physics::accumulator = 0.0f;
 
 Physics::Physics(ModelData &ModelData)
 {
@@ -178,6 +180,14 @@ void Physics::setup(Scene &scene)
 
 void Physics::move(bool &controlled)
 {
+    // Save previous state
+    prevBaseTransform = baseTransform;
+    prevSteeringAngle = steeringAngle;
+    prevWheelAngle = wheelAngle;
+    prevMastAngle = MastAngle;
+    prevBoomAngle = BoomAngle;
+    prevSailAngle = SailAngle;
+
     // Acceleration from keys
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
@@ -186,11 +196,11 @@ void Physics::move(bool &controlled)
     {
         if (keyInputs[0])
         {
-            sailControlFactor += 1.f * EventHandler::deltaTime;
+            sailControlFactor += 1.f * tickRate;
         }
         if (keyInputs[1])
         {
-            sailControlFactor -= 0.4f * EventHandler::deltaTime;
+            sailControlFactor -= 0.4f * tickRate;
         }
         if (keyInputs[2])
         {
@@ -279,14 +289,14 @@ void Physics::move(bool &controlled)
     forwardAcceleration += netForce / mass;
 
     // Apply accelerations
-    forwardVelocity += forwardAcceleration * EventHandler::deltaTime;
-    steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * EventHandler::deltaTime;
+    forwardVelocity += forwardAcceleration * tickRate;
+    steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * tickRate;
     float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
 
     // Transform with velocities
-    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(effectiveSteeringAngle * forwardVelocity * EventHandler::deltaTime), glm::vec3(0.0f, 0.0f, 1.0f));
-    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * EventHandler::deltaTime, 0.0f));
-    wheelAngle += forwardVelocity * EventHandler::deltaTime * 100;
+    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(effectiveSteeringAngle * forwardVelocity * tickRate), glm::vec3(0.0f, 0.0f, 1.0f));
+    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * tickRate, 0.0f));
+    wheelAngle += forwardVelocity * tickRate * 100;
 
     // Send values to debug
     if (controlled)

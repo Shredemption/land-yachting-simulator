@@ -11,6 +11,7 @@
 #include "render/render.h"
 #include "shader/shader.h"
 #include "camera/camera.h"
+#include "event_handler/event_handler.h"
 
 // Global Scene variables
 std::shared_ptr<Scene> SceneManager::currentScene = nullptr;
@@ -105,25 +106,33 @@ void SceneManager::update()
     // If not loading, aka running normally
     else if (loadingState == 0)
     {
-        // -- UPDATE PHYSICS --
-        std::vector<std::future<void>> physicsFuture;
+        Physics::accumulator += EventHandler::deltaTime;
 
-        // Create a future physics for each yacht
-        for (ModelData &model : currentScene.get()->structModels)
+        while (Physics::accumulator >= Physics::tickRate)
         {
-            if (!model.physics.empty())
+            // -- UPDATE PHYSICS --
+            std::vector<std::future<void>> physicsFuture;
+
+            // Create a future physics for each yacht
+            for (ModelData &model : currentScene.get()->structModels)
             {
-                physicsFuture.push_back(std::async(std::launch::async, [&model]()
-                                                   { model.physics[0]->move(model.controlled); }));
+                if (!model.physics.empty())
+                {
+                    physicsFuture.push_back(std::async(std::launch::async, [&model]()
+                                                       { model.physics[0]->move(model.controlled); }));
+                }
             }
+            // Wait for them all to finish
+            if (!physicsFuture.empty())
+            {
+                for (auto &f : physicsFuture)
+                    f.get();
+            }
+
+            Physics::accumulator -= Physics::tickRate;
         }
 
-        // Wait for them all to finish
-        if (!physicsFuture.empty())
-        {
-            for (auto &f : physicsFuture)
-                f.get();
-        }
+        float alpha = Physics::accumulator / Physics::tickRate;
 
         // -- UPDATE ANIMATIONS --
         std::vector<std::future<void>> animationFuture;
@@ -133,8 +142,8 @@ void SceneManager::update()
         {
             if (model.animated)
             {
-                animationFuture.push_back(std::async(std::launch::async, [&model]()
-                                                     { Animation::updateYachtBones(model); }));
+                animationFuture.push_back(std::async(std::launch::async, [&model, &alpha]()
+                                                     { Animation::updateYachtBones(model, alpha); }));
             }
         }
 
