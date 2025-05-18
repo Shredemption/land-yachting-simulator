@@ -84,21 +84,8 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
             }
         }
 
-        // Toggle render debug on F10
+        // Toggle physics debug on F10
         if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
-        {
-            if (Render::debugState == dbRender)
-            {
-                Render::debugState = dbNone;
-            }
-            else
-            {
-                Render::debugState = dbRender;
-            }
-        }
-
-        // Toggle physics debug on F11
-        if (key == GLFW_KEY_F11 && action == GLFW_PRESS)
         {
             if (Render::debugState == dbPhysics)
             {

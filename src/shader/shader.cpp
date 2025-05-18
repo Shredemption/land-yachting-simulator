@@ -3,6 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "file_manager/file_manager.h"
+#include "frame_buffer/frame_buffer.h"
 
 std::unordered_map<shaderID, Shader> Shader::loadedShaders;
 shaderID Shader::lastShader;
@@ -26,6 +27,7 @@ Shader *Shader::load(const shaderID shaderID)
             if (shaderID == shaderID::shWater)
             {
                 waterLoaded = true;
+                FrameBuffer::WaterFrameBuffers();
             }
         }
 

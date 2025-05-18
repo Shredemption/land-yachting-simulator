@@ -20,7 +20,6 @@ bool Render::WaterPass = true;
 // Render states
 debugState Render::debugState;
 float Render::FPS = 0.0f;
-std::vector<std::tuple<std::string, int, int>> Render::debugRenderData;
 std::vector<std::pair<std::string, float>> Render::debugPhysicsData;
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
 std::function<void(std::string)> updateTimingFunc = [](std::string) {};
@@ -45,7 +44,7 @@ GLuint lastGPUQuery = 0;
 Shader *shader;
 Shader *lastShader = nullptr;
 
-std::queue<RenderCommand> RenderQueue;
+std::vector<RenderCommand> RenderQueue;
 
 // Setup quads and text
 void Render::setup()
@@ -83,16 +82,17 @@ void Render::initQuad()
 
 void Render::prepareRender()
 {
-    std::queue<RenderCommand> empty;
-    std::swap(RenderQueue, empty);
-
     std::vector<std::future<RenderCommand>> futures;
 
+    // Load Models
     for (auto &model : SceneManager::currentScene->structModels)
     {
         futures.push_back(std::async(std::launch::async, [model]()
                                      {
             RenderCommand cmd;
+            
+            cmd.type = RenderType::rtModel;
+
             cmd.shader = model.shader; 
             
             cmd.modelMatrix = model.u_model;
@@ -111,22 +111,92 @@ void Render::prepareRender()
                 cmd.boneInverseOffsets = &model.model->boneInverseOffsets;
             }
 
-            size_t lodIndex = 0;
+            
             model.model->distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
 
             if (model.model->distanceFromCamera > lodDistance)
-                lodIndex = 1;
+                cmd.lod = 1;
             if (SceneManager::onTitleScreen)
-                lodIndex = 0;
+                cmd.lod = 0;
 
-            cmd.meshes = &model.model->lodMeshes[lodIndex]; // assuming one mesh
+            cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->lodMeshes[cmd.lod], [](std::vector<MeshVariant>*) {});
+
+            return cmd; }));
+    }
+
+    // Load opaque UnitPlanes
+    for (auto &opaquePlane : SceneManager::currentScene->opaqueUnitPlanes)
+    {
+        futures.push_back(std::async(std::launch::async, [opaquePlane]()
+                                     {
+            RenderCommand cmd;
+            
+            cmd.type = RenderType::rtOpaquePlane;
+
+            cmd.shader = opaquePlane.shader;
+
+            cmd.modelMatrix = opaquePlane.u_model;
+            cmd.normalMatrix = opaquePlane.u_normal;
+
+            auto meshList = std::make_shared<std::vector<MeshVariant>>(std::initializer_list<MeshVariant>{opaquePlane.unitPlane});
+            cmd.meshes = meshList;
+
+            return cmd; }));
+    }
+
+    // Sort transparent planes back to front based on distance from the camera
+    std::sort(SceneManager::currentScene->transparentUnitPlanes.begin(), SceneManager::currentScene->transparentUnitPlanes.end(), [&](const UnitPlaneData &a, const UnitPlaneData &b)
+              {
+                  float distA = glm::distance(Camera::getPosition(), a.position);
+                  float distB = glm::distance(Camera::getPosition(), b.position);
+                  return distA > distB; // Sort by distance: farthest first, closest last
+              });
+
+    // Load transparent UnitPlanes
+    for (auto &transparentPlane : SceneManager::currentScene->transparentUnitPlanes)
+    {
+        futures.push_back(std::async(std::launch::async, [transparentPlane]()
+                                     {
+            RenderCommand cmd;
+            
+            cmd.type = RenderType::rtTransparentPlane;
+
+            cmd.shader = transparentPlane.shader;
+
+            cmd.modelMatrix = transparentPlane.u_model;
+            cmd.normalMatrix = transparentPlane.u_normal;
+
+            auto meshList = std::make_shared<std::vector<MeshVariant>>(std::initializer_list<MeshVariant>{transparentPlane.unitPlane});
+            cmd.meshes = meshList;
+
+            return cmd; }));
+    }
+
+    // Load grids
+    for (auto &grid : SceneManager::currentScene->grids)
+    {
+        futures.push_back(std::async(std::launch::async, [grid]()
+                                     {
+            RenderCommand cmd;
+            
+            cmd.type = RenderType::rtGrid;
+
+            cmd.shader = grid.shader;
+
+            cmd.modelMatrix = grid.u_model;
+            cmd.normalMatrix = grid.u_normal;
+
+            cmd.lod = grid.lod;
+
+            auto meshList = std::make_shared<std::vector<MeshVariant>>(std::initializer_list<MeshVariant>{grid.grid});
+            cmd.meshes = meshList;
 
             return cmd; }));
     }
 
     for (auto &f : futures)
     {
-        RenderQueue.push(f.get());
+        RenderQueue.push_back(f.get());
     }
 }
 
@@ -137,101 +207,23 @@ void Render::executeRender()
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    while (!RenderQueue.empty())
-    {
-        RenderCommand cmd = RenderQueue.front();
-        RenderQueue.pop();
-
-        shader = Shader::load(cmd.shader);
-
-        if (shader != lastShader)
-        {
-            // Set texture array index
-            shader->setInt("textureArray", 0);
-
-            // Send light and view position to shader
-            shader->setVec3("lightPos", EventHandler::lightPos);
-            shader->setVec3("viewPos", Camera::getPosition());
-            shader->setFloat("lightIntensity", EventHandler::lightInsensity);
-            shader->setVec3("lightCol", EventHandler::lightCol);
-
-            // Apply view and projection to whole scene
-            shader->setMat4("u_view", Camera::u_view);
-            shader->setMat4("u_projection", Camera::u_projection);
-
-            // Set clipping plane
-            shader->setVec4("location_plane", clipPlane);
-
-            lastShader = shader;
-        }
-
-        shader->setMat4("u_model", cmd.modelMatrix);
-        shader->setMat4("u_normal", cmd.normalMatrix);
-
-        shader->setIntArray("textureLayers", cmd.textureLayers.data(), cmd.textureLayers.size());
-
-        shader->setBool("animated", cmd.animated);
-
-        if (cmd.animated)
-        {
-            shader->setMat4Array("u_boneTransforms", *cmd.boneTransforms);
-            shader->setMat4Array("u_inverseOffsets", *cmd.boneInverseOffsets);
-        }
-
-        for (auto &mesh : *cmd.meshes)
-        {
-            std::visit([](auto &actualMesh)
-                       { actualMesh.draw(); },
-                       mesh);
-        }
-    }
-
-    lastShader = nullptr;
-}
-
-// Main render loop
-void Render::render(Scene &scene)
-{
-    if (debugState == dbRender)
-        updateTimingFunc = [](std::string name)
-        { Render::UpdateRenderTiming(name); };
-    else
-        updateTimingFunc = [](std::string) {}; // No-op
-
-    updateTimingFunc("start");
-
-    // Clear color buffer
-    glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    renderSceneSkyBox(scene);
-
-    updateTimingFunc("Skybox");
+    renderSceneSkyBox();
 
     // If water loaded, render buffers
     if (Shader::waterLoaded && EventHandler::frame % 3 == 0)
     {
         WaterPass = true;
-        renderReflectRefract(scene, clipPlane);
+        renderReflectRefract();
         WaterPass = false;
     }
-
-    updateTimingFunc("WaterPass");
 
     // Reset clip plane
     clipPlane = {0, 0, 0, 0};
 
     // Render rest of scene
-    renderSceneModels(scene, clipPlane);
-    updateTimingFunc("Models");
-    renderSceneUnitPlanes(scene, clipPlane);
-    updateTimingFunc("Planes");
-    renderSceneGrids(scene, clipPlane);
-    updateTimingFunc("Grids");
-    renderSceneTexts(scene);
-    updateTimingFunc("Text");
+    renderObjects();
 
+    // Render debug menu
     if (!SceneManager::onTitleScreen)
     {
         // Set debug data
@@ -248,23 +240,6 @@ void Render::render(Scene &scene)
             renderText(std::to_string(static_cast<int>(FPS)), 0.01f, 0.01f, 0.75f, debugColor);
             break;
 
-        case dbRender:
-            if (Shader::waterLoaded)
-            {
-                renderTestQuad(FrameBuffer::reflectionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
-                renderTestQuad(FrameBuffer::refractionFBO.colorTexture, 2 * EventHandler::screenWidth / 3, 0);
-            }
-
-            debugText = "Render Times: " + std::to_string(static_cast<int>(FPS)) + " FPS\n";
-
-            for (auto entry : debugRenderData)
-            {
-                debugText = debugText + std::get<0>(entry) + ":\nCPU: " + std::to_string(std::get<1>(entry)) + "\nGPU: " + std::to_string(std::get<2>(entry)) + "\n";
-            }
-
-            renderText(debugText, 0.01f, 0.01f, 0.75f, debugColor);
-            break;
-
         case dbPhysics:
             debugText = "Physics:\n";
 
@@ -278,153 +253,247 @@ void Render::render(Scene &scene)
         }
     }
 
+    renderSceneTexts();
+
     Camera::cameraMoved = false;
-    debugRenderData.clear();
     debugPhysicsData.clear();
     lastShader = nullptr;
+
+    // Clear queue after frame done
+    RenderQueue.clear();
 }
 
-void Render::renderSceneModels(Scene &scene, glm::vec4 clipPlane)
+void Render::renderObjects()
 {
-    for (auto model : scene.structModels)
+    for (const RenderCommand &cmd : RenderQueue)
     {
-        shader = Shader::load(model.shader);
+        shader = Shader::load(cmd.shader);
 
-        if (shader != lastShader)
+        switch (cmd.type)
         {
-            // Set texture array index
-            shader->setInt("textureArray", 0);
+        case RenderType::rtModel:
+            renderModel(cmd);
+            break;
 
-            // Send light and view position to shader
-            shader->setVec3("lightPos", EventHandler::lightPos);
-            shader->setVec3("viewPos", Camera::getPosition());
-            shader->setFloat("lightIntensity", EventHandler::lightInsensity);
-            shader->setVec3("lightCol", EventHandler::lightCol);
+        case RenderType::rtOpaquePlane:
+            renderOpaquePlane(cmd);
+            break;
 
-            // Apply view and projection to whole scene
-            shader->setMat4("u_view", Camera::u_view);
-            shader->setMat4("u_projection", Camera::u_projection);
+        case RenderType::rtTransparentPlane:
+            renderTransparentPlane(cmd);
+            break;
 
-            // Set clipping plane
-            shader->setVec4("location_plane", clipPlane);
-
-            lastShader = shader;
+        case RenderType::rtGrid:
+            renderGrid(cmd);
+            break;
         }
-
-        // Set model matrix for model and draw
-        shader->setMat4("u_model", model.u_model);
-        shader->setMat4("u_normal", model.u_normal);
-
-        // Set animation state and bone stuff
-        shader->setBool("animated", model.animated);
-
-        if (model.animated)
-        {
-            shader->setMat4Array("u_boneTransforms", model.model->boneTransforms);
-            shader->setMat4Array("u_inverseOffsets", model.model->boneInverseOffsets);
-        }
-
-        renderModel(model);
     }
 }
 
-void Render::renderSceneUnitPlanes(Scene &scene, glm::vec4 clipPlane)
+void Render::renderModel(const RenderCommand &cmd)
 {
-    // Render opaque planes
-    for (auto unitPlane : scene.opaqueUnitPlanes)
+    // Send general shader data
+    if (shader != lastShader)
     {
-        shader = Shader::load(unitPlane.shader);
+        // Set texture array index
+        shader->setInt("textureArray", 0);
 
-        if (shader != lastShader)
-        {
-            // Apply view and projection to whole scene
-            shader->setMat4("u_view", Camera::u_view);
-            shader->setMat4("u_projection", Camera::u_projection);
+        // Send light and view position to shader
+        shader->setVec3("lightPos", EventHandler::lightPos);
+        shader->setVec3("viewPos", Camera::getPosition());
+        shader->setFloat("lightIntensity", EventHandler::lightInsensity);
+        shader->setVec3("lightCol", EventHandler::lightCol);
 
-            // Clipping Plane
-            shader->setVec4("location_plane", clipPlane);
+        // Apply view and projection to whole scene
+        shader->setMat4("u_view", Camera::u_view);
+        shader->setMat4("u_projection", Camera::u_projection);
 
-            lastShader = shader;
-        }
+        // Set clipping plane
+        shader->setVec4("location_plane", clipPlane);
 
-        // Set model matrix for model and draw
-        shader->setMat4("u_model", unitPlane.u_model);
-        shader->setMat4("u_normal", unitPlane.u_normal);
-
-        renderModel(unitPlane);
+        lastShader = shader;
     }
 
-    // Sort transparent planes back to front based on distance from the camera
-    std::sort(scene.transparentUnitPlanes.begin(), scene.transparentUnitPlanes.end(), [&](const UnitPlaneData &a, const UnitPlaneData &b)
-              {
-                  float distA = glm::distance(Camera::getPosition(), a.position);
-                  float distB = glm::distance(Camera::getPosition(), b.position);
-                  return distA > distB; // Sort by distance: farthest first, closest last
-              });
+    // Send model specific data
+    shader->setMat4("u_model", cmd.modelMatrix);
+    shader->setMat4("u_normal", cmd.normalMatrix);
 
-    // Render transparent planes
-    for (auto unitPlane : scene.transparentUnitPlanes)
+    shader->setIntArray("textureLayers", cmd.textureLayers.data(), cmd.textureLayers.size());
+
+    shader->setBool("animated", cmd.animated);
+
+    if (cmd.animated)
     {
-        shader = Shader::load(unitPlane.shader);
+        shader->setMat4Array("u_boneTransforms", *cmd.boneTransforms);
+        shader->setMat4Array("u_inverseOffsets", *cmd.boneInverseOffsets);
+    }
 
-        if (shader != lastShader)
-        {
-            // Apply view and projection to whole scene
-            shader->setMat4("u_view", Camera::u_view);
-            shader->setMat4("u_projection", Camera::u_projection);
-
-            // Clipping Plane
-            shader->setVec4("location_plane", clipPlane);
-
-            lastShader = shader;
-        }
-
-        // Set model matrix for model and draw
-        shader->setMat4("u_model", unitPlane.u_model);
-        shader->setMat4("u_normal", unitPlane.u_normal);
-
-        if (FrameBuffer::Water == false)
-        {
-            if (unitPlane.shader == shaderID::shWater)
-            {
-                FrameBuffer::WaterFrameBuffers();
-            }
-        }
-        renderModel(unitPlane);
+    // Draw meshes
+    for (auto &mesh : *cmd.meshes)
+    {
+        std::visit([](auto &actualMesh)
+                   { actualMesh.draw(); },
+                   mesh);
     }
 }
 
-void Render::renderSceneGrids(Scene &scene, glm::vec4 clipPlane)
+void Render::renderOpaquePlane(const RenderCommand &cmd)
 {
-    for (auto grid : scene.grids)
+    if (shader != lastShader)
     {
-        shader = Shader::load(grid.shader);
+        // Apply view and projection to whole scene
+        shader->setMat4("u_view", Camera::u_view);
+        shader->setMat4("u_projection", Camera::u_projection);
 
-        if (shader != lastShader)
-        {
-            // Apply view and projection to whole scene
-            shader->setMat4("u_view", Camera::u_view);
-            shader->setMat4("u_projection", Camera::u_projection);
+        // Clipping Plane
+        shader->setVec4("location_plane", clipPlane);
 
-            // Clipping Plane
-            shader->setVec4("location_plane", clipPlane);
+        lastShader = shader;
+    }
 
-            lastShader = shader;
-        }
+    // Set model matrix for model and draw
+    shader->setMat4("u_model", cmd.modelMatrix);
+    shader->setMat4("u_normal", cmd.normalMatrix);
 
-        // Set model matrix for model and draw
-        shader->setMat4("u_model", grid.u_model);
-        shader->setMat4("u_normal", grid.u_normal);
+    if (cmd.shader == shaderID::shToonWater)
+    {
+        Texture DuDv = LoadStandaloneTexture("toonWater.jpeg");
+        Texture normal = LoadStandaloneTexture("waterNormal.png");
+        Texture height = LoadStandaloneTexture("heightmap.jpg");
 
-        shader->setFloat("lod", grid.lod);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, DuDv.index);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, normal.index);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, height.index);
 
-        renderModel(grid);
+        shader->setInt("toonWater", 1);
+        shader->setInt("normalMap", 2);
+        shader->setInt("heightmap", 3);
+        shader->setFloat("moveOffset", EventHandler::time);
+        shader->setMat4("u_camXY", Camera::u_camXY);
+    }
+
+    // Draw meshes
+    for (auto &mesh : *cmd.meshes)
+    {
+        std::visit([](auto &actualMesh)
+                   { actualMesh.draw(); },
+                   mesh);
     }
 }
 
-void Render::renderSceneSkyBox(Scene &scene)
+void Render::renderTransparentPlane(const RenderCommand &cmd)
 {
-    if (scene.hasSkyBox)
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (shader != lastShader)
+    {
+        // Apply view and projection to whole scene
+        shader->setMat4("u_view", Camera::u_view);
+        shader->setMat4("u_projection", Camera::u_projection);
+
+        // Clipping Plane
+        shader->setVec4("location_plane", clipPlane);
+
+        lastShader = shader;
+    }
+
+    // Set model matrix for model and draw
+    shader->setMat4("u_model", cmd.modelMatrix);
+    shader->setMat4("u_normal", cmd.normalMatrix);
+
+    if (cmd.shader == shaderID::shWater)
+    {
+        // Load surface textures
+        Texture DuDv = LoadStandaloneTexture("waterDUDV.png");
+        Texture normal = LoadStandaloneTexture("waterNormal.png");
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, DuDv.index);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, normal.index);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.depthTexture);
+
+        shader->setInt("reflectionTexture", 1);
+        shader->setInt("refractionTexture", 2);
+        shader->setInt("dudvMap", 3);
+        shader->setInt("normalMap", 4);
+        shader->setInt("depthMap", 5);
+        shader->setFloat("moveOffset", EventHandler::time);
+        shader->setVec3("cameraPosition", Camera::getPosition());
+        shader->setVec3("lightPos", EventHandler::lightPos);
+        shader->setVec3("lightCol", EventHandler::lightCol);
+        shader->setMat4("u_camXY", Camera::u_camXY);
+    }
+
+    // Draw meshes
+    if (cmd.shader == shaderID::shWater && !WaterPass)
+    {
+        for (auto &mesh : *cmd.meshes)
+        {
+            std::visit([](auto &actualMesh)
+                       { actualMesh.draw(); },
+                       mesh);
+        }
+    }
+
+    glDisable(GL_BLEND);
+}
+
+void Render::renderGrid(const RenderCommand &cmd)
+{
+    if (shader != lastShader)
+    {
+        // Apply view and projection to whole scene
+        shader->setMat4("u_view", Camera::u_view);
+        shader->setMat4("u_projection", Camera::u_projection);
+
+        // Clipping Plane
+        shader->setVec4("location_plane", clipPlane);
+
+        lastShader = shader;
+    }
+
+    // Set model matrix for model and draw
+    shader->setMat4("u_model", cmd.modelMatrix);
+    shader->setMat4("u_normal", cmd.normalMatrix);
+
+    shader->setFloat("lod", cmd.lod);
+
+    if (cmd.shader == shaderID::shToonTerrain)
+    {
+        Texture heightmap = LoadStandaloneTexture("heightmap.jpg");
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, heightmap.index);
+
+        shader->setMat4("u_camXY", Camera::u_camXY);
+        shader->setInt("heightmap", 2);
+
+        // Unload texture
+        glActiveTexture(GL_TEXTURE2);
+    }
+
+    // Draw meshes
+    for (auto &mesh : *cmd.meshes)
+    {
+        std::visit([](auto &actualMesh)
+                   { actualMesh.draw(); },
+                   mesh);
+    }
+}
+
+void Render::renderSceneSkyBox()
+{
+    if (SceneManager::currentScene.get()->hasSkyBox)
     {
         // Disable depth test
         glDepthFunc(GL_LEQUAL);
@@ -434,9 +503,9 @@ void Render::renderSceneSkyBox(Scene &scene)
         shader = Shader::load(shaderID::shSkybox);
 
         // Bind skybox
-        glBindVertexArray(scene.skyBox.VAO);
+        glBindVertexArray(SceneManager::currentScene.get()->skyBox.VAO);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skyBox.textureID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, SceneManager::currentScene.get()->skyBox.textureID);
 
         // Set view matrices
         shader->setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
@@ -458,207 +527,15 @@ void Render::renderSceneSkyBox(Scene &scene)
     }
 }
 
-void Render::renderSceneTexts(Scene &scene)
+void Render::renderSceneTexts()
 {
-    for (auto text : scene.texts)
+    for (auto text : SceneManager::currentScene.get()->texts)
     {
         renderText(text.text, text.position.x, text.position.y, text.scale, text.color);
     }
 }
 
-void Render::renderModel(ModelData model)
-{
-    model.model->distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
-
-    if (model.shader == shaderID::shDefault)
-    {
-        renderDefault(*model.model);
-    }
-    else if (model.shader == shaderID::shToon)
-    {
-        renderToon(*model.model);
-    }
-    else
-    {
-        return;
-    }
-}
-
-void Render::renderModel(UnitPlaneData unitPlane)
-{
-    if (unitPlane.shader == shaderID::shSimple)
-    {
-        renderSimple(unitPlane.unitPlane);
-    }
-    else if (unitPlane.shader == shaderID::shWater)
-    {
-        if (!WaterPass)
-        {
-            renderWater(unitPlane.unitPlane);
-        }
-    }
-    else if (unitPlane.shader == shaderID::shToonWater)
-    {
-        renderToonWater(unitPlane.unitPlane);
-    }
-    else
-    {
-        return;
-    }
-}
-
-void Render::renderModel(GridData grid)
-{
-    if (grid.shader == shaderID::shSimple)
-    {
-        renderSimple(grid.grid);
-    }
-    else if (grid.shader == shaderID::shToonTerrain)
-    {
-        renderToonTerrain(grid.grid);
-    }
-    else
-    {
-        return;
-    }
-}
-
-void Render::renderDefault(Model &model)
-{
-    unsigned int diffuseNr = 1;
-    unsigned int propertiesNr = 1;
-
-    // Set texture layer indices
-    std::vector<int> textureIndices;
-
-    for (unsigned int i = 0; i < model.textures.size(); ++i)
-    {
-        textureIndices.push_back(model.textures[i].index);
-    }
-
-    shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
-
-    size_t lodIndex = 0;
-    if (model.distanceFromCamera > lodDistance)
-        lodIndex = 1;
-    if (SceneManager::onTitleScreen)
-        lodIndex = 0;
-
-    model.draw(lodIndex);
-}
-
-void Render::renderToon(Model &model)
-{
-    unsigned int highlightNr = 1;
-    unsigned int shadowNr = 1;
-
-    // Set texture layer indices
-    std::vector<int> textureIndices;
-
-    for (unsigned int i = 0; i < model.textures.size(); ++i)
-    {
-        textureIndices.push_back(model.textures[i].index);
-    }
-
-    shader->setIntArray("textureLayers", textureIndices.data(), textureIndices.size());
-
-    size_t lodIndex = 0;
-    if (model.distanceFromCamera > lodDistance)
-        lodIndex = 1;
-    if (SceneManager::onTitleScreen)
-        lodIndex = 0;
-
-    model.draw(lodIndex);
-}
-
-void Render::renderToonTerrain(const MeshVariant &mesh)
-{
-    Texture heightmap = LoadStandaloneTexture("heightmap.jpg");
-
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, heightmap.index);
-
-    shader->setMat4("u_camXY", Camera::u_camXY);
-    shader->setInt("heightmap", 2);
-
-    // Unload texture
-    glActiveTexture(GL_TEXTURE2);
-
-    std::visit([](auto &actualMesh)
-               { actualMesh.draw(); },
-               mesh);
-}
-
-void Render::renderSimple(const MeshVariant &mesh)
-{
-    std::visit([](auto &actualMesh)
-               { actualMesh.draw(); },
-               mesh);
-}
-
-void Render::renderToonWater(const MeshVariant &mesh)
-{
-    Texture DuDv = LoadStandaloneTexture("toonWater.jpeg");
-    Texture normal = LoadStandaloneTexture("waterNormal.png");
-    Texture height = LoadStandaloneTexture("heightmap.jpg");
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, DuDv.index);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, normal.index);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, height.index);
-
-    shader->setInt("toonWater", 1);
-    shader->setInt("normalMap", 2);
-    shader->setInt("heightmap", 3);
-    shader->setFloat("moveOffset", EventHandler::time);
-    shader->setMat4("u_camXY", Camera::u_camXY);
-
-    std::visit([](auto &actualMesh)
-               { actualMesh.draw(); },
-               mesh);
-}
-
-void Render::renderWater(const MeshVariant &mesh)
-{
-    // Load surface textures
-    Texture DuDv = LoadStandaloneTexture("waterDUDV.png");
-    Texture normal = LoadStandaloneTexture("waterNormal.png");
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, DuDv.index);
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, normal.index);
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.depthTexture);
-
-    shader->setInt("reflectionTexture", 1);
-    shader->setInt("refractionTexture", 2);
-    shader->setInt("dudvMap", 3);
-    shader->setInt("normalMap", 4);
-    shader->setInt("depthMap", 5);
-    shader->setFloat("moveOffset", EventHandler::time);
-    shader->setVec3("cameraPosition", Camera::getPosition());
-    shader->setVec3("lightPos", EventHandler::lightPos);
-    shader->setVec3("lightCol", EventHandler::lightCol);
-    shader->setMat4("u_camXY", Camera::u_camXY);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    std::visit([](auto &actualMesh)
-               { actualMesh.draw(); },
-               mesh);
-
-    glDisable(GL_BLEND);
-}
-
-void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
+void Render::renderReflectRefract()
 {
     // ===== REFLECTOIN =====
     // Bind reflection buffer
@@ -672,11 +549,9 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     // Draw to it
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
-    renderSceneSkyBox(scene);
+    renderSceneSkyBox();
     glEnable(GL_CLIP_DISTANCE0);
-    renderSceneModels(scene, clipPlane);
-    renderSceneUnitPlanes(scene, clipPlane);
-    renderSceneGrids(scene, clipPlane);
+    renderObjects();
     glDisable(GL_CLIP_DISTANCE0);
 
     // ===== REFRACTION =====
@@ -690,11 +565,9 @@ void Render::renderReflectRefract(Scene &scene, glm::vec4 clipPlane)
     // Draw to it
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
-    renderSceneSkyBox(scene);
+    renderSceneSkyBox();
     glEnable(GL_CLIP_DISTANCE0);
-    renderSceneModels(scene, clipPlane);
-    renderSceneUnitPlanes(scene, clipPlane);
-    renderSceneGrids(scene, clipPlane);
+    renderObjects();
     glDisable(GL_CLIP_DISTANCE0);
 
     // Unbind buffers, bind default one
@@ -914,36 +787,4 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 
     // Disable blending after text rendering
     glDisable(GL_BLEND);
-}
-
-void Render::UpdateRenderTiming(std::string name)
-{
-    // === CPU TIMING ===
-    double cpuTimeUs;
-    auto nowCPU = std::chrono::high_resolution_clock::now();
-    if (lastCPUTime != std::chrono::high_resolution_clock::time_point())
-    {
-        cpuTimeUs = std::chrono::duration<double, std::micro>(nowCPU - lastCPUTime).count();
-    }
-    lastCPUTime = nowCPU; // Update last CPU timestamp
-
-    // === GPU TIMING ===
-    GLuint queryID;
-    glGenQueries(1, &queryID);
-    glBeginQuery(GL_TIME_ELAPSED, queryID);
-
-    GLuint64 gpuTimeUs;
-    if (lastGPUQuery)
-    { // Ensure there's a previous GPU query
-        GLuint64 gpuTimeNs = 0;
-        glGetQueryObjectui64v(lastGPUQuery, GL_QUERY_RESULT, &gpuTimeNs);
-        gpuTimeUs = gpuTimeNs / 1e3f;
-        glDeleteQueries(1, &lastGPUQuery); // Clean up old query
-    }
-
-    glEndQuery(GL_TIME_ELAPSED);
-    lastGPUQuery = queryID; // Store query ID for next call
-
-    if (name != "start")
-        Render::debugRenderData.push_back(std::tuple(name, static_cast<int>(cpuTimeUs), static_cast<int>(gpuTimeUs)));
 }
