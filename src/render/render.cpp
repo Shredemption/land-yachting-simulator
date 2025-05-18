@@ -256,7 +256,6 @@ void Render::executeRender()
     renderSceneTexts();
 
     Camera::cameraMoved = false;
-    debugPhysicsData.clear();
     lastShader = nullptr;
 
     // Clear queue after frame done
