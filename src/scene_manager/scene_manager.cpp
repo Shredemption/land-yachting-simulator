@@ -61,6 +61,8 @@ void SceneManager::loadAsync(const std::string &sceneName)
 {
     loadingState++;
 
+    ThreadManager::stopRenderThread();
+
     // Unload previous scene
     unload();
 
@@ -75,7 +77,6 @@ void SceneManager::loadAsync(const std::string &sceneName)
     // Future to store loaded scene in
     std::future<std::shared_ptr<Scene>> futureScene = std::async(std::launch::async, [sceneName]() -> std::shared_ptr<Scene>
                                                                  { 
-                                                                    ThreadManager::stopRenderThread();
                                                                     auto newScene = std::make_shared<Scene>(sceneMap[sceneName], sceneName); 
                                                                 return newScene; });
 
@@ -110,7 +111,6 @@ void SceneManager::checkLoading()
     {
         loadingState = 0;
         ThreadManager::startRenderThread();
-        Sleep(500);
     }
 }
 
