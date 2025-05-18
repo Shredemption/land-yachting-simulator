@@ -16,7 +16,7 @@ float Physics::g = 9.81f;
 
 bool Physics::resetState = false;
 
-const float Physics::tickRate = 1.0f / 20.0f;
+const float Physics::tickRate = 1.0f / 60.0f;
 float Physics::accumulator = 0.0f;
 
 Physics::Physics(ModelData &ModelData)
