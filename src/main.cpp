@@ -68,9 +68,6 @@ int main()
     Model::loadModelMap();
     SceneManager::loadSceneMap();
 
-    // Load title screen Scene
-    SceneManager::load("title");
-
     // Get screen dimensions
     glfwGetWindowPos(window, &EventHandler::windowXpos, &EventHandler::windowYpos);
     glfwGetWindowSize(window, &EventHandler::windowWidth, &EventHandler::windowHeight);
@@ -110,6 +107,9 @@ int main()
 
     // Launch threads
     ThreadManager::startup();
+
+    // Load title screen Scene
+    SceneManager::load("title");
 
     // Main Loop
     while (!glfwWindowShouldClose(window))
@@ -159,8 +159,25 @@ int main()
 
             // Update cam and render
             Camera::update();
-            // Render::render(*SceneManager::currentScene);
-            Render::prepareRender();
+
+            {
+                std::unique_lock<std::mutex> lock(ThreadManager::renderBufferMutex);
+                ThreadManager::renderBufferCV.wait(lock, []
+                                                   { return ThreadManager::renderExecuteReady || ThreadManager::renderBufferShouldExit; });
+
+                // Exit early if flagged
+                if (ThreadManager::renderBufferShouldExit)
+                    continue;
+
+                // Swap buffers while mutex is locked
+                std::swap(Render::prepBuffer, Render::renderBuffer);
+                ThreadManager::renderPrepReady = true;
+                ThreadManager::renderExecuteReady = false;
+            }
+            // Notify render prep thread after unlocking mutex
+            ThreadManager::renderBufferCV.notify_one();
+
+            // Then render the frame
             Render::executeRender();
         }
 

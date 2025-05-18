@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "scene/scene.h"
+#include "shader/shader.h"
 
 struct Character
 {
@@ -54,6 +55,9 @@ struct RenderCommand
 class Render
 {
 public:
+    static std::vector<RenderCommand> prepBuffer;
+    static std::vector<RenderCommand> renderBuffer;
+
     static float waterHeight;
 
     static debugState debugState;

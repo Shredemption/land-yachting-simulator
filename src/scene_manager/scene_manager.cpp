@@ -12,6 +12,7 @@
 #include "shader/shader.h"
 #include "camera/camera.h"
 #include "event_handler/event_handler.h"
+#include "thread_manager/thread_manager.h"
 
 // Global Scene variables
 std::shared_ptr<Scene> SceneManager::currentScene = nullptr;
@@ -29,6 +30,8 @@ std::pair<int, int> SceneManager::loadingProgress = {0, 0};
 // Load scene on main, causes freezing
 void SceneManager::load(const std::string &sceneName)
 {
+    ThreadManager::stopRenderThread();
+
     // unload current scene
     unload();
 
@@ -47,6 +50,8 @@ void SceneManager::load(const std::string &sceneName)
     // Setup cam and physics
     Camera::reset();
     Physics::setup(*currentScene);
+
+    ThreadManager::startRenderThread();
 
     loadingState = 0;
 }
@@ -68,8 +73,11 @@ void SceneManager::loadAsync(const std::string &sceneName)
     loadingState++;
 
     // Future to store loaded scene in
-    std::future<std::shared_ptr<Scene>> futureScene = std::async(std::launch::async, [sceneName]()
-                                                                 { return std::make_shared<Scene>(sceneMap[sceneName], sceneName); });
+    std::future<std::shared_ptr<Scene>> futureScene = std::async(std::launch::async, [sceneName]() -> std::shared_ptr<Scene>
+                                                                 { 
+                                                                    ThreadManager::stopRenderThread();
+                                                                    auto newScene = std::make_shared<Scene>(sceneMap[sceneName], sceneName); 
+                                                                return newScene; });
 
     // Push future to global variable
     pendingScene = std::move(futureScene);
@@ -101,6 +109,7 @@ void SceneManager::checkLoading()
     else if (loadingState == 100)
     {
         loadingState = 0;
+        ThreadManager::startRenderThread();
         Sleep(500);
     }
 }
