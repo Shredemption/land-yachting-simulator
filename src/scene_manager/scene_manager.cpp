@@ -105,8 +105,44 @@ void SceneManager::update()
     // If not loading, aka running normally
     else if (loadingState == 0)
     {
-        Physics::update(*currentScene);
-        Animation::updateBones(*currentScene);
+        // -- UPDATE PHYSICS --
+        std::vector<std::future<void>> physicsFuture;
+
+        // Create a future physics for each yacht
+        for (ModelData &model : currentScene.get()->structModels)
+        {
+            if (!model.physics.empty())
+            {
+                physicsFuture.push_back(std::async(std::launch::async, [&model]()
+                                                   { model.physics[0]->move(model.controlled); }));
+            }
+        }
+
+        // Wait for them all to finish
+        if (!physicsFuture.empty())
+        {
+            for (auto &f : physicsFuture)
+                f.get();
+        }
+
+        // -- UPDATE ANIMATIONS --
+        std::vector<std::future<void>> animationFuture;
+
+        // For every model thats animated, create future
+        for (ModelData &model : currentScene.get()->structModels)
+        {
+            if (model.animated)
+            {
+                animationFuture.push_back(std::async(std::launch::async, [&model]()
+                                                     { Animation::updateYachtBones(model); }));
+            }
+        }
+
+        if (!animationFuture.empty())
+        {
+            for (auto &f : animationFuture)
+                f.get();
+        }
     }
 }
 
