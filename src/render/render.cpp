@@ -44,7 +44,8 @@ GLuint lastGPUQuery = 0;
 Shader *shader;
 Shader *lastShader = nullptr;
 
-std::vector<RenderCommand> RenderQueue;
+std::vector<RenderCommand> Render::prepBuffer;
+std::vector<RenderCommand> Render::renderBuffer;
 
 // Setup quads and text
 void Render::setup()
@@ -82,6 +83,14 @@ void Render::initQuad()
 
 void Render::prepareRender()
 {
+    // Clear and reserve size for buffer
+    prepBuffer.clear();
+    prepBuffer.reserve(
+        SceneManager::currentScene->structModels.size() +
+        SceneManager::currentScene->opaqueUnitPlanes.size() +
+        SceneManager::currentScene->transparentUnitPlanes.size() +
+        SceneManager::currentScene->grids.size());
+
     std::vector<std::future<RenderCommand>> futures;
 
     // Load Models
@@ -196,7 +205,7 @@ void Render::prepareRender()
 
     for (auto &f : futures)
     {
-        RenderQueue.push_back(f.get());
+        prepBuffer.push_back(f.get());
     }
 }
 
@@ -257,14 +266,11 @@ void Render::executeRender()
 
     Camera::cameraMoved = false;
     lastShader = nullptr;
-
-    // Clear queue after frame done
-    RenderQueue.clear();
 }
 
 void Render::renderObjects()
 {
-    for (const RenderCommand &cmd : RenderQueue)
+    for (const RenderCommand &cmd : renderBuffer)
     {
         shader = Shader::load(cmd.shader);
 

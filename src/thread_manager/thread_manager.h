@@ -12,6 +12,7 @@ public:
     // Define threads
     static std::thread physicsThread;
     static std::thread animationThread;
+    static std::thread renderBufferThread;
 
     // Synchronisations
     static std::mutex physicsMutex;
@@ -24,12 +25,22 @@ public:
     static std::atomic<bool> animationTrigger;
     static std::atomic<bool> animationShouldExit;
 
+    static std::mutex renderBufferMutex;
+    static std::condition_variable renderBufferCV;
+    static std::atomic<bool> renderPrepReady;
+    static std::atomic<bool> renderExecuteReady;
+    static std::atomic<bool> renderBufferShouldExit;
+
     // Thread Functions
     static void physicsThreadFunction();
     static void animationThreadFunction();
+    static void renderBufferThreadFunction();
 
     static void startup();
     static void shutdown();
+
+    static void startRenderThread();
+    static void stopRenderThread();
 };
 
 #endif

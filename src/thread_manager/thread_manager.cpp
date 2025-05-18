@@ -3,10 +3,12 @@
 #include "scene_manager/scene_manager.h"
 #include "physics/physics.h"
 #include "animation/animation.h"
+#include "render/render.h"
 
 // Define threads
 std::thread ThreadManager::physicsThread;
 std::thread ThreadManager::animationThread;
+std::thread ThreadManager::renderBufferThread;
 
 // Synchronisations
 std::mutex ThreadManager::physicsMutex;
@@ -19,10 +21,17 @@ std::condition_variable ThreadManager::animationCV;
 std::atomic<bool> ThreadManager::animationTrigger(false);
 std::atomic<bool> ThreadManager::animationShouldExit(false);
 
+std::mutex ThreadManager::renderBufferMutex;
+std::condition_variable ThreadManager::renderBufferCV;
+std::atomic<bool> ThreadManager::renderPrepReady(true);
+std::atomic<bool> ThreadManager::renderExecuteReady(false);
+std::atomic<bool> ThreadManager::renderBufferShouldExit(false);
+
 void ThreadManager::startup()
 {
     physicsThread = std::thread(physicsThreadFunction);
     animationThread = std::thread(animationThreadFunction);
+    renderBufferThread = std::thread(renderBufferThreadFunction);
 }
 
 void ThreadManager::shutdown()
@@ -30,16 +39,20 @@ void ThreadManager::shutdown()
     // Tell threads to stop
     physicsShouldExit = true;
     animationShouldExit = true;
+    renderBufferShouldExit = true;
 
     // Wake up threads so they can exit promptly
     physicsCV.notify_one();
     animationCV.notify_one();
+    renderBufferCV.notify_one();
 
     // Join threads back to main
     if (physicsThread.joinable())
         physicsThread.join();
     if (animationThread.joinable())
         animationThread.join();
+    if (renderBufferThread.joinable())
+        renderBufferThread.join();
 }
 
 void ThreadManager::physicsThreadFunction()
@@ -89,4 +102,48 @@ void ThreadManager::animationThreadFunction()
             }
         }
     }
+}
+
+void ThreadManager::renderBufferThreadFunction()
+{
+    while (!renderBufferShouldExit)
+    {
+        {
+            std::unique_lock<std::mutex> lock(renderBufferMutex);
+            renderBufferCV.wait(lock, []
+                                { return renderPrepReady || renderBufferShouldExit; });
+
+            if (renderBufferShouldExit)
+                break;
+
+            renderPrepReady = false;
+        }
+
+        Render::prepareRender();
+
+        {
+            std::lock_guard<std::mutex> lock(renderBufferMutex);
+            renderExecuteReady = true;
+        }
+        renderBufferCV.notify_one();
+    }
+}
+
+void ThreadManager::stopRenderThread()
+{
+    {
+        std::lock_guard<std::mutex> lock(renderBufferMutex);
+        renderBufferShouldExit = true;
+        renderBufferCV.notify_all();
+    }
+    if (renderBufferThread.joinable())
+        renderBufferThread.join();
+}
+
+void ThreadManager::startRenderThread()
+{
+    renderBufferShouldExit = false;
+    renderPrepReady = true;
+    renderExecuteReady = false;
+    renderBufferThread = std::thread(renderBufferThreadFunction);
 }
