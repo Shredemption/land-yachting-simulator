@@ -120,10 +120,9 @@ void Render::prepareRender()
                 cmd.boneInverseOffsets = &model.model->boneInverseOffsets;
             }
 
-            
-            model.model->distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
+            float distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
 
-            if (model.model->distanceFromCamera > lodDistance)
+            if (distanceFromCamera > lodDistance)
                 cmd.lod = 1;
             if (SceneManager::onTitleScreen)
                 cmd.lod = 0;

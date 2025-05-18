@@ -86,7 +86,6 @@ public:
     static void loadModelMap();
 
     std::vector<std::vector<MeshVariant>> lodMeshes;
-    float distanceFromCamera;
     std::string directory;
 
     // Texture cache and Array
