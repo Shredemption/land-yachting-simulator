@@ -23,7 +23,6 @@
 
 int main()
 {
-
     // Initialize GLFW
     if (!glfwInit())
     {
@@ -106,19 +105,23 @@ int main()
 
     glfwShowWindow(window);
 
+    // Setup render class
     Render::setup();
 
+    // Launch threads
     ThreadManager::startup();
 
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        // If window inactive
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
         {
             glfwWaitEvents();
             continue;
         }
 
+        // If on loading screen
         if (SceneManager::loadingState > 0)
         {
             // Check loading state
@@ -128,6 +131,7 @@ int main()
             SceneManager::renderLoading();
         }
 
+        // If normally running
         if (SceneManager::loadingState == 0)
         {
             // Update Events
@@ -155,15 +159,19 @@ int main()
 
             // Update cam and render
             Camera::update();
-            Render::render(*SceneManager::currentScene);
+            // Render::render(*SceneManager::currentScene);
+            Render::prepareRender();
+            Render::executeRender();
         }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    // Close threads
     ThreadManager::shutdown();
 
+    // Clear scene data
     SceneManager::unload();
 
     // Cleanup GLFW
