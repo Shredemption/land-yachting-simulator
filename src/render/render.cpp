@@ -127,6 +127,9 @@ void Render::prepareRender()
             if (SceneManager::onTitleScreen)
                 cmd.lod = 0;
 
+            if (cmd.lod >= model.model->lodMeshes.size())
+                cmd.lod = static_cast<int>(model.model->lodMeshes.size()) - 1;
+
             cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->lodMeshes[cmd.lod], [](std::vector<MeshVariant>*) {});
 
             return cmd; }));
