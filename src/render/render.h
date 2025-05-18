@@ -23,6 +23,21 @@ enum debugState
     dbPhysics,
 };
 
+struct RenderCommand
+{
+    shaderID shader;
+    std::vector<MeshVariant> *meshes;
+
+    std::vector<int> textureLayers;
+
+    glm::mat4 modelMatrix;
+    glm::mat4 normalMatrix;
+
+    bool animated = false;
+    const std::vector<glm::mat4> *boneTransforms = nullptr;
+    const std::vector<glm::mat4> *boneInverseOffsets = nullptr;
+};
+
 class Render
 {
 public:
@@ -46,6 +61,8 @@ public:
 
     static void setup();
     static void initQuad();
+    static void prepareRender();
+    static void executeRender();
     static void render(Scene &scene);
 
     static Texture LoadStandaloneTexture(std::string fileName);

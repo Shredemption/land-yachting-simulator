@@ -45,6 +45,8 @@ GLuint lastGPUQuery = 0;
 Shader *shader;
 Shader *lastShader = nullptr;
 
+std::queue<RenderCommand> RenderQueue;
+
 // Setup quads and text
 void Render::setup()
 {
@@ -77,6 +79,114 @@ void Render::initQuad()
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
         glBindVertexArray(0);
     }
+}
+
+void Render::prepareRender()
+{
+    std::queue<RenderCommand> empty;
+    std::swap(RenderQueue, empty);
+
+    std::vector<std::future<RenderCommand>> futures;
+
+    for (auto &model : SceneManager::currentScene->structModels)
+    {
+        futures.push_back(std::async(std::launch::async, [model]()
+                                     {
+            RenderCommand cmd;
+            cmd.shader = model.shader; 
+            
+            cmd.modelMatrix = model.u_model;
+            cmd.normalMatrix = model.u_normal;
+
+            for (unsigned int i = 0; i < model.model->textures.size(); ++i)
+            {
+                cmd.textureLayers.push_back(model.model->textures[i].index);
+            }
+
+            cmd.animated = model.animated;
+
+            if (cmd.animated)
+            {
+                cmd.boneTransforms = &model.model->boneTransforms;
+                cmd.boneInverseOffsets = &model.model->boneInverseOffsets;
+            }
+
+            size_t lodIndex = 0;
+            model.model->distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
+
+            if (model.model->distanceFromCamera > lodDistance)
+                lodIndex = 1;
+            if (SceneManager::onTitleScreen)
+                lodIndex = 0;
+
+            cmd.meshes = &model.model->lodMeshes[lodIndex]; // assuming one mesh
+
+            return cmd; }));
+    }
+
+    for (auto &f : futures)
+    {
+        RenderQueue.push(f.get());
+    }
+}
+
+void Render::executeRender()
+{
+    // Clear color buffer
+    glClearColor(SceneManager::currentScene->bgColor.r, SceneManager::currentScene->bgColor.g, SceneManager::currentScene->bgColor.b, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    while (!RenderQueue.empty())
+    {
+        RenderCommand cmd = RenderQueue.front();
+        RenderQueue.pop();
+
+        shader = Shader::load(cmd.shader);
+
+        if (shader != lastShader)
+        {
+            // Set texture array index
+            shader->setInt("textureArray", 0);
+
+            // Send light and view position to shader
+            shader->setVec3("lightPos", EventHandler::lightPos);
+            shader->setVec3("viewPos", Camera::getPosition());
+            shader->setFloat("lightIntensity", EventHandler::lightInsensity);
+            shader->setVec3("lightCol", EventHandler::lightCol);
+
+            // Apply view and projection to whole scene
+            shader->setMat4("u_view", Camera::u_view);
+            shader->setMat4("u_projection", Camera::u_projection);
+
+            // Set clipping plane
+            shader->setVec4("location_plane", clipPlane);
+
+            lastShader = shader;
+        }
+
+        shader->setMat4("u_model", cmd.modelMatrix);
+        shader->setMat4("u_normal", cmd.normalMatrix);
+
+        shader->setIntArray("textureLayers", cmd.textureLayers.data(), cmd.textureLayers.size());
+
+        shader->setBool("animated", cmd.animated);
+
+        if (cmd.animated)
+        {
+            shader->setMat4Array("u_boneTransforms", *cmd.boneTransforms);
+            shader->setMat4Array("u_inverseOffsets", *cmd.boneInverseOffsets);
+        }
+
+        for (auto &mesh : *cmd.meshes)
+        {
+            std::visit([](auto &actualMesh)
+                       { actualMesh.draw(); },
+                       mesh);
+        }
+    }
+
+    lastShader = nullptr;
 }
 
 // Main render loop
