@@ -105,13 +105,6 @@ void SceneManager::checkLoading()
     }
 }
 
-void SceneManager::render()
-{
-    // Update cam, render scene
-    Camera::update();
-    Render::render(*currentScene);
-}
-
 void SceneManager::unload()
 {
     // Unload Texture array

@@ -28,7 +28,6 @@ public:
 
     // Update and render functions
     static void checkLoading();
-    static void render();
     static void renderLoading();
 };
 
