@@ -9,7 +9,6 @@
 class Animation
 {
 public:
-    static void updateBones(Scene &scene);
     static void updateYachtBones(ModelData &ModelData);
     static std::unordered_map<std::string, std::map<std::string, int>> yachtBoneMap;
 };

@@ -6,18 +6,6 @@
 #include "event_handler/event_handler.h"
 #include "camera/camera.h"
 
-void Animation::updateBones(Scene &scene)
-{
-    // For every model thats anymated, create bones
-    for (auto &ModelData : scene.structModels)
-    {
-        if (ModelData.animated)
-        {
-            updateYachtBones(ModelData);
-        };
-    };
-}
-
 void Animation::updateYachtBones(ModelData &ModelData)
 {
     // Abreviations

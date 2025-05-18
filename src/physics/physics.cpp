@@ -176,49 +176,34 @@ void Physics::setup(Scene &scene)
     }
 }
 
-void Physics::update(Scene &scene)
-{
-    // Move all controlled models
-    for (ModelData &model : scene.structModels)
-    {
-        if (model.controlled)
-        {
-            // Reset if needed
-            if (resetState)
-            {
-                resetState = false;
-                model.physics[0]->reset(model);
-            }
-            model.physics[0]->move();
-        }
-    }
-}
-
-void Physics::move()
+void Physics::move(bool &controlled)
 {
     // Acceleration from keys
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
 
-    if (keyInputs[0])
+    if (controlled)
     {
-        sailControlFactor += 1.f * EventHandler::deltaTime;
-    }
-    if (keyInputs[1])
-    {
-        sailControlFactor -= 0.4f * EventHandler::deltaTime;
-    }
-    if (keyInputs[2])
-    {
-        steeringChange += steeringSmoothness * maxSteeringAngle;
-    }
-    if (keyInputs[3])
-    {
-        steeringChange -= steeringSmoothness * maxSteeringAngle;
-    }
-    if (keyInputs[4])
-    {
-        forwardAcceleration += 1.f;
+        if (keyInputs[0])
+        {
+            sailControlFactor += 1.f * EventHandler::deltaTime;
+        }
+        if (keyInputs[1])
+        {
+            sailControlFactor -= 0.4f * EventHandler::deltaTime;
+        }
+        if (keyInputs[2])
+        {
+            steeringChange += steeringSmoothness * maxSteeringAngle;
+        }
+        if (keyInputs[3])
+        {
+            steeringChange -= steeringSmoothness * maxSteeringAngle;
+        }
+        if (keyInputs[4])
+        {
+            forwardAcceleration += 1.f;
+        }
     }
 
     // Clamp sail control
@@ -304,16 +289,19 @@ void Physics::move()
     wheelAngle += forwardVelocity * EventHandler::deltaTime * 100;
 
     // Send values to debug
-    Render::debugPhysicsData.push_back(std::pair("velocity", forwardVelocity));
-    Render::debugPhysicsData.push_back(std::pair("acceleration", forwardAcceleration));
-    Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
-    Render::debugPhysicsData.push_back(std::pair("steeringAngle", steeringAngle));
-    Render::debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
-    Render::debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
-    Render::debugPhysicsData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
-    Render::debugPhysicsData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
-    Render::debugPhysicsData.push_back(std::pair("effectiveCL", effectiveCL));
-    Render::debugPhysicsData.push_back(std::pair("effectiveCD", effectiveCD));
+    if (controlled)
+    {
+        Render::debugPhysicsData.push_back(std::pair("velocity", forwardVelocity));
+        Render::debugPhysicsData.push_back(std::pair("acceleration", forwardAcceleration));
+        Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
+        Render::debugPhysicsData.push_back(std::pair("steeringAngle", steeringAngle));
+        Render::debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
+        Render::debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
+        Render::debugPhysicsData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
+        Render::debugPhysicsData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
+        Render::debugPhysicsData.push_back(std::pair("effectiveCL", effectiveCL));
+        Render::debugPhysicsData.push_back(std::pair("effectiveCD", effectiveCD));
+    }
 }
 
 void Physics::switchControlledYacht(Scene &scene)
@@ -323,7 +311,7 @@ void Physics::switchControlledYacht(Scene &scene)
     // Find current controlled yacht, and stop controlling it
     for (auto &model : scene.structModels)
     {
-        if (model.controlled && model.physics[0]->forwardVelocity <= 0.01f)
+        if (model.controlled)
         {
             current = model.model->name;
             model.controlled = false;

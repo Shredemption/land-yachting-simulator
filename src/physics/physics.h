@@ -20,7 +20,8 @@ public:
 
     // Functions
     static void setup(Scene &scene);
-    static void update(Scene &scene);
+    void move(bool &controlled);
+    void reset(ModelData &modelData);
     static void switchControlledYacht(Scene &scene);
 
     // Boolmap for tracking inputs
@@ -56,10 +57,6 @@ public:
     float mass;
     float bodyDragCoefficient;
     float bodyArea;
-
-private:
-    void move();
-    void reset(ModelData &modelData);
 };
 
 #endif
