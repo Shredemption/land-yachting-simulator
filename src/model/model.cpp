@@ -37,6 +37,15 @@ std::string modelMapPath = "resources/models.json";
 JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
+template <typename MeshType>
+struct ExtractVertexType;
+
+template <typename VertexType>
+struct ExtractVertexType<Mesh<VertexType>>
+{
+    using type = VertexType;
+};
+
 // Model Constructor
 Model::Model(std::tuple<std::string, std::vector<std::string>, shaderID> name_paths_shader)
 {
@@ -88,10 +97,10 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, shaderID &shader
 
         processNode(scene->mRootNode, scene, shader, lodLevelMeshes, nullptr);
 
-        // Mesh combinedMesh = combineMeshes(lodLevelMeshes);
-        // lodMeshes.push_back({std::move(combinedMesh)});
+        MeshVariant combinedMesh = combineMeshVariants(lodLevelMeshes);
+        lodMeshes.push_back({std::move(combinedMesh)});
 
-        lodMeshes.push_back(std::move(lodLevelMeshes));
+        // lodMeshes.push_back(std::move(lodLevelMeshes));
     }
 
     // Generate initial bone positions
@@ -236,32 +245,51 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &sha
     }
 }
 
-// Mesh Model::combineMeshes(const std::vector<Mesh> &meshes)
-// {
-//     if (meshes.empty())
-//         return Mesh({}, {}, "");
+template <typename VertexType>
+Mesh<VertexType> Model::combineMeshes(const std::vector<Mesh<VertexType>> &meshes)
+{
+    std::vector<VertexType> allVertices;
+    std::vector<unsigned int> allIndices;
+    unsigned int indexOffset = 0;
 
-//     std::vector<Vertex> allVertices;
-//     std::vector<unsigned int> allIndices;
+    shaderID shader = meshes[0].shader;
 
-//     unsigned int indexOffset = 0;
-//     ;
-//     std::string shaderName = meshes[0].shader;
+    for (const auto &mesh : meshes)
+    {
+        allVertices.insert(allVertices.end(), mesh.vertices.begin(), mesh.vertices.end());
 
-//     for (const Mesh &mesh : meshes)
-//     {
-//         allVertices.insert(allVertices.end(), mesh.vertices.begin(), mesh.vertices.end());
+        for (unsigned int idx : mesh.indices)
+        {
+            allIndices.push_back(idx + indexOffset);
+        }
 
-//         for (unsigned int idx : mesh.indices)
-//         {
-//             allIndices.push_back(idx + indexOffset);
-//         }
+        indexOffset += mesh.vertices.size();
+    }
 
-//         indexOffset += mesh.vertices.size();
-//     }
+    return Mesh<VertexType>(allVertices, allIndices, shader);
+}
 
-//     return Mesh(allVertices, allIndices, shaderName);
-// }
+MeshVariant Model::combineMeshVariants(const std::vector<MeshVariant> &variants)
+{
+    if (variants.empty())
+        throw std::runtime_error("Cannot combine empty variant list");
+
+    return std::visit([&](auto &&mesh) -> MeshVariant
+                      {
+        using MeshType = std::decay_t<decltype(mesh)>;         // Mesh<VertexAnimated>, etc.
+        using VertexType = typename ExtractVertexType<MeshType>::type;
+
+        std::vector<MeshType> typedMeshes;
+        for (const auto& variant : variants) {
+            if (std::holds_alternative<MeshType>(variant))
+                typedMeshes.push_back(std::get<MeshType>(variant));
+            else
+                throw std::runtime_error("Inconsistent mesh types in variant list");
+        }
+
+        Mesh<VertexType> combined = combineMeshes<VertexType>(typedMeshes); // correct now
+        return MeshVariant{std::move(combined)}; }, variants[0]);
+}
 
 void Model::loadTexturesForShader(aiMesh *mesh, const aiScene *scene, const shaderID &shader)
 {
