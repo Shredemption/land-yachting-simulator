@@ -4,6 +4,7 @@
 #include "scene/scene.h"
 
 #include <future>
+#include <atomic>
 
 class SceneManager
 {
@@ -17,7 +18,7 @@ public:
     static void loadSceneMap();
 
     // Global loading variables
-    static bool onTitleScreen;
+    static std::atomic<bool> onTitleScreen;
     static int loadingState;
     static std::pair<int, int> loadingProgress;
 

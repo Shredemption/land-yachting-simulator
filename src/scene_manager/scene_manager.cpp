@@ -23,7 +23,7 @@ std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
 
 // Global loading variables
-bool SceneManager::onTitleScreen = false;
+std::atomic<bool> SceneManager::onTitleScreen(false);
 int SceneManager::loadingState = 0;
 std::pair<int, int> SceneManager::loadingProgress = {0, 0};
 

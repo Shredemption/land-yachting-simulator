@@ -122,13 +122,12 @@ void Render::prepareRender()
 
             float distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
 
-            if (distanceFromCamera > lodDistance)
-                cmd.lod = 1;
-            if (SceneManager::onTitleScreen)
-                cmd.lod = 0;
+            cmd.lod = 0;
+            if (distanceFromCamera > lodDistance) cmd.lod = 1;
+            if (SceneManager::onTitleScreen) cmd.lod = 0;
 
             if (cmd.lod >= model.model->lodMeshes.size())
-                cmd.lod = static_cast<int>(model.model->lodMeshes.size()) - 1;
+                cmd.lod = static_cast<int>(std::round(model.model->lodMeshes.size())) - 1;
 
             cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->lodMeshes[cmd.lod], [](std::vector<MeshVariant>*) {});
 
