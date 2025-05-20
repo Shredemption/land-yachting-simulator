@@ -13,7 +13,7 @@ public:
     static bool resetState;
 
     static const float tickRate;
-    static float accumulator;
+    static double accumulator;
 
     // World variables
     static glm::vec3 windSourceDirection;
@@ -26,6 +26,7 @@ public:
     void move(bool &controlled);
     void reset(ModelData &modelData);
     static void switchControlledYacht(Scene &scene);
+    void savePrevState();
 
     // Boolmap for tracking inputs
     static bool keyInputs[5];

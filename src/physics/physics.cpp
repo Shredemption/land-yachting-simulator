@@ -16,8 +16,8 @@ float Physics::g = 9.81f;
 
 bool Physics::resetState = false;
 
-const float Physics::tickRate = 1.0f / 60.0f;
-float Physics::accumulator = 0.0f;
+const float Physics::tickRate = 1.0f / 30.0f;
+double Physics::accumulator = 0.0f;
 
 Physics::Physics(ModelData &ModelData)
 {
@@ -180,14 +180,6 @@ void Physics::setup(Scene &scene)
 
 void Physics::move(bool &controlled)
 {
-    // Save previous state
-    prevBaseTransform = baseTransform;
-    prevSteeringAngle = steeringAngle;
-    prevWheelAngle = wheelAngle;
-    prevMastAngle = MastAngle;
-    prevBoomAngle = BoomAngle;
-    prevSailAngle = SailAngle;
-
     // Acceleration from keys
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
@@ -341,4 +333,15 @@ void Physics::switchControlledYacht(Scene &scene)
             model.controlled = true;
         }
     }
+}
+
+void Physics::savePrevState()
+{
+    // Save previous state
+    prevBaseTransform = baseTransform;
+    prevSteeringAngle = steeringAngle;
+    prevWheelAngle = wheelAngle;
+    prevMastAngle = MastAngle;
+    prevBoomAngle = BoomAngle;
+    prevSailAngle = SailAngle;
 }
