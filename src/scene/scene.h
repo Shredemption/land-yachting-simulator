@@ -6,8 +6,10 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <optional>
 
 #include "model/model.h"
+#include "physics/physics.h"
 
 struct JSONModel
 {
@@ -71,8 +73,6 @@ struct JSONScene
     std::vector<float> bgColor = {0, 0, 0};
 };
 
-class Physics;
-
 struct ModelData
 {
     Model *model;
@@ -81,7 +81,7 @@ struct ModelData
     shaderID shader;
     bool animated;
     bool controlled;
-    std::vector<Physics *> physics;
+    std::optional<PhysicsBuffer> physics;
 };
 
 struct UnitPlaneData

@@ -71,9 +71,10 @@ void ThreadManager::physicsThreadFunction()
 
         for (ModelData &model : SceneManager::currentScene.get()->structModels)
         {
-            if (!model.physics.empty())
+            if (model.physics.has_value())
             {
-                model.physics[0]->savePrevState();
+                model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
+                model.physics->getWriteBuffer()->savePrevState();
             }
         }
 
@@ -81,13 +82,22 @@ void ThreadManager::physicsThreadFunction()
         {
             for (ModelData &model : SceneManager::currentScene.get()->structModels)
             {
-                if (!model.physics.empty())
+                if (model.physics.has_value())
                 {
-                    model.physics[0]->move(model.controlled);
+                    model.physics->getWriteBuffer()->move(model.controlled);
                 }
             }
 
+            Physics::accumulator = Physics::accumulator.load() - Physics::tickRate;
             physicsSteps--;
+        }
+
+        for (ModelData &model : SceneManager::currentScene.get()->structModels)
+        {
+            if (model.physics.has_value())
+            {
+                model.physics->swapBuffers();
+            }
         }
     }
 }
