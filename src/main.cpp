@@ -141,15 +141,27 @@ int main()
 
             // Update Physics
             Physics::accumulator += EventHandler::deltaTime;
-            if (Physics::accumulator >= Physics::tickRate)
+
+            // If time for physics tick
+
+            int steps = 0;
+            while (Physics::accumulator >= Physics::tickRate)
+            {
+                Physics::accumulator -= Physics::tickRate;
+                steps++;
+            }
+
+            if (steps > 1)
+                std::cout << "Running physics steps: " << std::to_string(steps) << "\n";
+
+            if (steps > 0)
             {
                 {
                     std::lock_guard lock(ThreadManager::physicsMutex);
                     ThreadManager::physicsTrigger = true;
+                    ThreadManager::physicsSteps += steps;
                 }
                 ThreadManager::physicsCV.notify_one();
-
-                Physics::accumulator -= Physics::tickRate;
             }
 
             // Update Animations

@@ -14,6 +14,7 @@ std::thread ThreadManager::renderBufferThread;
 std::mutex ThreadManager::physicsMutex;
 std::condition_variable ThreadManager::physicsCV;
 std::atomic<bool> ThreadManager::physicsTrigger(false);
+std::atomic<int> ThreadManager::physicsSteps(0);
 std::atomic<bool> ThreadManager::physicsShouldExit(false);
 
 std::mutex ThreadManager::animationMutex;
@@ -72,8 +73,21 @@ void ThreadManager::physicsThreadFunction()
         {
             if (!model.physics.empty())
             {
-                model.physics[0]->move(model.controlled);
+                model.physics[0]->savePrevState();
             }
+        }
+
+        while (physicsSteps > 0)
+        {
+            for (ModelData &model : SceneManager::currentScene.get()->structModels)
+            {
+                if (!model.physics.empty())
+                {
+                    model.physics[0]->move(model.controlled);
+                }
+            }
+
+            physicsSteps--;
         }
     }
 }
