@@ -17,9 +17,11 @@ bool EventHandler::firstFrame = true;
 GLFWmonitor *EventHandler::monitor;
 
 // Global Time
-float EventHandler::time;
-float EventHandler::deltaTime = 0;
-float EventHandler::lastTime = 0;
+float EventHandler::time = 0;
+double EventHandler::deltaTime = 0;
+std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+std::chrono::steady_clock::time_point EventHandler::now = startTime;
+std::chrono::steady_clock::time_point EventHandler::lastTime = startTime;
 unsigned int EventHandler::frame = 0;
 
 // Global Light properties
@@ -27,16 +29,16 @@ glm::vec3 EventHandler::lightPos(1000.f, -1000.f, 2000.f);
 glm::vec3 EventHandler::lightCol(1, 1, 1);
 float EventHandler::lightInsensity = 2;
 
-// Generic EventHandler updates
-void EventHandler::update(GLFWwindow *window)
+// Generic EventHandler time update
+void EventHandler::timing(GLFWwindow *window)
 {
-    time = (float)glfwGetTime();
-    deltaTime = time - lastTime;
-    lastTime = time;
+    now = std::chrono::steady_clock::now();
+    std::chrono::duration<double> delta = now - lastTime;
+    std::chrono::duration<float> total = startTime - now;
+    deltaTime = delta.count();
+    time = total.count();
+    lastTime = now;
     frame++;
-
-    // Process Held inputs from window
-    processInput(window);
 }
 
 void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)

@@ -7,6 +7,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <chrono>
 
 class EventHandler
 {
@@ -18,9 +19,10 @@ public:
     static int windowXpos, windowYpos, windowWidth, windowHeight;
 
     // Global Time
-    static float deltaTime;
-    static float lastTime;
     static float time;
+    static double deltaTime;
+    static std::chrono::steady_clock::time_point lastTime;
+    static std::chrono::steady_clock::time_point now;
     static unsigned int frame;
 
     // Global Light properties
@@ -31,7 +33,7 @@ public:
     static float lightInsensity;
 
     // Global input/callback Functions
-    static void update(GLFWwindow *window);
+    static void timing(GLFWwindow *window);
     static void errorCallback(int error, const char *description);
     static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
     static void mouseCallback(GLFWwindow *window, double xPos, double yPos);

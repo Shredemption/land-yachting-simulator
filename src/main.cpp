@@ -114,6 +114,8 @@ int main()
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        EventHandler::timing(window);
+
         // If window inactive
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
         {
@@ -135,7 +137,7 @@ int main()
         if (SceneManager::loadingState == 0)
         {
             // Update Events
-            EventHandler::update(window);
+            EventHandler::processInput(window);
 
             // Update Physics
             Physics::accumulator += EventHandler::deltaTime;
