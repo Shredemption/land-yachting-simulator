@@ -152,7 +152,7 @@ void Scene::loadModelToScene(JSONModel model)
     loadModel.controlled = model.controlled;
 
     // Save model
-    this->structModels.push_back(loadModel);
+    this->structModels.emplace_back(std::move(loadModel));
 
     // If model is a yacht, save name to yachts list
     if (Model::modelMap[model.name].type == "yacht")

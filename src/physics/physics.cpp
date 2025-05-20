@@ -4,6 +4,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "render/render.h"
+#include "scene/scene.h"
 
 // Boolmap for input tracking
 bool Physics::keyInputs[5];
@@ -16,8 +17,8 @@ float Physics::g = 9.81f;
 
 bool Physics::resetState = false;
 
-const float Physics::tickRate = 1.0f / 30.0f;
-double Physics::accumulator = 0.0f;
+const double Physics::tickRate = 1.0f / 30.0f;
+std::atomic<double> Physics::accumulator = 0.0f;
 
 Physics::Physics(ModelData &ModelData)
 {
@@ -171,9 +172,14 @@ void Physics::setup(Scene &scene)
     {
         if (model.animated)
         {
-            model.physics.clear();
-            model.physics.push_back(new Physics(model));
-            model.physics[0]->reset(model);
+            model.physics.emplace();
+
+            model.physics->buffers[0] = std::make_unique<Physics>(model);
+            model.physics->buffers[1] = std::make_unique<Physics>(model);
+
+            // Initialize both to the same starting state
+            model.physics->buffers[0]->reset(model);
+            model.physics->buffers[1]->reset(model);
         }
     }
 }
@@ -286,7 +292,7 @@ void Physics::move(bool &controlled)
     float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
 
     // Transform with velocities
-    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(effectiveSteeringAngle * forwardVelocity * tickRate), glm::vec3(0.0f, 0.0f, 1.0f));
+    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(effectiveSteeringAngle * forwardVelocity * tickRate)), glm::vec3(0.0f, 0.0f, 1.0f));
     baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * tickRate, 0.0f));
     wheelAngle += forwardVelocity * tickRate * 100;
 
@@ -344,4 +350,9 @@ void Physics::savePrevState()
     prevMastAngle = MastAngle;
     prevBoomAngle = BoomAngle;
     prevSailAngle = SailAngle;
+}
+
+void Physics::copyFrom(const Physics &other)
+{
+    *this = other;
 }

@@ -140,19 +140,18 @@ int main()
             EventHandler::processInput(window);
 
             // Update Physics
-            Physics::accumulator += EventHandler::deltaTime;
+            Physics::accumulator = Physics::accumulator.load() + EventHandler::deltaTime;
 
             // If time for physics tick
 
             int steps = 0;
-            while (Physics::accumulator >= Physics::tickRate)
+            float acc = Physics::accumulator.load(); // read once
+
+            while (acc >= Physics::tickRate)
             {
-                Physics::accumulator -= Physics::tickRate;
+                acc -= Physics::tickRate;
                 steps++;
             }
-
-            if (steps > 1)
-                std::cout << "Running physics steps: " << std::to_string(steps) << "\n";
 
             if (steps > 0)
             {

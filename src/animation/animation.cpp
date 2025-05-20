@@ -11,7 +11,7 @@ void Animation::updateYachtBones(ModelData &ModelData, float &alpha)
 {
     // Abreviations
     Model *model = ModelData.model;
-    Physics *physics = ModelData.physics[0];
+    Physics *physics = ModelData.physics->getReadBuffer();
 
     // Interpolate between physics ticks
     float steeringAngle = glm::mix(physics->prevSteeringAngle, physics->steeringAngle, alpha);

@@ -96,7 +96,7 @@ void Render::prepareRender()
     // Load Models
     for (auto &model : SceneManager::currentScene->structModels)
     {
-        futures.push_back(std::async(std::launch::async, [model]()
+        futures.push_back(std::async(std::launch::async, [&model]()
                                      {
             RenderCommand cmd;
             

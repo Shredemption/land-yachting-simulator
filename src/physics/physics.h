@@ -2,8 +2,11 @@
 #define PHYSICS_H
 
 #include <glm/glm.hpp>
+#include <atomic>
+#include <memory>
 
-#include "scene/scene.h"
+struct Scene;
+struct ModelData;
 
 class Physics
 {
@@ -12,8 +15,8 @@ public:
     Physics(ModelData &ModelData);
     static bool resetState;
 
-    static const float tickRate;
-    static double accumulator;
+    static const double tickRate;
+    static std::atomic<double> accumulator;
 
     // World variables
     static glm::vec3 windSourceDirection;
@@ -27,6 +30,7 @@ public:
     void reset(ModelData &modelData);
     static void switchControlledYacht(Scene &scene);
     void savePrevState();
+    void copyFrom(const Physics &other);
 
     // Boolmap for tracking inputs
     static bool keyInputs[5];
@@ -60,6 +64,17 @@ public:
     float mass;
     float bodyDragCoefficient;
     float bodyArea;
+};
+
+struct PhysicsBuffer
+{
+    std::unique_ptr<Physics> buffers[2];
+    int readIndex = 0;
+
+    Physics *getReadBuffer() { return buffers[readIndex % 2].get(); }
+    Physics *getWriteBuffer() { return buffers[(readIndex + 1) % 2].get(); }
+
+    void swapBuffers() { readIndex = (readIndex + 1) % 2; }
 };
 
 #endif
