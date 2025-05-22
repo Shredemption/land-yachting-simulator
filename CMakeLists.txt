@@ -32,8 +32,36 @@ file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
 # Add all .h files in the src directory and its subdirectories
 file(GLOB_RECURSE HEADER_FILES src/*.h)
 
+# Add exe icon
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(ICON_RC "${CMAKE_SOURCE_DIR}/resources/icon/icon.rc")
+    set(ICON_RES "${CMAKE_BINARY_DIR}/icon.res")
+
+    add_custom_command(
+        OUTPUT ${ICON_RES}
+        COMMAND windres ${ICON_RC} -O coff -o ${ICON_RES}
+        DEPENDS ${ICON_RC}
+        COMMENT "Compiling Windows resource file (icon.rc)"
+        VERBATIM
+    )
+
+    add_custom_target(CompileIcon ALL DEPENDS ${ICON_RES})
+
+    set_source_files_properties(${ICON_RES} PROPERTIES GENERATED TRUE)
+endif()
+
 # Create the library target
-add_executable(${PROJECT_NAME} src/main.cpp ${CPP_SOURCES} ${HEADER_FILES})
+add_executable(${PROJECT_NAME} WIN32 ${CPP_SOURCES} ${HEADER_FILES})
+
+# Make sure the executable depends on the resource compilation target
+if(TARGET CompileIcon)
+    add_dependencies(${PROJECT_NAME} CompileIcon)
+endif()
+
+# Now add the icon resource to the executable's sources
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_libraries(${PROJECT_NAME} "${ICON_RES}")
+endif()
 
 # Include directories (headers)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
