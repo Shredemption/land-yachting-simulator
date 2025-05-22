@@ -1,8 +1,8 @@
 # Specify the minimum version of CMake
 cmake_minimum_required(VERSION 3.10)
 
-# Project name and version
-project(Marama VERSION 0.1)
+# Project name
+project(Marama)
 
 # Set the C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -67,6 +67,6 @@ target_link_libraries(${PROJECT_NAME} Freetype::Freetype)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Set as Windows application
-# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
 message(STATUS "Include directories: ${CMAKE_INCLUDE_PATH}")
