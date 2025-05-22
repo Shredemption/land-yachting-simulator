@@ -26,6 +26,46 @@ void AttachConsoleIfNeeded()
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <stb_image.h>
+
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <shellapi.h>
+#include <shobjidl.h>
+#include <GLFW/glfw3native.h> // for glfwGetWin32Window()
+
+void InitAppUserModelID()
+{
+    // e.g. "com.yourcompany.yourapp"
+    const wchar_t *AppID = L"Marama.YourCompany.MaramaApp";
+    SetCurrentProcessExplicitAppUserModelID(AppID);
+}
+
+void SetWindowIconFromResource(GLFWwindow *window)
+{
+    // Get the HWND for the GLFW window
+    HWND hwnd = glfwGetWin32Window(window);
+    // Load the icon you embedded (make sure IDI_ICON1 matches your .rc)
+    HICON hIconSmall = (HICON)LoadImage(
+        GetModuleHandle(NULL),
+        MAKEINTRESOURCE(101),
+        IMAGE_ICON,
+        16, 16,
+        LR_DEFAULTCOLOR);
+    HICON hIconBig = (HICON)LoadImage(
+        GetModuleHandle(NULL),
+        MAKEINTRESOURCE(101),
+        IMAGE_ICON,
+        32, 32,
+        LR_DEFAULTCOLOR);
+    // Send both small and large
+    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSmall);
+    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIconBig);
+
+    SetClassLongPtr(hwnd, GCLP_HICON, (LONG_PTR)hIconBig);
+    SetClassLongPtr(hwnd, GCLP_HICONSM, (LONG_PTR)hIconSmall);
+}
+#endif
 
 #include "event_handler/event_handler.h"
 #include "model/model.h"
@@ -42,6 +82,7 @@ int main()
 {
 // Attach to existing console
 #ifdef _WIN32
+    InitAppUserModelID();
     AttachConsoleIfNeeded();
 #endif
 
@@ -75,6 +116,10 @@ int main()
 
     // Make OpenGL context current
     glfwMakeContextCurrent(window);
+
+#ifdef _WIN32
+    SetWindowIconFromResource(window);
+#endif
 
     // Set swap interval
     glfwSwapInterval(1);
