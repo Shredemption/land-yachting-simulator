@@ -1,3 +1,20 @@
+#ifdef _WIN32
+#include <windows.h>
+#include <iostream>
+
+void AttachConsoleIfNeeded()
+{
+    if (AttachConsole(ATTACH_PARENT_PROCESS))
+    {
+        FILE *dummy;
+        freopen_s(&dummy, "CONOUT$", "w", stdout);
+        freopen_s(&dummy, "CONOUT$", "w", stderr);
+        std::cout.clear();
+        std::cerr.clear();
+    }
+}
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -23,6 +40,11 @@
 
 int main()
 {
+// Attach to existing console
+#ifdef _WIN32
+    AttachConsoleIfNeeded();
+#endif
+
     // Initialize GLFW
     if (!glfwInit())
     {
@@ -55,7 +77,7 @@ int main()
     glfwMakeContextCurrent(window);
 
     // Set swap interval
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     // GLAD loads all OpenGL pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -143,9 +165,8 @@ int main()
             Physics::accumulator = Physics::accumulator.load() + EventHandler::deltaTime;
 
             // If time for physics tick
-
             int steps = 0;
-            float acc = Physics::accumulator.load(); // read once
+            double acc = Physics::accumulator.load(); // read once
 
             while (acc >= Physics::tickRate)
             {
