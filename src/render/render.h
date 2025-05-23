@@ -81,6 +81,7 @@ public:
     static void executeRender();
 
     static Texture LoadStandaloneTexture(std::string fileName);
+    static Texture LoadImageToTexture(std::string fileName);
 
     static void initFreeType();
     static void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
@@ -100,6 +101,7 @@ private:
     static void renderGrid(const RenderCommand &cmd);
     static void renderSceneSkyBox();
     static void renderSceneTexts();
+    static void renderSceneImages();
 
     // Texture renderers
     static void renderReflectRefract();

@@ -181,6 +181,8 @@ void SceneManager::renderLoading()
          { return "Loading Background Colors"; }},
         {"Texts Complete", [&]
          { return "Loading Texts [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Images Complete", [&]
+         { return "Loading Images [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
         {"Models Complete", [&]
          { return "Loading Models [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
         {"Planes Complete", [&]
