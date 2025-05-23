@@ -6,6 +6,12 @@
 #include <future>
 #include <atomic>
 
+struct LoadingStep
+{
+    std::string completedLabel;
+    std::function<std::string()> activeMessage;
+};
+
 class SceneManager
 {
 public:

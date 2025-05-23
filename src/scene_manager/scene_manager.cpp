@@ -166,57 +166,48 @@ void SceneManager::loadSceneMap()
 
 void SceneManager::renderLoading()
 {
-    std::string progressString;
-    std::string statusString = "Loading...";
-    // Render loading screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Completed loading steps
-    if (loadingState > 1)
-        progressString += "Unloaded Success\n";
-    if (loadingState > 2)
-        progressString += "Scene JSON Complete\n";
-    if (loadingState > 3)
-        progressString += "Background Colors Complete\n";
-    if (loadingState > 4)
-        progressString += "Texts Complete\n";
-    if (loadingState > 5)
-        progressString += "Models Complete\n";
-    if (loadingState > 6)
-        progressString += "Planes Complete\n";
-    if (loadingState > 7)
-        progressString += "Terrain Grids Complete\n";
-    if (loadingState > 8)
-        progressString += "Skybox Complete\n";
-    if (loadingState > 9)
-        progressString += "OpenGL Upload Complete\n";
+    std::string progressString;
+    std::string statusString = "Loading...";
 
-    // Current loading step
-    if (loadingState == 1)
-        progressString += "Clearing Previous\n";
-    else if (loadingState == 2)
-        progressString += "Loading new Scene JSON\n";
-    else if (loadingState == 3)
-        progressString += "Loading Background Colors\n";
-    else if (loadingState == 4)
-        progressString += "Loading Texts [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
-    else if (loadingState == 5)
-        progressString += "Loading Models [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
-    else if (loadingState == 6)
-        progressString += "Loading Planes [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
-    else if (loadingState == 7)
-        progressString += "Loading Terrain Grids [" + std::to_string(loadingProgress.first) + "/" + std::to_string(loadingProgress.second) + "]\n";
-    else if (loadingState == 8)
-        progressString += "Loading Skybox\n";
-    else if (loadingState == 9)
-        progressString += "Uploading to OpenGL\n";
+    std::vector<LoadingStep> loadingSteps = {
+        {"Unloaded Success", []
+         { return "Clearing Previous"; }},
+        {"Scene JSON Complete", []
+         { return "Loading new Scene JSON"; }},
+        {"Background Colors Complete", []
+         { return "Loading Background Colors"; }},
+        {"Texts Complete", [&]
+         { return "Loading Texts [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Models Complete", [&]
+         { return "Loading Models [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Planes Complete", [&]
+         { return "Loading Planes [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Terrain Grids Complete", [&]
+         { return "Loading Terrain Grids [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Skybox Complete", []
+         { return "Loading Skybox"; }},
+        {"OpenGL Upload Complete", []
+         { return "Uploading to OpenGL"; }}};
 
-    // If loading complete
+    // Render completed steps
+    for (int i = 0; i < loadingState - 1 && i < loadingSteps.size(); ++i)
+    {
+        progressString += loadingSteps[i].completedLabel + "\n";
+    }
+
+    // Render current step
+    if (loadingState >= 1 && loadingState <= loadingSteps.size())
+    {
+        progressString += loadingSteps[loadingState - 1].activeMessage() + "\n";
+    }
+
+    // Loading complete
     if (loadingState == 100)
         statusString = "Finished Loading";
 
     Render::renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
-
     Render::renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
 }
