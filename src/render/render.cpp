@@ -264,6 +264,7 @@ void Render::executeRender()
     }
 
     renderSceneTexts();
+    renderSceneImages();
 
     Camera::cameraMoved = false;
     lastShader = nullptr;
@@ -541,6 +542,51 @@ void Render::renderSceneTexts()
     }
 }
 
+void Render::renderSceneImages()
+{
+    shader = Shader::load(shaderID::shImage);
+    lastShader = shader;
+
+    shader->setVec2("uScreenSize", glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight));
+    glm::vec2 screenSize = glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight);
+
+    glBindVertexArray(quadVAO);
+    glActiveTexture(GL_TEXTURE1);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    for (ImageData image : SceneManager::currentScene.get()->images)
+    {
+        Texture texture = LoadImageToTexture(image.file);
+
+        glBindTexture(GL_TEXTURE_2D, texture.index);
+        shader->setInt("uTexture", 1);
+
+        glm::vec2 posFactor = image.position; // normalized 0..1
+
+        glm::vec2 imageSizePx = glm::vec2(image.width, image.height) * image.scale;
+
+        // Calculate center position so edges match posFactor
+        glm::vec2 positionPx;
+        positionPx.x = posFactor.x * (screenSize.x - imageSizePx.x);
+        positionPx.y = posFactor.y * (screenSize.y - imageSizePx.y);
+
+        shader->setVec2("uPosition", positionPx);
+
+        shader->setVec2("uImageSize", glm::vec2(image.width, image.height));
+        shader->setVec2("uScale", image.scale);
+        shader->setFloat("uRotation", glm::radians(image.rotation));
+        shader->setBool("uMirrored", image.mirrored);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+    glDisable(GL_BLEND);
+
+    glBindVertexArray(0);
+}
+
 void Render::renderReflectRefract()
 {
     // ===== REFLECTOIN =====
@@ -616,6 +662,31 @@ Texture Render::LoadStandaloneTexture(std::string fileName)
         Texture texture;
         texture.index = Model::TextureFromFile(fileName.c_str(), "../resources/textures");
         texture.type = "standalone";
+        texture.path = fileName.c_str();
+
+        loadTexture = texture;
+        Model::textureCache[fileName].texture = texture;
+    }
+
+    return loadTexture;
+}
+
+Texture Render::LoadImageToTexture(std::string fileName)
+{
+    Texture loadTexture;
+    // If texture already loaded
+    if (Model::textureCache.find(fileName) != Model::textureCache.end())
+    {
+        // Use cached texture
+        loadTexture = Model::textureCache[fileName].texture;
+        Model::textureCache[fileName].refCount++;
+    }
+    else
+    {
+        // Define and load new texture to texture cache
+        Texture texture;
+        texture.index = Model::TextureFromFile(fileName.c_str(), "../resources/images");
+        texture.type = "image";
         texture.path = fileName.c_str();
 
         loadTexture = texture;

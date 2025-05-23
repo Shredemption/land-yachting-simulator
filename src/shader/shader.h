@@ -20,6 +20,7 @@ enum shaderID
     shGui,
     shSimple,
     shText,
+    shImage,
     shWater,
     shSkybox,
     shToon,

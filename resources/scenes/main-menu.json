@@ -6,12 +6,11 @@
       "position": [0.05, 0.05]
     }
   ],
-  "models": [
+  "images": [
     {
-      "name": "dn-duvel",
-      "translation": [5, 7, -3],
-      "angle": 110,
-      "rotationAxis": [0, 0, 1]
+      "file": "title-figure.png",
+      "size": [835, 1024],
+      "position": [0.67, 0.5]
     }
   ]
 }

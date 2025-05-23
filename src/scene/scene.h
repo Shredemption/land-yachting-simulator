@@ -63,6 +63,16 @@ struct JSONText
     float scale = 1;
 };
 
+struct JSONImage
+{
+    std::string file = "";
+    std::vector<int> size = {0, 0};
+    std::vector<float> position = {0.5, 0.5};
+    std::vector<float> scale = {1, 1};
+    float rotation = 0.0f;
+    bool mirrored = false;
+};
+
 struct JSONScene
 {
     std::vector<JSONModel> models = {};
@@ -70,6 +80,7 @@ struct JSONScene
     std::vector<JSONGrid> grids = {};
     std::vector<JSONSkybox> skyBox = {};
     std::vector<JSONText> texts = {};
+    std::vector<JSONImage> images = {};
     std::vector<float> bgColor = {0, 0, 0};
 };
 
@@ -132,6 +143,16 @@ struct TextData
     float scale;
 };
 
+struct ImageData
+{
+    std::string file;
+    int width, height;
+    glm::vec2 position;
+    glm::vec2 scale;
+    float rotation;
+    bool mirrored;
+};
+
 class Scene
 {
 public:
@@ -149,6 +170,7 @@ public:
     SkyBoxData skyBox;
     bool hasSkyBox;
     std::vector<TextData> texts;
+    std::vector<ImageData> images;
     glm::vec3 bgColor;
 
 private:
@@ -158,6 +180,7 @@ private:
     void loadGridToScene(JSONGrid grid);
     void loadSkyBoxToScene(JSONSkybox skyBox);
     void loadTextToScene(JSONText text);
+    void loadImageToScene(JSONImage image);
 };
 
 #endif
