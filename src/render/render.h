@@ -80,9 +80,6 @@ public:
     static void prepareRender();
     static void executeRender();
 
-    static Texture LoadStandaloneTexture(std::string fileName);
-    static Texture LoadImageToTexture(std::string fileName);
-
     static void initFreeType();
     static void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
 

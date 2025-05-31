@@ -323,7 +323,7 @@ void Scene::uploadToGPU()
     }
     if (hasSkyBox)
     {
-        this->skyBox.textureID = Model::LoadSkyBoxTexture(this->skyBox);
+        this->skyBox.textureID = TextureManager::LoadSkyBoxTexture(this->skyBox);
         this->skyBox.VAO = Mesh<VertexSkybox>::setupSkyBoxMesh();
     }
 }

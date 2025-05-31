@@ -117,7 +117,7 @@ void SceneManager::checkLoading()
 void SceneManager::unload()
 {
     // Unload Texture array
-    Model::unloadTextures();
+    TextureManager::unloadTextures();
 
     // Reset scene variable. Calls destructors
     currentScene.reset();
