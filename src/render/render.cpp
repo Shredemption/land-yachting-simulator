@@ -364,9 +364,9 @@ void Render::renderOpaquePlane(const RenderCommand &cmd)
 
     if (cmd.shader == shaderID::shToonWater)
     {
-        Texture DuDv = LoadStandaloneTexture("toonWater.jpeg");
-        Texture normal = LoadStandaloneTexture("waterNormal.png");
-        Texture height = LoadStandaloneTexture("heightmap.jpg");
+        Texture DuDv = TextureManager::LoadStandaloneTexture("toonWater.jpeg");
+        Texture normal = TextureManager::LoadStandaloneTexture("waterNormal.png");
+        Texture height = TextureManager::LoadStandaloneTexture("heightmap.jpg");
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, DuDv.index);
@@ -415,8 +415,8 @@ void Render::renderTransparentPlane(const RenderCommand &cmd)
     if (cmd.shader == shaderID::shWater)
     {
         // Load surface textures
-        Texture DuDv = LoadStandaloneTexture("waterDUDV.png");
-        Texture normal = LoadStandaloneTexture("waterNormal.png");
+        Texture DuDv = TextureManager::LoadStandaloneTexture("waterDUDV.png");
+        Texture normal = TextureManager::LoadStandaloneTexture("waterNormal.png");
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
@@ -477,7 +477,7 @@ void Render::renderGrid(const RenderCommand &cmd)
 
     if (cmd.shader == shaderID::shToonTerrain)
     {
-        Texture heightmap = LoadStandaloneTexture("heightmap.jpg");
+        Texture heightmap = TextureManager::LoadStandaloneTexture("heightmap.jpg");
 
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, heightmap.index);
@@ -558,7 +558,7 @@ void Render::renderSceneImages()
 
     for (ImageData image : SceneManager::currentScene.get()->images)
     {
-        Texture texture = LoadImageToTexture(image.file);
+        Texture texture = TextureManager::LoadImageToTexture(image.file);
 
         glBindTexture(GL_TEXTURE_2D, texture.index);
         shader->setInt("uTexture", 1);
@@ -644,56 +644,6 @@ void Render::renderTestQuad(GLuint texture, int x, int y)
 
     // restore viewport
     glViewport(0, 0, EventHandler::screenWidth, EventHandler::screenHeight);
-}
-
-Texture Render::LoadStandaloneTexture(std::string fileName)
-{
-    Texture loadTexture;
-    // If texture already loaded
-    if (Model::textureCache.find(fileName) != Model::textureCache.end())
-    {
-        // Use cached texture
-        loadTexture = Model::textureCache[fileName].texture;
-        Model::textureCache[fileName].refCount++;
-    }
-    else
-    {
-        // Define and load new texture to texture cache
-        Texture texture;
-        texture.index = Model::TextureFromFile(fileName.c_str(), "../resources/textures");
-        texture.type = "standalone";
-        texture.path = fileName.c_str();
-
-        loadTexture = texture;
-        Model::textureCache[fileName].texture = texture;
-    }
-
-    return loadTexture;
-}
-
-Texture Render::LoadImageToTexture(std::string fileName)
-{
-    Texture loadTexture;
-    // If texture already loaded
-    if (Model::textureCache.find(fileName) != Model::textureCache.end())
-    {
-        // Use cached texture
-        loadTexture = Model::textureCache[fileName].texture;
-        Model::textureCache[fileName].refCount++;
-    }
-    else
-    {
-        // Define and load new texture to texture cache
-        Texture texture;
-        texture.index = Model::TextureFromFile(fileName.c_str(), "../resources/images");
-        texture.type = "image";
-        texture.path = fileName.c_str();
-
-        loadTexture = texture;
-        Model::textureCache[fileName].texture = texture;
-    }
-
-    return loadTexture;
 }
 
 void Render::initFreeType()
