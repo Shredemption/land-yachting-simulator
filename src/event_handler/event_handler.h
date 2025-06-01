@@ -19,7 +19,7 @@ public:
     static int windowXpos, windowYpos, windowWidth, windowHeight;
 
     // Global Time
-    static float time;
+    static double time;
     static double deltaTime;
     static std::chrono::steady_clock::time_point lastTime;
     static std::chrono::steady_clock::time_point now;

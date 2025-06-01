@@ -20,6 +20,7 @@ std::atomic<bool> ThreadManager::physicsShouldExit(false);
 std::mutex ThreadManager::animationMutex;
 std::condition_variable ThreadManager::animationCV;
 std::atomic<bool> ThreadManager::animationTrigger(false);
+std::atomic<float> ThreadManager::animationAlpha(0.0f);
 std::atomic<bool> ThreadManager::animationShouldExit(false);
 
 std::mutex ThreadManager::renderBufferMutex;
@@ -78,18 +79,22 @@ void ThreadManager::physicsThreadFunction()
             }
         }
 
-        while (physicsSteps > 0)
+        while (true)
         {
-            for (ModelData &model : SceneManager::currentScene.get()->structModels)
+            int oldSteps = physicsSteps.load();
+            if (oldSteps <= 0)
+                break;
+
+            if (physicsSteps.compare_exchange_weak(oldSteps, oldSteps - 1))
             {
-                if (model.physics.has_value())
+                for (ModelData &model : SceneManager::currentScene.get()->structModels)
                 {
-                    model.physics->getWriteBuffer()->move(model.controlled);
+                    if (model.physics.has_value())
+                    {
+                        model.physics->getWriteBuffer()->move(model.controlled);
+                    }
                 }
             }
-
-            Physics::accumulator = Physics::accumulator.load() - Physics::tickRate;
-            physicsSteps--;
         }
 
         for (ModelData &model : SceneManager::currentScene.get()->structModels)
@@ -113,9 +118,9 @@ void ThreadManager::animationThreadFunction()
         if (animationShouldExit)
             break;
 
-        animationTrigger = false; // reset trigger
+        animationTrigger = false;
 
-        float alpha = Physics::accumulator / Physics::tickRate;
+        float alpha = animationAlpha.load(std::memory_order_acquire);
 
         // Run animations sequentially for all models
         for (ModelData &model : SceneManager::currentScene.get()->structModels)

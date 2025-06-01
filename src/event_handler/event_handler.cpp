@@ -17,7 +17,7 @@ bool EventHandler::firstFrame = true;
 GLFWmonitor *EventHandler::monitor;
 
 // Global Time
-float EventHandler::time = 0;
+double EventHandler::time = 0;
 double EventHandler::deltaTime = 0;
 std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 std::chrono::steady_clock::time_point EventHandler::now = startTime;
@@ -34,7 +34,7 @@ void EventHandler::timing(GLFWwindow *window)
 {
     now = std::chrono::steady_clock::now();
     std::chrono::duration<double> delta = now - lastTime;
-    std::chrono::duration<float> total = startTime - now;
+    std::chrono::duration<double> total = now - startTime;
     deltaTime = delta.count();
     time = total.count();
     lastTime = now;
