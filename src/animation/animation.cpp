@@ -53,11 +53,4 @@ void Animation::updateYachtBones(ModelData &ModelData, float &alpha)
 
     // Push updates to children
     model->updateBoneTransforms();
-
-    // If controlled, make camera follow
-    if (ModelData.controlled)
-    {
-        Camera::cameraPosition = (ModelData.u_model * model->boneTransforms[model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
-        Camera::yaw = -atan2(transform[0][1], transform[1][1]);
-    }
 };
