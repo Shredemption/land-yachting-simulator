@@ -78,6 +78,16 @@ void SetWindowIconFromResource(GLFWwindow *window)
 
 #define STB_IMAGE_IMPLEMENTATION
 
+inline void atomicAdd(std::atomic<double> &atomicVal, double value)
+{
+    double current = atomicVal.load(std::memory_order_relaxed);
+    double desired;
+    do
+    {
+        desired = current + value;
+    } while (!atomicVal.compare_exchange_weak(current, desired, std::memory_order_release, std::memory_order_relaxed));
+}
+
 int main()
 {
 // Attach to existing console
@@ -207,11 +217,11 @@ int main()
             EventHandler::processInput(window);
 
             // Update Physics
-            Physics::accumulator = Physics::accumulator.load() + EventHandler::deltaTime;
+            atomicAdd(Physics::accumulator, EventHandler::deltaTime);
 
             // If time for physics tick
             int steps = 0;
-            double acc = Physics::accumulator.load(); // read once
+            double acc = Physics::accumulator.load(std::memory_order_acquire);
 
             while (acc >= Physics::tickRate)
             {
@@ -219,8 +229,14 @@ int main()
                 steps++;
             }
 
+            Physics::accumulator.store(acc, std::memory_order_release);
+
+            float alpha = static_cast<float>(acc / Physics::tickRate);
+            ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
+
             if (steps > 0)
             {
+                // Update physics
                 {
                     std::lock_guard lock(ThreadManager::physicsMutex);
                     ThreadManager::physicsTrigger = true;

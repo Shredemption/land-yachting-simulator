@@ -24,6 +24,7 @@ public:
     static std::mutex animationMutex;
     static std::condition_variable animationCV;
     static std::atomic<bool> animationTrigger;
+    static std::atomic<float> animationAlpha;
     static std::atomic<bool> animationShouldExit;
 
     static std::mutex renderBufferMutex;
