@@ -19,6 +19,7 @@ public:
     static std::condition_variable physicsCV;
     static std::atomic<bool> physicsTrigger;
     static std::atomic<int> physicsSteps;
+    static std::atomic<bool> physicsBusy;
     static std::atomic<bool> physicsShouldExit;
 
     static std::mutex animationMutex;

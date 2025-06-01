@@ -15,6 +15,7 @@ std::mutex ThreadManager::physicsMutex;
 std::condition_variable ThreadManager::physicsCV;
 std::atomic<bool> ThreadManager::physicsTrigger(false);
 std::atomic<int> ThreadManager::physicsSteps(0);
+std::atomic<bool> ThreadManager::physicsBusy(false);
 std::atomic<bool> ThreadManager::physicsShouldExit(false);
 
 std::mutex ThreadManager::animationMutex;
@@ -94,16 +95,22 @@ void ThreadManager::physicsThreadFunction()
                         model.physics->getWriteBuffer()->move(model.controlled);
                     }
                 }
+
+                Physics::accumulator.store(Physics::accumulator.load(std::memory_order_acquire) - Physics::tickRate);
             }
         }
 
-        for (ModelData &model : SceneManager::currentScene.get()->structModels)
+        for (auto &model : SceneManager::currentScene->structModels)
         {
-            if (model.physics.has_value())
-            {
+            Physics::isSwapping.store(true, std::memory_order_release);
+
+            if (model.physics)
                 model.physics->swapBuffers();
-            }
+
+            Physics::isSwapping.store(false, std::memory_order_release);
         }
+
+        ThreadManager::physicsBusy.store(false, std::memory_order_release);
     }
 }
 

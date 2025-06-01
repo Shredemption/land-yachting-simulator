@@ -229,13 +229,9 @@ int main()
                 steps++;
             }
 
-            Physics::accumulator.store(acc, std::memory_order_release);
-
-            float alpha = static_cast<float>(acc / Physics::tickRate);
-            ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
-
-            if (steps > 0)
+            if (steps > 0 && !ThreadManager::physicsBusy.load(std::memory_order_acquire))
             {
+                ThreadManager::physicsBusy.store(true, std::memory_order_release);
                 // Update physics
                 {
                     std::lock_guard lock(ThreadManager::physicsMutex);
@@ -244,6 +240,9 @@ int main()
                 }
                 ThreadManager::physicsCV.notify_one();
             }
+
+            float alpha = static_cast<float>(acc / Physics::tickRate);
+            ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
 
             // Update Animations
             {

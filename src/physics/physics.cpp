@@ -20,6 +20,8 @@ bool Physics::resetState = false;
 const double Physics::tickRate = 1.0 / 30.0;
 std::atomic<double> Physics::accumulator = 0.0;
 
+std::atomic<bool> Physics::isSwapping(false);
+
 Physics::Physics(const std::string &name)
 {
     // Set base transform to 1
