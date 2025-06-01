@@ -8,6 +8,7 @@
 #include "frame_buffer/frame_buffer.h"
 #include "camera/camera.h"
 #include "scene_manager/scene_manager.h"
+#include "texture_manager/texture_manager.h"
 
 // Global variables for quads
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
@@ -107,10 +108,7 @@ void Render::prepareRender()
             cmd.modelMatrix = model.u_model;
             cmd.normalMatrix = model.u_normal;
 
-            for (unsigned int i = 0; i < model.model->textures.size(); ++i)
-            {
-                cmd.textureLayers.push_back(model.model->textures[i].index);
-            }
+            TextureManager::getTextureData(*model.model, cmd.textureUnit, cmd.textureArrayID, cmd.textureLayers);
 
             cmd.animated = model.animated;
 
@@ -303,7 +301,7 @@ void Render::renderModel(const RenderCommand &cmd)
     if (shader != lastShader)
     {
         // Set texture array index
-        shader->setInt("textureArray", 0);
+        shader->setInt("textureArray", cmd.textureUnit);
 
         // Send light and view position to shader
         shader->setVec3("lightPos", EventHandler::lightPos);
@@ -364,20 +362,14 @@ void Render::renderOpaquePlane(const RenderCommand &cmd)
 
     if (cmd.shader == shaderID::shToonWater)
     {
-        Texture DuDv = TextureManager::LoadStandaloneTexture("toonWater.jpeg");
-        Texture normal = TextureManager::LoadStandaloneTexture("waterNormal.png");
-        Texture height = TextureManager::LoadStandaloneTexture("heightmap.jpg");
+        int toonWater = TextureManager::getStandaloneTextureUnit("../resources/textures/toonWater.jpeg");
+        int normalMap = TextureManager::getStandaloneTextureUnit("../resources/textures/waterNormal.png");
+        int heightmap = TextureManager::getStandaloneTextureUnit("../resources/textures/heightmap.jpg");
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, DuDv.index);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, normal.index);
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, height.index);
+        shader->setInt("toonWater", toonWater);
+        shader->setInt("normalMap", normalMap);
+        shader->setInt("heightmap", heightmap);
 
-        shader->setInt("toonWater", 1);
-        shader->setInt("normalMap", 2);
-        shader->setInt("heightmap", 3);
         shader->setFloat("moveOffset", EventHandler::time);
         shader->setMat4("u_camXY", Camera::u_camXY);
     }
@@ -415,25 +407,24 @@ void Render::renderTransparentPlane(const RenderCommand &cmd)
     if (cmd.shader == shaderID::shWater)
     {
         // Load surface textures
-        Texture DuDv = TextureManager::LoadStandaloneTexture("waterDUDV.png");
-        Texture normal = TextureManager::LoadStandaloneTexture("waterNormal.png");
+        GLuint waterTexArrayID = TextureManager::getTextureArrayUnit("waterTextureArray");
+        int dudv = TextureManager::getTextureLayerIndex("waterTextureArray", "../resources/textures/waterDUDV.png");
+        int normal = TextureManager::getTextureLayerIndex("waterTextureArray", "../resources/textures/waterNormal.png");
+
+        shader->setInt("waterTextureArray", waterTexArrayID);
+        shader->setInt("dudvMapLayer", dudv);
+        shader->setInt("normalMapLayer", normal);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, FrameBuffer::reflectionFBO.colorTexture);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.colorTexture);
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, DuDv.index);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, normal.index);
-        glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, FrameBuffer::refractionFBO.depthTexture);
 
         shader->setInt("reflectionTexture", 1);
         shader->setInt("refractionTexture", 2);
-        shader->setInt("dudvMap", 3);
-        shader->setInt("normalMap", 4);
-        shader->setInt("depthMap", 5);
+        shader->setInt("depthMap", 3);
         shader->setFloat("moveOffset", EventHandler::time);
         shader->setVec3("cameraPosition", Camera::getPosition());
         shader->setVec3("lightPos", EventHandler::lightPos);
@@ -477,16 +468,10 @@ void Render::renderGrid(const RenderCommand &cmd)
 
     if (cmd.shader == shaderID::shToonTerrain)
     {
-        Texture heightmap = TextureManager::LoadStandaloneTexture("heightmap.jpg");
-
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, heightmap.index);
+        int heightmap = TextureManager::getStandaloneTextureUnit("../resources/textures/heightmap.jpg");
+        shader->setInt("heightmap", heightmap);
 
         shader->setMat4("u_camXY", Camera::u_camXY);
-        shader->setInt("heightmap", 2);
-
-        // Unload texture
-        glActiveTexture(GL_TEXTURE2);
     }
 
     // Draw meshes
@@ -551,17 +536,14 @@ void Render::renderSceneImages()
     glm::vec2 screenSize = glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight);
 
     glBindVertexArray(quadVAO);
-    glActiveTexture(GL_TEXTURE1);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     for (ImageData image : SceneManager::currentScene.get()->images)
     {
-        Texture texture = TextureManager::LoadImageToTexture(image.file);
-
-        glBindTexture(GL_TEXTURE_2D, texture.index);
-        shader->setInt("uTexture", 1);
+        GLuint textureUnit = TextureManager::getStandaloneTextureUnit("../resources/images/" + image.file);
+        shader->setInt("uTexture", textureUnit);
 
         glm::vec2 posFactor = image.position; // normalized 0..1
 

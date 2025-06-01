@@ -14,7 +14,7 @@ fs_in;
 uniform vec3 lightCol;
 uniform float lightIntensity;
 
-uniform int textureLayers[4];
+uniform int textureLayers[2];
 uniform sampler2DArray textureArray;
 
 const float ambientLight = 0.5;

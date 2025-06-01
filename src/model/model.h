@@ -11,14 +11,18 @@
 #include <map>
 
 #include "mesh/mesh.h"
-#include "texture_manager/texture_manager.h"
+
+enum class ModelType
+{
+    mtModel,
+    mtYacht
+};
 
 struct JSONModelMapEntry
 {
     std::string mainPath;
     std::vector<std::string> lodPaths = {};
     std::string type = "model";
-    GLuint index;
 };
 
 struct JSONModelMap
@@ -35,7 +39,7 @@ using MeshVariant = std::variant<
 class Model
 {
 public:
-    Model(std::tuple<std::string, std::vector<std::string>, shaderID> name_paths_shader);
+    Model(std::tuple<std::string, std::vector<std::string>, shaderID, ModelType> name_paths_shader_type);
     ~Model();
 
     void uploadToGPU();
@@ -46,9 +50,13 @@ public:
     std::vector<glm::mat4> boneOffsets;
     std::vector<glm::mat4> boneInverseOffsets;
     std::vector<Bone *> rootBones;
+
     std::vector<std::string> paths;
     std::string name;
-    std::vector<Texture> textures;
+    ModelType modelType;
+
+    std::vector<std::string> texturePaths;
+    std::string textureArrayName;
 
     // Model map and load function
     static std::map<std::string, JSONModelMapEntry> modelMap;

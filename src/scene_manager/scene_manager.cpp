@@ -13,6 +13,7 @@
 #include "camera/camera.h"
 #include "event_handler/event_handler.h"
 #include "thread_manager/thread_manager.h"
+#include "texture_manager/texture_manager.h"
 
 // Global Scene variables
 std::shared_ptr<Scene> SceneManager::currentScene = nullptr;
@@ -117,7 +118,7 @@ void SceneManager::checkLoading()
 void SceneManager::unload()
 {
     // Unload Texture array
-    TextureManager::unloadTextures();
+    TextureManager::clearTextures();
 
     // Reset scene variable. Calls destructors
     currentScene.reset();

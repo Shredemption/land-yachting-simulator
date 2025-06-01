@@ -13,6 +13,7 @@
 #include "frame_buffer/frame_buffer.h"
 #include "file_manager/file_manager.h"
 #include "scene_manager/scene_manager.h"
+#include "texture_manager/texture_manager.h"
 
 // Json mappings
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, animated, controlled);
@@ -124,6 +125,13 @@ void Scene::loadModelToScene(JSONModel model)
     // Find model location using map
     auto &modelEntry = Model::modelMap[model.name];
 
+    ModelType modelType = ModelType::mtModel;
+
+    if (modelEntry.type == "yacht")
+    {
+        modelType = ModelType::mtYacht;
+    }
+
     std::vector<std::string> paths = {FileManager::getPath(modelEntry.mainPath)};
 
     for (auto lodPath : modelEntry.lodPaths)
@@ -135,7 +143,7 @@ void Scene::loadModelToScene(JSONModel model)
     if (loadedModels.find(modelEntry.mainPath) == loadedModels.end())
     {
         // Load model with path and shader name
-        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, Shader::ShaderFromName(model.shader)));
+        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, Shader::ShaderFromName(model.shader), modelType));
     }
 
     // Push loaded path to model
@@ -182,7 +190,7 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     loadUnitPlane.shader = Shader::ShaderFromName(unitPlane.shader);
 
     // Generate mesh from color and shader
-    if (unitPlane.shader == "simple")
+    if (loadUnitPlane.shader == shaderID::shSimple)
         loadUnitPlane.unitPlane = Mesh<VertexSimple>::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
     else
         loadUnitPlane.unitPlane = Mesh<VertexTextured>::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
@@ -212,6 +220,19 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     else
     {
         this->opaqueUnitPlanes.push_back(loadUnitPlane);
+    }
+
+    if (loadUnitPlane.shader == shaderID::shWater)
+    {
+        TextureManager::queueTextureToArrayByFilename("waterDUDV.png", "waterTextureArray");
+        TextureManager::queueTextureToArrayByFilename("waterNormal.png", "waterTextureArray");
+    }
+
+    if (loadUnitPlane.shader == shaderID::shToonWater)
+    {
+        TextureManager::queueStandaloneTexture("toonWater.jpeg");
+        TextureManager::queueStandaloneTexture("waterNormal.png");
+        TextureManager::queueStandaloneTexture("heightmap.jpg");
     }
 }
 
@@ -248,6 +269,11 @@ void Scene::loadGridToScene(JSONGrid grid)
 
     // Push loaded grid to scene
     this->grids.push_back(loadGrid);
+
+    if (loadGrid.shader == shaderID::shToonTerrain)
+    {
+        TextureManager::queueStandaloneTexture("heightmap.jpg");
+    }
 }
 
 void Scene::loadSkyBoxToScene(JSONSkybox loadSkyBox)
@@ -292,12 +318,15 @@ void Scene::loadImageToScene(JSONImage image)
     loadImage.width = image.size[0];
     loadImage.height = image.size[1];
 
+    TextureManager::queueStandaloneImage(image.file);
+
     // Push text to scene
     this->images.push_back(loadImage);
 }
 
 void Scene::uploadToGPU()
 {
+    TextureManager::uploadToGPU();
     // For each type, upload data to opengl context
     for (auto &modelData : structModels)
     {
@@ -321,9 +350,13 @@ void Scene::uploadToGPU()
                    { mesh.uploadToGPU(); },
                    grid.grid);
     }
+    for (auto &image : images)
+    {
+        image.textureID = TextureManager::getStandaloneTextureID(image.file);
+    }
     if (hasSkyBox)
     {
-        this->skyBox.textureID = TextureManager::LoadSkyBoxTexture(this->skyBox);
+        this->skyBox.textureID = TextureManager::loadSkyboxTexture(this->skyBox);
         this->skyBox.VAO = Mesh<VertexSkybox>::setupSkyBoxMesh();
     }
 }
