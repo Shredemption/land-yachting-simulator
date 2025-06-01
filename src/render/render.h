@@ -40,6 +40,8 @@ struct RenderCommand
     shaderID shader;
     std::shared_ptr<std::vector<MeshVariant>> meshes;
 
+    unsigned int textureUnit;
+    unsigned int textureArrayID;
     std::vector<int> textureLayers;
 
     glm::mat4 modelMatrix;

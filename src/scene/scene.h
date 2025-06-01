@@ -151,6 +151,7 @@ struct ImageData
     glm::vec2 scale;
     float rotation;
     bool mirrored;
+    GLuint textureID;
 };
 
 class Scene

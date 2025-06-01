@@ -30,12 +30,13 @@ struct ExtractVertexType<Mesh<VertexType>>
 };
 
 // Model Constructor
-Model::Model(std::tuple<std::string, std::vector<std::string>, shaderID> name_paths_shader)
+Model::Model(std::tuple<std::string, std::vector<std::string>, shaderID, ModelType> name_paths_shader_type)
 {
-    this->name = std::get<0>(name_paths_shader);
-    this->paths = std::get<1>(name_paths_shader);
+    this->name = std::get<0>(name_paths_shader_type);
+    this->paths = std::get<1>(name_paths_shader_type);
+    this->modelType = std::get<3>(name_paths_shader_type);
 
-    loadModel(paths, std::get<2>(name_paths_shader));
+    loadModel(paths, std::get<2>(name_paths_shader_type));
 }
 
 // Model Destructor
@@ -82,9 +83,9 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, shaderID &shader
 
         MeshVariant combinedMesh = combineMeshVariants(lodLevelMeshes);
         lodMeshes.push_back({std::move(combinedMesh)});
-
-        // lodMeshes.push_back(std::move(lodLevelMeshes));
     }
+
+    TextureManager::loadTexturesForShader(shader, directory, modelType, texturePaths, textureArrayName);
 
     // Generate initial bone positions
     generateBoneTransforms();
@@ -199,8 +200,6 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &sha
             boneHierarchy.erase(it); // Remove the "Scene" bone from the hierarchy
         }
 
-        TextureManager::loadTexturesForShader(mesh, scene, shader, directory, textures);
-
         return Mesh<VertexAnimated>(vertices, indices, shader);
     }
 
@@ -221,8 +220,6 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &sha
             else
                 vertex.TexCoords = glm::vec2(0.0f);
         }
-
-        TextureManager::loadTexturesForShader(mesh, scene, shader, directory, textures);
 
         return Mesh<VertexTextured>(vertices, indices, shader);
     }
@@ -378,16 +375,6 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
 
 void Model::uploadToGPU()
 {
-    // Process all pending textures of model
-    TextureManager::processPendingTextures();
-
-    // Assign texture array indices
-    for (auto &texture : this->textures)
-    {
-        auto it = TextureManager::textureLayerMap.find(texture.path);
-        texture.index = (it != TextureManager::textureLayerMap.end()) ? it->second : 0;
-    }
-
     // Upload data for each mesh to GPU
     for (auto &meshes : lodMeshes)
     {

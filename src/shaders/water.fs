@@ -12,8 +12,9 @@ in vec4 worldPos;
 uniform sampler2D reflectionTexture;
 uniform sampler2D refractionTexture;
 
-uniform sampler2D dudvMap;
-uniform sampler2D normalMap;
+uniform sampler2DArray waterTextureArray;
+uniform int dudvMapLayer;
+uniform int normalMapLayer;
 uniform sampler2D depthMap;
 
 uniform vec3 lightCol;
@@ -50,9 +51,9 @@ void main()
     float waterDepth = depthDistance - waterDistance;
     float depthFactor = min(1, waterDepth / 50.0);
 
-    vec2 distoredTexCoords = texture(dudvMap, vec2(TexCoords.x + moveSpeed * moveOffset, TexCoords.y)).rg * 0.1;
+    vec2 distoredTexCoords = texture(waterTextureArray, vec3(TexCoords.x + moveSpeed * moveOffset, TexCoords.y, dudvMapLayer)).rg * 0.1;
     distoredTexCoords = TexCoords + vec2(distoredTexCoords.x, distoredTexCoords.y + moveSpeed * moveOffset);
-    vec2 totalDistortion = (texture(dudvMap, distoredTexCoords).rg * 2 - 1) * waveStrength * depthFactor;
+    vec2 totalDistortion = (texture(waterTextureArray, vec3(distoredTexCoords, dudvMapLayer)).rg * 2 - 1) * waveStrength * depthFactor;
 
     // Adjust texture coordinates for reflection and refraction
     reflectCoords += totalDistortion;
@@ -70,7 +71,7 @@ void main()
     float fresnel = dot(toCamera, vec3(0.0, 0.0, 1.0));
 
     // Compute normals from the normal map and normalize
-    vec4 normalColor = texture(normalMap, distoredTexCoords);
+    vec4 normalColor = texture(waterTextureArray, vec3(distoredTexCoords, normalMapLayer));
     vec3 normal = normalize(normalColor.rgb * 2.0 - 1.0);
 
     // Calculate specular highlights using the reflection vector
