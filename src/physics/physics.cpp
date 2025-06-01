@@ -17,17 +17,16 @@ float Physics::g = 9.81f;
 
 bool Physics::resetState = false;
 
-const double Physics::tickRate = 1.0f / 30.0f;
-std::atomic<double> Physics::accumulator = 0.0f;
+const double Physics::tickRate = 1.0 / 30.0;
+std::atomic<double> Physics::accumulator = 0.0;
 
-Physics::Physics(ModelData &ModelData)
+Physics::Physics(const std::string &name)
 {
     // Set base transform to 1
     baseTransform = glm::mat4(1.0f);
 
     // Check which yacht, and apply correct properties
-
-    if (ModelData.model->name == "dn-duvel")
+    if (name == "dn-duvel")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);
@@ -52,7 +51,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 0.5f;
     }
 
-    else if (ModelData.model->name == "red-piper")
+    else if (name == "red-piper")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);
@@ -77,7 +76,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 0.45f;
     }
 
-    else if (ModelData.model->name == "blue-piper")
+    else if (name == "blue-piper")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);
@@ -102,7 +101,7 @@ Physics::Physics(ModelData &ModelData)
         steeringAttenuation = 1.55f;
     }
 
-    else if (ModelData.model->name == "sietske")
+    else if (name == "sietske")
     {
         // Max control angles
         maxMastAngle = glm::radians(60.0f);
@@ -130,32 +129,32 @@ Physics::Physics(ModelData &ModelData)
     else
     {
         // Max control angles
-        maxMastAngle = glm::radians(1.0f);
-        maxBoomAngle = glm::radians(1.0f);
+        maxMastAngle = glm::radians(40.0f);
+        maxBoomAngle = glm::radians(80.0f);
 
         // Sail physics properties
         maxLiftCoefficient = 1.0f;
-        optimalAngle = glm::radians(1.0f);
-        minDragCoefficient = 1.0f;
-        sailArea = 1.0f;
+        optimalAngle = glm::radians(20.0f);
+        minDragCoefficient = 0.1f;
+        sailArea = 5.0f;
 
         // Body properties
-        rollCoefficient = 1.0f;
-        rollScaling = 1.0f;
-        mass = 1.0f;
-        bodyDragCoefficient = 1.0f;
+        rollCoefficient = 0.005f;
+        rollScaling = 20.0f;
+        mass = 100.0f;
+        bodyDragCoefficient = 0.1f;
         bodyArea = 1.0f;
 
         // Steering properties
         steeringSmoothness = 1.0f;
-        maxSteeringAngle = 1.0f;
+        maxSteeringAngle = 30.0f;
         steeringAttenuation = 1.0f;
     }
 }
 
-void Physics::reset(ModelData &modelData)
+void Physics::reset(const glm::mat4 &u_model)
 {
-    baseTransform = modelData.u_model;
+    baseTransform = u_model;
     sailControlFactor = 1.0f;
     MastAngle = 0.0f;
     BoomAngle = 0.0f;
@@ -174,12 +173,11 @@ void Physics::setup(Scene &scene)
         {
             model.physics.emplace();
 
-            model.physics->buffers[0] = std::make_unique<Physics>(model);
-            model.physics->buffers[1] = std::make_unique<Physics>(model);
+            model.physics->buffers[0] = std::make_unique<Physics>(model.model->name);
+            model.physics->buffers[1] = std::make_unique<Physics>(model.model->name);
 
-            // Initialize both to the same starting state
-            model.physics->buffers[0]->reset(model);
-            model.physics->buffers[1]->reset(model);
+            model.physics->buffers[0]->reset(model.u_model);
+            model.physics->buffers[1]->reset(model.u_model);
         }
     }
 }

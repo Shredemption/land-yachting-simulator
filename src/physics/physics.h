@@ -12,7 +12,7 @@ class Physics
 {
 public:
     // Constructor
-    Physics(ModelData &ModelData);
+    Physics(const std::string &name);
     static bool resetState;
 
     static const double tickRate;
@@ -27,7 +27,7 @@ public:
     // Functions
     static void setup(Scene &scene);
     void move(bool &controlled);
-    void reset(ModelData &modelData);
+    void reset(const glm::mat4 &u_model);
     static void switchControlledYacht(Scene &scene);
     void savePrevState();
     void copyFrom(const Physics &other);
