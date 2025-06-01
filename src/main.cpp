@@ -241,7 +241,7 @@ int main()
                 ThreadManager::physicsCV.notify_one();
             }
 
-            double alpha = acc / Physics::tickRate;
+            float alpha = static_cast<float>(acc / Physics::tickRate);
             ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
 
             // Update Animations
