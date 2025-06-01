@@ -136,16 +136,16 @@ unsigned int TextureManager::loadStandaloneTexture(const std::string &filepath)
 void TextureManager::queueStandaloneTexture(const std::string &fileName)
 {
     std::string path = "../resources/textures/" + fileName;
-    queueStandalone(path);
+    queueStandalone(path, true);
 }
 
 void TextureManager::queueStandaloneImage(const std::string &fileName)
 {
     std::string path = "../resources/images/" + fileName;
-    queueStandalone(path);
+    queueStandalone(path, false);
 }
 
-void TextureManager::queueStandalone(const std::string &path)
+void TextureManager::queueStandalone(const std::string &path, bool repeating)
 {
     {
         std::lock_guard<std::mutex> lock(standaloneCacheMutex);
@@ -176,6 +176,7 @@ void TextureManager::queueStandalone(const std::string &path)
     pt.channels = 0;
     pt.textureID = 0;
     pt.textureUnit = nextFreeUnit++;
+    pt.repeating = repeating;
 
     {
         std::lock_guard<std::mutex> lock(textureQueueMutex);
@@ -388,8 +389,8 @@ void TextureManager::uploadStandalones()
         glTexImage2D(GL_TEXTURE_2D, 0, format, pending.width, pending.height, 0, format, GL_UNSIGNED_BYTE, pending.pixelData.data());
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, pending.repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, pending.repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
