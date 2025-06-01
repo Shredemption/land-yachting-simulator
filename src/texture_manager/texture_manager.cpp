@@ -8,6 +8,7 @@
 
 #include "scene/scene.h"
 #include "model/model.h"
+#include "scene_manager/scene_manager.h"
 
 // Texture Arrays
 std::unordered_map<std::string, TextureArray> TextureManager::textureArrays;
@@ -292,7 +293,9 @@ void TextureManager::loadQueuedPixelData()
                 pt->height = height;
                 pt->channels = channels;
                 pt->pixelData.assign(data, data + (width * height * channels));
-                stbi_image_free(data); }));
+                stbi_image_free(data); 
+                
+                SceneManager::loadingProgress.first++; }));
 
             textures.push_back(pt);
         }
@@ -320,7 +323,9 @@ void TextureManager::loadQueuedPixelData()
                     pt.height = height;
                     pt.channels = 4;
                     pt.pixelData.assign(data, data + (width * height * 4));
-                    stbi_image_free(data); }));
+                    stbi_image_free(data); 
+                
+                    SceneManager::loadingProgress.first++; }));
             }
         }
     }

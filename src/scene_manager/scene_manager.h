@@ -26,7 +26,7 @@ public:
     // Global loading variables
     static std::atomic<bool> onTitleScreen;
     static int loadingState;
-    static std::pair<int, int> loadingProgress;
+    static std::pair<std::atomic<int>, std::atomic<int>> loadingProgress;
 
     // Load scene
     static void load(const std::string &scenePath);
@@ -34,7 +34,7 @@ public:
     static void unload();
 
     // Update and render functions
-    static void checkLoading();
+    static void checkLoading(GLFWwindow *window);
     static void renderLoading();
 };
 
