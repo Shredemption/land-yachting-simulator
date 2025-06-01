@@ -111,8 +111,6 @@ void Render::prepareRender()
             TextureManager::getTextureData(*model.model, cmd.textureUnit, cmd.textureArrayID, cmd.textureLayers);
 
             cmd.animated = model.animated;
-            cmd.controlled = model.controlled;
-            cmd.camBoneIndex = model.model->boneHierarchy["Armature_Cam"]->index;
 
             if (cmd.animated)
             {
@@ -132,6 +130,9 @@ void Render::prepareRender()
             cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->lodMeshes[cmd.lod], [](std::vector<MeshVariant>*) {});
 
             return cmd; }));
+
+        if (model.controlled)
+            Camera::bufferYacht(model.u_model, model.model->boneTransforms[model.model->boneHierarchy["Armature_Cam"]->index]);
     }
 
     // Load opaque UnitPlanes
@@ -212,6 +213,8 @@ void Render::prepareRender()
 
 void Render::executeRender()
 {
+    Camera::swapBuffers();
+
     // Clear color buffer
     glClearColor(SceneManager::currentScene->bgColor.r, SceneManager::currentScene->bgColor.g, SceneManager::currentScene->bgColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -299,9 +302,6 @@ void Render::renderObjects()
 
 void Render::renderModel(const RenderCommand &cmd)
 {
-    if (cmd.controlled)
-        Camera::followYacht(cmd.modelMatrix, cmd.boneTransforms[cmd.camBoneIndex]);
-
     // Send general shader data
     if (shader != lastShader)
     {

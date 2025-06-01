@@ -19,6 +19,7 @@ float Camera::yawFree, Camera::pitchFree, Camera::rollFree;
 glm::vec3 Camera::cameraPosition;
 glm::vec3 Camera::cameraPositionBuffer;
 float Camera::yaw, Camera::pitch, Camera::roll;
+float Camera::yawBuffer;
 
 // Position and orientation of user around fixed cam
 float Camera::yawOffset, Camera::pitchOffset, Camera::rollOffset;
@@ -40,10 +41,16 @@ void Camera::update()
     u_camXY = glm::translate(glm::mat4(1.0f), glm::vec3(position[0], position[1], 0));
 }
 
-void Camera::followYacht(const glm::mat4 &transform, const glm::mat4 &camBone)
+void Camera::bufferYacht(const glm::mat4 &transform, const glm::mat4 &camBone)
 {
-    cameraPosition = (transform * camBone) * glm::vec4(0, 0, 0, 1);
-    yaw = -atan2(transform[0][1], transform[1][1]);
+    cameraPositionBuffer = (transform * camBone) * glm::vec4(0, 0, 0, 1);
+    yawBuffer = -atan2(transform[0][1], transform[1][1]);
+}
+
+void Camera::swapBuffers()
+{
+    cameraPosition = cameraPositionBuffer;
+    yaw = yawBuffer;
 
     Camera::update();
 }
