@@ -218,7 +218,7 @@ void Render::executeRender()
     renderSceneSkyBox();
 
     // If water loaded, render buffers
-    if (Shader::waterLoaded && EventHandler::frame % 3 == 0)
+    if (Shader::waterLoaded && EventHandler::frame % 2 == 0)
     {
         WaterPass = true;
         renderReflectRefract();
