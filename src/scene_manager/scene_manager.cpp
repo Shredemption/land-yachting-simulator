@@ -26,7 +26,7 @@ std::string sceneMapPath = "resources/scenes.json";
 // Global loading variables
 std::atomic<bool> SceneManager::onTitleScreen(false);
 int SceneManager::loadingState = 0;
-std::pair<int, int> SceneManager::loadingProgress = {0, 0};
+std::pair<std::atomic<int>, std::atomic<int>> SceneManager::loadingProgress = {0, 0};
 
 // Load scene on main, causes freezing
 void SceneManager::load(const std::string &sceneName)
@@ -85,7 +85,7 @@ void SceneManager::loadAsync(const std::string &sceneName)
     pendingScene = std::move(futureScene);
 }
 
-void SceneManager::checkLoading()
+void SceneManager::checkLoading(GLFWwindow *window)
 {
     // If background loading scene is complete
     if (loadingState > 0 && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
@@ -95,6 +95,8 @@ void SceneManager::checkLoading()
 
         // Render final loading screen frame
         SceneManager::renderLoading();
+
+        glfwSwapBuffers(window);
 
         // Now upload scene data to OpenGL
         currentScene->uploadToGPU();
@@ -192,6 +194,8 @@ void SceneManager::renderLoading()
          { return "Loading Terrain Grids [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
         {"Skybox Complete", []
          { return "Loading Skybox"; }},
+        {"Textures Complete", [&]
+         { return "Loading Textures [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
         {"OpenGL Upload Complete", []
          { return "Uploading to OpenGL"; }}};
 

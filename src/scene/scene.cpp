@@ -51,7 +51,8 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
 
     SceneManager::loadingState++;
-    SceneManager::loadingProgress = {0, jsonScene.texts.size()};
+    SceneManager::loadingProgress.first = 0;
+    SceneManager::loadingProgress.second = jsonScene.texts.size();
 
     // Load texts from scene
     for (JSONText text : jsonScene.texts)
@@ -61,7 +62,8 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     }
 
     SceneManager::loadingState++;
-    SceneManager::loadingProgress = {0, jsonScene.images.size()};
+    SceneManager::loadingProgress.first = 0;
+    SceneManager::loadingProgress.second = jsonScene.images.size();
 
     // Load texts from scene
     for (JSONImage image : jsonScene.images)
@@ -71,7 +73,8 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     }
 
     SceneManager::loadingState++;
-    SceneManager::loadingProgress = {0, jsonScene.models.size()};
+    SceneManager::loadingProgress.first = 0;
+    SceneManager::loadingProgress.second = jsonScene.models.size();
 
     // Load models from scene
     for (JSONModel model : jsonScene.models)
@@ -81,7 +84,8 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     }
 
     SceneManager::loadingState++;
-    SceneManager::loadingProgress = {0, jsonScene.unitPlanes.size()};
+    SceneManager::loadingProgress.first = 0;
+    SceneManager::loadingProgress.second = jsonScene.unitPlanes.size();
 
     // Load unitplanes from scene
     for (JSONUnitPlane unitPlane : jsonScene.unitPlanes)
@@ -91,7 +95,8 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     }
 
     SceneManager::loadingState++;
-    SceneManager::loadingProgress = {0, jsonScene.grids.size()};
+    SceneManager::loadingProgress.first = 0;
+    SceneManager::loadingProgress.second = jsonScene.grids.size();
 
     // Generate Grids form scene
     for (JSONGrid grid : jsonScene.grids)
@@ -113,6 +118,13 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     {
         loadSkyBoxToScene(skybox);
     }
+
+    int texLoadCount = TextureManager::textureQueue.size();
+    for (const auto &arr : TextureManager::textureArrays)
+        texLoadCount += arr.second.pendingTextures.size();
+    SceneManager::loadingState++;
+    SceneManager::loadingProgress.first = 0;
+    SceneManager::loadingProgress.second = texLoadCount;
 
     TextureManager::loadQueuedPixelData();
 

@@ -194,7 +194,7 @@ int main()
         if (SceneManager::loadingState > 0)
         {
             // Check loading state
-            SceneManager::checkLoading();
+            SceneManager::checkLoading(window);
 
             // Render loading screen
             SceneManager::renderLoading();
