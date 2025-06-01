@@ -94,15 +94,6 @@ void Render::prepareRender()
 
     std::vector<std::future<RenderCommand>> futures;
 
-    for (auto &model : SceneManager::currentScene->structModels)
-    {
-        if (model.controlled)
-        {
-            Camera::followYacht(model);
-            break; // Assuming only one controlled model
-        }
-    }
-
     // Load Models
     for (auto &model : SceneManager::currentScene->structModels)
     {

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <atomic>
 #include <memory>
+#include <thread>
 
 struct Scene;
 struct ModelData;
@@ -17,6 +18,8 @@ public:
 
     static const double tickRate;
     static std::atomic<double> accumulator;
+
+    static std::atomic<bool> isSwapping;
 
     // World variables
     static glm::vec3 windSourceDirection;
@@ -71,7 +74,15 @@ struct PhysicsBuffer
     std::unique_ptr<Physics> buffers[2];
     int readIndex = 0;
 
-    Physics *getReadBuffer() { return buffers[readIndex % 2].get(); }
+    Physics *getReadBuffer()
+    {
+        while (Physics::isSwapping.load(std::memory_order_acquire))
+        {
+            std::this_thread::yield();
+        }
+        return buffers[readIndex % 2].get();
+    }
+
     Physics *getWriteBuffer() { return buffers[(readIndex + 1) % 2].get(); }
 
     void swapBuffers() { readIndex = (readIndex + 1) % 2; }
