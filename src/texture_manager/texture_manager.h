@@ -34,6 +34,7 @@ struct PendingTexture
     std::vector<unsigned char> pixelData;
     unsigned int textureID = -1;
     int textureUnit = -1;
+    bool repeating;
 };
 
 inline bool ends_with(std::string const &value, std::string const &ending)
@@ -101,7 +102,7 @@ private:
     static void clearStandaloneCache();
     static void clearTextureArrays();
 
-    static void queueStandalone(const std::string &path);
+    static void queueStandalone(const std::string &path, bool repeating);
 
     static std::vector<std::string> loadMaterialTexturePaths(const std::string &type, const std::string &directory);
 };

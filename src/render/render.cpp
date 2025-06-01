@@ -547,12 +547,16 @@ void Render::renderSceneImages()
 
         glm::vec2 posFactor = image.position; // normalized 0..1
 
-        glm::vec2 imageSizePx = glm::vec2(image.width, image.height) * image.scale;
+        float scaleX = EventHandler::screenWidth / 2560.0f;
+        float scaleY = EventHandler::screenHeight / 1440.0f;
+        glm::vec2 scaleFactors(scaleX, scaleY);
 
-        // Calculate center position so edges match posFactor
+        glm::vec2 scaledScreenSize = glm::vec2(2560.0f, 1440.0f) * scaleFactors;
+        glm::vec2 imageSizePx = glm::vec2(image.width, image.height) * image.scale * scaleFactors;
+
         glm::vec2 positionPx;
-        positionPx.x = posFactor.x * (screenSize.x - imageSizePx.x);
-        positionPx.y = posFactor.y * (screenSize.y - imageSizePx.y);
+        positionPx.x = posFactor.x * (scaledScreenSize.x - imageSizePx.x);
+        positionPx.y = posFactor.y * (scaledScreenSize.y - imageSizePx.y);
 
         shader->setVec2("uPosition", positionPx);
 

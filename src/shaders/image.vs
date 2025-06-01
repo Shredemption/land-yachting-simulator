@@ -14,7 +14,8 @@ out vec2 TexCoord;
 
 void main()
 {
-    vec2 adjustedScale = uScale * (uScreenSize.y / 1440.0);
+    vec2 baselineScreen = vec2(2560.0, 1440.0);
+    vec2 adjustedScale = uScale * (uScreenSize / baselineScreen);
 
     // 1) Compute UV from NDC quad
     vec2 uv = aPos * 0.5 + 0.5;       // [0,1]
