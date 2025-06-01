@@ -21,7 +21,7 @@ std::atomic<bool> ThreadManager::physicsShouldExit(false);
 std::mutex ThreadManager::animationMutex;
 std::condition_variable ThreadManager::animationCV;
 std::atomic<bool> ThreadManager::animationTrigger(false);
-std::atomic<float> ThreadManager::animationAlpha(0.0f);
+std::atomic<double> ThreadManager::animationAlpha(0.0f);
 std::atomic<bool> ThreadManager::animationShouldExit(false);
 
 std::mutex ThreadManager::renderBufferMutex;
