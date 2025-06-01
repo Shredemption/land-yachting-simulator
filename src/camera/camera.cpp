@@ -44,6 +44,8 @@ void Camera::followYacht(const glm::mat4 &transform, const glm::mat4 &camBone)
 {
     cameraPosition = (transform * camBone) * glm::vec4(0, 0, 0, 1);
     yaw = -atan2(transform[0][1], transform[1][1]);
+
+    Camera::update();
 }
 
 // Reset cam to starting position/orientation
