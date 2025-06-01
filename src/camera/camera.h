@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+#include "scene/scene.h"
+
 class Camera
 {
 public:
@@ -11,6 +13,7 @@ public:
 
     // Position and orientation of free cam
     static glm::vec3 cameraPosition;
+    static glm::vec3 cameraPositionBuffer;
     static float yaw, pitch, roll;
 
     // Position and orientation of fixed cam
@@ -27,7 +30,7 @@ public:
     static bool cameraMoved, freeCam;
 
     static void update();
-    static void followYacht();
+    static void followYacht(const glm::mat4 &transform, const glm::mat4 &camBone);
     static void reset();
     static void setCamDirection(glm::vec3 rotation);
     static void genViewMatrix(glm::vec3 position);

@@ -50,8 +50,10 @@ struct RenderCommand
     int lod;
 
     bool animated = false;
-    const std::vector<glm::mat4> *boneTransforms = nullptr;
-    const std::vector<glm::mat4> *boneInverseOffsets = nullptr;
+    bool controlled = false;
+    std::vector<glm::mat4> boneTransforms;
+    std::vector<glm::mat4> boneInverseOffsets;
+    int camBoneIndex;
 };
 
 class Render

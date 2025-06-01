@@ -111,11 +111,13 @@ void Render::prepareRender()
             TextureManager::getTextureData(*model.model, cmd.textureUnit, cmd.textureArrayID, cmd.textureLayers);
 
             cmd.animated = model.animated;
+            cmd.controlled = model.controlled;
+            cmd.camBoneIndex = model.model->boneHierarchy["Armature_Cam"]->index;
 
             if (cmd.animated)
             {
-                cmd.boneTransforms = &model.model->boneTransforms;
-                cmd.boneInverseOffsets = &model.model->boneInverseOffsets;
+                cmd.boneTransforms = model.model->boneTransforms;
+                cmd.boneInverseOffsets = model.model->boneInverseOffsets;
             }
 
             float distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
@@ -297,6 +299,9 @@ void Render::renderObjects()
 
 void Render::renderModel(const RenderCommand &cmd)
 {
+    if (cmd.controlled)
+        Camera::followYacht(cmd.modelMatrix, cmd.boneTransforms[cmd.camBoneIndex]);
+
     // Send general shader data
     if (shader != lastShader)
     {
@@ -329,8 +334,8 @@ void Render::renderModel(const RenderCommand &cmd)
 
     if (cmd.animated)
     {
-        shader->setMat4Array("u_boneTransforms", *cmd.boneTransforms);
-        shader->setMat4Array("u_inverseOffsets", *cmd.boneInverseOffsets);
+        shader->setMat4Array("u_boneTransforms", cmd.boneTransforms);
+        shader->setMat4Array("u_inverseOffsets", cmd.boneInverseOffsets);
     }
 
     // Draw meshes
