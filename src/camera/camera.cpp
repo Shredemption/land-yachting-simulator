@@ -1,9 +1,11 @@
 #include "camera/camera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "event_handler/event_handler.h"
 #include "scene_manager/scene_manager.h"
+#include "thread_manager/thread_manager.h"
 
 // Global Camera Variables
 glm::vec3 Camera::worldUp(0.f, 0.f, 1.f); // World up direction
@@ -35,6 +37,36 @@ void Camera::update()
     glm::vec3 position = getPosition();
     genViewMatrix(position);
     u_camXY = glm::translate(glm::mat4(1.0f), glm::vec3(position[0], position[1], 0));
+}
+
+void Camera::followYacht(ModelData &modeldata)
+{
+    float alpha = ThreadManager::animationAlpha.load(std::memory_order_acquire);
+
+    glm::mat4 prevBase = modeldata.physics->getReadBuffer()->prevBaseTransform;
+    glm::mat4 currBase = modeldata.physics->getReadBuffer()->baseTransform;
+
+    // Interpolate position
+    glm::vec3 prevPos = glm::vec3(prevBase[3]);
+    glm::vec3 currPos = glm::vec3(currBase[3]);
+    glm::vec3 interpPos = glm::mix(prevPos, currPos, alpha);
+
+    // Interpolate rotation
+    glm::quat prevRot = glm::quat_cast(prevBase);
+    glm::quat currRot = glm::quat_cast(currBase);
+    glm::quat interpRot = glm::slerp(prevRot, currRot, alpha);
+
+    glm::mat4 interpTransform = glm::translate(glm::mat4(1.0f), interpPos) * glm::toMat4(interpRot);
+
+    // Apply bone transform once
+    glm::mat4 camBone = modeldata.model->boneTransforms[modeldata.model->boneHierarchy["Armature_Cam"]->index];
+    glm::vec4 camWorld = interpTransform * camBone * glm::vec4(0, 0, 0, 1);
+
+    Camera::cameraPosition = glm::vec3(camWorld);
+
+    // Get yaw
+    glm::vec3 euler = glm::eulerAngles(interpRot);
+    Camera::yaw = -euler.z;
 }
 
 // Reset cam to starting position/orientation

@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+#include "scene/scene.h"
+
 class Camera
 {
 public:
@@ -27,6 +29,7 @@ public:
     static bool cameraMoved, freeCam;
 
     static void update();
+    static void followYacht(ModelData &modeldata);
     static void reset();
     static void setCamDirection(glm::vec3 rotation);
     static void genViewMatrix(glm::vec3 position);
