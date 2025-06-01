@@ -61,8 +61,9 @@ class TextureManager
 public:
     // Texture Arrays
     static std::unordered_map<std::string, TextureArray> textureArrays;
+    static std::mutex textureArrayMutex;
     static std::unordered_map<std::string, Texture> standaloneTextureCache;
-    static std::mutex standaloneCacheMutex; // for thread safety if needed
+    static std::mutex standaloneCacheMutex;
 
     // Pending Textures
     static std::queue<PendingTexture> textureQueue;
@@ -83,6 +84,7 @@ public:
 
     static void clearTextures();
     static void uploadToGPU();
+    static void loadQueuedPixelData();
 
     static std::string getTextureArrayName(ModelType modelType);
     static GLuint getStandaloneTextureID(const std::string &texturePath);

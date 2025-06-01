@@ -114,6 +114,8 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
         loadSkyBoxToScene(skybox);
     }
 
+    TextureManager::loadQueuedPixelData();
+
     SceneManager::loadingState++;
 };
 

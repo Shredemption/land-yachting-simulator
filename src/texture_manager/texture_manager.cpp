@@ -4,12 +4,14 @@
 #include <stb_image.h>
 
 #include <filesystem>
+#include <future>
 
 #include "scene/scene.h"
 #include "model/model.h"
 
 // Texture Arrays
 std::unordered_map<std::string, TextureArray> TextureManager::textureArrays;
+std::mutex TextureManager::textureArrayMutex;
 std::unordered_map<std::string, Texture> TextureManager::standaloneTextureCache;
 std::mutex TextureManager::standaloneCacheMutex;
 
@@ -165,27 +167,14 @@ void TextureManager::queueStandalone(const std::string &path)
         pendingTextures.insert(path);
     }
 
-    int width, height, channels;
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-    if (!data)
-    {
-        std::cerr << "Failed to load texture: " << path << std::endl;
-        std::lock_guard<std::mutex> lock(pendingTexturesMutex);
-        pendingTextures.erase(path);
-        return;
-    }
-
     std::lock_guard<std::mutex> unitLock(unitMutex);
     PendingTexture pt;
     pt.path = path;
-    pt.width = width;
-    pt.height = height;
-    pt.channels = channels;
-    pt.pixelData.assign(data, data + (width * height * channels));
+    pt.width = 0;
+    pt.height = 0;
+    pt.channels = 0;
     pt.textureID = 0;
     pt.textureUnit = nextFreeUnit++;
-
-    stbi_image_free(data);
 
     {
         std::lock_guard<std::mutex> lock(textureQueueMutex);
@@ -203,41 +192,20 @@ void TextureManager::queueTextureToArray(const std::string &arrayName, const std
         arr.textureUnit = nextFreeUnit++;
     }
 
-    // Check if texture already queued or uploaded
     if (arr.textureLayerMap.count(texturePath) > 0)
-        return; // Already in map → no need to queue
+        return; // Already in map
 
     for (const auto &tex : arr.pendingTextures)
         if (tex.path == texturePath)
             return; // Already queued
 
-    int width, height, channels;
-    unsigned char *data = stbi_load(texturePath.c_str(), &width, &height, &channels, 4);
-    if (!data)
-    {
-        std::cerr << "Failed to load texture: " << texturePath << std::endl;
-        return;
-    }
-
-    if (arr.width == 0 && arr.height == 0)
-    {
-        arr.width = width;
-        arr.height = height;
-    }
-    else if (arr.width != width || arr.height != height)
-    {
-        std::cerr << "Texture size mismatch for array " << arrayName << std::endl;
-        stbi_image_free(data);
-        return;
-    }
-
     PendingTexture pt;
     pt.path = texturePath;
-    pt.width = width;
-    pt.height = height;
-    pt.channels = 4;
-    pt.pixelData.assign(data, data + (width * height * 4));
-    stbi_image_free(data);
+    pt.width = 0;
+    pt.height = 0;
+    pt.channels = 0;
+    pt.textureID = 0;
+    pt.textureUnit = arr.textureUnit;
 
     arr.pendingTextures.push_back(std::move(pt));
 }
@@ -291,6 +259,87 @@ unsigned int TextureManager::loadSkyboxTexture(const SkyBoxData &skybox)
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
     return textureID;
+}
+
+void TextureManager::loadQueuedPixelData()
+{
+    std::vector<std::future<void>> tasks;
+    std::vector<std::shared_ptr<PendingTexture>> textures;
+
+    // Standalones
+    {
+        std::lock_guard<std::mutex> lock(textureQueueMutex);
+
+        while (!textureQueue.empty())
+        {
+            auto pt = std::make_shared<PendingTexture>(std::move(textureQueue.front()));
+            textureQueue.pop();
+
+            std::string path = pt->path;
+
+            tasks.push_back(std::async(std::launch::async, [pt, path]()
+                                       {
+                int width, height, channels;
+                unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+
+                if (!data)
+                {
+                    std::cerr << "Failed to load pixel data: " << path << std::endl;
+                    return;
+                }
+
+                pt->width = width;
+                pt->height = height;
+                pt->channels = channels;
+                pt->pixelData.assign(data, data + (width * height * channels));
+                stbi_image_free(data); }));
+
+            textures.push_back(pt);
+        }
+    }
+
+    // Texture Arrays
+    {
+        std::lock_guard<std::mutex> lock(textureArrayMutex);
+
+        for (auto &[arrayName, array] : textureArrays)
+        {
+            for (PendingTexture &pt : array.pendingTextures)
+            {
+                tasks.push_back(std::async(std::launch::async, [&pt]()
+                                           {
+                    int width, height, channels;
+                    unsigned char* data = stbi_load(pt.path.c_str(), &width, &height, &channels, 4);
+                    if (!data)
+                    {
+                        std::cerr << "Failed to load pixel data: " << pt.path << std::endl;
+                        return;
+                    }
+
+                    pt.width = width;
+                    pt.height = height;
+                    pt.channels = 4;
+                    pt.pixelData.assign(data, data + (width * height * 4));
+                    stbi_image_free(data); }));
+            }
+        }
+    }
+
+    // Wait for all loading to finish
+    for (auto &task : tasks)
+    {
+        task.get();
+    }
+
+    // Now all textures are loaded, move them back to the queue safely
+    {
+        std::lock_guard<std::mutex> lock(textureQueueMutex);
+
+        for (auto &pt : textures)
+        {
+            textureQueue.push(std::move(*pt));
+        }
+    }
 }
 
 void TextureManager::uploadToGPU()
@@ -375,6 +424,9 @@ void TextureManager::uploadTextureArrays()
         int layerCount = (int)arr.pendingTextures.size();
         if (layerCount == 0)
             continue;
+
+        arr.width = arr.pendingTextures[0].width;
+        arr.height = arr.pendingTextures[0].height;
 
         glActiveTexture(GL_TEXTURE0 + arr.textureUnit);
         glGenTextures(1, &arr.textureArrayID);
