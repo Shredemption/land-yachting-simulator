@@ -4,6 +4,7 @@ out vec4 FragColor;  // Final color of the fragment
 
 uniform sampler2D textTexture;  // The texture to sample
 uniform vec3 textColor;  // Color of the text (to apply tint)
+uniform float textAlpha;
 
 void main()
 {
@@ -15,5 +16,5 @@ void main()
         discard;  // Discard fully transparent fragments
     }
     
-    FragColor = vec4(textColor, 1.0) * texColor;  // Apply tint to the texture color
+    FragColor = vec4(textColor, textAlpha) * texColor;  // Apply tint to the texture color
 }

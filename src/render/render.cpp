@@ -793,7 +793,7 @@ void Render::initFreeType()
     glEnableVertexAttribArray(0);
 }
 
-void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color)
+void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha)
 {
     x *= EventHandler::screenHeight;
     y *= EventHandler::screenHeight;
@@ -813,6 +813,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 
     // Set text color uniform
     shader->setVec3("textColor", color.r, color.g, color.b);
+    shader->setFloat("textAlpha", alpha);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textTexture);

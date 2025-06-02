@@ -115,7 +115,7 @@ public:
     static void executeRender(RenderBuffer &renderBuffer);
 
     static void initFreeType();
-    static void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
+    static void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f);
     static void renderLoading();
 
 private:
