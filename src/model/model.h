@@ -9,6 +9,7 @@
 #include <vector>
 #include <variant>
 #include <map>
+#include <atomic>
 
 #include "mesh/mesh.h"
 
@@ -46,10 +47,15 @@ public:
 
     // Local model data
     std::map<std::string, Bone *> boneHierarchy;
-    std::vector<glm::mat4> boneTransforms;
     std::vector<glm::mat4> boneOffsets;
     std::vector<glm::mat4> boneInverseOffsets;
     std::vector<Bone *> rootBones;
+
+    std::vector<glm::mat4> boneTransforms[2];
+    std::atomic<int> activeBoneBuffer = 0;
+    const std::vector<glm::mat4>& getReadBuffer();
+    std::vector<glm::mat4>& getWriteBuffer();
+    void swapBoneBuffer();
 
     std::vector<std::string> paths;
     std::string name;
@@ -68,8 +74,8 @@ public:
     // Generate and update bones
     void generateBoneTransforms();
     void generateBoneTransformsRecursive(Bone *bone);
-    void updateBoneTransforms();
-    void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset);
+    void updateBoneTransforms(std::vector<glm::mat4> &targetBones);
+    void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset, std::vector<glm::mat4>& targetBones);
 
     // Draw meshes in model
     void draw(int lodIndex);

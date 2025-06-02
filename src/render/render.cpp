@@ -117,7 +117,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
 
             if (cmd.animated)
             {
-                cmd.boneTransforms = model.model->boneTransforms;
+                cmd.boneTransforms = model.model->getReadBuffer();
                 cmd.boneInverseOffsets = model.model->boneInverseOffsets;
             }
 
@@ -136,7 +136,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
 
         if (model.controlled)
         {
-            prepBuffer.camPos = (model.u_model * model.model->boneTransforms[model.model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
+            prepBuffer.camPos = (model.u_model * model.model->getReadBuffer()[model.model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
             prepBuffer.camYaw = -atan2(model.u_model[0][1], model.u_model[1][1]);
         }
     }
