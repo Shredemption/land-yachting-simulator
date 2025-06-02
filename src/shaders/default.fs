@@ -19,7 +19,8 @@ uniform sampler2DArray textureArray;
 
 const float ambientLight = 0.5;
 const float diffuseStrength = 1;
-const float specularStrength = 5;
+const float specularStrength = 0.2;
+const float metalSpecularStrength = 5;
 
 float G1(float NdotX, float k)
 {
@@ -56,7 +57,8 @@ void main()
 
     vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec3 diffuse = kD * albedo * lightCol * lightIntensity * max(dot(fs_in.Normal, fs_in.lightDir), 0.0);
-    vec3 outputColor = albedo * ambientLight + ao * diffuseStrength * diffuse + specularStrength * specular;
+    float specBoost = mix(specularStrength, metalSpecularStrength, metallic);
+    vec3 outputColor = albedo * ambientLight + ao * diffuseStrength * diffuse + specBoost * specular;
 
     FragColor = vec4(outputColor, 1.0);
 }
