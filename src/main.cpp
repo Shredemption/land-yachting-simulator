@@ -254,25 +254,32 @@ int main()
             // Update cam and render
             Camera::update();
 
-            {
-                std::unique_lock<std::mutex> lock(ThreadManager::renderBufferMutex);
-                ThreadManager::renderBufferCV.wait(lock, []
-                                                   { return ThreadManager::renderExecuteReady || ThreadManager::renderBufferShouldExit; });
-
-                // Exit early if flagged
-                if (ThreadManager::renderBufferShouldExit)
-                    continue;
-
-                // Swap buffers while mutex is locked
-                std::swap(Render::prepBuffer, Render::renderBuffer);
-                ThreadManager::renderPrepReady = true;
-                ThreadManager::renderExecuteReady = false;
-            }
-            // Notify render prep thread after unlocking mutex
-            ThreadManager::renderBufferCV.notify_one();
-
             // Then render the frame
-            Render::executeRender();
+            int currentIndex = Render::renderIndex.load(std::memory_order_acquire);
+            auto &buffer = Render::renderBuffers[currentIndex];
+
+            // Only render if the buffer is ready
+            BufferState expected = BufferState::Ready;
+            if (buffer.state.compare_exchange_strong(expected, BufferState::Rendering))
+            {
+                // Perform actual rendering
+                Render::executeRender(buffer.commandBuffer);
+
+                // After rendering is done, mark buffer free
+                buffer.state.store(BufferState::Free, std::memory_order_release);
+
+                // Rotate render index to the next ready buffer (if available)
+                for (int i = 0; i < 3; ++i)
+                {
+                    if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Ready)
+                    {
+                        Render::renderIndex.store(i, std::memory_order_release);
+                        break;
+                    }
+                }
+
+                ThreadManager::renderBufferCV.notify_all();
+            }
         }
 
         glfwSwapBuffers(window);

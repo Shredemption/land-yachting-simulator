@@ -122,6 +122,13 @@ void SceneManager::unload()
     // Unload Texture array
     TextureManager::clearTextures();
 
+    // Clear render buffers
+    for (auto &buffer : Render::renderBuffers)
+    {
+        buffer.commandBuffer.clear();
+        buffer.state.store(BufferState::Free);
+    }
+
     // Reset scene variable. Calls destructors
     currentScene.reset();
 

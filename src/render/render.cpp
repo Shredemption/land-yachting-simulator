@@ -9,6 +9,7 @@
 #include "camera/camera.h"
 #include "scene_manager/scene_manager.h"
 #include "texture_manager/texture_manager.h"
+#include "thread_manager/thread_manager.h"
 
 // Global variables for quads
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
@@ -45,8 +46,10 @@ GLuint lastGPUQuery = 0;
 Shader *shader;
 Shader *lastShader = nullptr;
 
-std::vector<RenderCommand> Render::prepBuffer;
-std::vector<RenderCommand> Render::renderBuffer;
+std::array<RenderBuffer, 3> Render::renderBuffers;
+std::atomic<int> Render::prepIndex = 0;
+std::atomic<int> Render::renderIndex = 1;
+std::atomic<int> Render::standbyIndex = 2;
 
 // Setup quads and text
 void Render::setup()
@@ -82,7 +85,7 @@ void Render::initQuad()
     }
 }
 
-void Render::prepareRender()
+void Render::prepareRender(std::vector<RenderCommand> &prepBuffer)
 {
     // Clear and reserve size for buffer
     prepBuffer.clear();
@@ -211,7 +214,7 @@ void Render::prepareRender()
     }
 }
 
-void Render::executeRender()
+void Render::executeRender(std::vector<RenderCommand> &renderBuffer)
 {
     Camera::swapBuffers();
 
@@ -226,7 +229,7 @@ void Render::executeRender()
     if (Shader::waterLoaded && EventHandler::frame % 2 == 0)
     {
         WaterPass = true;
-        renderReflectRefract();
+        renderReflectRefract(renderBuffer);
         WaterPass = false;
     }
 
@@ -234,7 +237,7 @@ void Render::executeRender()
     clipPlane = {0, 0, 0, 0};
 
     // Render rest of scene
-    renderObjects();
+    renderObjects(renderBuffer);
 
     // Render debug menu
     if (!SceneManager::onTitleScreen)
@@ -273,7 +276,7 @@ void Render::executeRender()
     lastShader = nullptr;
 }
 
-void Render::renderObjects()
+void Render::renderObjects(std::vector<RenderCommand> &renderBuffer)
 {
     for (const RenderCommand &cmd : renderBuffer)
     {
@@ -578,7 +581,7 @@ void Render::renderSceneImages()
     glBindVertexArray(0);
 }
 
-void Render::renderReflectRefract()
+void Render::renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
 {
     // ===== REFLECTOIN =====
     // Bind reflection buffer
@@ -594,7 +597,7 @@ void Render::renderReflectRefract()
     glClear(GL_DEPTH_BUFFER_BIT);
     renderSceneSkyBox();
     glEnable(GL_CLIP_DISTANCE0);
-    renderObjects();
+    renderObjects(renderBuffer);
     glDisable(GL_CLIP_DISTANCE0);
 
     // ===== REFRACTION =====
@@ -610,7 +613,7 @@ void Render::renderReflectRefract()
     glClear(GL_DEPTH_BUFFER_BIT);
     renderSceneSkyBox();
     glEnable(GL_CLIP_DISTANCE0);
-    renderObjects();
+    renderObjects(renderBuffer);
     glDisable(GL_CLIP_DISTANCE0);
 
     // Unbind buffers, bind default one

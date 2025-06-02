@@ -6,6 +6,7 @@
 #include FT_FREETYPE_H
 
 #include <memory>
+#include <array>
 
 #include "scene/scene.h"
 #include "shader/shader.h"
@@ -54,11 +55,27 @@ struct RenderCommand
     std::vector<glm::mat4> boneInverseOffsets;
 };
 
+enum class BufferState
+{
+    Free,
+    Prepping,
+    Ready,
+    Rendering
+};
+
+struct RenderBuffer
+{
+    std::vector<RenderCommand> commandBuffer;
+    std::atomic<BufferState> state = BufferState::Free;
+};
+
 class Render
 {
 public:
-    static std::vector<RenderCommand> prepBuffer;
-    static std::vector<RenderCommand> renderBuffer;
+    static std::array<RenderBuffer, 3> renderBuffers;
+    static std::atomic<int> prepIndex;
+    static std::atomic<int> renderIndex;
+    static std::atomic<int> standbyIndex;
 
     static float waterHeight;
 
@@ -79,8 +96,8 @@ public:
 
     static void setup();
     static void initQuad();
-    static void prepareRender();
-    static void executeRender();
+    static void prepareRender(std::vector<RenderCommand> &prepBuffer);
+    static void executeRender(std::vector<RenderCommand> &renderBuffer);
 
     static void initFreeType();
     static void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
@@ -93,7 +110,7 @@ private:
     static bool WaterPass;
 
     // Class renderers
-    static void renderObjects();
+    static void renderObjects(std::vector<RenderCommand> &renderBuffer);
     static void renderModel(const RenderCommand &cmd);
     static void renderOpaquePlane(const RenderCommand &cmd);
     static void renderTransparentPlane(const RenderCommand &cmd);
@@ -103,7 +120,7 @@ private:
     static void renderSceneImages();
 
     // Texture renderers
-    static void renderReflectRefract();
+    static void renderReflectRefract(std::vector<RenderCommand> &renderBuffer);
     static void renderTestQuad(GLuint texture, int x, int y);
 };
 

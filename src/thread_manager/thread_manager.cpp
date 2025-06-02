@@ -26,8 +26,6 @@ std::atomic<bool> ThreadManager::animationShouldExit(false);
 
 std::mutex ThreadManager::renderBufferMutex;
 std::condition_variable ThreadManager::renderBufferCV;
-std::atomic<bool> ThreadManager::renderPrepReady(true);
-std::atomic<bool> ThreadManager::renderExecuteReady(false);
 std::atomic<bool> ThreadManager::renderBufferShouldExit(false);
 
 void ThreadManager::startup()
@@ -142,26 +140,46 @@ void ThreadManager::animationThreadFunction()
 
 void ThreadManager::renderBufferThreadFunction()
 {
-    while (!renderBufferShouldExit)
+    while (!ThreadManager::renderBufferShouldExit.load())
     {
-        {
-            std::unique_lock<std::mutex> lock(renderBufferMutex);
-            renderBufferCV.wait(lock, []
-                                { return renderPrepReady || renderBufferShouldExit; });
+        std::unique_lock lock(renderBufferMutex);
 
-            if (renderBufferShouldExit)
+        // Find a free buffer to prepare
+        int nextPrep = -1;
+        for (int i = 0; i < 3; ++i)
+        {
+            if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Free)
+            {
+                Render::renderBuffers[i].state.store(BufferState::Prepping, std::memory_order_release);
+                nextPrep = i;
                 break;
-
-            renderPrepReady = false;
+            }
         }
 
-        Render::prepareRender();
-
+        // If no free buffer, wait
+        if (nextPrep == -1)
         {
-            std::lock_guard<std::mutex> lock(renderBufferMutex);
-            renderExecuteReady = true;
+            renderBufferCV.wait(lock, []
+                                {
+                    for (int i = 0; i < 3; ++i)
+                        if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Free)
+                            return true;
+                    return renderBufferShouldExit.load(std::memory_order_acquire); });
+
+            continue;
         }
-        renderBufferCV.notify_one();
+
+        Render::prepIndex.store(nextPrep, std::memory_order_release);
+        lock.unlock();
+
+        // Fill command buffer for rendering
+        Render::prepareRender(Render::renderBuffers[nextPrep].commandBuffer);
+
+        // Mark as ready
+        Render::renderBuffers[nextPrep].state.store(BufferState::Ready, std::memory_order_release);
+
+        // Notify that a buffer is ready
+        renderBufferCV.notify_all();
     }
 }
 
@@ -179,7 +197,5 @@ void ThreadManager::stopRenderThread()
 void ThreadManager::startRenderThread()
 {
     renderBufferShouldExit = false;
-    renderPrepReady = true;
-    renderExecuteReady = false;
     renderBufferThread = std::thread(renderBufferThreadFunction);
 }
