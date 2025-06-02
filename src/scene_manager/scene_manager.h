@@ -12,6 +12,14 @@ struct LoadingStep
     std::function<std::string()> activeMessage;
 };
 
+enum class EngineState
+{
+    Idle,
+    Loading,
+    Title,
+    Running
+};
+
 class SceneManager
 {
 public:
@@ -24,7 +32,8 @@ public:
     static void loadSceneMap();
 
     // Global loading variables
-    static std::atomic<bool> onTitleScreen;
+    static std::atomic<EngineState> engineState;
+    static std::atomic<bool> updateCallbacks;
     static int loadingState;
     static std::pair<std::atomic<int>, std::atomic<int>> loadingProgress;
 
@@ -35,7 +44,6 @@ public:
 
     // Update and render functions
     static void checkLoading(GLFWwindow *window);
-    static void renderLoading();
 };
 
 #endif

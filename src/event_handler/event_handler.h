@@ -34,10 +34,12 @@ public:
 
     // Global input/callback Functions
     static void timing(GLFWwindow *window);
+    static void setCallbacks(GLFWwindow *window);
     static void errorCallback(int error, const char *description);
-    static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
-    static void mouseCallback(GLFWwindow *window, double xPos, double yPos);
-    static void processInput(GLFWwindow *window);
+    static void keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods);
+    static void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
+    static void mouseCallbackRunning(GLFWwindow *window, double xPos, double yPos);
+    static void processInputRunning(GLFWwindow *window);
     static void framebufferSizeCallback(GLFWwindow *window, int width, int height);
 };
 

@@ -78,16 +78,6 @@ void SetWindowIconFromResource(GLFWwindow *window)
 
 #define STB_IMAGE_IMPLEMENTATION
 
-inline void atomicAdd(std::atomic<double> &atomicVal, double value)
-{
-    double current = atomicVal.load(std::memory_order_relaxed);
-    double desired;
-    do
-    {
-        desired = current + value;
-    } while (!atomicVal.compare_exchange_weak(current, desired, std::memory_order_release, std::memory_order_relaxed));
-}
-
 int main()
 {
 // Attach to existing console
@@ -151,9 +141,7 @@ int main()
     glfwGetFramebufferSize(window, &EventHandler::screenWidth, &EventHandler::screenHeight);
 
     // Set Keycallback for window
-    glfwSetKeyCallback(window, EventHandler::keyCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window, EventHandler::mouseCallback);
     glfwSetFramebufferSizeCallback(window, EventHandler::framebufferSizeCallback);
 
     // Enable face culling
@@ -193,6 +181,9 @@ int main()
     {
         EventHandler::timing(window);
 
+        if (SceneManager::updateCallbacks)
+            EventHandler::setCallbacks(window);
+
         // If window inactive
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
         {
@@ -200,76 +191,23 @@ int main()
             continue;
         }
 
-        // If on loading screen
-        if (SceneManager::loadingState > 0)
+        // Run accoring to state
+        switch (SceneManager::engineState)
         {
-            // Check loading state
+        case EngineState::Loading:
             SceneManager::checkLoading(window);
+            Render::renderLoading();
+            break;
 
-            // Render loading screen
-            SceneManager::renderLoading();
-        }
+        case EngineState::Title:
+            Render::render();
+            break;
 
-        // If normally running
-        if (SceneManager::loadingState == 0)
-        {
-            // Update Events
-            EventHandler::processInput(window);
-
-            // Update Physics accumulator
-            atomicAdd(Physics::accumulator, EventHandler::deltaTime);
-
-            // If time for physics tick
-            int steps = 0;
-            double acc = Physics::accumulator.load(std::memory_order_acquire);
-
-            while (acc >= Physics::tickRate)
-            {
-                acc -= Physics::tickRate;
-                steps++;
-            }
-
-            if (steps > 0 && !ThreadManager::physicsBusy.load(std::memory_order_acquire))
-            {
-                ThreadManager::physicsBusy.store(true, std::memory_order_release);
-                // Update physics
-                {
-                    std::lock_guard lock(ThreadManager::physicsMutex);
-                    ThreadManager::physicsTrigger = true;
-                    ThreadManager::physicsSteps += steps;
-                }
-                ThreadManager::physicsCV.notify_one();
-            }
-
-            float alpha = static_cast<float>(acc / Physics::tickRate);
-            ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
-
-            // Then render the frame
-            int currentIndex = Render::renderIndex.load(std::memory_order_acquire);
-            auto &buffer = Render::renderBuffers[currentIndex];
-
-            // Only render if the buffer is ready
-            BufferState expected = BufferState::Ready;
-            if (buffer.state.compare_exchange_strong(expected, BufferState::Rendering))
-            {
-                // Perform actual rendering
-                Render::executeRender(buffer);
-
-                // After rendering is done, mark buffer free
-                buffer.state.store(BufferState::Free, std::memory_order_release);
-
-                // Rotate render index to the next ready buffer (if available)
-                for (int i = 0; i < 3; ++i)
-                {
-                    if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Ready)
-                    {
-                        Render::renderIndex.store(i, std::memory_order_release);
-                        break;
-                    }
-                }
-
-                ThreadManager::renderBufferCV.notify_all();
-            }
+        case EngineState::Running:
+            EventHandler::processInputRunning(window);
+            Physics::update();
+            Render::render();
+            break;
         }
 
         glfwSwapBuffers(window);

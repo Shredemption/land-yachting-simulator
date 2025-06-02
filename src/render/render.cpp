@@ -85,6 +85,35 @@ void Render::initQuad()
     }
 }
 
+void Render::render()
+{
+    int currentIndex = Render::renderIndex.load(std::memory_order_acquire);
+    auto &buffer = Render::renderBuffers[currentIndex];
+
+    // Only render if the buffer is ready
+    BufferState expected = BufferState::Ready;
+    if (buffer.state.compare_exchange_strong(expected, BufferState::Rendering))
+    {
+        // Perform actual rendering
+        Render::executeRender(buffer);
+
+        // After rendering is done, mark buffer free
+        buffer.state.store(BufferState::Free, std::memory_order_release);
+
+        // Rotate render index to the next ready buffer (if available)
+        for (int i = 0; i < 3; ++i)
+        {
+            if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Ready)
+            {
+                Render::renderIndex.store(i, std::memory_order_release);
+                break;
+            }
+        }
+
+        ThreadManager::renderBufferCV.notify_all();
+    }
+}
+
 void Render::prepareRender(RenderBuffer &prepBuffer)
 {
     // Clear and reserve size for buffer
@@ -125,7 +154,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
 
             cmd.lod = 0;
             if (distanceFromCamera > lodDistance) cmd.lod = 1;
-            if (SceneManager::onTitleScreen) cmd.lod = 0;
+            if (SceneManager::engineState == EngineState::Title) cmd.lod = 0;
 
             if (cmd.lod >= model.model->lodMeshes.size())
                 cmd.lod = static_cast<int>(std::round(model.model->lodMeshes.size())) - 1;
@@ -246,7 +275,7 @@ void Render::executeRender(RenderBuffer &renderBuffer)
     renderObjects(renderBuffer.commandBuffer);
 
     // Render debug menu
-    if (!SceneManager::onTitleScreen)
+    if (SceneManager::engineState == EngineState::Running)
     {
         // Set debug data
         std::string debugText;
@@ -814,4 +843,56 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 
     // Disable blending after text rendering
     glDisable(GL_BLEND);
+}
+
+void Render::renderLoading()
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    std::string progressString;
+    std::string statusString = "Loading...";
+
+    std::vector<LoadingStep> loadingSteps = {
+        {"Unloaded Success", []
+         { return "Clearing Previous"; }},
+        {"Scene JSON Complete", []
+         { return "Loading new Scene JSON"; }},
+        {"Background Colors Complete", []
+         { return "Loading Background Colors"; }},
+        {"Texts Complete", [&]
+         { return "Loading Texts [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Images Complete", [&]
+         { return "Loading Images [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Models Complete", [&]
+         { return "Loading Models [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Planes Complete", [&]
+         { return "Loading Planes [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Terrain Grids Complete", [&]
+         { return "Loading Terrain Grids [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Skybox Complete", []
+         { return "Loading Skybox"; }},
+        {"Textures Complete", [&]
+         { return "Loading Textures [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"OpenGL Upload Complete", []
+         { return "Uploading to OpenGL"; }}};
+
+    // Render completed steps
+    for (int i = 0; i < SceneManager::loadingState - 1 && i < loadingSteps.size(); ++i)
+    {
+        progressString += loadingSteps[i].completedLabel + "\n";
+    }
+
+    // Render current step
+    if (SceneManager::loadingState >= 1 && SceneManager::loadingState <= loadingSteps.size())
+    {
+        progressString += loadingSteps[SceneManager::loadingState - 1].activeMessage() + "\n";
+    }
+
+    // Loading complete
+    if (SceneManager::loadingState == 100)
+        statusString = "Finished Loading";
+
+    renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
+    renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
 }
