@@ -43,6 +43,12 @@ public:
     static void loadAsync(const std::string &scenePath);
     static void unload();
 
+    // Pause variables
+    static bool enterPause;
+    static bool exitPause;
+    static float pauseFade;
+    static void updatePause();
+
     // Update and render functions
     static void checkLoading(GLFWwindow *window);
 };
