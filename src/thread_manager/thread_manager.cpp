@@ -173,7 +173,7 @@ void ThreadManager::renderBufferThreadFunction()
         lock.unlock();
 
         // Fill command buffer for rendering
-        Render::prepareRender(Render::renderBuffers[nextPrep].commandBuffer);
+        Render::prepareRender(Render::renderBuffers[nextPrep]);
 
         // Mark as ready
         Render::renderBuffers[nextPrep].state.store(BufferState::Ready, std::memory_order_release);

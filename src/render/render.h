@@ -67,6 +67,8 @@ struct RenderBuffer
 {
     std::vector<RenderCommand> commandBuffer;
     std::atomic<BufferState> state = BufferState::Free;
+    float camYaw;
+    glm::vec3 camPos;
 };
 
 class Render
@@ -96,8 +98,8 @@ public:
 
     static void setup();
     static void initQuad();
-    static void prepareRender(std::vector<RenderCommand> &prepBuffer);
-    static void executeRender(std::vector<RenderCommand> &renderBuffer);
+    static void prepareRender(RenderBuffer &prepBuffer);
+    static void executeRender(RenderBuffer &renderBuffer);
 
     static void initFreeType();
     static void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
