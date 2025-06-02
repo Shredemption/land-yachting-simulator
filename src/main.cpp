@@ -251,9 +251,6 @@ int main()
             }
             ThreadManager::animationCV.notify_one();
 
-            // Update cam and render
-            Camera::update();
-
             // Then render the frame
             int currentIndex = Render::renderIndex.load(std::memory_order_acquire);
             auto &buffer = Render::renderBuffers[currentIndex];
@@ -263,7 +260,7 @@ int main()
             if (buffer.state.compare_exchange_strong(expected, BufferState::Rendering))
             {
                 // Perform actual rendering
-                Render::executeRender(buffer.commandBuffer);
+                Render::executeRender(buffer);
 
                 // After rendering is done, mark buffer free
                 buffer.state.store(BufferState::Free, std::memory_order_release);

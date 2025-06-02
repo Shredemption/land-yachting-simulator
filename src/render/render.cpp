@@ -85,11 +85,11 @@ void Render::initQuad()
     }
 }
 
-void Render::prepareRender(std::vector<RenderCommand> &prepBuffer)
+void Render::prepareRender(RenderBuffer &prepBuffer)
 {
     // Clear and reserve size for buffer
-    prepBuffer.clear();
-    prepBuffer.reserve(
+    prepBuffer.commandBuffer.clear();
+    prepBuffer.commandBuffer.reserve(
         SceneManager::currentScene->structModels.size() +
         SceneManager::currentScene->opaqueUnitPlanes.size() +
         SceneManager::currentScene->transparentUnitPlanes.size() +
@@ -135,7 +135,10 @@ void Render::prepareRender(std::vector<RenderCommand> &prepBuffer)
             return cmd; }));
 
         if (model.controlled)
-            Camera::bufferYacht(model.u_model, model.model->boneTransforms[model.model->boneHierarchy["Armature_Cam"]->index]);
+        {
+            prepBuffer.camPos = (model.u_model * model.model->boneTransforms[model.model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
+            prepBuffer.camYaw = -atan2(model.u_model[0][1], model.u_model[1][1]);
+        }
     }
 
     // Load opaque UnitPlanes
@@ -210,13 +213,16 @@ void Render::prepareRender(std::vector<RenderCommand> &prepBuffer)
 
     for (auto &f : futures)
     {
-        prepBuffer.push_back(f.get());
+        prepBuffer.commandBuffer.push_back(f.get());
     }
 }
 
-void Render::executeRender(std::vector<RenderCommand> &renderBuffer)
+void Render::executeRender(RenderBuffer &renderBuffer)
 {
-    Camera::swapBuffers();
+    // Set camera from buffer
+    Camera::cameraPosition = renderBuffer.camPos;
+    Camera::yaw = renderBuffer.camYaw;
+    Camera::update();
 
     // Clear color buffer
     glClearColor(SceneManager::currentScene->bgColor.r, SceneManager::currentScene->bgColor.g, SceneManager::currentScene->bgColor.b, 1.0f);
@@ -229,7 +235,7 @@ void Render::executeRender(std::vector<RenderCommand> &renderBuffer)
     if (Shader::waterLoaded && EventHandler::frame % 2 == 0)
     {
         WaterPass = true;
-        renderReflectRefract(renderBuffer);
+        renderReflectRefract(renderBuffer.commandBuffer);
         WaterPass = false;
     }
 
@@ -237,7 +243,7 @@ void Render::executeRender(std::vector<RenderCommand> &renderBuffer)
     clipPlane = {0, 0, 0, 0};
 
     // Render rest of scene
-    renderObjects(renderBuffer);
+    renderObjects(renderBuffer.commandBuffer);
 
     // Render debug menu
     if (!SceneManager::onTitleScreen)
