@@ -19,10 +19,12 @@ std::atomic<bool> ThreadManager::physicsBusy(false);
 std::atomic<bool> ThreadManager::physicsShouldExit(false);
 
 std::mutex ThreadManager::animationMutex;
-std::condition_variable ThreadManager::animationCV;
-std::atomic<bool> ThreadManager::animationTrigger(false);
 std::atomic<float> ThreadManager::animationAlpha(0.0f);
 std::atomic<bool> ThreadManager::animationShouldExit(false);
+std::condition_variable ThreadManager::animationCanWriteCV;
+std::condition_variable ThreadManager::renderCanReadCV;
+bool ThreadManager::animationDoneWriting = false;
+bool ThreadManager::renderDoneReading = true;
 
 std::mutex ThreadManager::renderBufferMutex;
 std::condition_variable ThreadManager::renderBufferCV;
@@ -33,6 +35,12 @@ void ThreadManager::startup()
     physicsThread = std::thread(physicsThreadFunction);
     animationThread = std::thread(animationThreadFunction);
     renderBufferThread = std::thread(renderBufferThreadFunction);
+
+    {
+        std::lock_guard<std::mutex> lock(animationMutex);
+        animationCanWriteCV.notify_one();
+        renderCanReadCV.notify_one();
+    }
 }
 
 void ThreadManager::shutdown()
@@ -44,8 +52,9 @@ void ThreadManager::shutdown()
 
     // Wake up threads so they can exit promptly
     physicsCV.notify_one();
-    animationCV.notify_one();
-    renderBufferCV.notify_one();
+    animationCanWriteCV.notify_all();
+    renderCanReadCV.notify_all();
+    renderBufferCV.notify_all();
 
     // Join threads back to main
     if (physicsThread.joinable())
@@ -117,26 +126,42 @@ void ThreadManager::animationThreadFunction()
     while (!animationShouldExit)
     {
         std::unique_lock<std::mutex> lock(animationMutex);
-        animationCV.wait(lock, []
-                         { return animationTrigger.load() || animationShouldExit.load(); });
+
+        animationCanWriteCV.wait(lock, []
+                                 { return renderDoneReading || animationShouldExit; });
 
         if (animationShouldExit)
             break;
 
-        animationTrigger = false;
+        lock.unlock();
 
         float alpha = animationAlpha.load(std::memory_order_acquire);
+        bool didAnimate = false;
 
-        // Run animations sequentially for all models
-        for (ModelData &model : SceneManager::currentScene.get()->structModels)
+        // Check if scene is valid before proceeding
+        auto scenePtr = SceneManager::currentScene.get();
+        if (scenePtr)
         {
-            if (model.animated)
+            // Run animations sequentially for all models
+            for (ModelData &model : scenePtr->structModels)
             {
-                auto &writeBones = model.model->getWriteBuffer();
-                Animation::updateYachtBones(model, alpha, writeBones);
-                model.model->swapBoneBuffer();
+                if (model.animated)
+                {
+                    auto &writeBones = model.model->getWriteBuffer();
+                    Animation::updateYachtBones(model, alpha, writeBones);
+                    didAnimate = true;
+                }
             }
         }
+
+        if (didAnimate)
+            Model::swapBoneBuffers();
+
+        lock.lock();
+        animationDoneWriting = true;
+        renderDoneReading = false;
+        renderCanReadCV.notify_one();
+        lock.unlock();
     }
 }
 
@@ -174,11 +199,26 @@ void ThreadManager::renderBufferThreadFunction()
         Render::prepIndex.store(nextPrep, std::memory_order_release);
         lock.unlock();
 
+        std::unique_lock<std::mutex> animationLock(animationMutex);
+        renderCanReadCV.wait(animationLock, []
+                             { return animationDoneWriting || renderBufferShouldExit; });
+
+        if (renderBufferShouldExit)
+            break;
+
+        animationLock.unlock();
+
         // Fill command buffer for rendering
         Render::prepareRender(Render::renderBuffers[nextPrep]);
 
         // Mark as ready
         Render::renderBuffers[nextPrep].state.store(BufferState::Ready, std::memory_order_release);
+
+        animationLock.lock();
+        renderDoneReading = true;
+        animationDoneWriting = false;
+        animationCanWriteCV.notify_one();
+        animationLock.unlock();
 
         // Notify that a buffer is ready
         renderBufferCV.notify_all();

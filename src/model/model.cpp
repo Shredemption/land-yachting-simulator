@@ -16,6 +16,8 @@
 std::map<std::string, JSONModelMapEntry> Model::modelMap;
 std::string modelMapPath = "resources/models.json";
 
+std::atomic<int> Model::activeBoneBuffer{0};
+
 // Json setups
 JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
@@ -311,7 +313,7 @@ std::vector<glm::mat4> &Model::getWriteBuffer()
     return boneTransforms[1 - activeBoneBuffer.load(std::memory_order_acquire)];
 }
 
-void Model::swapBoneBuffer()
+void Model::swapBoneBuffers()
 {
     int oldIndex = activeBoneBuffer.load(std::memory_order_relaxed);
     activeBoneBuffer.store(1 - oldIndex, std::memory_order_release);
