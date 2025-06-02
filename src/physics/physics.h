@@ -9,11 +9,23 @@
 struct Scene;
 struct ModelData;
 
+inline void atomicAdd(std::atomic<double> &atomicVal, double value)
+{
+    double current = atomicVal.load(std::memory_order_relaxed);
+    double desired;
+    do
+    {
+        desired = current + value;
+    } while (!atomicVal.compare_exchange_weak(current, desired, std::memory_order_release, std::memory_order_relaxed));
+}
+
 class Physics
 {
 public:
     // Constructor
     Physics(const std::string &name);
+    static void update();
+
     static bool resetState;
 
     static const double tickRate;

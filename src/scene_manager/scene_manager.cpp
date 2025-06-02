@@ -24,23 +24,20 @@ std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
 
 // Global loading variables
-std::atomic<bool> SceneManager::onTitleScreen(false);
+std::atomic<EngineState> SceneManager::engineState = EngineState::Idle;
+std::atomic<bool> SceneManager::updateCallbacks = false;
 int SceneManager::loadingState = 0;
 std::pair<std::atomic<int>, std::atomic<int>> SceneManager::loadingProgress = {0, 0};
 
 // Load scene on main, causes freezing
 void SceneManager::load(const std::string &sceneName)
 {
+    engineState = EngineState::Loading;
+
     ThreadManager::stopRenderThread();
 
     // unload current scene
     unload();
-
-    // Check if going to title
-    if (sceneName == "title")
-    {
-        onTitleScreen = true;
-    }
 
     // Load scene from file
     currentScene = std::make_shared<Scene>(sceneMap[sceneName], sceneName);
@@ -55,23 +52,27 @@ void SceneManager::load(const std::string &sceneName)
     ThreadManager::startRenderThread();
 
     loadingState = 0;
+
+    engineState = EngineState::Running;
+
+    // Check if going to title
+    if (sceneName == "title")
+        engineState = EngineState::Title;
+
+    updateCallbacks = true;
 }
 
 // Load scene in background, show loading screen
 void SceneManager::loadAsync(const std::string &sceneName)
 {
+    engineState = EngineState::Loading;
+
     loadingState++;
 
     ThreadManager::stopRenderThread();
 
     // Unload previous scene
     unload();
-
-    // Check if going to title
-    if (sceneName == "title")
-    {
-        onTitleScreen = true;
-    }
 
     loadingState++;
 
@@ -94,7 +95,7 @@ void SceneManager::checkLoading(GLFWwindow *window)
         currentScene = pendingScene.get();
 
         // Render final loading screen frame
-        SceneManager::renderLoading();
+        Render::renderLoading();
 
         glfwSwapBuffers(window);
 
@@ -114,6 +115,14 @@ void SceneManager::checkLoading(GLFWwindow *window)
     {
         loadingState = 0;
         ThreadManager::startRenderThread();
+
+        engineState = EngineState::Running;
+
+        // Check if going to title
+        if (currentScene.get()->name == "title")
+            engineState = EngineState::Title;
+
+        updateCallbacks = true;
     }
 }
 
@@ -131,9 +140,6 @@ void SceneManager::unload()
 
     // Reset scene variable. Calls destructors
     currentScene.reset();
-
-    // Clear title sceen
-    onTitleScreen = false;
 
     // Clear global data from loading before loading new scene
     Shader::unload();
@@ -172,56 +178,4 @@ void SceneManager::loadSceneMap()
     {
         sceneMap[kv.key()] = kv.value().as<std::string>();
     }
-}
-
-void SceneManager::renderLoading()
-{
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    std::string progressString;
-    std::string statusString = "Loading...";
-
-    std::vector<LoadingStep> loadingSteps = {
-        {"Unloaded Success", []
-         { return "Clearing Previous"; }},
-        {"Scene JSON Complete", []
-         { return "Loading new Scene JSON"; }},
-        {"Background Colors Complete", []
-         { return "Loading Background Colors"; }},
-        {"Texts Complete", [&]
-         { return "Loading Texts [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Images Complete", [&]
-         { return "Loading Images [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Models Complete", [&]
-         { return "Loading Models [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Planes Complete", [&]
-         { return "Loading Planes [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Terrain Grids Complete", [&]
-         { return "Loading Terrain Grids [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Skybox Complete", []
-         { return "Loading Skybox"; }},
-        {"Textures Complete", [&]
-         { return "Loading Textures [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"OpenGL Upload Complete", []
-         { return "Uploading to OpenGL"; }}};
-
-    // Render completed steps
-    for (int i = 0; i < loadingState - 1 && i < loadingSteps.size(); ++i)
-    {
-        progressString += loadingSteps[i].completedLabel + "\n";
-    }
-
-    // Render current step
-    if (loadingState >= 1 && loadingState <= loadingSteps.size())
-    {
-        progressString += loadingSteps[loadingState - 1].activeMessage() + "\n";
-    }
-
-    // Loading complete
-    if (loadingState == 100)
-        statusString = "Finished Loading";
-
-    Render::renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
-    Render::renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
 }

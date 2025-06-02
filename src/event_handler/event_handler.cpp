@@ -41,88 +41,51 @@ void EventHandler::timing(GLFWwindow *window)
     frame++;
 }
 
-void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+void EventHandler::setCallbacks(GLFWwindow *window)
 {
-    if (SceneManager::onTitleScreen)
-    {
-        // Close on ESC
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-        }
 
-        // Load scenes
-        if (key == GLFW_KEY_1 && action == GLFW_PRESS)
-        {
-            SceneManager::loadAsync("realistic");
-        }
-        if (key == GLFW_KEY_2 && action == GLFW_PRESS)
-        {
-            SceneManager::loadAsync("cartoon");
-        }
-        if (key == GLFW_KEY_T && action == GLFW_PRESS)
-        {
-            SceneManager::loadAsync("test");
-        }
+    switch (SceneManager::engineState)
+    {
+    case EngineState::Title:
+        glfwSetKeyCallback(window, EventHandler::keyCallbackTitle);
+        glfwSetCursorPosCallback(window, nullptr);
+        break;
+
+    case EngineState::Running:
+        glfwSetKeyCallback(window, EventHandler::keyCallbackRunning);
+        glfwSetCursorPosCallback(window, EventHandler::mouseCallbackRunning);
+        break;
+
+    default:
+        glfwSetKeyCallback(window, nullptr);
+        glfwSetCursorPosCallback(window, nullptr);
+        break;
     }
-    else
+
+    SceneManager::updateCallbacks = false;
+}
+
+void EventHandler::keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+
+    // Close on ESC
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
-        // Back to title on ESC
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        {
-            SceneManager::load("title");
-        }
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
 
-        // Toggle FPS debug on F9
-        if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
-        {
-            if (Render::debugState == dbFPS)
-            {
-                Render::debugState = dbNone;
-            }
-            else
-            {
-                Render::debugState = dbFPS;
-            }
-        }
-
-        // Toggle physics debug on F10
-        if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
-        {
-            if (Render::debugState == dbPhysics)
-            {
-                Render::debugState = dbNone;
-            }
-            else
-            {
-                Render::debugState = dbPhysics;
-            }
-        }
-
-        // Toggle Freecam on C
-        if (key == GLFW_KEY_C && action == GLFW_PRESS)
-        {
-            if (Camera::freeCam)
-            {
-                Camera::freeCam = false;
-            }
-            else
-            {
-                Camera::freeCam = true;
-            }
-        }
-
-        // Reset physics on R
-        if (key == GLFW_KEY_R && action == GLFW_PRESS)
-        {
-            Physics::resetState = true;
-        }
-
-        // Switch to next controllable yacht on N
-        if (key == GLFW_KEY_N && action == GLFW_PRESS)
-        {
-            Physics::switchControlledYacht(*SceneManager::currentScene);
-        }
+    // Load scenes
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+    {
+        SceneManager::loadAsync("realistic");
+    }
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+    {
+        SceneManager::loadAsync("cartoon");
+    }
+    if (key == GLFW_KEY_T && action == GLFW_PRESS)
+    {
+        SceneManager::loadAsync("test");
     }
 
     // Toggle fullscreen on F12
@@ -156,7 +119,98 @@ void EventHandler::keyCallback(GLFWwindow *window, int key, int scancode, int ac
     }
 }
 
-void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
+void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+
+    // Back to title on ESC
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        SceneManager::load("title");
+    }
+
+    // Toggle FPS debug on F9
+    if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
+    {
+        if (Render::debugState == dbFPS)
+        {
+            Render::debugState = dbNone;
+        }
+        else
+        {
+            Render::debugState = dbFPS;
+        }
+    }
+
+    // Toggle physics debug on F10
+    if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
+    {
+        if (Render::debugState == dbPhysics)
+        {
+            Render::debugState = dbNone;
+        }
+        else
+        {
+            Render::debugState = dbPhysics;
+        }
+    }
+
+    // Toggle Freecam on C
+    if (key == GLFW_KEY_C && action == GLFW_PRESS)
+    {
+        if (Camera::freeCam)
+        {
+            Camera::freeCam = false;
+        }
+        else
+        {
+            Camera::freeCam = true;
+        }
+    }
+
+    // Reset physics on R
+    if (key == GLFW_KEY_R && action == GLFW_PRESS)
+    {
+        Physics::resetState = true;
+    }
+
+    // Switch to next controllable yacht on N
+    if (key == GLFW_KEY_N && action == GLFW_PRESS)
+    {
+        Physics::switchControlledYacht(*SceneManager::currentScene);
+    }
+
+    // Toggle fullscreen on F12
+    if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
+    {
+        if (fullscreen)
+        {
+            // Set back to window, using saved old size etc.
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
+            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
+            glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
+
+            fullscreen = !fullscreen;
+            windowSizeChanged = true;
+        }
+        else
+        {
+            // Store old window size etc.
+            glfwGetWindowPos(window, &windowXpos, &windowYpos);
+            glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+            // Set to borderless window
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+            const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
+
+            fullscreen = !fullscreen;
+            windowSizeChanged = true;
+        }
+    }
+}
+
+void EventHandler::mouseCallbackRunning(GLFWwindow *window, double xPos, double yPos)
 {
     // Check if window size changed last iteration
     if (firstFrame || windowSizeChanged)
@@ -169,14 +223,6 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
         windowSizeChanged = false;
 
         // Reset mouse to 0,0
-        glfwSetCursorPos(window, 0, 0);
-    }
-
-    // On title screen, disable mouse input
-    if (SceneManager::onTitleScreen)
-    {
-        xPos = 0;
-        yPos = 0;
         glfwSetCursorPos(window, 0, 0);
     }
 
@@ -216,77 +262,74 @@ void EventHandler::mouseCallback(GLFWwindow *window, double xPos, double yPos)
     }
 }
 
-void EventHandler::processInput(GLFWwindow *window)
+void EventHandler::processInputRunning(GLFWwindow *window)
 {
-    if (!SceneManager::onTitleScreen)
+    // Move cam with WASD, space, shift
+    float cameraSpeed = 5.f * deltaTime;
+
+    // Find XY plane view direction
+    glm::vec3 forwardXY = Camera::cameraViewDirection;
+    forwardXY.z = 0.f;
+    forwardXY = glm::normalize(forwardXY);
+
+    // Apply camera movement per button pressed
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && Camera::freeCam)
     {
-        // Move cam with WASD, space, shift
-        float cameraSpeed = 5.f * deltaTime;
+        Camera::cameraPositionFree += cameraSpeed * forwardXY;
+        Camera::cameraMoved = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && Camera::freeCam)
+    {
+        Camera::cameraPositionFree -= cameraSpeed * forwardXY;
+        Camera::cameraMoved = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && Camera::freeCam)
+    {
+        Camera::cameraPositionFree -= glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraMoved = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && Camera::freeCam)
+    {
+        Camera::cameraPositionFree += glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
+        Camera::cameraMoved = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && Camera::freeCam)
+    {
+        Camera::cameraPositionFree += cameraSpeed * Camera::worldUp;
+        Camera::cameraMoved = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && Camera::freeCam)
+    {
+        Camera::cameraPositionFree -= cameraSpeed * Camera::worldUp;
+        Camera::cameraMoved = true;
+    }
 
-        // Find XY plane view direction
-        glm::vec3 forwardXY = Camera::cameraViewDirection;
-        forwardXY.z = 0.f;
-        forwardXY = glm::normalize(forwardXY);
+    // Physics Keys
+    // Set all keyspresses to false
+    for (auto &key : Physics::keyInputs)
+    {
+        key = false;
+    }
 
-        // Apply camera movement per button pressed
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && Camera::freeCam)
-        {
-            Camera::cameraPositionFree += cameraSpeed * forwardXY;
-            Camera::cameraMoved = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && Camera::freeCam)
-        {
-            Camera::cameraPositionFree -= cameraSpeed * forwardXY;
-            Camera::cameraMoved = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && Camera::freeCam)
-        {
-            Camera::cameraPositionFree -= glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
-            Camera::cameraMoved = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && Camera::freeCam)
-        {
-            Camera::cameraPositionFree += glm::normalize(glm::cross(forwardXY, Camera::worldUp)) * cameraSpeed;
-            Camera::cameraMoved = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && Camera::freeCam)
-        {
-            Camera::cameraPositionFree += cameraSpeed * Camera::worldUp;
-            Camera::cameraMoved = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && Camera::freeCam)
-        {
-            Camera::cameraPositionFree -= cameraSpeed * Camera::worldUp;
-            Camera::cameraMoved = true;
-        }
-
-        // Physics Keys
-        // Set all keyspresses to false
-        for (auto &key : Physics::keyInputs)
-        {
-            key = false;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        {
-            Physics::keyInputs[0] = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        {
-            Physics::keyInputs[1] = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        {
-            Physics::keyInputs[2] = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        {
-            Physics::keyInputs[3] = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-        {
-            Physics::keyInputs[4] = true;
-        }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        Physics::keyInputs[0] = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        Physics::keyInputs[1] = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        Physics::keyInputs[2] = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        Physics::keyInputs[3] = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    {
+        Physics::keyInputs[4] = true;
     }
 }
 

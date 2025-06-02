@@ -5,6 +5,8 @@
 
 #include "render/render.h"
 #include "scene/scene.h"
+#include "event_handler/event_handler.h"
+#include "thread_manager/thread_manager.h"
 
 // Boolmap for input tracking
 bool Physics::keyInputs[5];
@@ -152,6 +154,35 @@ Physics::Physics(const std::string &name)
         maxSteeringAngle = 30.0f;
         steeringAttenuation = 1.0f;
     }
+}
+
+void Physics::update()
+{
+    atomicAdd(Physics::accumulator, EventHandler::deltaTime);
+
+    int steps = 0;
+    double acc = Physics::accumulator.load(std::memory_order_acquire);
+
+    while (acc >= Physics::tickRate)
+    {
+        acc -= Physics::tickRate;
+        steps++;
+    }
+
+    if (steps > 0 && !ThreadManager::physicsBusy.load(std::memory_order_acquire))
+    {
+        ThreadManager::physicsBusy.store(true, std::memory_order_release);
+        // Update physics
+        {
+            std::lock_guard lock(ThreadManager::physicsMutex);
+            ThreadManager::physicsTrigger = true;
+            ThreadManager::physicsSteps += steps;
+        }
+        ThreadManager::physicsCV.notify_one();
+    }
+
+    float alpha = static_cast<float>(acc / Physics::tickRate);
+    ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
 }
 
 void Physics::reset(const glm::mat4 &u_model)

@@ -98,11 +98,13 @@ public:
 
     static void setup();
     static void initQuad();
+    static void render();
     static void prepareRender(RenderBuffer &prepBuffer);
     static void executeRender(RenderBuffer &renderBuffer);
 
     static void initFreeType();
     static void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
+    static void renderLoading();
 
 private:
     static unsigned int quadVAO;
