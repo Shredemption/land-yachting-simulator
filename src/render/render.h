@@ -96,6 +96,18 @@ public:
     static std::map<GLchar, Character> Characters;
     static std::string fontpath;
 
+    static GLuint sceneFBO;
+    static GLuint sceneTexture;
+    static GLuint sceneDepthRBO;
+
+    static GLuint pauseTexture;
+    static GLuint copyFBO;
+    static void initPause();
+    static void createSceneFBO(int width, int height);
+    static void resize(int width, int height);
+    static void savePauseBackground();
+    static void renderPauseScreen();
+
     static void setup();
     static void initQuad();
     static void render();

@@ -56,6 +56,11 @@ void EventHandler::setCallbacks(GLFWwindow *window)
         glfwSetCursorPosCallback(window, EventHandler::mouseCallbackRunning);
         break;
 
+    case EngineState::Pause:
+        glfwSetKeyCallback(window, EventHandler::keyCallbackPause);
+        glfwSetCursorPosCallback(window, nullptr);
+        break;
+
     default:
         glfwSetKeyCallback(window, nullptr);
         glfwSetCursorPosCallback(window, nullptr);
@@ -65,29 +70,8 @@ void EventHandler::setCallbacks(GLFWwindow *window)
     SceneManager::updateCallbacks = false;
 }
 
-void EventHandler::keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods)
+void EventHandler::keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-
-    // Close on ESC
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-
-    // Load scenes
-    if (key == GLFW_KEY_1 && action == GLFW_PRESS)
-    {
-        SceneManager::loadAsync("realistic");
-    }
-    if (key == GLFW_KEY_2 && action == GLFW_PRESS)
-    {
-        SceneManager::loadAsync("cartoon");
-    }
-    if (key == GLFW_KEY_T && action == GLFW_PRESS)
-    {
-        SceneManager::loadAsync("test");
-    }
-
     // Toggle fullscreen on F12
     if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
     {
@@ -119,13 +103,56 @@ void EventHandler::keyCallbackTitle(GLFWwindow *window, int key, int scancode, i
     }
 }
 
-void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
+void EventHandler::keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-
-    // Back to title on ESC
+    // Close on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+
+    // Load scenes
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+    {
+        SceneManager::loadAsync("realistic");
+    }
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+    {
+        SceneManager::loadAsync("cartoon");
+    }
+    if (key == GLFW_KEY_T && action == GLFW_PRESS)
+    {
+        SceneManager::loadAsync("test");
+    }
+
+    keyCallbackGlobal(window, key, scancode, action, mods);
+}
+
+void EventHandler::keyCallbackPause(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    // Unpause on ESC
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        SceneManager::engineState = EngineState::Running;
+        SceneManager::updateCallbacks = true;
+    }
+
+    // Quit on Q
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+    {
         SceneManager::load("title");
+    }
+
+    keyCallbackGlobal(window, key, scancode, action, mods);
+}
+
+void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    // Pause on ESC
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        SceneManager::engineState = EngineState::Pause;
+        SceneManager::updateCallbacks = true;
     }
 
     // Toggle FPS debug on F9
@@ -179,35 +206,7 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
         Physics::switchControlledYacht(*SceneManager::currentScene);
     }
 
-    // Toggle fullscreen on F12
-    if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
-    {
-        if (fullscreen)
-        {
-            // Set back to window, using saved old size etc.
-            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
-            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
-            glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
-
-            fullscreen = !fullscreen;
-            windowSizeChanged = true;
-        }
-        else
-        {
-            // Store old window size etc.
-            glfwGetWindowPos(window, &windowXpos, &windowYpos);
-            glfwGetWindowSize(window, &windowWidth, &windowHeight);
-
-            // Set to borderless window
-            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
-            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
-            const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
-
-            fullscreen = !fullscreen;
-            windowSizeChanged = true;
-        }
-    }
+    keyCallbackGlobal(window, key, scancode, action, mods);
 }
 
 void EventHandler::mouseCallbackRunning(GLFWwindow *window, double xPos, double yPos)
@@ -341,6 +340,8 @@ void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int he
 
     // Track window size change for mouse movement
     windowSizeChanged = true;
+
+    Render::resize(width, height);
 }
 
 void EventHandler::errorCallback(int error, const char *description)
