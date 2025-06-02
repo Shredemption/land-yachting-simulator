@@ -102,7 +102,7 @@ public:
 
     static GLuint pauseTexture;
     static GLuint copyFBO;
-    static void initPause();
+    
     static void createSceneFBO(int width, int height);
     static void resize(int width, int height);
     static void savePauseBackground();

@@ -149,14 +149,19 @@ void EventHandler::keyCallbackPause(GLFWwindow *window, int key, int scancode, i
     // Unpause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
-        SceneManager::engineState = EngineState::Running;
-        SceneManager::updateCallbacks = true;
+        SceneManager::exitPause = true;
+    }
+
+    // To menu on M
+    if (key == GLFW_KEY_M && action == GLFW_PRESS)
+    {
+        SceneManager::load("title");
     }
 
     // Quit on Q
     if (key == GLFW_KEY_Q && action == GLFW_PRESS)
     {
-        SceneManager::load("title");
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
@@ -169,6 +174,7 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
     {
         SceneManager::engineState = EngineState::Pause;
         SceneManager::updateCallbacks = true;
+        SceneManager::enterPause = true;
     }
 
     // Toggle FPS debug on F9

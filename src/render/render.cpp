@@ -994,6 +994,11 @@ void Render::savePauseBackground()
 
 void Render::renderPauseScreen()
 {
+
+    float maxDarkFactor = 0.8f;
+
+    float darkfactor = maxDarkFactor * std::clamp(1 - std::pow((1 - SceneManager::pauseFade), 3), 0.0, 1.0);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1004,7 +1009,7 @@ void Render::renderPauseScreen()
     shader = Shader::load(shaderID::shPause);
     shader->setInt("screenTexture", 0);
     shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
-    shader->setFloat("darkenAmount", 0.5f);
+    shader->setFloat("darkenAmount", darkfactor);
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -29,6 +29,10 @@ std::atomic<bool> SceneManager::updateCallbacks = false;
 int SceneManager::loadingState = 0;
 std::pair<std::atomic<int>, std::atomic<int>> SceneManager::loadingProgress = {0, 0};
 
+bool SceneManager::enterPause = false;
+bool SceneManager::exitPause = false;
+float SceneManager::pauseFade = 0.0f;
+
 // Load scene on main, causes freezing
 void SceneManager::load(const std::string &sceneName)
 {
@@ -177,5 +181,27 @@ void SceneManager::loadSceneMap()
     for (const auto &kv : j["scenes"].object_range())
     {
         sceneMap[kv.key()] = kv.value().as<std::string>();
+    }
+}
+
+void SceneManager::updatePause()
+{
+    float fadeTime = 0.2f; // seconds
+
+    if (enterPause)
+    {
+        pauseFade += EventHandler::deltaTime / fadeTime;
+        if (pauseFade >= 1.0f)
+            enterPause = false;
+    }
+    else if (exitPause)
+    {
+        pauseFade -= EventHandler::deltaTime / fadeTime;
+        if (pauseFade < 0.0f)
+        {
+            SceneManager::engineState = EngineState::Running;
+            SceneManager::updateCallbacks = true;
+            exitPause = false;
+        }
     }
 }
