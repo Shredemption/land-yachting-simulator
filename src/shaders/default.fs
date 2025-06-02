@@ -55,7 +55,7 @@ void main()
 
     vec3 specular = (NDF * G * F) / (4.0 * max(dot(fs_in.Normal, fs_in.viewDir), 0.0) * max(dot(fs_in.Normal, fs_in.lightDir), 0.0) + 0.001);
 
-    vec3 kD = (1.0 - F) * (1.0 - metallic);
+    vec3 kD = (1.0 - F) * mix(1.0, 0.3, metallic);
     vec3 diffuse = kD * albedo * lightCol * lightIntensity * max(dot(fs_in.Normal, fs_in.lightDir), 0.0);
     float specBoost = mix(specularStrength, metalSpecularStrength, metallic);
     vec3 outputColor = albedo * ambientLight + ao * diffuseStrength * diffuse + specBoost * specular;
