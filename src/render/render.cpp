@@ -10,6 +10,7 @@
 #include "scene_manager/scene_manager.h"
 #include "texture_manager/texture_manager.h"
 #include "thread_manager/thread_manager.h"
+#include "math/math.h"
 
 // Global variables for quads
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
@@ -995,14 +996,23 @@ void Render::savePauseBackground()
 
 void Render::renderPauseScreen()
 {
+    std::vector<std::string> pauseEntries = {
+        "Paused",
+        "",
+        "[ESC] Resume",
+        "[M] Exit to Menu",
+        "[Q] Quit"};
 
     float maxDarkFactor = 0.8f;
 
-    float darkfactor = maxDarkFactor * std::clamp(1 - std::pow((1 - SceneManager::pauseFade), 3), 0.0, 1.0);
+    float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+
+    float darkfactor = easeOutCubic(0.0f, maxDarkFactor, effectiveFade);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
@@ -1014,4 +1024,24 @@ void Render::renderPauseScreen()
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    float fadeOffset = 0.3333f;
+
+    for (int i = 0; i < pauseEntries.size(); i++)
+    {
+        if (!SceneManager::exitPause)
+            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
+        else
+            effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+
+        float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
+
+        float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.2f);
+        float y = 0.05f + i * 0.035f;
+
+        renderText(pauseEntries[i], x + 0.003f, y + 0.003f, 1, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
+        renderText(pauseEntries[i], x, y, 1, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
+    }
+
+    glEnable(GL_DEPTH_TEST);
 }

@@ -204,7 +204,7 @@ int main()
             break;
 
         case EngineState::Pause:
-            SceneManager::updatePause();
+            SceneManager::updateFade();
             Render::renderPauseScreen();
             break;
 

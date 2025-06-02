@@ -46,8 +46,8 @@ public:
     // Pause variables
     static bool enterPause;
     static bool exitPause;
-    static float pauseFade;
-    static void updatePause();
+    static float menuFade;
+    static void updateFade();
 
     // Update and render functions
     static void checkLoading(GLFWwindow *window);

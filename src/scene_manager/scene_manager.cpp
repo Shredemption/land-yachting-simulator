@@ -31,7 +31,7 @@ std::pair<std::atomic<int>, std::atomic<int>> SceneManager::loadingProgress = {0
 
 bool SceneManager::enterPause = false;
 bool SceneManager::exitPause = false;
-float SceneManager::pauseFade = 0.0f;
+float SceneManager::menuFade = 0.0f;
 
 // Load scene on main, causes freezing
 void SceneManager::load(const std::string &sceneName)
@@ -148,6 +148,8 @@ void SceneManager::unload()
     // Clear global data from loading before loading new scene
     Shader::unload();
     Shader::waterLoaded = false;
+
+    SceneManager::menuFade = 0.0f;
 }
 
 void SceneManager::loadSceneMap()
@@ -184,24 +186,27 @@ void SceneManager::loadSceneMap()
     }
 }
 
-void SceneManager::updatePause()
+void SceneManager::updateFade()
 {
     float fadeTime = 0.2f; // seconds
 
-    if (enterPause)
+    if (exitPause)
     {
-        pauseFade += EventHandler::deltaTime / fadeTime;
-        if (pauseFade >= 1.0f)
-            enterPause = false;
-    }
-    else if (exitPause)
-    {
-        pauseFade -= EventHandler::deltaTime / fadeTime;
-        if (pauseFade < 0.0f)
+        if (menuFade > 1.0f)
+            menuFade = 1.0f;
+            
+        menuFade -= EventHandler::deltaTime / fadeTime;
+        if (menuFade < 0.0f)
         {
             SceneManager::engineState = EngineState::Running;
             SceneManager::updateCallbacks = true;
             exitPause = false;
         }
+    }
+    else
+    {
+        menuFade += EventHandler::deltaTime / fadeTime;
+        if (enterPause && menuFade >= 1.0f)
+            enterPause = false;
     }
 }
