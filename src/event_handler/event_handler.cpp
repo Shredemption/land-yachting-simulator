@@ -24,6 +24,9 @@ std::chrono::steady_clock::time_point EventHandler::now = startTime;
 std::chrono::steady_clock::time_point EventHandler::lastTime = startTime;
 unsigned int EventHandler::frame = 0;
 
+std::optional<std::chrono::steady_clock::time_point> EventHandler::pauseStart{};
+std::chrono::duration<double> EventHandler::pausedDuration{0};
+
 // Global Light properties
 glm::vec3 EventHandler::lightPos(1000.f, -1000.f, 2000.f);
 glm::vec3 EventHandler::lightCol(1, 1, 1);
@@ -33,8 +36,21 @@ float EventHandler::lightInsensity = 2;
 void EventHandler::timing(GLFWwindow *window)
 {
     now = std::chrono::steady_clock::now();
+
+    if (SceneManager::engineState == EngineState::Pause && !pauseStart.has_value())
+    {
+        pauseStart = now;
+    }
+
+    if (SceneManager::engineState != EngineState::Pause && pauseStart.has_value())
+    {
+        pausedDuration += now - *pauseStart;
+        pauseStart.reset();
+    }
+
     std::chrono::duration<double> delta = now - lastTime;
-    std::chrono::duration<double> total = now - startTime;
+    std::chrono::duration<double> total = now - startTime - pausedDuration;
+
     deltaTime = delta.count();
     time = total.count();
     lastTime = now;

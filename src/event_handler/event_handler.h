@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <chrono>
+#include <optional>
 
 class EventHandler
 {
@@ -24,6 +25,9 @@ public:
     static std::chrono::steady_clock::time_point lastTime;
     static std::chrono::steady_clock::time_point now;
     static unsigned int frame;
+
+    static std::optional<std::chrono::steady_clock::time_point> pauseStart;
+    static std::chrono::duration<double> pausedDuration;
 
     // Global Light properties
     static glm::vec3 lightPos;
