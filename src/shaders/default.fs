@@ -19,7 +19,7 @@ uniform sampler2DArray textureArray;
 
 const float ambientLight = 0.5;
 const float diffuseStrength = 1;
-const float specularStrength = 1;
+const float specularStrength = 5;
 
 float G1(float NdotX, float k)
 {
