@@ -30,8 +30,6 @@ public:
 
     static std::mutex renderBufferMutex;
     static std::condition_variable renderBufferCV;
-    static std::atomic<bool> renderPrepReady;
-    static std::atomic<bool> renderExecuteReady;
     static std::atomic<bool> renderBufferShouldExit;
 
     // Thread Functions
