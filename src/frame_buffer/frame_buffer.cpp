@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <iostream>
 
+#include "render/render.h"
+
 // Global framebuffer variables
 bool FrameBuffer::Water = false;
 unsigned int FrameBuffer::reflectionFrameBuffer;
@@ -28,7 +30,7 @@ void FrameBuffer::bindFrameBuffer(FrameBuffer FBO)
 
 void FrameBuffer::unbindCurrentFrameBuffer()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, Render::sceneFBO);
     glViewport(0, 0, EventHandler::screenWidth, EventHandler::screenHeight);
 }
 

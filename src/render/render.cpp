@@ -38,6 +38,9 @@ GLuint Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
 std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 
+// Pause texture
+GLuint Render::pauseTexture, Render::copyFBO;
+
 // Timing variables
 std::chrono::high_resolution_clock::time_point lastCPUTime;
 GLuint lastGPUQuery = 0;
@@ -51,11 +54,17 @@ std::atomic<int> Render::prepIndex = 0;
 std::atomic<int> Render::renderIndex = 1;
 std::atomic<int> Render::standbyIndex = 2;
 
+// In Render.h
+GLuint Render::sceneFBO = 0;
+GLuint Render::sceneTexture = 0;
+GLuint Render::sceneDepthRBO = 0;
+
 // Setup quads and text
 void Render::setup()
 {
-    Render::initQuad();
-    Render::initFreeType();
+    initQuad();
+    initFreeType();
+    createSceneFBO(EventHandler::windowWidth, EventHandler::windowHeight);
 }
 
 void Render::initQuad()
@@ -253,6 +262,9 @@ void Render::executeRender(RenderBuffer &renderBuffer)
     Camera::yaw = renderBuffer.camYaw;
     Camera::update();
 
+    // Bind to render buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+
     // Clear color buffer
     glClearColor(SceneManager::currentScene->bgColor.r, SceneManager::currentScene->bgColor.g, SceneManager::currentScene->bgColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -306,6 +318,20 @@ void Render::executeRender(RenderBuffer &renderBuffer)
 
     renderSceneTexts();
     renderSceneImages();
+
+    savePauseBackground();
+
+    // Switch back to screenbuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    shader->load(shaderID::shPost);
+    shader->setInt("screenTexture", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sceneTexture);
+
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     Camera::cameraMoved = false;
     lastShader = nullptr;
@@ -895,4 +921,91 @@ void Render::renderLoading()
 
     renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
     renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
+}
+
+void Render::createSceneFBO(int width, int height)
+{
+    glGenTextures(1, &pauseTexture);
+    glBindTexture(GL_TEXTURE_2D, pauseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, EventHandler::screenWidth, EventHandler::screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenFramebuffers(1, &copyFBO);
+
+    glGenFramebuffers(1, &sceneFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+
+    // Color texture
+    glGenTextures(1, &sceneTexture);
+    glBindTexture(GL_TEXTURE_2D, sceneTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Good for post
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTexture, 0);
+
+    // Depth renderbuffer
+    glGenRenderbuffers(1, &sceneDepthRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Scene FBO is not complete!" << std::endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Render::resize(int width, int height)
+{
+    // Delete old FBO attachments
+    glDeleteFramebuffers(1, &sceneFBO);
+    glDeleteTextures(1, &sceneTexture);
+    glDeleteRenderbuffers(1, &sceneDepthRBO);
+
+    glDeleteFramebuffers(1, &copyFBO);
+    glDeleteTextures(1, &pauseTexture);
+
+    createSceneFBO(width, height);
+}
+
+void Render::savePauseBackground()
+{
+    // Bind FBOs
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, sceneFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFBO);
+
+    // Attach target texture to copy FBO
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pauseTexture, 0);
+
+    // Check framebuffer completeness (optional but useful for debugging)
+    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Copy FBO is not complete!" << std::endl;
+
+    // Perform blit
+    glBlitFramebuffer(
+        0, 0, EventHandler::screenWidth, EventHandler::screenHeight,
+        0, 0, EventHandler::screenWidth, EventHandler::screenHeight,
+        GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    // Unbind
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Render::renderPauseScreen()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, pauseTexture);
+
+    shader = Shader::load(shaderID::shPause);
+    shader->setInt("screenTexture", 0);
+    shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
+    shader->setFloat("darkenAmount", 0.5f);
+
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

@@ -197,7 +197,9 @@ shaderID Shader::ShaderFromName(const std::string shaderName)
         {"skybox", shaderID::shSkybox},
         {"toon", shaderID::shToon},
         {"toon-terrain", shaderID::shToonTerrain},
-        {"toon-water", shaderID::shToonWater}};
+        {"toon-water", shaderID::shToonWater},
+        {"pause", shaderID::shPause},
+        {"post", shaderID::shPost}};
 
     auto it = typeMap.find(shaderName);
     return it != typeMap.end() ? it->second : shaderID::shNone;
@@ -215,7 +217,9 @@ std::string Shader::NameFromShader(const shaderID shader)
         {shaderID::shSkybox, "skybox"},
         {shaderID::shToon, "toon"},
         {shaderID::shToonTerrain, "toon-terrain"},
-        {shaderID::shToonWater, "toon-water"}};
+        {shaderID::shToonWater, "toon-water"},
+        {shaderID::shPause, "pause"},
+        {shaderID::shPost, "post"}};
 
     auto it = typeMap.find(shader);
     return it != typeMap.end() ? it->second : "";

@@ -156,6 +156,9 @@ int main()
     // Wireframe Mode
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // Setup render class
+    Render::setup();
+
     // Set window to fullscreen by default
     if (EventHandler::fullscreen)
     {
@@ -166,9 +169,6 @@ int main()
     }
 
     glfwShowWindow(window);
-
-    // Setup render class
-    Render::setup();
 
     // Launch threads
     ThreadManager::startup();
@@ -201,6 +201,10 @@ int main()
 
         case EngineState::Title:
             Render::render();
+            break;
+
+        case EngineState::Pause:
+            Render::renderPauseScreen();
             break;
 
         case EngineState::Running:
