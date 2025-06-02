@@ -7,7 +7,7 @@
 #include "event_handler/event_handler.h"
 #include "camera/camera.h"
 
-void Animation::updateYachtBones(ModelData &ModelData, float &alpha)
+void Animation::updateYachtBones(ModelData &ModelData, float &alpha, std::vector<glm::mat4> &targetBones)
 {
     // Abreviations
     Model *model = ModelData.model;
@@ -52,5 +52,5 @@ void Animation::updateYachtBones(ModelData &ModelData, float &alpha)
     model->boneHierarchy["Armature_Sail"]->transform = glm::rotate(glm::mat4(1.0f), sailAngle - mastAngle, glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Push updates to children
-    model->updateBoneTransforms();
+    model->updateBoneTransforms(targetBones);
 };

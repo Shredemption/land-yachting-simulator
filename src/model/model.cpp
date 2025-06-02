@@ -301,16 +301,37 @@ void Model::loadModelMap()
     }
 }
 
+const std::vector<glm::mat4> &Model::getReadBuffer()
+{
+    return boneTransforms[activeBoneBuffer.load(std::memory_order_acquire)];
+}
+
+std::vector<glm::mat4> &Model::getWriteBuffer()
+{
+    return boneTransforms[1 - activeBoneBuffer.load(std::memory_order_acquire)];
+}
+
+void Model::swapBoneBuffer()
+{
+    int oldIndex = activeBoneBuffer.load(std::memory_order_relaxed);
+    activeBoneBuffer.store(1 - oldIndex, std::memory_order_release);
+}
+
 void Model::generateBoneTransforms()
 {
-
     // Resize if matrix array not large enough
-    if (boneTransforms.size() != boneHierarchy.size())
+    for (int i = 0; i < 2; i++)
     {
-        boneTransforms.resize(boneHierarchy.size(), glm::mat4(1.0f));
-        boneOffsets.resize(boneHierarchy.size(), glm::mat4(1.0f));
-        boneInverseOffsets.resize(boneHierarchy.size(), glm::mat4(1.0f));
+        if (boneTransforms[i].size() != boneHierarchy.size())
+        {
+            boneTransforms[i].resize(boneHierarchy.size(), glm::mat4(1.0f));
+        }
     }
+
+    if (boneOffsets.size() != boneHierarchy.size())
+        boneOffsets.resize(boneHierarchy.size(), glm::mat4(1.0f));
+    if (boneInverseOffsets.size() != boneHierarchy.size())
+        boneInverseOffsets.resize(boneHierarchy.size(), glm::mat4(1.0f));
 
     for (auto &rootBone : rootBones)
     {
@@ -322,7 +343,7 @@ void Model::generateBoneTransforms()
 void Model::generateBoneTransformsRecursive(Bone *bone)
 {
     // Check if bone in range
-    if (bone->index < 0 || bone->index >= boneTransforms.size())
+    if (bone->index < 0 || bone->index >= boneHierarchy.size())
     {
         std::cerr << "Error: Bone index out of range: " << bone->index << ", with name: " << bone->name << std::endl;
         return;
@@ -341,26 +362,26 @@ void Model::generateBoneTransformsRecursive(Bone *bone)
     }
 }
 
-void Model::updateBoneTransforms()
+void Model::updateBoneTransforms(std::vector<glm::mat4> &targetBones)
 {
     for (auto &rootBone : rootBones)
     {
         // Start recursion from the root bone, with identity matrix for the root's parent transform
-        updateBoneTransformsRecursive(rootBone, glm::mat4(1.0f), glm::mat4(1.0f));
+        updateBoneTransformsRecursive(rootBone, glm::mat4(1.0f), glm::mat4(1.0f), targetBones);
     }
 }
 
-void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset)
+void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset, std::vector<glm::mat4> &targetBones)
 {
     // Check if bone in range
-    if (bone->index < 0 || bone->index >= boneTransforms.size())
+    if (bone->index < 0 || bone->index >= targetBones.size())
     {
         std::cerr << "Error: Bone index out of range: " << bone->index << ", with name: " << bone->name << std::endl;
         return;
     }
 
     // Update bone transform
-    boneTransforms[bone->index] = parentTransform * parentInverseOffset * bone->offsetMatrix * bone->transform;
+    targetBones[bone->index] = parentTransform * parentInverseOffset * bone->offsetMatrix * bone->transform;
 
     // Recursively update the transforms of the child bones
     for (Bone *child : bone->children)
@@ -369,7 +390,7 @@ void Model::updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTra
         {
             continue; // Prevents null pointer access
         }
-        updateBoneTransformsRecursive(child, boneTransforms[bone->index], boneInverseOffsets[bone->index]);
+        updateBoneTransformsRecursive(child, targetBones[bone->index], boneInverseOffsets[bone->index], targetBones);
     }
 }
 

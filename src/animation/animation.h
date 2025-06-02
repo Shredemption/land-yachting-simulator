@@ -9,7 +9,7 @@
 class Animation
 {
 public:
-    static void updateYachtBones(ModelData &ModelData, float &alpha);
+    static void updateYachtBones(ModelData &ModelData, float &alpha, std::vector<glm::mat4> &targetBones);
     static std::unordered_map<std::string, std::map<std::string, int>> yachtBoneMap;
 };
 

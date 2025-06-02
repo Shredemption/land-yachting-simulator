@@ -132,7 +132,9 @@ void ThreadManager::animationThreadFunction()
         {
             if (model.animated)
             {
-                Animation::updateYachtBones(model, alpha);
+                auto &writeBones = model.model->getWriteBuffer();
+                Animation::updateYachtBones(model, alpha, writeBones);
+                model.model->swapBoneBuffer();
             }
         }
     }
