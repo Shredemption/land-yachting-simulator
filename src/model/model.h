@@ -52,10 +52,10 @@ public:
     std::vector<Bone *> rootBones;
 
     std::vector<glm::mat4> boneTransforms[2];
-    std::atomic<int> activeBoneBuffer = 0;
+    static std::atomic<int> activeBoneBuffer;
     const std::vector<glm::mat4>& getReadBuffer();
     std::vector<glm::mat4>& getWriteBuffer();
-    void swapBoneBuffer();
+    static void swapBoneBuffers();
 
     std::vector<std::string> paths;
     std::string name;

@@ -216,7 +216,7 @@ int main()
             // Update Events
             EventHandler::processInput(window);
 
-            // Update Physics
+            // Update Physics accumulator
             atomicAdd(Physics::accumulator, EventHandler::deltaTime);
 
             // If time for physics tick
@@ -243,13 +243,6 @@ int main()
 
             float alpha = static_cast<float>(acc / Physics::tickRate);
             ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
-
-            // Update Animations
-            {
-                std::lock_guard lock(ThreadManager::animationMutex);
-                ThreadManager::animationTrigger = true;
-            }
-            ThreadManager::animationCV.notify_one();
 
             // Then render the frame
             int currentIndex = Render::renderIndex.load(std::memory_order_acquire);

@@ -23,10 +23,12 @@ public:
     static std::atomic<bool> physicsShouldExit;
 
     static std::mutex animationMutex;
-    static std::condition_variable animationCV;
-    static std::atomic<bool> animationTrigger;
     static std::atomic<float> animationAlpha;
     static std::atomic<bool> animationShouldExit;
+    static std::condition_variable animationCanWriteCV;
+    static std::condition_variable renderCanReadCV;
+    static bool animationDoneWriting;
+    static bool renderDoneReading;
 
     static std::mutex renderBufferMutex;
     static std::condition_variable renderBufferCV;
