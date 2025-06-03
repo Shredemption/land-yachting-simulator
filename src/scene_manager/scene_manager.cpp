@@ -24,14 +24,15 @@ std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
 
 // Global loading variables
-std::atomic<EngineState> SceneManager::engineState = EngineState::Idle;
-std::atomic<bool> SceneManager::updateCallbacks = false;
+std::atomic<bool> SceneManager::updateCallbacks = true;
 int SceneManager::loadingState = 0;
 std::pair<std::atomic<int>, std::atomic<int>> SceneManager::loadingProgress = {0, 0};
 
-bool SceneManager::enterPause = false;
-bool SceneManager::exitPause = false;
-float SceneManager::menuFade = 0.0f;
+// Transition Variables
+EngineState SceneManager::engineState = EngineState::Title;
+EngineState SceneManager::exitState = EngineState::None;
+float SceneManager::menuFade = -2.0f;
+std::optional<std::string> SceneManager::upcomingSceneLoad;
 
 // Load scene on main, causes freezing
 void SceneManager::load(const std::string &sceneName)
@@ -53,6 +54,8 @@ void SceneManager::load(const std::string &sceneName)
     Camera::reset();
     Physics::setup(*currentScene);
 
+    ThreadManager::sceneReadyForRender.store(true, std::memory_order_release);
+
     ThreadManager::startRenderThread();
 
     loadingState = 0;
@@ -69,7 +72,7 @@ void SceneManager::load(const std::string &sceneName)
 // Load scene in background, show loading screen
 void SceneManager::loadAsync(const std::string &sceneName)
 {
-    engineState = EngineState::Loading;
+    switchEngineState(EngineState::Loading);
 
     loadingState++;
 
@@ -92,6 +95,12 @@ void SceneManager::loadAsync(const std::string &sceneName)
 
 void SceneManager::checkLoading(GLFWwindow *window)
 {
+    if (upcomingSceneLoad.has_value())
+    {
+        loadAsync(upcomingSceneLoad.value());
+        upcomingSceneLoad.reset();
+    }
+
     // If background loading scene is complete
     if (loadingState > 0 && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
     {
@@ -99,7 +108,7 @@ void SceneManager::checkLoading(GLFWwindow *window)
         currentScene = pendingScene.get();
 
         // Render final loading screen frame
-        Render::renderLoading();
+        Render::renderLoadingScreen();
 
         glfwSwapBuffers(window);
 
@@ -114,19 +123,32 @@ void SceneManager::checkLoading(GLFWwindow *window)
         pendingScene = std::future<std::shared_ptr<Scene>>();
         loadingState = 100;
     }
-    // Briefly pause after loading to ensure completeness
+
     else if (loadingState == 100)
     {
         loadingState = 0;
+        ThreadManager::sceneReadyForRender.store(true, std::memory_order_release);
         ThreadManager::startRenderThread();
 
-        engineState = EngineState::Running;
+        switchEngineState(EngineState::Running);
+    }
+}
 
-        // Check if going to title
-        if (currentScene.get()->name == "title")
-            engineState = EngineState::Title;
-
-        updateCallbacks = true;
+inline const char *to_string(BufferState s)
+{
+    switch (s)
+    {
+    case BufferState::Free:
+        return "Free";
+    case BufferState::Prepping:
+        return "Prepping";
+    case BufferState::Ready:
+        return "Ready";
+    case BufferState::Rendering:
+        return "Rendering";
+    // … handle any other states you added
+    default:
+        return "Unknown";
     }
 }
 
@@ -134,6 +156,8 @@ void SceneManager::unload()
 {
     // Unload Texture array
     TextureManager::clearTextures();
+
+    ThreadManager::sceneReadyForRender.store(false, std::memory_order_release);
 
     // Clear render buffers
     for (auto &buffer : Render::renderBuffers)
@@ -148,8 +172,6 @@ void SceneManager::unload()
     // Clear global data from loading before loading new scene
     Shader::unload();
     Shader::waterLoaded = false;
-
-    SceneManager::menuFade = 0.0f;
 }
 
 void SceneManager::loadSceneMap()
@@ -186,27 +208,55 @@ void SceneManager::loadSceneMap()
     }
 }
 
+void SceneManager::switchEngineState(const EngineState &to)
+{
+    exitState = engineState;
+    engineState = to;
+}
+
+void SceneManager::switchEngineStateScene(const std::string &sceneName)
+{
+    exitState = engineState;
+    engineState = EngineState::Loading;
+
+    upcomingSceneLoad.emplace(sceneName);
+}
+
 void SceneManager::updateFade()
 {
-    float fadeTime = 0.2f; // seconds
+    const float fadeTime = 0.2f; // seconds
+    float fadeDelta = EventHandler::deltaTime / fadeTime;
 
-    if (exitPause)
+    switch (exitState)
     {
-        if (menuFade > 1.0f)
-            menuFade = 1.0f;
-            
-        menuFade -= EventHandler::deltaTime / fadeTime;
-        if (menuFade < 0.0f)
+    // Fade up if not exiting
+    case EngineState::None:
+        menuFade += fadeDelta;
+        break;
+
+    // Instant fade on exit Running
+    case EngineState::Running:
+        menuFade = 0.0f;
+        exitState = EngineState::None;
+        updateCallbacks = true;
+        break;
+
+    // Instant fade on exit Loading
+    case EngineState::Loading:
+        menuFade = 0.0f;
+        exitState = EngineState::None;
+        updateCallbacks = true;
+        break;
+
+    // Else, fade out
+    default:
+        menuFade = std::clamp(menuFade - fadeDelta, 0.0f, 1.0f);
+
+        if (menuFade <= 0.0f)
         {
-            SceneManager::engineState = EngineState::Running;
-            SceneManager::updateCallbacks = true;
-            exitPause = false;
+            exitState = EngineState::None;
+            updateCallbacks = true;
         }
-    }
-    else
-    {
-        menuFade += EventHandler::deltaTime / fadeTime;
-        if (enterPause && menuFade >= 1.0f)
-            enterPause = false;
+        break;
     }
 }

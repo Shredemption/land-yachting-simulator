@@ -14,7 +14,7 @@ struct LoadingStep
 
 enum class EngineState
 {
-    Idle,
+    None,
     Loading,
     Title,
     Pause,
@@ -33,7 +33,6 @@ public:
     static void loadSceneMap();
 
     // Global loading variables
-    static std::atomic<EngineState> engineState;
     static std::atomic<bool> updateCallbacks;
     static int loadingState;
     static std::pair<std::atomic<int>, std::atomic<int>> loadingProgress;
@@ -43,11 +42,15 @@ public:
     static void loadAsync(const std::string &scenePath);
     static void unload();
 
-    // Pause variables
-    static bool enterPause;
-    static bool exitPause;
+    // Transition variables
+    static EngineState engineState;
+    static EngineState exitState;
     static float menuFade;
+    static std::optional<std::string> upcomingSceneLoad;
+
     static void updateFade();
+    static void switchEngineState(const EngineState &to);
+    static void switchEngineStateScene(const std::string &sceneName);
 
     // Update and render functions
     static void checkLoading(GLFWwindow *window);

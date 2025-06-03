@@ -29,6 +29,7 @@ bool ThreadManager::renderDoneReading = true;
 std::mutex ThreadManager::renderBufferMutex;
 std::condition_variable ThreadManager::renderBufferCV;
 std::atomic<bool> ThreadManager::renderBufferShouldExit(false);
+std::atomic<bool> ThreadManager::sceneReadyForRender(false);
 
 void ThreadManager::startup()
 {
@@ -170,6 +171,19 @@ void ThreadManager::renderBufferThreadFunction()
     while (!ThreadManager::renderBufferShouldExit.load())
     {
         std::unique_lock lock(renderBufferMutex);
+        // Wait for scene to be loaded, and a buffer to be free
+        renderBufferCV.wait(lock, []
+                            { return renderBufferShouldExit ||
+                                     (sceneReadyForRender.load(std::memory_order_acquire) &&
+                                      SceneManager::currentScene &&
+                                      std::any_of(std::begin(Render::renderBuffers), std::end(Render::renderBuffers),
+                                                  [](const auto &b)
+                                                  {
+                                                      return b.state.load(std::memory_order_acquire) == BufferState::Free;
+                                                  })); });
+
+        if (renderBufferShouldExit || !sceneReadyForRender.load() || !SceneManager::currentScene)
+            continue;
 
         // Find a free buffer to prepare
         int nextPrep = -1;
@@ -181,19 +195,6 @@ void ThreadManager::renderBufferThreadFunction()
                 nextPrep = i;
                 break;
             }
-        }
-
-        // If no free buffer, wait
-        if (nextPrep == -1)
-        {
-            renderBufferCV.wait(lock, []
-                                {
-                    for (int i = 0; i < 3; ++i)
-                        if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Free)
-                            return true;
-                    return renderBufferShouldExit.load(std::memory_order_acquire); });
-
-            continue;
         }
 
         Render::prepIndex.store(nextPrep, std::memory_order_release);

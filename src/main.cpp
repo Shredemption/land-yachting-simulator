@@ -173,13 +173,12 @@ int main()
     // Launch threads
     ThreadManager::startup();
 
-    // Load title screen Scene
-    SceneManager::load("title");
-
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
-        EventHandler::timing(window);
+        EngineState checkState = (SceneManager::exitState == EngineState::None) ? SceneManager::engineState : SceneManager::exitState;
+
+        EventHandler::timing(window, checkState);
 
         if (SceneManager::updateCallbacks)
             EventHandler::setCallbacks(window);
@@ -191,20 +190,25 @@ int main()
             continue;
         }
 
-        // Run accoring to state
-        switch (SceneManager::engineState)
+        SceneManager::updateFade();
+
+        // If fading, check fade state
+        switch (checkState)
         {
+        case EngineState::None:
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+            break;
+
         case EngineState::Loading:
             SceneManager::checkLoading(window);
-            Render::renderLoading();
+            Render::renderLoadingScreen();
             break;
 
         case EngineState::Title:
-            Render::render();
+            Render::renderTitleScreen();
             break;
 
         case EngineState::Pause:
-            SceneManager::updateFade();
             Render::renderPauseScreen();
             break;
 

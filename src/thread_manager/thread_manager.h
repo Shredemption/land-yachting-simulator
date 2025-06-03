@@ -33,6 +33,7 @@ public:
     static std::mutex renderBufferMutex;
     static std::condition_variable renderBufferCV;
     static std::atomic<bool> renderBufferShouldExit;
+    static std::atomic<bool> sceneReadyForRender;
 
     // Thread Functions
     static void physicsThreadFunction();
