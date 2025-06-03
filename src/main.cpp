@@ -180,7 +180,7 @@ int main()
 
         EventHandler::timing(window, checkState);
 
-        if (SceneManager::updateCallbacks)
+        if (SceneManager::exitState == EngineState::None && SceneManager::updateCallbacks)
             EventHandler::setCallbacks(window);
 
         // If window inactive

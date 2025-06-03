@@ -37,24 +37,30 @@ void EventHandler::timing(GLFWwindow *window, EngineState &state)
 {
     now = std::chrono::steady_clock::now();
 
-    if (state == EngineState::Pause && !pauseStart.has_value())
-    {
-        pauseStart = now;
-    }
-
-    if (state != EngineState::Pause && pauseStart.has_value())
-    {
-        pausedDuration += now - *pauseStart;
-        pauseStart.reset();
-    }
-
     std::chrono::duration<double> delta = now - lastTime;
-    std::chrono::duration<double> total = now - startTime - pausedDuration;
-
     deltaTime = delta.count();
-    time = total.count();
+
     lastTime = now;
     frame++;
+
+    bool timeShouldPause = (state == EngineState::Pause || state == EngineState::Loading);
+
+    if (timeShouldPause)
+    {
+        if (!pauseStart.has_value())
+            pauseStart = now;
+    }
+    else
+    {
+        if (pauseStart.has_value())
+        {
+            pausedDuration += now - *pauseStart;
+            pauseStart.reset();
+        }
+
+        std::chrono::duration<double> total = now - startTime - pausedDuration;
+        time = total.count();
+    }
 }
 
 void EventHandler::setCallbacks(GLFWwindow *window)

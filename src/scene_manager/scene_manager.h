@@ -38,7 +38,6 @@ public:
     static std::pair<std::atomic<int>, std::atomic<int>> loadingProgress;
 
     // Load scene
-    static void load(const std::string &scenePath);
     static void loadAsync(const std::string &scenePath);
     static void unload();
 

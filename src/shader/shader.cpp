@@ -23,12 +23,6 @@ Shader *Shader::load(const shaderID shaderID)
             Shader shader;
             shader.init(FileManager::read("shaders/" + NameFromShader(shaderID) + ".vs"), FileManager::read("shaders/" + NameFromShader(shaderID) + ".fs"));
             loadedShaders.emplace(shaderID, shader);
-
-            if (shaderID == shaderID::shWater)
-            {
-                waterLoaded = true;
-                FrameBuffer::WaterFrameBuffers();
-            }
         }
 
         lastShader = shaderID;

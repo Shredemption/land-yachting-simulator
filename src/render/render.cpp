@@ -256,7 +256,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
     }
 }
 
-void Render::executeRender(RenderBuffer &renderBuffer)
+void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
 {
     // Set camera from buffer
     Camera::cameraPosition = renderBuffer.camPos;
@@ -274,7 +274,7 @@ void Render::executeRender(RenderBuffer &renderBuffer)
     renderSceneSkyBox();
 
     // If water loaded, render buffers
-    if (Shader::waterLoaded && EventHandler::frame % 2 == 0)
+    if ((Shader::waterLoaded && EventHandler::frame % 2 == 0) || !toScreen)
     {
         WaterPass = true;
         renderReflectRefract(renderBuffer.commandBuffer);
@@ -322,17 +322,20 @@ void Render::executeRender(RenderBuffer &renderBuffer)
 
     savePauseBackground();
 
-    // Switch back to screenbuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (toScreen)
+    {
+        // Switch back to screenbuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader->load(shaderID::shPost);
-    shader->setInt("screenTexture", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sceneTexture);
+        shader->load(shaderID::shPost);
+        shader->setInt("screenTexture", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sceneTexture);
 
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
 
     Camera::cameraMoved = false;
     lastShader = nullptr;
@@ -950,6 +953,8 @@ void Render::renderLoadingScreen()
     std::string progressString;
     std::string statusString = "Loading...";
 
+    float effectiveFade;
+
     std::vector<LoadingStep> loadingSteps = {
         {"Unloaded Success", []
          { return "Clearing Previous"; }},
@@ -992,6 +997,25 @@ void Render::renderLoadingScreen()
 
     renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
     renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    // Render first frame under it
+    if (SceneManager::engineState == EngineState::Loading)
+        effectiveFade = 1.0f;
+    else
+        effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+
+    float darkfactor = easeInOutQuad(0.0f, 1.0f, effectiveFade);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, pauseTexture);
+
+    shader = Shader::load(shaderID::shPause);
+    shader->setInt("screenTexture", 0);
+    shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
+    shader->setFloat("darkenAmount", darkfactor);
+
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void Render::renderTitleScreen()
