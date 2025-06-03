@@ -1023,10 +1023,12 @@ void Render::renderTitleScreen()
     std::vector<std::string> titleEntries = {
         "Land Yachting Simulator",
         "",
-        "[ESC] Quit",
         "[1] Load Realistic Scene",
         "[2] Load Cartoon Scene",
-        "[T] Load Test Scene"};
+        "[T] Load Test Scene",
+        "",
+        "[ESC] Quit",
+    };
 
     float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
 
@@ -1065,8 +1067,7 @@ void Render::renderPauseScreen()
         "Paused",
         "",
         "[ESC] Resume",
-        "[M] Exit to Menu",
-        "[Q] Quit"};
+        "[Q] Exit to Menu"};
 
     float maxDarkFactor = 0.8f;
 
