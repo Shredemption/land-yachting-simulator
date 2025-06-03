@@ -34,41 +34,6 @@ EngineState SceneManager::exitState = EngineState::None;
 float SceneManager::menuFade = -2.0f;
 std::optional<std::string> SceneManager::upcomingSceneLoad;
 
-// Load scene on main, causes freezing
-void SceneManager::load(const std::string &sceneName)
-{
-    engineState = EngineState::Loading;
-
-    ThreadManager::stopRenderThread();
-
-    // unload current scene
-    unload();
-
-    // Load scene from file
-    currentScene = std::make_shared<Scene>(sceneMap[sceneName], sceneName);
-
-    // Upload scene to GPU
-    currentScene->uploadToGPU();
-
-    // Setup cam and physics
-    Camera::reset();
-    Physics::setup(*currentScene);
-
-    ThreadManager::sceneReadyForRender.store(true, std::memory_order_release);
-
-    ThreadManager::startRenderThread();
-
-    loadingState = 0;
-
-    engineState = EngineState::Running;
-
-    // Check if going to title
-    if (sceneName == "title")
-        engineState = EngineState::Title;
-
-    updateCallbacks = true;
-}
-
 // Load scene in background, show loading screen
 void SceneManager::loadAsync(const std::string &sceneName)
 {
@@ -118,6 +83,34 @@ void SceneManager::checkLoading(GLFWwindow *window)
         // Reset the camera and physics
         Camera::reset();
         Physics::setup(*currentScene);
+
+        // Run one physics tick
+        for (ModelData &model : currentScene.get()->structModels)
+        {
+            if (model.physics.has_value())
+            {
+                model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
+                model.physics->getWriteBuffer()->savePrevState();
+                model.physics->getWriteBuffer()->move(model.controlled);
+                model.physics->swapBuffers();
+            }
+        }
+
+        // Update all bones once
+        for (ModelData &model : currentScene.get()->structModels)
+        {
+            if (model.animated)
+            {
+                auto &writeBones = model.model->getWriteBuffer();
+                Animation::updateYachtBones(model, 1.0f, writeBones);
+            }
+        }
+
+        Model::swapBoneBuffers();
+
+        // Render one frame to buffer
+        Render::prepareRender(Render::renderBuffers[0]);
+        Render::executeRender(Render::renderBuffers[0], false);
 
         // Reset future
         pendingScene = std::future<std::shared_ptr<Scene>>();
@@ -236,13 +229,6 @@ void SceneManager::updateFade()
 
     // Instant fade on exit Running
     case EngineState::Running:
-        menuFade = 0.0f;
-        exitState = EngineState::None;
-        updateCallbacks = true;
-        break;
-
-    // Instant fade on exit Loading
-    case EngineState::Loading:
         menuFade = 0.0f;
         exitState = EngineState::None;
         updateCallbacks = true;

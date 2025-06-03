@@ -351,6 +351,12 @@ void Scene::uploadToGPU()
         std::visit([](auto &mesh)
                    { mesh.uploadToGPU(); },
                    transparentUnitPlane.unitPlane);
+
+        if (transparentUnitPlane.shader == shaderID::shWater && !Shader::waterLoaded)
+        {
+            Shader::waterLoaded = true;
+            FrameBuffer::WaterFrameBuffers();
+        }
     }
     for (auto &opaqueUnitPlane : opaqueUnitPlanes)
     {
