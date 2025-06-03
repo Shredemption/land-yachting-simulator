@@ -33,16 +33,16 @@ glm::vec3 EventHandler::lightCol(1, 1, 1);
 float EventHandler::lightInsensity = 2;
 
 // Generic EventHandler time update
-void EventHandler::timing(GLFWwindow *window)
+void EventHandler::timing(GLFWwindow *window, EngineState &state)
 {
     now = std::chrono::steady_clock::now();
 
-    if (SceneManager::engineState == EngineState::Pause && !pauseStart.has_value())
+    if (state == EngineState::Pause && !pauseStart.has_value())
     {
         pauseStart = now;
     }
 
-    if (SceneManager::engineState != EngineState::Pause && pauseStart.has_value())
+    if (state != EngineState::Pause && pauseStart.has_value())
     {
         pausedDuration += now - *pauseStart;
         pauseStart.reset();
@@ -59,7 +59,6 @@ void EventHandler::timing(GLFWwindow *window)
 
 void EventHandler::setCallbacks(GLFWwindow *window)
 {
-
     switch (SceneManager::engineState)
     {
     case EngineState::Title:
@@ -124,21 +123,21 @@ void EventHandler::keyCallbackTitle(GLFWwindow *window, int key, int scancode, i
     // Close on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        SceneManager::switchEngineState(EngineState::None);
     }
 
     // Load scenes
     if (key == GLFW_KEY_1 && action == GLFW_PRESS)
     {
-        SceneManager::loadAsync("realistic");
+        SceneManager::switchEngineStateScene("realistic");
     }
     if (key == GLFW_KEY_2 && action == GLFW_PRESS)
     {
-        SceneManager::loadAsync("cartoon");
+        SceneManager::switchEngineStateScene("cartoon");
     }
     if (key == GLFW_KEY_T && action == GLFW_PRESS)
     {
-        SceneManager::loadAsync("test");
+        SceneManager::switchEngineStateScene("test");
     }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
@@ -149,19 +148,19 @@ void EventHandler::keyCallbackPause(GLFWwindow *window, int key, int scancode, i
     // Unpause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
-        SceneManager::exitPause = true;
+        SceneManager::switchEngineState(EngineState::Running);
     }
 
     // To menu on M
     if (key == GLFW_KEY_M && action == GLFW_PRESS)
     {
-        SceneManager::load("title");
+        SceneManager::switchEngineState(EngineState::Title);
     }
 
     // Quit on Q
     if (key == GLFW_KEY_Q && action == GLFW_PRESS)
     {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        SceneManager::switchEngineState(EngineState::None);
     }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
@@ -172,48 +171,25 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
     // Pause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
-        SceneManager::engineState = EngineState::Pause;
-        SceneManager::updateCallbacks = true;
-        SceneManager::enterPause = true;
+        SceneManager::switchEngineState(EngineState::Pause);
     }
 
     // Toggle FPS debug on F9
     if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
     {
-        if (Render::debugState == dbFPS)
-        {
-            Render::debugState = dbNone;
-        }
-        else
-        {
-            Render::debugState = dbFPS;
-        }
+        Render::debugState = (Render::debugState == debugState::dbFPS) ? debugState::dbNone : debugState::dbFPS;
     }
 
     // Toggle physics debug on F10
     if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
     {
-        if (Render::debugState == dbPhysics)
-        {
-            Render::debugState = dbNone;
-        }
-        else
-        {
-            Render::debugState = dbPhysics;
-        }
+        Render::debugState = (Render::debugState == debugState::dbPhysics) ? debugState::dbNone : debugState::dbPhysics;
     }
 
     // Toggle Freecam on C
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
     {
-        if (Camera::freeCam)
-        {
-            Camera::freeCam = false;
-        }
-        else
-        {
-            Camera::freeCam = true;
-        }
+        Camera::freeCam = (Camera::freeCam) ? false : true;
     }
 
     // Reset physics on R

@@ -102,10 +102,13 @@ public:
 
     static GLuint pauseTexture;
     static GLuint copyFBO;
-    
+
     static void createSceneFBO(int width, int height);
     static void resize(int width, int height);
     static void savePauseBackground();
+
+    static void renderLoadingScreen();
+    static void renderTitleScreen();
     static void renderPauseScreen();
 
     static void setup();
@@ -116,7 +119,6 @@ public:
 
     static void initFreeType();
     static void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f);
-    static void renderLoading();
 
 private:
     static unsigned int quadVAO;

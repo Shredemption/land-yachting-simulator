@@ -10,7 +10,7 @@
 #include "scene_manager/scene_manager.h"
 #include "texture_manager/texture_manager.h"
 #include "thread_manager/thread_manager.h"
-#include "math/math.h"
+#include "easings/easings.h"
 
 // Global variables for quads
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
@@ -873,58 +873,6 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     glDisable(GL_BLEND);
 }
 
-void Render::renderLoading()
-{
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    std::string progressString;
-    std::string statusString = "Loading...";
-
-    std::vector<LoadingStep> loadingSteps = {
-        {"Unloaded Success", []
-         { return "Clearing Previous"; }},
-        {"Scene JSON Complete", []
-         { return "Loading new Scene JSON"; }},
-        {"Background Colors Complete", []
-         { return "Loading Background Colors"; }},
-        {"Texts Complete", [&]
-         { return "Loading Texts [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Images Complete", [&]
-         { return "Loading Images [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Models Complete", [&]
-         { return "Loading Models [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Planes Complete", [&]
-         { return "Loading Planes [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Terrain Grids Complete", [&]
-         { return "Loading Terrain Grids [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"Skybox Complete", []
-         { return "Loading Skybox"; }},
-        {"Textures Complete", [&]
-         { return "Loading Textures [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
-        {"OpenGL Upload Complete", []
-         { return "Uploading to OpenGL"; }}};
-
-    // Render completed steps
-    for (int i = 0; i < SceneManager::loadingState - 1 && i < loadingSteps.size(); ++i)
-    {
-        progressString += loadingSteps[i].completedLabel + "\n";
-    }
-
-    // Render current step
-    if (SceneManager::loadingState >= 1 && SceneManager::loadingState <= loadingSteps.size())
-    {
-        progressString += loadingSteps[SceneManager::loadingState - 1].activeMessage() + "\n";
-    }
-
-    // Loading complete
-    if (SceneManager::loadingState == 100)
-        statusString = "Finished Loading";
-
-    renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
-    renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
-}
-
 void Render::createSceneFBO(int width, int height)
 {
     glGenTextures(1, &pauseTexture);
@@ -994,6 +942,99 @@ void Render::savePauseBackground()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Render::renderLoadingScreen()
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    std::string progressString;
+    std::string statusString = "Loading...";
+
+    std::vector<LoadingStep> loadingSteps = {
+        {"Unloaded Success", []
+         { return "Clearing Previous"; }},
+        {"Scene JSON Complete", []
+         { return "Loading new Scene JSON"; }},
+        {"Background Colors Complete", []
+         { return "Loading Background Colors"; }},
+        {"Texts Complete", [&]
+         { return "Loading Texts [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Images Complete", [&]
+         { return "Loading Images [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Models Complete", [&]
+         { return "Loading Models [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Planes Complete", [&]
+         { return "Loading Planes [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Terrain Grids Complete", [&]
+         { return "Loading Terrain Grids [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"Skybox Complete", []
+         { return "Loading Skybox"; }},
+        {"Textures Complete", [&]
+         { return "Loading Textures [" + std::to_string(SceneManager::loadingProgress.first) + "/" + std::to_string(SceneManager::loadingProgress.second) + "]"; }},
+        {"OpenGL Upload Complete", []
+         { return "Uploading to OpenGL"; }}};
+
+    // Render completed steps
+    for (int i = 0; i < SceneManager::loadingState - 1 && i < loadingSteps.size(); ++i)
+    {
+        progressString += loadingSteps[i].completedLabel + "\n";
+    }
+
+    // Render current step
+    if (SceneManager::loadingState >= 1 && SceneManager::loadingState <= loadingSteps.size())
+    {
+        progressString += loadingSteps[SceneManager::loadingState - 1].activeMessage() + "\n";
+    }
+
+    // Loading complete
+    if (SceneManager::loadingState == 100)
+        statusString = "Finished Loading";
+
+    renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
+    renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
+}
+
+void Render::renderTitleScreen()
+{
+    std::vector<std::string> titleEntries = {
+        "Land Yachting Simulator",
+        "",
+        "[ESC] Quit",
+        "[1] Load Realistic Scene",
+        "[2] Load Cartoon Scene",
+        "[T] Load Test Scene"};
+
+    float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+
+    float color = easeInOutQuad(0.0f, 0.5f, effectiveFade);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClearColor(color, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+
+    float fadeOffset = 0.3333f;
+
+    for (int i = 0; i < titleEntries.size(); i++)
+    {
+        if (SceneManager::exitState == EngineState::Title)
+            effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+        else
+            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
+
+        float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
+
+        float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.0f);
+        float y = 0.05f + i * 0.035f;
+
+        renderText(titleEntries[i], x + 0.003f, y + 0.003f, 1, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
+        renderText(titleEntries[i], x, y, 1, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+}
+
 void Render::renderPauseScreen()
 {
     std::vector<std::string> pauseEntries = {
@@ -1007,7 +1048,7 @@ void Render::renderPauseScreen()
 
     float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
 
-    float darkfactor = easeOutCubic(0.0f, maxDarkFactor, effectiveFade);
+    float darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1029,14 +1070,14 @@ void Render::renderPauseScreen()
 
     for (int i = 0; i < pauseEntries.size(); i++)
     {
-        if (!SceneManager::exitPause)
-            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
-        else
+        if (SceneManager::exitState == EngineState::Pause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+        else
+            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
 
         float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
 
-        float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.2f);
+        float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.0f);
         float y = 0.05f + i * 0.035f;
 
         renderText(pauseEntries[i], x + 0.003f, y + 0.003f, 1, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);

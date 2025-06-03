@@ -10,6 +10,8 @@
 #include <chrono>
 #include <optional>
 
+enum class EngineState;
+
 class EventHandler
 {
 public:
@@ -37,7 +39,7 @@ public:
     static float lightInsensity;
 
     // Global input/callback Functions
-    static void timing(GLFWwindow *window);
+    static void timing(GLFWwindow *window, EngineState &state);
     static void setCallbacks(GLFWwindow *window);
 
     static void keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods);
