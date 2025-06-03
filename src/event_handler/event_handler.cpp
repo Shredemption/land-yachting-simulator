@@ -157,16 +157,10 @@ void EventHandler::keyCallbackPause(GLFWwindow *window, int key, int scancode, i
         SceneManager::switchEngineState(EngineState::Running);
     }
 
-    // To menu on M
-    if (key == GLFW_KEY_M && action == GLFW_PRESS)
-    {
-        SceneManager::switchEngineState(EngineState::Title);
-    }
-
-    // Quit on Q
+    // To menu on Q
     if (key == GLFW_KEY_Q && action == GLFW_PRESS)
     {
-        SceneManager::switchEngineState(EngineState::None);
+        SceneManager::switchEngineState(EngineState::Title);
     }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
