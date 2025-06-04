@@ -1,4 +1,4 @@
-#include "shader/shader.h"
+#include "shader/shader.hpp"
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -9,7 +9,8 @@
 
 #include <iostream>
 
-#include "file_manager/file_manager.h"
+#include "file_manager/file_manager.hpp"
+#include "shaderID.h"
 
 std::unordered_map<shaderID, Shader> Shader::loadedShaders;
 shaderID Shader::lastShader;

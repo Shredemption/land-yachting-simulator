@@ -1,5 +1,5 @@
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef MODEL_HPP
+#define MODEL_HPP
 
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
@@ -7,37 +7,13 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <variant>
 #include <atomic>
 
-#include "mesh/mesh.h"
+#include "mesh/meshvariant.h"
+#include "model/model_defs.h"
 
 enum class shaderID;
 struct Bone;
-
-enum class ModelType
-{
-    mtModel,
-    mtYacht
-};
-
-struct JSONModelMapEntry
-{
-    std::string mainPath;
-    std::vector<std::string> lodPaths = {};
-    std::string type = "model";
-};
-
-struct JSONModelMap
-{
-    std::map<std::string, JSONModelMapEntry> yachts;
-    std::map<std::string, JSONModelMapEntry> models;
-};
-
-using MeshVariant = std::variant<
-    Mesh<VertexAnimated>,
-    Mesh<VertexSimple>,
-    Mesh<VertexTextured>>;
 
 class Model
 {

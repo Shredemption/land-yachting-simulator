@@ -1,17 +1,23 @@
-#include "render/render.h"
+#include "render/render.hpp"
 
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <future>
 #include <iostream>
+#include <algorithm>
 
-#include "camera/camera.h"
-#include "event_handler/event_handler.h"
-#include "frame_buffer/frame_buffer.h"
-#include "scene_manager/scene_manager.h"
-#include "shader/shader.h"
-#include "texture_manager/texture_manager.h"
-#include "thread_manager/thread_manager.h"
+#include "camera/camera.hpp"
+#include "event_handler/event_handler.hpp"
+#include "frame_buffer/frame_buffer.hpp"
+#include "model/model.hpp"
+#include "model/bone.h"
+#include "scene/scene.hpp"
+#include "scene_manager/scene_manager.hpp"
+#include "scene_manager/scene_manager_defs.h"
+#include "shader/shader.hpp"
+#include "texture_manager/texture_manager.hpp"
+#include "thread_manager/thread_manager.hpp"
 #include "easing_functions.h"
 
 // Global variables for quads
@@ -36,17 +42,17 @@ FT_Library Render::ft;
 FT_Face Render::face;
 
 // Text variables
-GLuint Render::textVAO, Render::textVBO;
-GLuint Render::textTexture;
+unsigned int Render::textVAO, Render::textVBO;
+unsigned int Render::textTexture;
 std::map<GLchar, Character> Render::Characters;
 std::string Render::fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
 
 // Pause texture
-GLuint Render::pauseTexture, Render::copyFBO;
+unsigned int Render::pauseTexture, Render::copyFBO;
 
 // Timing variables
 std::chrono::high_resolution_clock::time_point lastCPUTime;
-GLuint lastGPUQuery = 0;
+unsigned int lastGPUQuery = 0;
 
 // Track current and last used shader
 Shader *shader;
@@ -58,9 +64,9 @@ std::atomic<int> Render::renderIndex = 1;
 std::atomic<int> Render::standbyIndex = 2;
 
 // In Render.h
-GLuint Render::sceneFBO = 0;
-GLuint Render::sceneTexture = 0;
-GLuint Render::sceneDepthRBO = 0;
+unsigned int Render::sceneFBO = 0;
+unsigned int Render::sceneTexture = 0;
+unsigned int Render::sceneDepthRBO = 0;
 
 // Setup quads and text
 void Render::setup()
@@ -482,7 +488,7 @@ void Render::renderTransparentPlane(const RenderCommand &cmd)
     if (cmd.shader == shaderID::shWater)
     {
         // Load surface textures
-        GLuint waterTexArrayID = TextureManager::getTextureArrayUnit("waterTextureArray");
+        unsigned int waterTexArrayID = TextureManager::getTextureArrayUnit("waterTextureArray");
         int dudv = TextureManager::getTextureLayerIndex("waterTextureArray", "../resources/textures/waterDUDV.png");
         int normal = TextureManager::getTextureLayerIndex("waterTextureArray", "../resources/textures/waterNormal.png");
 
@@ -617,7 +623,7 @@ void Render::renderSceneImages()
 
     for (ImageData image : SceneManager::currentScene.get()->images)
     {
-        GLuint textureUnit = TextureManager::getStandaloneTextureUnit("../resources/images/" + image.file);
+        unsigned int textureUnit = TextureManager::getStandaloneTextureUnit("../resources/images/" + image.file);
         shader->setInt("uTexture", textureUnit);
 
         glm::vec2 posFactor = image.position; // normalized 0..1
@@ -687,7 +693,7 @@ void Render::renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
     FrameBuffer::unbindCurrentFrameBuffer();
 }
 
-void Render::renderTestQuad(GLuint texture, int x, int y)
+void Render::renderTestQuad(unsigned int texture, int x, int y)
 {
     glViewport(x, y, EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
 
@@ -742,7 +748,7 @@ void Render::initFreeType()
     const int gapX = 2; // Define a small gap between characters
     const int gapY = 32;
 
-    for (GLuint c = 0; c < 128; c++)
+    for (unsigned int c = 0; c < 128; c++)
     {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER))
         {
@@ -774,7 +780,7 @@ void Render::initFreeType()
         Character ch = {
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            static_cast<GLuint>(face->glyph->advance.x),
+            static_cast<unsigned int>(face->glyph->advance.x),
             glm::vec4(xPos / (float)atlasWidth, yPos / (float)atlasHeight, face->glyph->bitmap.width / (float)atlasWidth, face->glyph->bitmap.rows / (float)atlasHeight)};
         Characters[c] = ch;
 

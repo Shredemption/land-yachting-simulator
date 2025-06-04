@@ -1,5 +1,5 @@
-#ifndef EVENT_HANDLER_H
-#define EVENT_HANDLER_H
+#ifndef EVENT_HANDLER_HPP
+#define EVENT_HANDLER_HPP
 
 #ifndef __glad_h_
 #include <glad/glad.h>

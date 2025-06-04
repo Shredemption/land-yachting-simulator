@@ -1,5 +1,5 @@
-#ifndef FILE_MANAGER_H
-#define FILE_MANAGER_H
+#ifndef FILE_MANAGER_HPP
+#define FILE_MANAGER_HPP
 
 #include <string>
 

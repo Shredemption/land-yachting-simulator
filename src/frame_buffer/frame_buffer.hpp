@@ -1,5 +1,5 @@
-#ifndef FRAME_BUFFER_H
-#define FRAME_BUFFER_H
+#ifndef FRAME_BUFFER_HPP
+#define FRAME_BUFFER_HPP
 
 class FrameBuffer
 {
