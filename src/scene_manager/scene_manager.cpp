@@ -9,31 +9,16 @@
 #include "camera/camera.hpp"
 #include "event_handler/event_handler.hpp"
 #include "model/model.hpp"
+#include "model/model_util.hpp"
+#include "physics/physics_util.hpp"
 #include "render/render.hpp"
 #include "scene/scene.hpp"
 #include "scene_manager/scene_manager_defs.h"
-#include "shader/shader.hpp"
+#include "shader/shader_util.hpp"
 #include "texture_manager/texture_manager.hpp"
 #include "thread_manager/thread_manager.hpp"
 
-// Global Scene variables
-std::shared_ptr<Scene> SceneManager::currentScene = nullptr;
-std::future<std::shared_ptr<Scene>> SceneManager::pendingScene;
-
-// Scenemap and paths
-std::map<std::string, std::string> SceneManager::sceneMap;
 std::string sceneMapPath = "resources/scenes.json";
-
-// Global loading variables
-std::atomic<bool> SceneManager::updateCallbacks = true;
-int SceneManager::loadingState = 0;
-std::pair<std::atomic<int>, std::atomic<int>> SceneManager::loadingProgress = {0, 0};
-
-// Transition Variables
-EngineState SceneManager::engineState = EngineState::Title;
-EngineState SceneManager::exitState = EngineState::None;
-float SceneManager::menuFade = -2.0f;
-std::optional<std::string> SceneManager::upcomingSceneLoad;
 
 // Load scene in background, show loading screen
 void SceneManager::loadAsync(const std::string &sceneName)
@@ -83,7 +68,7 @@ void SceneManager::checkLoading(GLFWwindow *window)
 
         // Reset the camera and physics
         Camera::reset();
-        Physics::setup(*currentScene);
+        PhysicsUtil::setup(*currentScene);
 
         // Run one physics tick
         for (ModelData &model : currentScene.get()->structModels)
@@ -107,7 +92,7 @@ void SceneManager::checkLoading(GLFWwindow *window)
             }
         }
 
-        Model::swapBoneBuffers();
+        ModelUtil::swapBoneBuffers();
 
         // Render one frame to buffer
         Render::prepareRender(Render::renderBuffers[0]);
@@ -164,8 +149,7 @@ void SceneManager::unload()
     currentScene.reset();
 
     // Clear global data from loading before loading new scene
-    Shader::unload();
-    Shader::waterLoaded = false;
+    ShaderUtil::unload();
 }
 
 void SceneManager::loadSceneMap()

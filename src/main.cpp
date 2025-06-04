@@ -68,11 +68,11 @@ void SetWindowIconFromResource(GLFWwindow *window)
 #endif
 
 #include "event_handler/event_handler.hpp"
-#include "model/model.hpp"
+#include "model/model_util.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
+#include "physics/physics_util.hpp"
 #include "render/render.hpp"
-#include "physics/physics.hpp"
 #include "thread_manager/thread_manager.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -131,7 +131,7 @@ int main()
     }
 
     // Import JSON file model registry
-    Model::loadModelMap();
+    ModelUtil::loadModelMap();
     SceneManager::loadSceneMap();
 
     // Get screen dimensions
@@ -213,7 +213,7 @@ int main()
 
         case EngineState::Running:
             EventHandler::processInputRunning(window);
-            Physics::update();
+            PhysicsUtil::update();
             Render::render();
             break;
         }

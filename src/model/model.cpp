@@ -6,29 +6,17 @@
 #endif
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <jsoncons/json.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <atomic>
 #include <iostream>
-#include <filesystem>
-#include <fstream>
 
 #include "model/bone.h"
+#include "model/model_util.hpp"
 #include "shader/shaderID.h"
 #include "texture_manager/texture_manager.hpp"
-
-// Model map and location
-std::map<std::string, JSONModelMapEntry> Model::modelMap;
-std::string modelMapPath = "resources/models.json";
-
-std::atomic<int> Model::activeBoneBuffer{0};
-
-// Json setups
-JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
-JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 template <typename MeshType>
 struct ExtractVertexType;
@@ -281,50 +269,14 @@ MeshVariant Model::combineMeshVariants(const std::vector<MeshVariant> &variants)
         return MeshVariant{std::move(combined)}; }, variants[0]);
 }
 
-void Model::loadModelMap()
-{
-    const std::string path = "../" + modelMapPath;
-    // Check if the file exists
-    if (!std::filesystem::exists(path))
-    {
-        throw std::runtime_error("File not found: " + path);
-    }
-
-    // Open the file
-    std::ifstream file(path);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("Could not open file: " + path);
-    }
-
-    JSONModelMap jsonModelMap = jsoncons::decode_json<JSONModelMap>(file);
-
-    // If model classified as yacht
-    for (const auto &[name, data] : jsonModelMap.yachts)
-    {
-        modelMap[name] = data;
-    }
-    // If geneneric model
-    for (const auto &[name, data] : jsonModelMap.models)
-    {
-        modelMap[name] = data;
-    }
-}
-
 const std::vector<glm::mat4> &Model::getReadBuffer()
 {
-    return boneTransforms[activeBoneBuffer.load(std::memory_order_acquire)];
+    return boneTransforms[ModelUtil::activeBoneBuffer.load(std::memory_order_acquire)];
 }
 
 std::vector<glm::mat4> &Model::getWriteBuffer()
 {
-    return boneTransforms[1 - activeBoneBuffer.load(std::memory_order_acquire)];
-}
-
-void Model::swapBoneBuffers()
-{
-    int oldIndex = activeBoneBuffer.load(std::memory_order_relaxed);
-    activeBoneBuffer.store(1 - oldIndex, std::memory_order_release);
+    return boneTransforms[1 - ModelUtil::activeBoneBuffer.load(std::memory_order_acquire)];
 }
 
 void Model::generateBoneTransforms()

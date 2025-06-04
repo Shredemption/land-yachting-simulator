@@ -8,10 +8,12 @@
 #include <fstream>
 
 #include "file_manager/file_manager.hpp"
-#include "frame_buffer/frame_buffer.hpp"
+#include "framebuffer/framebuffer_util.hpp"
+#include "mesh/mesh_util.hpp"
 #include "model/model.hpp"
+#include "model/model_util.hpp"
 #include "scene_manager/scene_manager.hpp"
-#include "shader/shader.hpp"
+#include "shader/shader_util.hpp"
 #include "texture_manager/texture_manager.hpp"
 #include "texture_manager/texture_manager_defs.h"
 
@@ -137,7 +139,7 @@ void Scene::loadModelToScene(JSONModel model)
     ModelData loadModel;
 
     // Find model location using map
-    auto &modelEntry = Model::modelMap[model.name];
+    auto &modelEntry = ModelUtil::modelMap[model.name];
 
     ModelType modelType = ModelType::mtModel;
 
@@ -157,7 +159,7 @@ void Scene::loadModelToScene(JSONModel model)
     if (loadedModels.find(modelEntry.mainPath) == loadedModels.end())
     {
         // Load model with path and shader name
-        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, Shader::ShaderFromName(model.shader), modelType));
+        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, ShaderUtil::ShaderFromName(model.shader), modelType));
     }
 
     // Push loaded path to model
@@ -178,7 +180,7 @@ void Scene::loadModelToScene(JSONModel model)
     loadModel.u_normal = glm::transpose(glm::inverse(u_model_i));
 
     // Model shader
-    loadModel.shader = Shader::ShaderFromName(model.shader);
+    loadModel.shader = ShaderUtil::ShaderFromName(model.shader);
 
     // Model animation data
     loadModel.animated = model.animated;
@@ -188,7 +190,7 @@ void Scene::loadModelToScene(JSONModel model)
     this->structModels.emplace_back(std::move(loadModel));
 
     // If model is a yacht, save name to yachts list
-    if (Model::modelMap[model.name].type == "yacht")
+    if (ModelUtil::modelMap[model.name].type == "yacht")
     {
         loadedYachts.push_back(model.name);
     }
@@ -201,13 +203,13 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 
     // Save color and shader
     loadUnitPlane.color = glm::vec3(unitPlane.color[0], unitPlane.color[1], unitPlane.color[2]);
-    loadUnitPlane.shader = Shader::ShaderFromName(unitPlane.shader);
+    loadUnitPlane.shader = ShaderUtil::ShaderFromName(unitPlane.shader);
 
     // Generate mesh from color and shader
     if (loadUnitPlane.shader == shaderID::shSimple)
-        loadUnitPlane.unitPlane = Mesh<VertexSimple>::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
+        loadUnitPlane.unitPlane = MeshUtil::genUnitPlane<VertexSimple>(loadUnitPlane.color, loadUnitPlane.shader);
     else
-        loadUnitPlane.unitPlane = Mesh<VertexTextured>::genUnitPlane(loadUnitPlane.color, loadUnitPlane.shader);
+        loadUnitPlane.unitPlane = MeshUtil::genUnitPlane<VertexTextured>(loadUnitPlane.color, loadUnitPlane.shader);
 
     // Generate u_model
     glm::mat4 u_model_i = glm::scale(
@@ -257,15 +259,15 @@ void Scene::loadGridToScene(JSONGrid grid)
 
     // Save grid data
     loadGrid.color = glm::vec3(grid.color[0], grid.color[1], grid.color[2]);
-    loadGrid.shader = Shader::ShaderFromName(grid.shader);
+    loadGrid.shader = ShaderUtil::ShaderFromName(grid.shader);
     loadGrid.lod = grid.lod;
     loadGrid.gridSize = glm::vec2(grid.gridSize[0], grid.gridSize[1]);
 
     // Generate grid mesh
     if (grid.shader == "toon-terrain")
-        loadGrid.grid = Mesh<VertexSimple>::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
+        loadGrid.grid = MeshUtil::genGrid<VertexSimple>(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
     else
-        loadGrid.grid = Mesh<VertexTextured>::genGrid(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
+        loadGrid.grid = MeshUtil::genGrid<VertexTextured>(loadGrid.gridSize[0], loadGrid.gridSize[1], loadGrid.lod, loadGrid.color, loadGrid.shader);
 
     // Generate u_model
     glm::mat4 u_model_i =
@@ -352,10 +354,10 @@ void Scene::uploadToGPU()
                    { mesh.uploadToGPU(); },
                    transparentUnitPlane.unitPlane);
 
-        if (transparentUnitPlane.shader == shaderID::shWater && !Shader::waterLoaded)
+        if (transparentUnitPlane.shader == shaderID::shWater && !ShaderUtil::waterLoaded)
         {
-            Shader::waterLoaded = true;
-            FrameBuffer::WaterFrameBuffers();
+            ShaderUtil::waterLoaded = true;
+            FramebufferUtil::genWaterFrameBuffers();
         }
     }
     for (auto &opaqueUnitPlane : opaqueUnitPlanes)
@@ -377,6 +379,6 @@ void Scene::uploadToGPU()
     if (hasSkyBox)
     {
         this->skyBox.textureID = TextureManager::loadSkyboxTexture(this->skyBox);
-        this->skyBox.VAO = Mesh<VertexSkybox>::setupSkyBoxMesh();
+        this->skyBox.VAO = MeshUtil::setupSkyBoxMesh();
     }
 }

@@ -6,45 +6,44 @@
 #include <condition_variable>
 #include <atomic>
 
-class ThreadManager
+namespace ThreadManager
 {
-public:
     // Define threads
-    static std::thread physicsThread;
-    static std::thread animationThread;
-    static std::thread renderBufferThread;
+    inline std::thread physicsThread;
+    inline std::thread animationThread;
+    inline std::thread renderBufferThread;
 
     // Synchronisations
-    static std::mutex physicsMutex;
-    static std::condition_variable physicsCV;
-    static std::atomic<bool> physicsTrigger;
-    static std::atomic<int> physicsSteps;
-    static std::atomic<bool> physicsBusy;
-    static std::atomic<bool> physicsShouldExit;
+    inline std::mutex physicsMutex;
+    inline std::condition_variable physicsCV;
+    inline std::atomic<bool> physicsTrigger(false);
+    inline std::atomic<int> physicsSteps(0);
+    inline std::atomic<bool> physicsBusy(false);
+    inline std::atomic<bool> physicsShouldExit(false);
 
-    static std::mutex animationMutex;
-    static std::atomic<float> animationAlpha;
-    static std::atomic<bool> animationShouldExit;
-    static std::condition_variable animationCanWriteCV;
-    static std::condition_variable renderCanReadCV;
-    static bool animationDoneWriting;
-    static bool renderDoneReading;
+    inline std::mutex animationMutex;
+    inline std::atomic<float> animationAlpha(0.0f);
+    inline std::atomic<bool> animationShouldExit(false);
+    inline std::condition_variable animationCanWriteCV;
+    inline std::condition_variable renderCanReadCV;
+    inline bool animationDoneWriting = false;
+    inline bool renderDoneReading = true;
 
-    static std::mutex renderBufferMutex;
-    static std::condition_variable renderBufferCV;
-    static std::atomic<bool> renderBufferShouldExit;
-    static std::atomic<bool> sceneReadyForRender;
+    inline std::mutex renderBufferMutex;
+    inline std::condition_variable renderBufferCV;
+    inline std::atomic<bool> renderBufferShouldExit(false);
+    inline std::atomic<bool> sceneReadyForRender(false);
 
     // Thread Functions
-    static void physicsThreadFunction();
-    static void animationThreadFunction();
-    static void renderBufferThreadFunction();
+    void physicsThreadFunction();
+    void animationThreadFunction();
+    void renderBufferThreadFunction();
 
-    static void startup();
-    static void shutdown();
+    void startup();
+    void shutdown();
 
-    static void startRenderThread();
-    static void stopRenderThread();
+    void startRenderThread();
+    void stopRenderThread();
 };
 
 #endif

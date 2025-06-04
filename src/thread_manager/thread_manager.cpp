@@ -4,35 +4,11 @@
 
 #include "animation/animation.hpp"
 #include "model/model.hpp"
+#include "model/model_util.hpp"
+#include "physics/physics_util.hpp"
 #include "render/render.hpp"
 #include "scene/scene.hpp"
 #include "scene_manager/scene_manager.hpp"
-
-// Define threads
-std::thread ThreadManager::physicsThread;
-std::thread ThreadManager::animationThread;
-std::thread ThreadManager::renderBufferThread;
-
-// Synchronisations
-std::mutex ThreadManager::physicsMutex;
-std::condition_variable ThreadManager::physicsCV;
-std::atomic<bool> ThreadManager::physicsTrigger(false);
-std::atomic<int> ThreadManager::physicsSteps(0);
-std::atomic<bool> ThreadManager::physicsBusy(false);
-std::atomic<bool> ThreadManager::physicsShouldExit(false);
-
-std::mutex ThreadManager::animationMutex;
-std::atomic<float> ThreadManager::animationAlpha(0.0f);
-std::atomic<bool> ThreadManager::animationShouldExit(false);
-std::condition_variable ThreadManager::animationCanWriteCV;
-std::condition_variable ThreadManager::renderCanReadCV;
-bool ThreadManager::animationDoneWriting = false;
-bool ThreadManager::renderDoneReading = true;
-
-std::mutex ThreadManager::renderBufferMutex;
-std::condition_variable ThreadManager::renderBufferCV;
-std::atomic<bool> ThreadManager::renderBufferShouldExit(false);
-std::atomic<bool> ThreadManager::sceneReadyForRender(false);
 
 void ThreadManager::startup()
 {
@@ -107,18 +83,18 @@ void ThreadManager::physicsThreadFunction()
                     }
                 }
 
-                Physics::accumulator.store(Physics::accumulator.load(std::memory_order_acquire) - Physics::tickRate);
+                PhysicsUtil::accumulator.store(PhysicsUtil::accumulator.load(std::memory_order_acquire) - PhysicsUtil::tickRate);
             }
         }
 
         for (auto &model : SceneManager::currentScene->structModels)
         {
-            Physics::isSwapping.store(true, std::memory_order_release);
+            PhysicsUtil::isSwapping.store(true, std::memory_order_release);
 
             if (model.physics)
                 model.physics->swapBuffers();
 
-            Physics::isSwapping.store(false, std::memory_order_release);
+            PhysicsUtil::isSwapping.store(false, std::memory_order_release);
         }
 
         ThreadManager::physicsBusy.store(false, std::memory_order_release);
@@ -159,7 +135,7 @@ void ThreadManager::animationThreadFunction()
         }
 
         if (didAnimate)
-            Model::swapBoneBuffers();
+            ModelUtil::swapBoneBuffers();
 
         lock.lock();
         animationDoneWriting = true;

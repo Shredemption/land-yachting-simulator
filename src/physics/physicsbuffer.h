@@ -2,8 +2,10 @@
 #define PHYSICSBUFFER_H
 
 #include <memory>
+#include <thread>
 
 #include "physics/physics.hpp"
+#include "physics/physics_util.hpp"
 
 struct PhysicsBuffer
 {
@@ -12,7 +14,7 @@ struct PhysicsBuffer
 
     Physics *getReadBuffer()
     {
-        while (Physics::isSwapping.load(std::memory_order_acquire))
+        while (PhysicsUtil::isSwapping.load(std::memory_order_acquire))
         {
             std::this_thread::yield();
         }
