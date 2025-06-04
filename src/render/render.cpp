@@ -291,50 +291,56 @@ void renderSceneTexts()
     }
 }
 
-void renderSceneImages()
+void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f, const glm::vec2 scale = {1.0, 1.0f}, const float rotation = 0.0f, const bool mirrored = false)
 {
     shader = ShaderUtil::load(shaderID::shImage);
     lastShader = shader;
 
-    shader->setVec2("uScreenSize", glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight));
-    glm::vec2 screenSize = glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight);
-
-    glBindVertexArray(quadVAO);
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    for (ImageData image : SceneManager::currentScene.get()->images)
-    {
-        unsigned int textureUnit = TextureManager::getStandaloneTextureUnit("../resources/images/" + image.file);
-        shader->setInt("uTexture", textureUnit);
+    glBindVertexArray(quadVAO);
 
-        glm::vec2 posFactor = image.position; // normalized 0..1
+    shader->setVec2("uScreenSize", glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight));
+    glm::vec2 screenSize = glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight);
 
-        float scaleX = EventHandler::screenWidth / 2560.0f;
-        float scaleY = EventHandler::screenHeight / 1440.0f;
-        glm::vec2 scaleFactors(scaleX, scaleY);
+    unsigned int textureUnit = TextureManager::getStandaloneTextureUnit("../resources/images/" + fileName);
+    shader->setInt("uTexture", textureUnit);
 
-        glm::vec2 scaledScreenSize = glm::vec2(2560.0f, 1440.0f) * scaleFactors;
-        glm::vec2 imageSizePx = glm::vec2(image.width, image.height) * image.scale * scaleFactors;
+    glm::vec2 posFactor = position; // normalized 0..1
 
-        glm::vec2 positionPx;
-        positionPx.x = posFactor.x * (scaledScreenSize.x - imageSizePx.x);
-        positionPx.y = posFactor.y * (scaledScreenSize.y - imageSizePx.y);
+    float scaleX = EventHandler::screenWidth / 2560.0f;
+    float scaleY = EventHandler::screenHeight / 1440.0f;
+    glm::vec2 scaleFactors(scaleX, scaleY);
 
-        shader->setVec2("uPosition", positionPx);
+    glm::vec2 scaledScreenSize = glm::vec2(2560.0f, 1440.0f) * scaleFactors;
+    glm::vec2 imageSizePx = glm::vec2(width, height) * scale * scaleFactors;
 
-        shader->setVec2("uImageSize", glm::vec2(image.width, image.height));
-        shader->setVec2("uScale", image.scale);
-        shader->setFloat("uRotation", glm::radians(image.rotation));
-        shader->setBool("uMirrored", image.mirrored);
+    glm::vec2 positionPx;
+    positionPx.x = posFactor.x * (scaledScreenSize.x - imageSizePx.x);
+    positionPx.y = posFactor.y * (scaledScreenSize.y - imageSizePx.y);
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
+    shader->setVec2("uPosition", positionPx);
+
+    shader->setVec2("uImageSize", glm::vec2(width, height));
+    shader->setVec2("uScale", scale);
+    shader->setFloat("uAlpha", alpha);
+    shader->setFloat("uRotation", glm::radians(rotation));
+    shader->setBool("uMirrored", mirrored);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glDisable(GL_BLEND);
 
     glBindVertexArray(0);
+}
+
+void renderSceneImages()
+{
+    for (ImageData image : SceneManager::currentScene.get()->images)
+    {
+        renderImage(image.file, image.position, image.width, image.height, image.alpha, image.scale, image.rotation, image.mirrored);
+    }
 }
 
 void renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
@@ -688,8 +694,6 @@ void Render::initFreeType()
     if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
         std::cerr << "ERROR: Failed to load font\n";
 
-
-
     // Set font size
     FT_Set_Pixel_Sizes(face, 0, textTextureSize);
 
@@ -1012,6 +1016,17 @@ void Render::renderTitleScreen()
     glClearColor(color, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
+
+    float imageAlpha = easeInOutQuad(0.0f, 1.0f, effectiveFade);
+
+    float xpos;
+    if (SceneManager::exitState == EngineState::Title)
+        xpos = easeOutCubic(1.33f, 0.67f, effectiveFade);
+    else
+        xpos = easeOutCubic(0.0f, 0.67f, effectiveFade);
+
+    renderImage("title-figure-black.png", glm::vec2(xpos, 0.5f) + glm::vec2(0.003f, -0.01f), 835, 1024, imageAlpha);
+    renderImage("title-figure.png", glm::vec2(xpos, 0.5f), 835, 1024, imageAlpha);
 
     float fadeOffset = 0.3333f;
 

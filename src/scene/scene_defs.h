@@ -72,6 +72,7 @@ struct JSONImage
     std::vector<int> size = {0, 0};
     std::vector<float> position = {0.5, 0.5};
     std::vector<float> scale = {1, 1};
+    float alpha = 1.0f;
     float rotation = 0.0f;
     bool mirrored = false;
 };
@@ -152,6 +153,7 @@ struct ImageData
     int width, height;
     glm::vec2 position;
     glm::vec2 scale;
+    float alpha;
     float rotation;
     bool mirrored;
     unsigned int textureID;
