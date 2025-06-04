@@ -63,6 +63,7 @@ void EventHandler::setCallbacks(GLFWwindow *window)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, mousePosCallbackRunning);
         glfwSetMouseButtonCallback(window, nullptr);
+        glfwSetCursorPos(window, screenWidth / 2, screenHeight / 2);
         break;
 
     case EngineState::Pause:
@@ -227,16 +228,19 @@ void EventHandler::mousePosCallbackRunning(GLFWwindow *window, double xPos, doub
     // Check if window size changed last iteration
     if (firstFrame || windowSizeChanged)
     {
-        xPos = 0;
-        yPos = 0;
+        xPos = screenWidth / 2;
+        yPos = screenHeight / 2;
 
         // Reset state changed trackers
         firstFrame = false;
         windowSizeChanged = false;
 
         // Reset mouse to 0,0
-        glfwSetCursorPos(window, 0, 0);
+        glfwSetCursorPos(window, screenWidth / 2, screenHeight / 2);
     }
+
+    xPos -= screenWidth / 2;
+    yPos -= screenHeight / 2;
 
     // Apply sensitivity
     float sensitvity = 0.1f;
@@ -270,7 +274,7 @@ void EventHandler::mousePosCallbackRunning(GLFWwindow *window, double xPos, doub
         }
 
         // Reset mouse to 0,0
-        glfwSetCursorPos(window, 0, 0);
+        glfwSetCursorPos(window, screenWidth / 2, screenHeight / 2);
     }
 }
 
