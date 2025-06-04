@@ -5,20 +5,11 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
-
-enum class shaderID;
 
 class Shader
 {
 public:
-    static Shader *load(const shaderID shaderID);
-    static void unload();
     void use();
-
-    static shaderID ShaderFromName(const std::string shaderName);
-    static std::string NameFromShader(const shaderID shader);
-
     unsigned int m_id;
 
     void setBool(const std::string &name, bool value) const;
@@ -36,14 +27,9 @@ public:
     void setMat4(const std::string &name, const glm::mat4 &mat) const;
     void setMat4Array(const std::string &name, const std::vector<glm::mat4> &mats) const;
 
-    static std::unordered_map<shaderID, Shader> loadedShaders;
-
-    static shaderID lastShader;
-    static bool waterLoaded;
-
-private:
     void init(const std::string &vertexCode, const std::string &fragmentCode);
 
+private:
     unsigned int m_vertexId;
     unsigned int m_fragmentId;
 

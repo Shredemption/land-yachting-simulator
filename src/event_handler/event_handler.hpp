@@ -13,48 +13,46 @@
 
 enum class EngineState;
 
-class EventHandler
+namespace EventHandler
 {
-public:
     // Global screen variables
-    static int xPos, yPos, screenWidth, screenHeight;
-    static bool fullscreen, windowSizeChanged, firstFrame;
-    static GLFWmonitor *monitor;
-    static int windowXpos, windowYpos, windowWidth, windowHeight;
+    inline int xPos, yPos, screenWidth, screenHeight;
+    inline bool fullscreen = true, windowSizeChanged = false, firstFrame = true;
+    inline GLFWmonitor *monitor;
+    inline int windowXpos, windowYpos, windowWidth, windowHeight;
 
     // Global Time
-    static double time;
-    static double deltaTime;
-    static std::chrono::steady_clock::time_point lastTime;
-    static std::chrono::steady_clock::time_point now;
-    static unsigned int frame;
+    inline double time = 0.0;
+    inline double deltaTime = 0.0;
+    inline std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+    inline std::chrono::steady_clock::time_point lastTime = startTime;
+    inline std::chrono::steady_clock::time_point now = startTime;
+    inline unsigned int frame = 0;
 
-    static std::optional<std::chrono::steady_clock::time_point> pauseStart;
-    static std::chrono::duration<double> pausedDuration;
+    inline std::optional<std::chrono::steady_clock::time_point> pauseStart{};
+    inline std::chrono::duration<double> pausedDuration{0};
 
     // Global Light properties
-    static glm::vec3 lightPos;
-    static float sunAngle;
-    static float sunSpeed;
-    static glm::vec3 lightCol;
-    static float lightInsensity;
+    inline glm::vec3 lightPos(1000.0f, -1000.0f, 2000.0f);
+    inline glm::vec3 lightCol(1.0f, 1.0f, 1.0f);
+    inline float lightInsensity = 2;
 
     // Global input/callback Functions
-    static void timing(GLFWwindow *window, EngineState &state);
-    static void setCallbacks(GLFWwindow *window);
+    void timing(GLFWwindow *window, EngineState &state);
+    void setCallbacks(GLFWwindow *window);
 
-    static void keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    static void keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    static void keyCallbackPause(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void keyCallbackPause(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    static void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
-    static void mouseCallbackRunning(GLFWwindow *window, double xPos, double yPos);
-    static void processInputRunning(GLFWwindow *window);
+    void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void mouseCallbackRunning(GLFWwindow *window, double xPos, double yPos);
+    void processInputRunning(GLFWwindow *window);
 
-    static void errorCallback(int error, const char *description);
-    static void framebufferSizeCallback(GLFWwindow *window, int width, int height);
+    void errorCallback(int error, const char *description);
+    void framebufferSizeCallback(GLFWwindow *window, int width, int height);
 };
 
 #endif

@@ -16,23 +16,46 @@
 #include "model/model.hpp"
 #include "scene/scene_defs.h"
 #include "scene_manager/scene_manager.hpp"
-#include "texture_manager/texture_manager_defs.h"
-
-// Texture Arrays
-std::unordered_map<std::string, TextureArray> TextureManager::textureArrays;
-std::mutex TextureManager::textureArrayMutex;
-std::unordered_map<std::string, Texture> TextureManager::standaloneTextureCache;
-std::mutex TextureManager::standaloneCacheMutex;
-
-// Pending Textures
-std::queue<PendingTexture> TextureManager::textureQueue;
-std::mutex TextureManager::textureQueueMutex;
-std::unordered_set<std::string> TextureManager::pendingTextures;
-std::mutex TextureManager::pendingTexturesMutex;
-std::mutex TextureManager::openglMutex;
 
 int nextFreeUnit = 5;
 std::mutex unitMutex;
+
+std::vector<std::string> loadMaterialTexturePaths(const std::string &type, const std::string &directory)
+{
+    std::vector<std::string> paths;
+    const std::vector<std::string> validExtensions = {
+        ".png", ".jpg", ".jpeg", ".bmp", ".tga"};
+
+    if (!std::filesystem::exists(directory))
+    {
+        std::cerr << "Directory does not exist: " << directory << "\n";
+        return paths;
+    }
+
+    for (const auto &entry : std::filesystem::directory_iterator(directory))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        std::string filename = entry.path().filename().string();
+        std::string fullPath = entry.path().string();
+
+        // Check if filename contains the typeName and has a valid extension
+        if (filename.find(type) != std::string::npos)
+        {
+            for (const std::string &ext : validExtensions)
+            {
+                if (entry.path().extension() == ext)
+                {
+                    paths.push_back(fullPath);
+                    break;
+                }
+            }
+        }
+    }
+
+    return paths;
+}
 
 void TextureManager::loadTexturesForShader(const shaderID &shader, const std::string &directory, ModelType &modelType, std::vector<std::string> &outTexturePaths, std::string &outTextureArrayName)
 {
@@ -141,23 +164,11 @@ unsigned int TextureManager::loadStandaloneTexture(const std::string &filepath)
     return textureID;
 }
 
-void TextureManager::queueStandaloneTexture(const std::string &fileName)
-{
-    std::string path = "../resources/textures/" + fileName;
-    queueStandalone(path, true);
-}
-
-void TextureManager::queueStandaloneImage(const std::string &fileName)
-{
-    std::string path = "../resources/images/" + fileName;
-    queueStandalone(path, false);
-}
-
-void TextureManager::queueStandalone(const std::string &path, bool repeating)
+void queueStandalone(const std::string &path, bool repeating)
 {
     {
-        std::lock_guard<std::mutex> lock(standaloneCacheMutex);
-        if (standaloneTextureCache.find(path) != standaloneTextureCache.end())
+        std::lock_guard<std::mutex> lock(TextureManager::standaloneCacheMutex);
+        if (TextureManager::standaloneTextureCache.find(path) != TextureManager::standaloneTextureCache.end())
         {
             // Already loaded
             return;
@@ -165,15 +176,15 @@ void TextureManager::queueStandalone(const std::string &path, bool repeating)
     }
 
     {
-        std::lock_guard<std::mutex> lock(pendingTexturesMutex);
-        if (pendingTextures.find(path) != pendingTextures.end())
+        std::lock_guard<std::mutex> lock(TextureManager::pendingTexturesMutex);
+        if (TextureManager::pendingTextures.find(path) != TextureManager::pendingTextures.end())
         {
             // Already queued for loading
             return;
         }
 
         // Mark as pending
-        pendingTextures.insert(path);
+        TextureManager::pendingTextures.insert(path);
     }
 
     std::lock_guard<std::mutex> unitLock(unitMutex);
@@ -187,9 +198,21 @@ void TextureManager::queueStandalone(const std::string &path, bool repeating)
     pt.repeating = repeating;
 
     {
-        std::lock_guard<std::mutex> lock(textureQueueMutex);
-        textureQueue.push(std::move(pt));
+        std::lock_guard<std::mutex> lock(TextureManager::textureQueueMutex);
+        TextureManager::textureQueue.push(std::move(pt));
     }
+}
+
+void TextureManager::queueStandaloneTexture(const std::string &fileName)
+{
+    std::string path = "../resources/textures/" + fileName;
+    queueStandalone(path, true);
+}
+
+void TextureManager::queueStandaloneImage(const std::string &fileName)
+{
+    std::string path = "../resources/images/" + fileName;
+    queueStandalone(path, false);
 }
 
 void TextureManager::queueTextureToArray(const std::string &arrayName, const std::string &texturePath)
@@ -356,19 +379,13 @@ void TextureManager::loadQueuedPixelData()
     }
 }
 
-void TextureManager::uploadToGPU()
+void uploadStandalones()
 {
-    uploadStandalones();
-    uploadTextureArrays();
-}
+    std::lock_guard<std::mutex> lock(TextureManager::textureQueueMutex);
 
-void TextureManager::uploadStandalones()
-{
-    std::lock_guard<std::mutex> lock(textureQueueMutex);
-
-    while (!textureQueue.empty())
+    while (!TextureManager::textureQueue.empty())
     {
-        PendingTexture &pending = textureQueue.front();
+        PendingTexture &pending = TextureManager::textureQueue.front();
 
         unsigned int texID;
         glActiveTexture(GL_TEXTURE0 + pending.textureUnit);
@@ -408,8 +425,8 @@ void TextureManager::uploadStandalones()
             tex.index = texID;
             tex.textureUnit = pending.textureUnit;
 
-            std::lock_guard<std::mutex> cacheLock(standaloneCacheMutex);
-            standaloneTextureCache[pending.path] = tex;
+            std::lock_guard<std::mutex> cacheLock(TextureManager::standaloneCacheMutex);
+            TextureManager::standaloneTextureCache[pending.path] = tex;
         }
 
         // Optionally clear pixel data to free memory
@@ -418,19 +435,19 @@ void TextureManager::uploadStandalones()
 
         // Remove from pendingTextures set so it can be loaded again if needed
         {
-            std::lock_guard<std::mutex> pendingLock(pendingTexturesMutex);
-            pendingTextures.erase(pending.path);
+            std::lock_guard<std::mutex> pendingLock(TextureManager::pendingTexturesMutex);
+            TextureManager::pendingTextures.erase(pending.path);
         }
 
-        textureQueue.pop();
+        TextureManager::textureQueue.pop();
     }
 }
 
-void TextureManager::uploadTextureArrays()
+void uploadTextureArrays()
 {
-    std::lock_guard<std::mutex> lock(openglMutex);
+    std::lock_guard<std::mutex> lock(TextureManager::openglMutex);
 
-    for (auto &[arrayName, arr] : textureArrays)
+    for (auto &[arrayName, arr] : TextureManager::textureArrays)
     {
         if (arr.textureArrayID != 0)
             continue; // Already uploaded
@@ -468,26 +485,25 @@ void TextureManager::uploadTextureArrays()
     }
 }
 
-void TextureManager::clearTextures()
+void TextureManager::uploadToGPU()
 {
-    clearStandaloneCache();
-    clearTextureArrays();
-    nextFreeUnit = 5;
+    uploadStandalones();
+    uploadTextureArrays();
 }
 
-void TextureManager::clearStandaloneCache()
+void clearStandaloneCache()
 {
-    std::lock_guard<std::mutex> lock(standaloneCacheMutex);
-    for (auto &pair : standaloneTextureCache)
+    std::lock_guard<std::mutex> lock(TextureManager::standaloneCacheMutex);
+    for (auto &pair : TextureManager::standaloneTextureCache)
     {
         glDeleteTextures(1, &pair.second.index);
     }
-    standaloneTextureCache.clear();
+    TextureManager::standaloneTextureCache.clear();
 }
 
-void TextureManager::clearTextureArrays()
+void clearTextureArrays()
 {
-    for (auto &[name, texArray] : textureArrays)
+    for (auto &[name, texArray] : TextureManager::textureArrays)
     {
         if (texArray.textureArrayID != 0)
         {
@@ -497,7 +513,14 @@ void TextureManager::clearTextureArrays()
         texArray.textureLayerMap.clear();
         texArray.pendingTextures.clear();
     }
-    textureArrays.clear();
+    TextureManager::textureArrays.clear();
+}
+
+void TextureManager::clearTextures()
+{
+    clearStandaloneCache();
+    clearTextureArrays();
+    nextFreeUnit = 5;
 }
 
 std::string TextureManager::getTextureArrayName(ModelType modelType)
@@ -584,41 +607,4 @@ void TextureManager::getTextureData(const Model &model, unsigned int &textureUni
             textureLayers.push_back(-1);
         }
     }
-}
-
-std::vector<std::string> TextureManager::loadMaterialTexturePaths(const std::string &type, const std::string &directory)
-{
-    std::vector<std::string> paths;
-    const std::vector<std::string> validExtensions = {
-        ".png", ".jpg", ".jpeg", ".bmp", ".tga"};
-
-    if (!std::filesystem::exists(directory))
-    {
-        std::cerr << "Directory does not exist: " << directory << "\n";
-        return paths;
-    }
-
-    for (const auto &entry : std::filesystem::directory_iterator(directory))
-    {
-        if (!entry.is_regular_file())
-            continue;
-
-        std::string filename = entry.path().filename().string();
-        std::string fullPath = entry.path().string();
-
-        // Check if filename contains the typeName and has a valid extension
-        if (filename.find(type) != std::string::npos)
-        {
-            for (const std::string &ext : validExtensions)
-            {
-                if (entry.path().extension() == ext)
-                {
-                    paths.push_back(fullPath);
-                    break;
-                }
-            }
-        }
-    }
-
-    return paths;
 }

@@ -4,10 +4,8 @@
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
 
-#include <string>
 #include <vector>
 #include <map>
-#include <atomic>
 
 #include "mesh/meshvariant.h"
 #include "model/model_defs.h"
@@ -30,10 +28,8 @@ public:
     std::vector<Bone *> rootBones;
 
     std::vector<glm::mat4> boneTransforms[2];
-    static std::atomic<int> activeBoneBuffer;
     const std::vector<glm::mat4> &getReadBuffer();
     std::vector<glm::mat4> &getWriteBuffer();
-    static void swapBoneBuffers();
 
     std::vector<std::string> paths;
     std::string name;
@@ -41,10 +37,6 @@ public:
 
     std::vector<std::string> texturePaths;
     std::string textureArrayName;
-
-    // Model map and load function
-    static std::map<std::string, JSONModelMapEntry> modelMap;
-    static void loadModelMap();
 
     std::vector<std::vector<MeshVariant>> lodMeshes;
     std::string directory;

@@ -7,6 +7,7 @@
 #include <vector>
 #include <optional>
 
+#include "mesh/mesh_util.hpp"
 #include "mesh/meshvariant.h"
 #include "physics/physicsbuffer.h"
 #include "shader/shaderID.h"
@@ -103,7 +104,7 @@ struct UnitPlaneData
     glm::mat4 u_model;
     glm::mat3 u_normal;
     shaderID shader;
-    MeshVariant unitPlane = Mesh<VertexTextured>::genUnitPlane(color, shader);
+    MeshVariant unitPlane = MeshUtil::genUnitPlane<VertexTextured>(color, shader);
 
     // Data from transparent rendering
     glm::vec3 position;
@@ -122,7 +123,7 @@ struct GridData
     shaderID shader;
     glm::vec2 gridSize;
     float lod;
-    MeshVariant grid = Mesh<VertexTextured>::genGrid(gridSize.x, gridSize.y, lod, color, shader);
+    MeshVariant grid = MeshUtil::genGrid<VertexTextured>(gridSize.x, gridSize.y, lod, color, shader);
 };
 
 struct SkyBoxData

@@ -6,28 +6,6 @@
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
 
-// Global Camera Variables
-glm::vec3 Camera::worldUp(0.f, 0.f, 1.f); // World up direction
-glm::vec3 Camera::cameraViewDirection, Camera::cameraRight, Camera::cameraUp;
-
-// Position and orientation of free cam
-glm::vec3 Camera::cameraPositionFree;
-float Camera::yawFree, Camera::pitchFree, Camera::rollFree;
-
-// Position and orientation of fixed cam
-glm::vec3 Camera::cameraPosition;
-float Camera::yaw, Camera::pitch, Camera::roll;
-
-// Position and orientation of user around fixed cam
-float Camera::yawOffset, Camera::pitchOffset, Camera::rollOffset;
-
-// Camera related transformation matrices
-glm::mat4 Camera::u_view, Camera::u_projection, Camera::u_camXY;
-
-// Booleans for tracking cam state
-bool Camera::cameraMoved;
-bool Camera::freeCam;
-
 // Update cam matrices from positions etc
 void Camera::update()
 {

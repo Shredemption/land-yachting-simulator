@@ -10,11 +10,9 @@
 
 struct ModelData;
 
-class Animation
+namespace Animation
 {
-public:
-    static void updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones);
-    static std::unordered_map<std::string, std::map<std::string, int>> yachtBoneMap;
+    void updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones);
 };
 
 #endif

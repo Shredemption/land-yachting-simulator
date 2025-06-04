@@ -5,35 +5,10 @@
 #include <algorithm>
 
 #include "camera/camera.hpp"
-#include "physics/physics.hpp"
+#include "physics/physics_util.hpp"
 #include "render/render.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
-
-// Global screen variables
-int EventHandler::xPos, EventHandler::yPos, EventHandler::screenWidth, EventHandler::screenHeight;
-int EventHandler::windowXpos, EventHandler::windowYpos, EventHandler::windowWidth, EventHandler::windowHeight;
-
-bool EventHandler::fullscreen = true;
-bool EventHandler::windowSizeChanged = false;
-bool EventHandler::firstFrame = true;
-GLFWmonitor *EventHandler::monitor;
-
-// Global Time
-double EventHandler::time = 0;
-double EventHandler::deltaTime = 0;
-std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
-std::chrono::steady_clock::time_point EventHandler::now = startTime;
-std::chrono::steady_clock::time_point EventHandler::lastTime = startTime;
-unsigned int EventHandler::frame = 0;
-
-std::optional<std::chrono::steady_clock::time_point> EventHandler::pauseStart{};
-std::chrono::duration<double> EventHandler::pausedDuration{0};
-
-// Global Light properties
-glm::vec3 EventHandler::lightPos(1000.f, -1000.f, 2000.f);
-glm::vec3 EventHandler::lightCol(1, 1, 1);
-float EventHandler::lightInsensity = 2;
 
 // Generic EventHandler time update
 void EventHandler::timing(GLFWwindow *window, EngineState &state)
@@ -180,13 +155,13 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
     // Toggle FPS debug on F9
     if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
     {
-        Render::debugState = (Render::debugState == debugState::dbFPS) ? debugState::dbNone : debugState::dbFPS;
+        Render::debugstate = (Render::debugstate == debugState::dbFPS) ? debugState::dbNone : debugState::dbFPS;
     }
 
     // Toggle physics debug on F10
     if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
     {
-        Render::debugState = (Render::debugState == debugState::dbPhysics) ? debugState::dbNone : debugState::dbPhysics;
+        Render::debugstate = (Render::debugstate == debugState::dbPhysics) ? debugState::dbNone : debugState::dbPhysics;
     }
 
     // Toggle Freecam on C
@@ -195,16 +170,10 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
         Camera::freeCam = (Camera::freeCam) ? false : true;
     }
 
-    // Reset physics on R
-    if (key == GLFW_KEY_R && action == GLFW_PRESS)
-    {
-        Physics::resetState = true;
-    }
-
     // Switch to next controllable yacht on N
     if (key == GLFW_KEY_N && action == GLFW_PRESS)
     {
-        Physics::switchControlledYacht(*SceneManager::currentScene);
+        PhysicsUtil::switchControlledYacht(*SceneManager::currentScene);
     }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
@@ -306,30 +275,30 @@ void EventHandler::processInputRunning(GLFWwindow *window)
 
     // Physics Keys
     // Set all keyspresses to false
-    for (auto &key : Physics::keyInputs)
+    for (auto &key : PhysicsUtil::keyInputs)
     {
         key = false;
     }
 
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        Physics::keyInputs[0] = true;
+        PhysicsUtil::keyInputs[0] = true;
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        Physics::keyInputs[1] = true;
+        PhysicsUtil::keyInputs[1] = true;
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        Physics::keyInputs[2] = true;
+        PhysicsUtil::keyInputs[2] = true;
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        Physics::keyInputs[3] = true;
+        PhysicsUtil::keyInputs[3] = true;
     }
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
-        Physics::keyInputs[4] = true;
+        PhysicsUtil::keyInputs[4] = true;
     }
 }
 

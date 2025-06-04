@@ -3,30 +3,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-#include <mutex>
 #include <algorithm>
 
-#include "event_handler/event_handler.hpp"
-#include "model/model.hpp"
+#include "physics/physics_util.hpp"
 #include "render/render.hpp"
-#include "scene/scene.hpp"
-#include "thread_manager/thread_manager.hpp"
-
-// Boolmap for input tracking
-bool Physics::keyInputs[5];
-
-// World physics properties
-glm::vec3 Physics::windSourceDirection = glm::vec3(0.0f, -1.0f, 0.0f);
-float Physics::windStrength = 10.0f;
-float Physics::airDensity = 1.225f;
-float Physics::g = 9.81f;
-
-bool Physics::resetState = false;
-
-const double Physics::tickRate = 1.0 / 30.0;
-std::atomic<double> Physics::accumulator = 0.0;
-
-std::atomic<bool> Physics::isSwapping(false);
 
 Physics::Physics(const std::string &name)
 {
@@ -160,35 +140,6 @@ Physics::Physics(const std::string &name)
     }
 }
 
-void Physics::update()
-{
-    atomicAdd(Physics::accumulator, EventHandler::deltaTime);
-
-    int steps = 0;
-    double acc = Physics::accumulator.load(std::memory_order_acquire);
-
-    while (acc >= Physics::tickRate)
-    {
-        acc -= Physics::tickRate;
-        steps++;
-    }
-
-    if (steps > 0 && !ThreadManager::physicsBusy.load(std::memory_order_acquire))
-    {
-        ThreadManager::physicsBusy.store(true, std::memory_order_release);
-        // Update physics
-        {
-            std::lock_guard lock(ThreadManager::physicsMutex);
-            ThreadManager::physicsTrigger = true;
-            ThreadManager::physicsSteps += steps;
-        }
-        ThreadManager::physicsCV.notify_one();
-    }
-
-    float alpha = static_cast<float>(acc / Physics::tickRate);
-    ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
-}
-
 void Physics::reset(const glm::mat4 &u_model)
 {
     baseTransform = u_model;
@@ -201,24 +152,6 @@ void Physics::reset(const glm::mat4 &u_model)
     wheelAngle = 0.0f;
 }
 
-void Physics::setup(Scene &scene)
-{
-    // Setup all animated models
-    for (ModelData &model : scene.structModels)
-    {
-        if (model.animated)
-        {
-            model.physics.emplace();
-
-            model.physics->buffers[0] = std::make_unique<Physics>(model.model->name);
-            model.physics->buffers[1] = std::make_unique<Physics>(model.model->name);
-
-            model.physics->buffers[0]->reset(model.u_model);
-            model.physics->buffers[1]->reset(model.u_model);
-        }
-    }
-}
-
 void Physics::move(bool &controlled)
 {
     // Acceleration from keys
@@ -227,23 +160,23 @@ void Physics::move(bool &controlled)
 
     if (controlled)
     {
-        if (keyInputs[0])
+        if (PhysicsUtil::keyInputs[0])
         {
-            sailControlFactor += 1.f * tickRate;
+            sailControlFactor += 1.f * PhysicsUtil::tickRate;
         }
-        if (keyInputs[1])
+        if (PhysicsUtil::keyInputs[1])
         {
-            sailControlFactor -= 0.4f * tickRate;
+            sailControlFactor -= 0.4f * PhysicsUtil::tickRate;
         }
-        if (keyInputs[2])
+        if (PhysicsUtil::keyInputs[2])
         {
             steeringChange += steeringSmoothness * maxSteeringAngle;
         }
-        if (keyInputs[3])
+        if (PhysicsUtil::keyInputs[3])
         {
             steeringChange -= steeringSmoothness * maxSteeringAngle;
         }
-        if (keyInputs[4])
+        if (PhysicsUtil::keyInputs[4])
         {
             forwardAcceleration += 1.f;
         }
@@ -254,7 +187,7 @@ void Physics::move(bool &controlled)
 
     // Find new angles for sail
     glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[1]));
-    float angleToWind = glm::orientedAngle(direction, windSourceDirection, glm::vec3(0.0f, 0.0f, 1.0f));
+    float angleToWind = glm::orientedAngle(direction, PhysicsUtil::windSourceDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Apply angles to sail setup
     float targetMastAngle = (0.5f + sailControlFactor) / 1.5f * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
@@ -267,7 +200,7 @@ void Physics::move(bool &controlled)
     SailAngle = BoomAngle * (1 + 0.1 * fabs(sin(angleToWind / 2)));
 
     // Apparent wind direction
-    glm::vec3 apparentWind = -windSourceDirection * windStrength - direction * forwardVelocity;
+    glm::vec3 apparentWind = -PhysicsUtil::windSourceDirection * PhysicsUtil::windStrength - direction * forwardVelocity;
     float apparentWindSpeed = glm::length(apparentWind);
     glm::vec3 apparentWindDirection = glm::normalize(apparentWind);
 
@@ -281,18 +214,18 @@ void Physics::move(bool &controlled)
     float effectiveCD = minDragCoefficient + sin(absAngle) * sin(absAngle);
 
     // Lift and Drag forces
-    float dynamicPressure = 0.5f * airDensity * apparentWindSpeed * apparentWindSpeed;
+    float dynamicPressure = 0.5f * PhysicsUtil::airDensity * apparentWindSpeed * apparentWindSpeed;
     float localLift = dynamicPressure * sailArea * effectiveCL;
     float localDrag = dynamicPressure * sailArea * effectiveCD;
 
     float sailLiftForce = localLift * sin(angleToApparentWind);
     float sailDragForce = localDrag * cos(angleToApparentWind);
 
-    float bodyDragForce = 0.5f * airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
+    float bodyDragForce = 0.5f * PhysicsUtil::airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
 
     // Rolling Resistance
     float effectiveCr = rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / (rollScaling * rollScaling));
-    float rollResistance = effectiveCr * mass * g;
+    float rollResistance = effectiveCr * mass * PhysicsUtil::g;
 
     // Stationary force/acceleration
     const float standstillVelocity = 0.02f;
@@ -322,14 +255,14 @@ void Physics::move(bool &controlled)
     forwardAcceleration += netForce / mass;
 
     // Apply accelerations
-    forwardVelocity += forwardAcceleration * tickRate;
-    steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * tickRate;
+    forwardVelocity += forwardAcceleration * PhysicsUtil::tickRate;
+    steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * PhysicsUtil::tickRate;
     float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
 
     // Transform with velocities
-    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(effectiveSteeringAngle * forwardVelocity * tickRate)), glm::vec3(0.0f, 0.0f, 1.0f));
-    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * tickRate, 0.0f));
-    wheelAngle += forwardVelocity * tickRate * 100;
+    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(effectiveSteeringAngle * forwardVelocity * PhysicsUtil::tickRate)), glm::vec3(0.0f, 0.0f, 1.0f));
+    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * PhysicsUtil::tickRate, 0.0f));
+    wheelAngle += forwardVelocity * PhysicsUtil::tickRate * 100;
 
     // Send values to debug
     if (controlled)
@@ -345,34 +278,6 @@ void Physics::move(bool &controlled)
         Render::debugPhysicsData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
         Render::debugPhysicsData.push_back(std::pair("effectiveCL", effectiveCL));
         Render::debugPhysicsData.push_back(std::pair("effectiveCD", effectiveCD));
-    }
-}
-
-void Physics::switchControlledYacht(Scene &scene)
-{
-    std::string current;
-
-    // Find current controlled yacht, and stop controlling it
-    for (auto &model : scene.structModels)
-    {
-        if (model.controlled)
-        {
-            current = model.model->name;
-            model.controlled = false;
-        }
-    }
-
-    // Find id of current yacht in loaded yachts, increment by 1, overflow
-    int currentId = find(scene.loadedYachts.begin(), scene.loadedYachts.end(), current) - scene.loadedYachts.begin();
-    int newId = (currentId + 1) % scene.loadedYachts.size();
-
-    // Control new yacht
-    for (auto &model : scene.structModels)
-    {
-        if (model.model->name == scene.loadedYachts[newId])
-        {
-            model.controlled = true;
-        }
     }
 }
 

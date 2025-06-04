@@ -8,12 +8,11 @@
 #include <queue>
 #include <unordered_set>
 
+#include "texture_manager/texture_manager_defs.h"
+
 enum class shaderID;
 enum class ModelType;
 struct SkyBoxData;
-struct Texture;
-struct TextureArray;
-struct PendingTexture;
 class Model;
 
 inline bool ends_with(std::string const &value, std::string const &ending)
@@ -23,54 +22,42 @@ inline bool ends_with(std::string const &value, std::string const &ending)
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
-class TextureManager
+namespace TextureManager
 {
-public:
     // Texture Arrays
-    static std::unordered_map<std::string, TextureArray> textureArrays;
-    static std::mutex textureArrayMutex;
-    static std::unordered_map<std::string, Texture> standaloneTextureCache;
-    static std::mutex standaloneCacheMutex;
+    inline std::unordered_map<std::string, TextureArray> textureArrays;
+    inline std::mutex textureArrayMutex;
+    inline std::unordered_map<std::string, Texture> standaloneTextureCache;
+    inline std::mutex standaloneCacheMutex;
 
     // Pending Textures
-    static std::queue<PendingTexture> textureQueue;
-    static std::mutex textureQueueMutex;
-    static std::unordered_set<std::string> pendingTextures;
-    static std::mutex pendingTexturesMutex;
-    static std::mutex openglMutex;
+    inline std::queue<PendingTexture> textureQueue;
+    inline std::mutex textureQueueMutex;
+    inline std::unordered_set<std::string> pendingTextures;
+    inline std::mutex pendingTexturesMutex;
+    inline std::mutex openglMutex;
 
-    static void loadTexturesForShader(const shaderID &shader, const std::string &directory, ModelType &modelType, std::vector<std::string> &outTexturePaths, std::string &outTextureArrayName);
+    void loadTexturesForShader(const shaderID &shader, const std::string &directory, ModelType &modelType, std::vector<std::string> &outTexturePaths, std::string &outTextureArrayName);
 
-    static unsigned int loadStandaloneTexture(const std::string &filepath);
+    unsigned int loadStandaloneTexture(const std::string &filepath);
 
-    static void queueStandaloneTexture(const std::string &fileName);
-    static void queueStandaloneImage(const std::string &fileName);
-    static void queueTextureToArray(const std::string &arrayName, const std::string &texturePath);
-    static void queueTextureToArrayByFilename(const std::string &fileName, const std::string &arrayName);
-    static unsigned int loadSkyboxTexture(const SkyBoxData &skybox);
+    void queueStandaloneTexture(const std::string &fileName);
+    void queueStandaloneImage(const std::string &fileName);
+    void queueTextureToArray(const std::string &arrayName, const std::string &texturePath);
+    void queueTextureToArrayByFilename(const std::string &fileName, const std::string &arrayName);
+    unsigned int loadSkyboxTexture(const SkyBoxData &skybox);
 
-    static void clearTextures();
-    static void uploadToGPU();
-    static void loadQueuedPixelData();
+    void clearTextures();
+    void uploadToGPU();
+    void loadQueuedPixelData();
 
-    static std::string getTextureArrayName(ModelType modelType);
-    static unsigned int getStandaloneTextureID(const std::string &texturePath);
-    static unsigned int getTextureArrayID(const std::string &arrayName);
-    static unsigned int getStandaloneTextureUnit(const std::string &texturePath);
-    static unsigned int getTextureArrayUnit(const std::string &arrayName);
-    static int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath);
-    static void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers);
-
-private:
-    static void uploadStandalones();
-    static void uploadTextureArrays();
-
-    static void clearStandaloneCache();
-    static void clearTextureArrays();
-
-    static void queueStandalone(const std::string &path, bool repeating);
-
-    static std::vector<std::string> loadMaterialTexturePaths(const std::string &type, const std::string &directory);
+    std::string getTextureArrayName(ModelType modelType);
+    unsigned int getStandaloneTextureID(const std::string &texturePath);
+    unsigned int getTextureArrayID(const std::string &arrayName);
+    unsigned int getStandaloneTextureUnit(const std::string &texturePath);
+    unsigned int getTextureArrayUnit(const std::string &arrayName);
+    int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath);
+    void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers);
 };
 
 #endif

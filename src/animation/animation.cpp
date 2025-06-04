@@ -5,7 +5,6 @@
  
 #include "model/model.hpp"
 #include "model/bone.h"
-#include "physics/physics.hpp"
 #include "scene/scene_defs.h"
 
 void Animation::updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones)
