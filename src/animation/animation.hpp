@@ -1,5 +1,5 @@
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#ifndef ANIMATION_HPP
+#define ANIMATION_HPP
 
 #include <glm/glm.hpp>
 

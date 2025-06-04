@@ -1,5 +1,5 @@
-#ifndef RENDER_H
-#define RENDER_H
+#ifndef RENDER_HPP
+#define RENDER_HPP
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -13,70 +13,16 @@
 
 #include <memory>
 #include <array>
+#include <atomic>
+#include <vector>
+#include <map>
 
-#include "model/model.h"
+#include "render/renderbuffer.h"
 
-enum class shaderID;
-
-struct Character
-{
-    glm::ivec2 Size;     // Size of the character
-    glm::ivec2 Bearing;  // Offset from the baseline
-    GLuint Advance;      // Distance to the next character
-    glm::vec4 TexCoords; // (x, y, width, height)
-};
-
-enum class debugState
-{
-    dbNone,
-    dbFPS,
-    dbPhysics
-};
-
-enum class RenderType
-{
-    rtModel,
-    rtOpaquePlane,
-    rtTransparentPlane,
-    rtGrid
-};
-
-struct RenderCommand
-{
-    RenderType type;
-
-    shaderID shader;
-    std::shared_ptr<std::vector<MeshVariant>> meshes;
-
-    unsigned int textureUnit;
-    unsigned int textureArrayID;
-    std::vector<int> textureLayers;
-
-    glm::mat4 modelMatrix;
-    glm::mat4 normalMatrix;
-
-    int lod;
-
-    bool animated = false;
-    std::vector<glm::mat4> boneTransforms;
-    std::vector<glm::mat4> boneInverseOffsets;
-};
-
-enum class BufferState
-{
-    Free,
-    Prepping,
-    Ready,
-    Rendering
-};
-
-struct RenderBuffer
-{
-    std::vector<RenderCommand> commandBuffer;
-    std::atomic<BufferState> state = BufferState::Free;
-    float camYaw;
-    glm::vec3 camPos;
-};
+enum class debugState;
+struct RenderCommand;
+struct RenderBuffer;
+struct Character;
 
 class Render
 {
@@ -98,17 +44,17 @@ public:
     static FT_Library ft;
     static FT_Face face;
 
-    static GLuint textVAO, textVBO;
-    static GLuint textTexture;
+    static unsigned int textVAO, textVBO;
+    static unsigned int textTexture;
     static std::map<GLchar, Character> Characters;
     static std::string fontpath;
 
-    static GLuint sceneFBO;
-    static GLuint sceneTexture;
-    static GLuint sceneDepthRBO;
+    static unsigned int sceneFBO;
+    static unsigned int sceneTexture;
+    static unsigned int sceneDepthRBO;
 
-    static GLuint pauseTexture;
-    static GLuint copyFBO;
+    static unsigned int pauseTexture;
+    static unsigned int copyFBO;
 
     static void createSceneFBO(int width, int height);
     static void resize(int width, int height);
@@ -146,7 +92,7 @@ private:
 
     // Texture renderers
     static void renderReflectRefract(std::vector<RenderCommand> &renderBuffer);
-    static void renderTestQuad(GLuint texture, int x, int y);
+    static void renderTestQuad(unsigned int texture, int x, int y);
 };
 
 #endif

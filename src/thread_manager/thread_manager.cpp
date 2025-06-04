@@ -1,8 +1,12 @@
-#include "thread_manager/thread_manager.h"
+#include "thread_manager/thread_manager.hpp"
 
-#include "animation/animation.h"
-#include "render/render.h"
-#include "scene_manager/scene_manager.h"
+#include <algorithm>
+
+#include "animation/animation.hpp"
+#include "model/model.hpp"
+#include "render/render.hpp"
+#include "scene/scene.hpp"
+#include "scene_manager/scene_manager.hpp"
 
 // Define threads
 std::thread ThreadManager::physicsThread;

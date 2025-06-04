@@ -1,10 +1,5 @@
-#ifndef TEXTURE_MANAGER_H
-#define TEXTURE_MANAGER_H
-
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
+#ifndef TEXTURE_MANAGER_HPP
+#define TEXTURE_MANAGER_HPP
 
 #include <string>
 #include <vector>
@@ -15,30 +10,11 @@
 
 enum class shaderID;
 enum class ModelType;
+struct SkyBoxData;
+struct Texture;
+struct TextureArray;
+struct PendingTexture;
 class Model;
-
-struct Texture
-{
-    unsigned int index;
-    std::string path;
-
-    bool operator==(const Texture &other) const
-    {
-        return this->path == other.path; // Compare based on path or other identifiers
-    }
-
-    int textureUnit = -1;
-};
-
-struct PendingTexture
-{
-    std::string path;
-    int width, height, channels;
-    std::vector<unsigned char> pixelData;
-    unsigned int textureID = -1;
-    int textureUnit = -1;
-    bool repeating;
-};
 
 inline bool ends_with(std::string const &value, std::string const &ending)
 {
@@ -46,19 +22,6 @@ inline bool ends_with(std::string const &value, std::string const &ending)
         return false;
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
-
-struct TextureArray
-{
-    GLuint textureArrayID = 0;
-    int width = 0;
-    int height = 0;
-    std::vector<PendingTexture> pendingTextures;
-    std::unordered_map<std::string, int> textureLayerMap;
-
-    int textureUnit = -1;
-};
-
-struct SkyBoxData;
 
 class TextureManager
 {
@@ -91,10 +54,10 @@ public:
     static void loadQueuedPixelData();
 
     static std::string getTextureArrayName(ModelType modelType);
-    static GLuint getStandaloneTextureID(const std::string &texturePath);
-    static GLuint getTextureArrayID(const std::string &arrayName);
-    static GLuint getStandaloneTextureUnit(const std::string &texturePath);
-    static GLuint getTextureArrayUnit(const std::string &arrayName);
+    static unsigned int getStandaloneTextureID(const std::string &texturePath);
+    static unsigned int getTextureArrayID(const std::string &arrayName);
+    static unsigned int getStandaloneTextureUnit(const std::string &texturePath);
+    static unsigned int getTextureArrayUnit(const std::string &arrayName);
     static int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath);
     static void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers);
 

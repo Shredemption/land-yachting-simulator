@@ -1,4 +1,4 @@
-#include "model/model.h"
+#include "model/model.hpp"
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -16,8 +16,9 @@
 #include <filesystem>
 #include <fstream>
 
-#include "shader/shader.h"
-#include "texture_manager/texture_manager.h"
+#include "model/bone.h"
+#include "shader/shaderID.h"
+#include "texture_manager/texture_manager.hpp"
 
 // Model map and location
 std::map<std::string, JSONModelMapEntry> Model::modelMap;

@@ -1,4 +1,4 @@
-#include "frame_buffer/frame_buffer.h"
+#include "frame_buffer/frame_buffer.hpp"
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "event_handler/event_handler.h"
-#include "render/render.h"
+#include "event_handler/event_handler.hpp"
+#include "render/render.hpp"
 
 // Global framebuffer variables
 bool FrameBuffer::Water = false;

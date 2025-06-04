@@ -1,5 +1,5 @@
-#ifndef THREAD_MANAGER_H
-#define THREAD_MANAGER_H
+#ifndef THREAD_MANAGER_HPP
+#define THREAD_MANAGER_HPP
 
 #include <thread>
 #include <mutex>

@@ -1,5 +1,5 @@
-#ifndef SCENE_MANAGER_H
-#define SCENE_MANAGER_H
+#ifndef SCENE_MANAGER_HPP
+#define SCENE_MANAGER_HPP
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -13,22 +13,8 @@
 #include <map>
 #include <optional>
 
-#include "scene/scene.h"
-
-struct LoadingStep
-{
-    std::string completedLabel;
-    std::function<std::string()> activeMessage;
-};
-
-enum class EngineState
-{
-    None,
-    Loading,
-    Title,
-    Pause,
-    Running
-};
+enum class EngineState;
+class Scene;
 
 class SceneManager
 {

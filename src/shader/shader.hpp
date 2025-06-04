@@ -1,5 +1,5 @@
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef SHADER_HPP
+#define SHADER_HPP
 
 #include <glm/glm.hpp>
 
@@ -7,22 +7,7 @@
 #include <vector>
 #include <unordered_map>
 
-enum class shaderID
-{
-    shNone,
-    shDefault,
-    shGui,
-    shSimple,
-    shText,
-    shImage,
-    shWater,
-    shSkybox,
-    shToon,
-    shToonTerrain,
-    shToonWater,
-    shPause,
-    shPost
-};
+enum class shaderID;
 
 class Shader
 {
@@ -72,4 +57,4 @@ private:
     void checkLinkingError();
 };
 
-#endif // SHADER_H
+#endif

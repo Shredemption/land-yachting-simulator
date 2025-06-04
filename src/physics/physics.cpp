@@ -1,14 +1,16 @@
-#include <physics/physics.h>
+#include "physics/physics.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
 #include <mutex>
+#include <algorithm>
 
-#include "event_handler/event_handler.h"
-#include "render/render.h"
-#include "scene/scene.h"
-#include "thread_manager/thread_manager.h"
+#include "event_handler/event_handler.hpp"
+#include "model/model.hpp"
+#include "render/render.hpp"
+#include "scene/scene.hpp"
+#include "thread_manager/thread_manager.hpp"
 
 // Boolmap for input tracking
 bool Physics::keyInputs[5];

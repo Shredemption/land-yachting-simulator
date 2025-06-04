@@ -1,9 +1,11 @@
-#include "mesh/mesh.h"
+#include "mesh/mesh.hpp"
 
 #ifndef __glad_h_
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #endif
+
+#include "mesh/meshvariant.h"
 
 // Constructor to store input data
 template <typename VertexType>

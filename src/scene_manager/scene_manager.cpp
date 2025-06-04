@@ -1,16 +1,20 @@
-#include "scene_manager/scene_manager.h"
+#include "scene_manager/scene_manager.hpp"
 
 #include <jsoncons/json.hpp>
 
 #include <filesystem>
 #include <fstream>
 
-#include "animation/animation.h"
-#include "camera/camera.h"
-#include "event_handler/event_handler.h"
-#include "render/render.h"
-#include "texture_manager/texture_manager.h"
-#include "thread_manager/thread_manager.h"
+#include "animation/animation.hpp"
+#include "camera/camera.hpp"
+#include "event_handler/event_handler.hpp"
+#include "model/model.hpp"
+#include "render/render.hpp"
+#include "scene/scene.hpp"
+#include "scene_manager/scene_manager_defs.h"
+#include "shader/shader.hpp"
+#include "texture_manager/texture_manager.hpp"
+#include "thread_manager/thread_manager.hpp"
 
 // Global Scene variables
 std::shared_ptr<Scene> SceneManager::currentScene = nullptr;

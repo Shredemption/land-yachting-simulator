@@ -1,23 +1,16 @@
-#ifndef SCENE_H
-#define SCENE_H
-
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
+#ifndef SCENE_DEFS_H
+#define SCENE_DEFS_H
 
 #include <glm/glm.hpp>
 
 #include <string>
 #include <vector>
 #include <optional>
-#include <unordered_map>
 
-#include "model/model.h"
-#include "shader/shader.h"
-#include "physics/physics.h"
+#include "mesh/meshvariant.h"
+#include "physics/physicsbuffer.h"
+#include "shader/shaderID.h"
 
-enum class shaderID;
 class Model;
 
 struct JSONModel
@@ -160,37 +153,7 @@ struct ImageData
     glm::vec2 scale;
     float rotation;
     bool mirrored;
-    GLuint textureID;
-};
-
-class Scene
-{
-public:
-    Scene(std::string jsonPath, std::string sceneName);
-    void uploadToGPU();
-
-    // Local scene data
-    std::string name;
-    std::vector<ModelData> structModels;
-    std::unordered_map<std::string, Model> loadedModels;
-    std::vector<std::string> loadedYachts;
-    std::vector<UnitPlaneData> transparentUnitPlanes;
-    std::vector<UnitPlaneData> opaqueUnitPlanes;
-    std::vector<GridData> grids;
-    SkyBoxData skyBox;
-    bool hasSkyBox;
-    std::vector<TextData> texts;
-    std::vector<ImageData> images;
-    glm::vec3 bgColor;
-
-private:
-    // Load-functions for each type
-    void loadModelToScene(JSONModel model);
-    void loadUnitPlaneToScene(JSONUnitPlane unitPlane);
-    void loadGridToScene(JSONGrid grid);
-    void loadSkyBoxToScene(JSONSkybox skyBox);
-    void loadTextToScene(JSONText text);
-    void loadImageToScene(JSONImage image);
+    unsigned int textureID;
 };
 
 #endif

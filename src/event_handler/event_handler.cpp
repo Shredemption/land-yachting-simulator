@@ -1,13 +1,14 @@
-#include "event_handler/event_handler.h"
+#include "event_handler/event_handler.hpp"
 
 #include <iostream>
 #include <vector>
 #include <algorithm>
 
-#include "camera/camera.h"
-#include "physics/physics.h"
-#include "render/render.h"
-#include "scene_manager/scene_manager.h"
+#include "camera/camera.hpp"
+#include "physics/physics.hpp"
+#include "render/render.hpp"
+#include "scene_manager/scene_manager.hpp"
+#include "scene_manager/scene_manager_defs.h"
 
 // Global screen variables
 int EventHandler::xPos, EventHandler::yPos, EventHandler::screenWidth, EventHandler::screenHeight;

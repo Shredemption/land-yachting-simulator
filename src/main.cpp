@@ -67,14 +67,13 @@ void SetWindowIconFromResource(GLFWwindow *window)
 }
 #endif
 
-#include "event_handler/event_handler.h"
-#include "model/model.h"
-#include "scene/scene.h"
-#include "scene_manager/scene_manager.h"
-#include "camera/camera.h"
-#include "render/render.h"
-#include "physics/physics.h"
-#include "thread_manager/thread_manager.h"
+#include "event_handler/event_handler.hpp"
+#include "model/model.hpp"
+#include "scene_manager/scene_manager.hpp"
+#include "scene_manager/scene_manager_defs.h"
+#include "render/render.hpp"
+#include "physics/physics.hpp"
+#include "thread_manager/thread_manager.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 

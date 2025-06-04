@@ -1,14 +1,22 @@
-#include "texture_manager/texture_manager.h"
+#include "texture_manager/texture_manager.hpp"
+
+#ifndef __glad_h_
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include <algorithm>
 #include <iostream>
 #include <filesystem>
 #include <future>
 
-#include "scene_manager/scene_manager.h"
-#include "shader/shader.h"
+#include "model/model.hpp"
+#include "scene/scene_defs.h"
+#include "scene_manager/scene_manager.hpp"
+#include "texture_manager/texture_manager_defs.h"
 
 // Texture Arrays
 std::unordered_map<std::string, TextureArray> TextureManager::textureArrays;
@@ -106,7 +114,7 @@ unsigned int TextureManager::loadStandaloneTexture(const std::string &filepath)
         return 0;
     }
 
-    GLuint textureID;
+    unsigned int textureID;
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -362,7 +370,7 @@ void TextureManager::uploadStandalones()
     {
         PendingTexture &pending = textureQueue.front();
 
-        GLuint texID;
+        unsigned int texID;
         glActiveTexture(GL_TEXTURE0 + pending.textureUnit);
         glGenTextures(1, &texID);
         glBindTexture(GL_TEXTURE_2D, texID);
@@ -503,7 +511,7 @@ std::string TextureManager::getTextureArrayName(ModelType modelType)
     }
 }
 
-GLuint TextureManager::getStandaloneTextureID(const std::string &texturePath)
+unsigned int TextureManager::getStandaloneTextureID(const std::string &texturePath)
 {
     auto it = standaloneTextureCache.find(texturePath);
     if (it != standaloneTextureCache.end())
@@ -511,7 +519,7 @@ GLuint TextureManager::getStandaloneTextureID(const std::string &texturePath)
     return 0;
 }
 
-GLuint TextureManager::getTextureArrayID(const std::string &arrayName)
+unsigned int TextureManager::getTextureArrayID(const std::string &arrayName)
 {
     auto it = textureArrays.find(arrayName);
     if (it != textureArrays.end())
@@ -519,7 +527,7 @@ GLuint TextureManager::getTextureArrayID(const std::string &arrayName)
     return 0;
 }
 
-GLuint TextureManager::getStandaloneTextureUnit(const std::string &texturePath)
+unsigned int TextureManager::getStandaloneTextureUnit(const std::string &texturePath)
 {
     auto it = standaloneTextureCache.find(texturePath);
     if (it != standaloneTextureCache.end())
@@ -527,7 +535,7 @@ GLuint TextureManager::getStandaloneTextureUnit(const std::string &texturePath)
     return 0;
 }
 
-GLuint TextureManager::getTextureArrayUnit(const std::string &arrayName)
+unsigned int TextureManager::getTextureArrayUnit(const std::string &arrayName)
 {
     auto it = textureArrays.find(arrayName);
     if (it != textureArrays.end())
