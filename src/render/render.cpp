@@ -776,9 +776,9 @@ void Render::initFreeType()
 
 void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha)
 {
-    x *= EventHandler::screenHeight;
-    y *= EventHandler::screenHeight;
-    scale *= EventHandler::screenHeight / 1440.0f;
+    x *= EventHandler::screenUIScale * 2560.0f;
+    y *= EventHandler::screenUIScale * 1440.0f;
+    scale *= EventHandler::screenUIScale;
 
     // Load the shader for rendering text
     shader = ShaderUtil::load(shaderID::shText);
@@ -1041,7 +1041,7 @@ void Render::renderTitleScreen()
 
         float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
 
-        float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.0f);
+        float x = easeOutBack(-0.1f, 0.03f, effectiveFade, 2.0f);
         float y = 0.05f + ((i == 0) ? 0 : i + 1) * 0.05f;
 
         renderText(titleEntries[i], x + 0.003f, y + 0.003f, scale, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
@@ -1094,7 +1094,7 @@ void Render::renderPauseScreen()
 
         float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
 
-        float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.0f);
+        float x = easeOutBack(-0.1f, 0.03f, effectiveFade, 2.0f);
         float y = 0.05f + ((i == 0) ? 0 : i + 1) * 0.05f;
 
         renderText(pauseEntries[i], x + 0.003f, y + 0.003f, scale, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);

@@ -74,6 +74,7 @@ void SetWindowIconFromResource(GLFWwindow *window)
 #include "physics/physics_util.hpp"
 #include "render/render.hpp"
 #include "thread_manager/thread_manager.hpp"
+#include "ui_manager/ui_manager.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -139,8 +140,6 @@ int main()
     glfwGetWindowSize(window, &EventHandler::windowWidth, &EventHandler::windowHeight);
     glfwGetFramebufferSize(window, &EventHandler::screenWidth, &EventHandler::screenHeight);
 
-    // Set Keycallback for window
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, EventHandler::framebufferSizeCallback);
 
     // Enable face culling
@@ -207,10 +206,12 @@ int main()
 
         case EngineState::Title:
             Render::renderTitleScreen();
+            UIManager::update();
             break;
 
         case EngineState::Pause:
             Render::renderPauseScreen();
+            UIManager::update();
             break;
 
         case EngineState::Running:
@@ -221,6 +222,7 @@ int main()
         }
 
         glfwSwapBuffers(window);
+        EventHandler::update();
         glfwPollEvents();
     }
 
