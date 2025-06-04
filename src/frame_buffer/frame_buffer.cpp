@@ -1,8 +1,13 @@
 #include "frame_buffer/frame_buffer.h"
 
+#ifndef __glad_h_
 #include <glad/glad.h>
-#include <iostream>
+#include <GLFW/glfw3.h>
+#endif
 
+#include <memory>
+
+#include "event_handler/event_handler.h"
 #include "render/render.h"
 
 // Global framebuffer variables
@@ -63,9 +68,9 @@ int FrameBuffer::createTextureAttachment()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
-    
+
     colorTexture = texture;
-    
+
     return texture;
 };
 

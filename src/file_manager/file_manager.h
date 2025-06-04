@@ -2,7 +2,6 @@
 #define FILE_MANAGER_H
 
 #include <string>
-#include <cstdlib>
 
 class FileManager
 {

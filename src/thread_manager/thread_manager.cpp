@@ -1,9 +1,8 @@
 #include "thread_manager/thread_manager.h"
 
-#include "scene_manager/scene_manager.h"
-#include "physics/physics.h"
 #include "animation/animation.h"
 #include "render/render.h"
+#include "scene_manager/scene_manager.h"
 
 // Define threads
 std::thread ThreadManager::physicsThread;

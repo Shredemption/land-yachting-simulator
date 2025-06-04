@@ -1,16 +1,18 @@
 #include "render/render.h"
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <chrono>
-#include <format>
 
+#include <future>
+#include <iostream>
+
+#include "camera/camera.h"
 #include "event_handler/event_handler.h"
 #include "frame_buffer/frame_buffer.h"
-#include "camera/camera.h"
 #include "scene_manager/scene_manager.h"
+#include "shader/shader.h"
 #include "texture_manager/texture_manager.h"
 #include "thread_manager/thread_manager.h"
-#include "easings/easings.h"
+#include "easing_functions.h"
 
 // Global variables for quads
 unsigned int Render::quadVAO = 0, Render::quadVBO = 0;
@@ -297,14 +299,14 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
         // Select which debug renderer to use
         switch (debugState)
         {
-        case dbNone:
+        case debugState::dbNone:
             break;
 
-        case dbFPS:
+        case debugState::dbFPS:
             renderText(std::to_string(static_cast<int>(FPS)), 0.01f, 0.01f, 0.75f, debugColor);
             break;
 
-        case dbPhysics:
+        case debugState::dbPhysics:
             debugText = "Physics:\n";
 
             for (auto entry : debugPhysicsData)

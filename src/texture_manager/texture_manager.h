@@ -1,18 +1,21 @@
 #ifndef TEXTURE_MANAGER_H
 #define TEXTURE_MANAGER_H
 
-#include <assimp/scene.h>
+#ifndef __glad_h_
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
 
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <mutex>
 #include <queue>
+#include <unordered_set>
 
-#include "shader/shader.h"
-#include "model/model.h"
-
+enum class shaderID;
 enum class ModelType;
+class Model;
 
 struct Texture
 {

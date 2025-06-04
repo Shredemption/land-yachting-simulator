@@ -1,15 +1,24 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#ifndef __glad_h_
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
+
 #include <glm/glm.hpp>
 
-#include <vector>
-#include <unordered_map>
 #include <string>
+#include <vector>
 #include <optional>
+#include <unordered_map>
 
 #include "model/model.h"
+#include "shader/shader.h"
 #include "physics/physics.h"
+
+enum class shaderID;
+class Model;
 
 struct JSONModel
 {

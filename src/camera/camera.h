@@ -3,8 +3,6 @@
 
 #include <glm/glm.hpp>
 
-#include "scene/scene.h"
-
 class Camera
 {
 public:
@@ -33,7 +31,7 @@ public:
     static void setCamDirection(glm::vec3 rotation);
     static void genViewMatrix(glm::vec3 position);
     static void genProjectionMatrix();
-    
+
     static glm::vec3 getPosition();
     static glm::vec3 getRotation();
 };

@@ -1,9 +1,15 @@
 #include "shader/shader.h"
 
+#ifndef __glad_h_
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
+
 #include <glm/gtc/type_ptr.hpp>
 
+#include <iostream>
+
 #include "file_manager/file_manager.h"
-#include "frame_buffer/frame_buffer.h"
 
 std::unordered_map<shaderID, Shader> Shader::loadedShaders;
 shaderID Shader::lastShader;

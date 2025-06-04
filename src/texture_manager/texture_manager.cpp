@@ -3,12 +3,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include <iostream>
 #include <filesystem>
 #include <future>
 
-#include "scene/scene.h"
-#include "model/model.h"
 #include "scene_manager/scene_manager.h"
+#include "shader/shader.h"
 
 // Texture Arrays
 std::unordered_map<std::string, TextureArray> TextureManager::textureArrays;

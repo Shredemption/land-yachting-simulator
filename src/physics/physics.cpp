@@ -3,9 +3,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
+#include <mutex>
+
+#include "event_handler/event_handler.h"
 #include "render/render.h"
 #include "scene/scene.h"
-#include "event_handler/event_handler.h"
 #include "thread_manager/thread_manager.h"
 
 // Boolmap for input tracking

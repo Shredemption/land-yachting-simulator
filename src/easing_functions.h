@@ -1,5 +1,5 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef EASING_FUNCTIONS_H
+#define EASING_FUNCTIONS_H
 
 #include <cmath>
 

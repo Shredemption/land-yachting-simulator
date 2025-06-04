@@ -3,10 +3,11 @@
 
 #ifndef __glad_h_
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #endif
 
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+
 #include <chrono>
 #include <optional>
 

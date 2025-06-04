@@ -1,10 +1,19 @@
 #ifndef SCENE_MANAGER_H
 #define SCENE_MANAGER_H
 
-#include "scene/scene.h"
+#ifndef __glad_h_
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
 
+#include <string>
+#include <memory>
 #include <future>
 #include <atomic>
+#include <map>
+#include <optional>
+
+#include "scene/scene.h"
 
 struct LoadingStep
 {
