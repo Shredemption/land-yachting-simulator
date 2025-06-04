@@ -4,8 +4,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "physics/physics.h"
-#include "event_handler/event_handler.h"
-#include "camera/camera.h"
+#include "scene/scene.h"
 
 void Animation::updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones)
 {

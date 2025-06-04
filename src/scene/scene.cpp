@@ -1,17 +1,14 @@
 #include <scene/scene.h>
 
-#include <filesystem>
-#include <fstream>
 #include <jsoncons/json.hpp>
-#include <jsoncons/json_traits_macros.hpp>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "model/model.h"
-#include "mesh/mesh.h"
-#include "event_handler/event_handler.h"
-#include "frame_buffer/frame_buffer.h"
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+
 #include "file_manager/file_manager.h"
+#include "frame_buffer/frame_buffer.h"
 #include "scene_manager/scene_manager.h"
 #include "texture_manager/texture_manager.h"
 

@@ -1,8 +1,6 @@
 #ifndef FRAME_BUFFER_H
 #define FRAME_BUFFER_H
 
-#include "event_handler/event_handler.h"
-
 class FrameBuffer
 {
 public:
@@ -24,7 +22,6 @@ public:
 
     // Actual contructor
     FrameBuffer(int width, int height);
-
 
     static void bindFrameBuffer(FrameBuffer FBO);
     static void unbindCurrentFrameBuffer();

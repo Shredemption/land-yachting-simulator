@@ -1,15 +1,22 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include "glm/glm.hpp"
+#ifndef __glad_h_
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#include <glm/glm.hpp>
 
 #include <memory>
 #include <array>
 
-#include "scene/scene.h"
-#include "shader/shader.h"
+#include "model/model.h"
+
+enum class shaderID;
 
 struct Character
 {
@@ -19,14 +26,14 @@ struct Character
     glm::vec4 TexCoords; // (x, y, width, height)
 };
 
-enum debugState
+enum class debugState
 {
     dbNone,
     dbFPS,
     dbPhysics
 };
 
-enum RenderType
+enum class RenderType
 {
     rtModel,
     rtOpaquePlane,

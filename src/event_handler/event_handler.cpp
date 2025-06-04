@@ -1,10 +1,12 @@
 #include "event_handler/event_handler.h"
 
 #include <iostream>
-#include <camera/camera.h>
-#include <render/render.h>
+#include <vector>
+#include <algorithm>
 
+#include "camera/camera.h"
 #include "physics/physics.h"
+#include "render/render.h"
 #include "scene_manager/scene_manager.h"
 
 // Global screen variables

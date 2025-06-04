@@ -1,17 +1,19 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <assimp/Importer.hpp>
+#include <glm/glm.hpp>
 #include <assimp/scene.h>
 
 #include <string>
-#include <unordered_map>
 #include <vector>
-#include <variant>
 #include <map>
+#include <variant>
 #include <atomic>
 
 #include "mesh/mesh.h"
+
+enum class shaderID;
+struct Bone;
 
 enum class ModelType
 {
@@ -53,8 +55,8 @@ public:
 
     std::vector<glm::mat4> boneTransforms[2];
     static std::atomic<int> activeBoneBuffer;
-    const std::vector<glm::mat4>& getReadBuffer();
-    std::vector<glm::mat4>& getWriteBuffer();
+    const std::vector<glm::mat4> &getReadBuffer();
+    std::vector<glm::mat4> &getWriteBuffer();
     static void swapBoneBuffers();
 
     std::vector<std::string> paths;
@@ -75,7 +77,7 @@ public:
     void generateBoneTransforms();
     void generateBoneTransformsRecursive(Bone *bone);
     void updateBoneTransforms(std::vector<glm::mat4> &targetBones);
-    void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset, std::vector<glm::mat4>& targetBones);
+    void updateBoneTransformsRecursive(Bone *bone, const glm::mat4 &parentTransform, const glm::mat4 &parentInverseOffset, std::vector<glm::mat4> &targetBones);
 
     // Draw meshes in model
     void draw(int lodIndex);

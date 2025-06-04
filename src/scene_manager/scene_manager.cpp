@@ -4,16 +4,13 @@
 
 #include <filesystem>
 #include <fstream>
-#include <windows.h>
 
-#include "physics/physics.h"
 #include "animation/animation.h"
-#include "render/render.h"
-#include "shader/shader.h"
 #include "camera/camera.h"
 #include "event_handler/event_handler.h"
-#include "thread_manager/thread_manager.h"
+#include "render/render.h"
 #include "texture_manager/texture_manager.h"
+#include "thread_manager/thread_manager.h"
 
 // Global Scene variables
 std::shared_ptr<Scene> SceneManager::currentScene = nullptr;

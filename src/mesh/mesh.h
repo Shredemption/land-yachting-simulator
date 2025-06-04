@@ -2,10 +2,11 @@
 #define MESH_H
 
 #include <glm/glm.hpp>
+
 #include <string>
 #include <vector>
 
-#include "shader/shader.h"
+enum class shaderID;
 
 struct VertexAnimated
 {

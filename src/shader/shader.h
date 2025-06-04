@@ -1,19 +1,13 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <iostream>
+#include <glm/glm.hpp>
+
 #include <string>
+#include <vector>
 #include <unordered_map>
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
-
-#include <glm/glm.hpp>
-#include <vector>
-
-enum shaderID
+enum class shaderID
 {
     shNone,
     shDefault,

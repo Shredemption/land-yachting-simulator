@@ -1,10 +1,14 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include <unordered_map>
-#include <iostream>
+#include <glm/glm.hpp>
 
-#include "scene/scene.h"
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <map>
+
+struct ModelData;
 
 class Animation
 {

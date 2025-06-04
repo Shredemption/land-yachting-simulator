@@ -1,15 +1,22 @@
 #include "model/model.h"
 
+#ifndef __glad_h_
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <jsoncons/json.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <iostream>
 #include <filesystem>
 #include <fstream>
 
-#include "scene/scene.h"
-#include "event_handler/event_handler.h"
+#include "shader/shader.h"
 #include "texture_manager/texture_manager.h"
 
 // Model map and location
