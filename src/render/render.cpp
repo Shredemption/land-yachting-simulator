@@ -26,6 +26,7 @@ unsigned int quadVAO = 0, quadVBO = 0;
 float quadVertices[] = {0};
 bool WaterPass = true;
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
+float textTextureSize = 128;
 
 // Track current and last used shader
 Shader *shader;
@@ -687,8 +688,10 @@ void Render::initFreeType()
     if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
         std::cerr << "ERROR: Failed to load font\n";
 
+
+
     // Set font size
-    FT_Set_Pixel_Sizes(face, 0, 48);
+    FT_Set_Pixel_Sizes(face, 0, textTextureSize);
 
     // Generate texture for each character
     glGenTextures(1, &textTexture);
@@ -702,13 +705,13 @@ void Render::initFreeType()
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // To prevent padding issues
 
     // Define the width and height of the atlas
-    const int atlasWidth = 1024;
-    const int atlasHeight = 1024;
+    const int atlasWidth = textTextureSize * 10;
+    const int atlasHeight = textTextureSize * 10;
     GLubyte *atlasData = new GLubyte[atlasWidth * atlasHeight * 4]; // RGBA
 
     int xPos = 0, yPos = 0;
     const int gapX = 2; // Define a small gap between characters
-    const int gapY = 32;
+    const int gapY = textTextureSize;
 
     for (unsigned int c = 0; c < 128; c++)
     {
@@ -722,7 +725,7 @@ void Render::initFreeType()
         if (xPos + face->glyph->bitmap.width + gapX >= atlasWidth)
         {
             xPos = 0;
-            yPos += face->glyph->bitmap.rows + gapY;
+            yPos += gapY;
         }
 
         // Copy the character bitmap into the atlasData
@@ -965,8 +968,8 @@ void Render::renderLoadingScreen()
     if (SceneManager::loadingState == 100)
         statusString = "Finished Loading";
 
-    renderText(progressString, 0.05f, 0.05f, 0.85, glm::vec3(0.6f, 0.1f, 0.1f));
-    renderText(statusString, 0.05f, 0.9f, 1, glm::vec3(1.0f, 1.0f, 1.0f));
+    renderText(progressString, 0.05f, 0.05f, 0.4f, glm::vec3(0.6f, 0.1f, 0.1f));
+    renderText(statusString, 0.05f, 0.9f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Render first frame under it
     if (SceneManager::engineState == EngineState::Loading)
@@ -1019,13 +1022,15 @@ void Render::renderTitleScreen()
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
 
+        float scale = (i == 0) ? 1.0f : 0.5f;
+
         float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
 
         float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.0f);
-        float y = 0.05f + i * 0.035f;
+        float y = 0.05f + ((i == 0) ? 0 : i + 1) * 0.05f;
 
-        renderText(titleEntries[i], x + 0.003f, y + 0.003f, 1, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
-        renderText(titleEntries[i], x, y, 1, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
+        renderText(titleEntries[i], x + 0.003f, y + 0.003f, scale, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
+        renderText(titleEntries[i], x, y, scale, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
     }
 
     glEnable(GL_DEPTH_TEST);
@@ -1070,13 +1075,15 @@ void Render::renderPauseScreen()
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
 
+        float scale = (i == 0) ? 1.0f : 0.5f;
+
         float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
 
         float x = easeOutBack(-0.1f, 0.05f, effectiveFade, 2.0f);
-        float y = 0.05f + i * 0.035f;
+        float y = 0.05f + ((i == 0) ? 0 : i + 1) * 0.05f;
 
-        renderText(pauseEntries[i], x + 0.003f, y + 0.003f, 1, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
-        renderText(pauseEntries[i], x, y, 1, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
+        renderText(pauseEntries[i], x + 0.003f, y + 0.003f, scale, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
+        renderText(pauseEntries[i], x, y, scale, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
     }
 
     glEnable(GL_DEPTH_TEST);
