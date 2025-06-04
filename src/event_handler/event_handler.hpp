@@ -11,13 +11,16 @@
 #include <chrono>
 #include <optional>
 
+#include "event_handler_defs.h"
+
 enum class EngineState;
 
 namespace EventHandler
 {
     // Global screen variables
-    inline int xPos, yPos, screenWidth, screenHeight;
+    inline int screenWidth, screenHeight;
     inline bool fullscreen = true, windowSizeChanged = false, firstFrame = true;
+    inline float screenUIScale;
     inline GLFWmonitor *monitor;
     inline int windowXpos, windowYpos, windowWidth, windowHeight;
 
@@ -37,18 +40,26 @@ namespace EventHandler
     inline glm::vec3 lightCol(1.0f, 1.0f, 1.0f);
     inline float lightInsensity = 2;
 
+    // Mouse state
+    inline double mousePosX, mousePosY;
+    inline MouseButtonState leftMouseButton, rightMouseButton;
+
     // Global input/callback Functions
     void timing(GLFWwindow *window, EngineState &state);
+    void update();
     void setCallbacks(GLFWwindow *window);
 
     void keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods);
 
     void keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods);
-
     void keyCallbackPause(GLFWwindow *window, int key, int scancode, int action, int mods);
-
     void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
-    void mouseCallbackRunning(GLFWwindow *window, double xPos, double yPos);
+
+    void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos);
+    void mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods);
+
+    void mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos);
+
     void processInputRunning(GLFWwindow *window);
 
     void errorCallback(int error, const char *description);

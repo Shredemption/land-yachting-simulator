@@ -41,28 +41,42 @@ void EventHandler::timing(GLFWwindow *window, EngineState &state)
     }
 }
 
+void EventHandler::update()
+{
+    leftMouseButton.wasDown = leftMouseButton.isDown;
+    rightMouseButton.wasDown = rightMouseButton.isDown;
+}
+
 void EventHandler::setCallbacks(GLFWwindow *window)
 {
     switch (SceneManager::engineState)
     {
     case EngineState::Title:
-        glfwSetKeyCallback(window, EventHandler::keyCallbackTitle);
-        glfwSetCursorPosCallback(window, nullptr);
+        glfwSetKeyCallback(window, keyCallbackTitle);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
+        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
 
     case EngineState::Running:
-        glfwSetKeyCallback(window, EventHandler::keyCallbackRunning);
-        glfwSetCursorPosCallback(window, EventHandler::mouseCallbackRunning);
+        glfwSetKeyCallback(window, keyCallbackRunning);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, mousePosCallbackRunning);
+        glfwSetMouseButtonCallback(window, nullptr);
         break;
 
     case EngineState::Pause:
         glfwSetKeyCallback(window, EventHandler::keyCallbackPause);
-        glfwSetCursorPosCallback(window, nullptr);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
+        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
 
     default:
         glfwSetKeyCallback(window, nullptr);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, nullptr);
+        glfwSetMouseButtonCallback(window, nullptr);
         break;
     }
 
@@ -179,7 +193,36 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
     keyCallbackGlobal(window, key, scancode, action, mods);
 }
 
-void EventHandler::mouseCallbackRunning(GLFWwindow *window, double xPos, double yPos)
+void EventHandler::mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
+{
+    mousePosX = xPos;
+    mousePosY = yPos;
+}
+
+void EventHandler::mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        leftMouseButton.wasDown = leftMouseButton.isDown;
+
+        if (action == GLFW_PRESS)
+            leftMouseButton.isDown = true;
+        else if (action == GLFW_RELEASE)
+            leftMouseButton.isDown = false;
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        rightMouseButton.wasDown = rightMouseButton.isDown;
+
+        if (action == GLFW_PRESS)
+            rightMouseButton.isDown = true;
+        else if (action == GLFW_RELEASE)
+            rightMouseButton.isDown = false;
+    }
+}
+
+void EventHandler::mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos)
 {
     // Check if window size changed last iteration
     if (firstFrame || windowSizeChanged)
@@ -307,6 +350,8 @@ void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int he
     glViewport(0, 0, width, height);
     screenWidth = width;
     screenHeight = height;
+
+    screenUIScale = std::min(width / 2560.0f, height / 1440.0f);
 
     // Track window size change for mouse movement
     windowSizeChanged = true;

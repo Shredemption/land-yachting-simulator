@@ -17,6 +17,7 @@
 #include "shader/shader_util.hpp"
 #include "texture_manager/texture_manager.hpp"
 #include "thread_manager/thread_manager.hpp"
+#include "ui_manager/ui_manager.hpp"
 
 std::string sceneMapPath = "resources/scenes.json";
 
@@ -198,12 +199,13 @@ void SceneManager::switchEngineState(const EngineState &to)
         TextureManager::loadQueuedPixelData();
         TextureManager::uploadToGPU();
     }
+
+    UIManager::load(to);
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
 {
-    exitState = engineState;
-    engineState = EngineState::Loading;
+    switchEngineState(EngineState::Loading);
 
     upcomingSceneLoad.emplace(sceneName);
 }
