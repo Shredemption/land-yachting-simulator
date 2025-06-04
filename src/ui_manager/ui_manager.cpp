@@ -30,29 +30,50 @@ void UIManager::load(EngineState state)
     buttons.clear();
 
     std::vector<ButtonData> buttonSet = {};
+    std::vector<std::string> buttonTexts = {};
+    std::vector<std::function<void()>> buttonFunctions = {};
 
     switch (state)
     {
     case EngineState::Title:
 
-        buttonSet = {
-            {"[1] Load Realistic Scene", {0.03, 0.20}, {0.27, 0.03}, 0.5, []
-             { SceneManager::switchEngineStateScene("realistic"); }},
-            {"[2] Load Cartoon Scene", {0.03, 0.25}, {0.27, 0.03}, 0.5, []
-             { SceneManager::switchEngineStateScene("cartoon"); }},
-            {"[T] Load Test Scene", {0.03, 0.30}, {0.27, 0.03}, 0.5, []
-             { SceneManager::switchEngineStateScene("test"); }},
-            {"[ESC] Quit", {0.03, 0.40}, {0.27, 0.03}, 0.5, []
-             { SceneManager::switchEngineState(EngineState::None); }}};
+        buttonTexts = {
+            "[1] Load Realistic Scene",
+            "[2] Load Cartoon Scene",
+            "[T] Load Test Scene",
+            "",
+            "[ESC] Quit"};
+
+        buttonFunctions = {
+            []
+            { SceneManager::switchEngineStateScene("realistic"); },
+            []
+            { SceneManager::switchEngineStateScene("cartoon"); },
+            []
+            { SceneManager::switchEngineStateScene("test"); },
+            []
+            { return; },
+            []
+            { SceneManager::switchEngineState(EngineState::None); }};
+
+        addButtonLine(glm::vec2(0.03, 0.20), glm::vec2(0.0, 0.05), glm::vec2(0.28, 0.03), buttonTexts,
+                      0.5, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
         break;
 
     case EngineState::Pause:
 
-        buttonSet = {
-            {"[ESC] Resume", {0.03, 0.20}, {0.27, 0.03}, 0.5, []
-             { SceneManager::switchEngineState(EngineState::Running); }},
-            {"[Q] Exit to Menu", {0.03, 0.25}, {0.27, 0.03}, 0.5, []
-             { SceneManager::switchEngineState(EngineState::Title); }}};
+        buttonTexts = {
+            "[ESC] Resume",
+            "[Q] Exit to Menu"};
+
+        buttonFunctions = {
+            []
+            { SceneManager::switchEngineState(EngineState::Running); },
+            []
+            { SceneManager::switchEngineState(EngineState::Title); }};
+
+        addButtonLine(glm::vec2(0.03, 0.20), glm::vec2(0.0, 0.05), glm::vec2(0.28, 0.03), buttonTexts,
+                      0.5, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
         break;
     }
 
@@ -70,6 +91,18 @@ void UIManager::draw()
         glm::vec3 color = button.isHovered(EventHandler::mousePosX, EventHandler::mousePosY) ? button.hoverColor : button.baseColor;
 
         Render::renderText(button.text, button.pos.x, button.pos.y, button.scale, color);
+    }
+}
+
+void UIManager::addButtonLine(glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 size, std::vector<std::string> texts,
+                              float scale, glm::vec3 baseColor, glm::vec3 hoverColor, std::vector<std::function<void()>> callbacks)
+{
+    for (int i = 0; i < texts.size(); i++)
+    {
+        glm::vec2 pos = startPos + (float(i) * stepPos);
+
+        buttons.push_back(UIButton(pos, size, texts[i], scale, baseColor, hoverColor));
+        buttons.back().setOnClick(callbacks[i]);
     }
 }
 

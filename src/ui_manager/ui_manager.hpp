@@ -11,6 +11,9 @@ namespace UIManager
 {
     void update();
     void load(EngineState state);
+
+    void addButtonLine(glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 size, std::vector<std::string> texts,
+                       float scale, glm::vec3 baseColor, glm::vec3 hoverColor, std::vector<std::function<void()>> callbacks);
     void draw();
 
     inline std::vector<UIButton> buttons;
