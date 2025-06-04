@@ -23,7 +23,7 @@ JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, tr
 JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, scale, lod, color, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
 JSONCONS_N_MEMBER_TRAITS(JSONText, 1, text, color, position, scale);
-JSONCONS_N_MEMBER_TRAITS(JSONImage, 2, file, size, position, scale, rotation, mirrored);
+JSONCONS_N_MEMBER_TRAITS(JSONImage, 2, file, size, position, alpha, scale, rotation, mirrored);
 JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, grids, skyBox, texts, images, bgColor);
 
 Scene::Scene(std::string jsonPath, std::string sceneName)
@@ -331,6 +331,7 @@ void Scene::loadImageToScene(JSONImage image)
     loadImage.rotation = image.rotation;
     loadImage.position = glm::vec2(image.position[0], image.position[1]);
     loadImage.scale = glm::vec2(image.scale[0], image.scale[1]);
+    loadImage.alpha = image.alpha;
     loadImage.width = image.size[0];
     loadImage.height = image.size[1];
 

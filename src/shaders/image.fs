@@ -2,9 +2,13 @@
 in vec2 TexCoord;
 
 uniform sampler2D uTexture;
+uniform float uAlpha;
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = texture(uTexture, TexCoord);
+    vec4 color = texture(uTexture, TexCoord);
+    color.a *= uAlpha;
+
+    FragColor = color;
 }

@@ -190,6 +190,14 @@ void SceneManager::switchEngineState(const EngineState &to)
 {
     exitState = engineState;
     engineState = to;
+
+    if (to == EngineState::Title)
+    {
+        TextureManager::queueStandaloneImage("title-figure.png");
+        TextureManager::queueStandaloneImage("title-figure-black.png");
+        TextureManager::loadQueuedPixelData();
+        TextureManager::uploadToGPU();
+    }
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)

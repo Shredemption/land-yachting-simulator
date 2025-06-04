@@ -172,6 +172,8 @@ int main()
     // Launch threads
     ThreadManager::startup();
 
+    SceneManager::switchEngineState(EngineState::Title);
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
