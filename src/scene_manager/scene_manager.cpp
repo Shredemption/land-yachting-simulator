@@ -199,8 +199,6 @@ void SceneManager::switchEngineState(const EngineState &to)
         TextureManager::loadQueuedPixelData();
         TextureManager::uploadToGPU();
     }
-
-    UIManager::load(to);
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
@@ -226,6 +224,7 @@ void SceneManager::updateFade()
     case EngineState::Running:
         menuFade = 0.0f;
         exitState = EngineState::None;
+        UIManager::load(engineState);
         updateCallbacks = true;
         break;
 
@@ -236,6 +235,7 @@ void SceneManager::updateFade()
         if (menuFade <= 0.0f)
         {
             exitState = EngineState::None;
+            UIManager::load(engineState);
             updateCallbacks = true;
         }
         break;

@@ -19,6 +19,7 @@
 #include "shader/shader_util.hpp"
 #include "texture_manager/texture_manager.hpp"
 #include "thread_manager/thread_manager.hpp"
+#include "ui_manager/ui_manager.hpp"
 #include "easing_functions.h"
 
 // Local variables
@@ -1029,23 +1030,31 @@ void Render::renderTitleScreen()
     renderImage("title-figure.png", glm::vec2(xpos, 0.5f), 835, 1024, imageAlpha);
 
     float fadeOffset = 0.3333f;
+    std::vector<glm::vec2> offsets;
+    std::vector<float> alphas;
 
-    for (int i = 0; i < titleEntries.size(); i++)
+    for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
     {
-        if (SceneManager::exitState == EngineState::Title)
+        if (SceneManager::exitState == EngineState::Pause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
 
-        float scale = (i == 0) ? 1.0f : 0.5f;
+        alphas.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
 
-        float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
+        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
+        float y = 0.0f;
 
-        float x = easeOutBack(-0.1f, 0.03f, effectiveFade, 2.0f);
-        float y = 0.05f + ((i == 0) ? 0 : i + 1) * 0.05f;
+        offsets.push_back(glm::vec2(x, y));
+    }
 
-        renderText(titleEntries[i], x + 0.003f, y + 0.003f, scale, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
-        renderText(titleEntries[i], x, y, scale, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
+    renderText("Land Yachting Simulator", 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
+    renderText("Land Yachting Simulator", 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
+
+    for (int i = 0; i < UIManager::buttons.size(); i++)
+    {
+        UIManager::buttons[i].setOffset(offsets[i + 1]);
+        UIManager::buttons[i].setAlpha(alphas[i + 1]);
     }
 
     glEnable(GL_DEPTH_TEST);
@@ -1053,12 +1062,6 @@ void Render::renderTitleScreen()
 
 void Render::renderPauseScreen()
 {
-    std::vector<std::string> pauseEntries = {
-        "Paused",
-        "",
-        "[ESC] Resume",
-        "[Q] Exit to Menu"};
-
     float maxDarkFactor = 0.8f;
 
     float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
@@ -1082,23 +1085,31 @@ void Render::renderPauseScreen()
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     float fadeOffset = 0.3333f;
+    std::vector<glm::vec2> offsets;
+    std::vector<float> alphas;
 
-    for (int i = 0; i < pauseEntries.size(); i++)
+    for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
     {
         if (SceneManager::exitState == EngineState::Pause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
 
-        float scale = (i == 0) ? 1.0f : 0.5f;
+        alphas.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
 
-        float textAlpha = easeOutCubic(0.0f, 1.0f, effectiveFade);
+        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
+        float y = 0.0f;
 
-        float x = easeOutBack(-0.1f, 0.03f, effectiveFade, 2.0f);
-        float y = 0.05f + ((i == 0) ? 0 : i + 1) * 0.05f;
+        offsets.push_back(glm::vec2(x, y));
+    }
 
-        renderText(pauseEntries[i], x + 0.003f, y + 0.003f, scale, glm::vec3(0.0f, 0.0f, 0.0f), textAlpha);
-        renderText(pauseEntries[i], x, y, scale, glm::vec3(1.0f, 1.0f, 1.0f), textAlpha);
+    renderText("Paused", 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
+    renderText("Paused", 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
+
+    for (int i = 0; i < UIManager::buttons.size(); i++)
+    {
+        UIManager::buttons[i].setOffset(offsets[i + 1]);
+        UIManager::buttons[i].setAlpha(alphas[i + 1]);
     }
 
     glEnable(GL_DEPTH_TEST);

@@ -90,7 +90,10 @@ void UIManager::draw()
     {
         glm::vec3 color = button.isHovered(EventHandler::mousePosX, EventHandler::mousePosY) ? button.hoverColor : button.baseColor;
 
-        Render::renderText(button.text, button.pos.x, button.pos.y, button.scale, color);
+        glDisable(GL_DEPTH_TEST);
+        Render::renderText(button.text, button.pos.x + button.offset.x + 0.003f, button.pos.y + button.offset.y + 0.003f, button.scale, glm::vec3(0, 0, 0), button.alpha);
+        Render::renderText(button.text, button.pos.x + button.offset.x, button.pos.y + button.offset.y, button.scale, color, button.alpha);
+        glEnable(GL_DEPTH_TEST);
     }
 }
 
@@ -128,3 +131,13 @@ void UIButton::setOnClick(std::function<void()> callback)
 {
     onClick = callback;
 };
+
+void UIButton::setOffset(glm::vec2 offset)
+{
+    this->offset = offset;
+}
+
+void UIButton::setAlpha(float alpha)
+{
+    this->alpha = alpha;
+}
