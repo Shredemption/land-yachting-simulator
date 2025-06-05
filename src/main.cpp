@@ -173,6 +173,11 @@ int main()
 
     SceneManager::switchEngineState(EngineState::Title);
 
+    UIManager::load(SceneManager::engineState);
+
+    glfwPollEvents();
+    glfwSwapBuffers(window);
+
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {

@@ -27,7 +27,7 @@ namespace SceneManager
 
     // Global loading variables
     inline std::atomic<bool> updateCallbacks = true;
-    inline int loadingState  = 0;
+    inline int loadingState = 0;
     inline std::pair<std::atomic<int>, std::atomic<int>> loadingProgress = {0, 0};
 
     // Load scene
@@ -37,7 +37,7 @@ namespace SceneManager
     // Transition variables
     inline EngineState engineState = EngineState::None;
     inline EngineState exitState = EngineState::None;
-    inline float menuFade = -2.0f;
+    inline float menuFade = -5.0f;
     inline std::optional<std::string> upcomingSceneLoad;
 
     void updateFade();

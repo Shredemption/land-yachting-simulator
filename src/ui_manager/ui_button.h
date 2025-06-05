@@ -28,14 +28,18 @@ public:
     bool isHovered(const float mouseX, const float mouseY);
     void checkClicked(const float mouseX, const float mouseY, const bool mousePressed);
     void setOnClick(std::function<void()> callback);
+    void setOffset(glm::vec2 offset);
+    void setAlpha(float alpha);
 
     glm::vec2 pos;
     glm::vec2 size;
+    glm::vec2 offset = {100.0f, 100.0f};
 
     std::string text;
-    float scale;
+    float scale = 1.0f;
     glm::vec3 baseColor;
     glm::vec3 hoverColor;
+    float alpha = 1.0f;
 
     std::function<void()> onClick;
 };
