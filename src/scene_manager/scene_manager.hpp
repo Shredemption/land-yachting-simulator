@@ -46,6 +46,8 @@ namespace SceneManager
 
     // Update and render functions
     void checkLoading(GLFWwindow *window);
+
+    void runOneFrame();
 };
 
 #endif

@@ -69,35 +69,9 @@ void SceneManager::checkLoading(GLFWwindow *window)
 
         // Reset the camera and physics
         Camera::reset();
-        PhysicsUtil::setup(*currentScene);
+        PhysicsUtil::setup();
 
-        // Run one physics tick
-        for (ModelData &model : currentScene.get()->structModels)
-        {
-            if (model.physics.has_value())
-            {
-                model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
-                model.physics->getWriteBuffer()->savePrevState();
-                model.physics->getWriteBuffer()->move(model.controlled);
-                model.physics->swapBuffers();
-            }
-        }
-
-        // Update all bones once
-        for (ModelData &model : currentScene.get()->structModels)
-        {
-            if (model.animated)
-            {
-                auto &writeBones = model.model->getWriteBuffer();
-                Animation::updateYachtBones(model, 1.0f, writeBones);
-            }
-        }
-
-        ModelUtil::swapBoneBuffers();
-
-        // Render one frame to buffer
-        Render::prepareRender(Render::renderBuffers[0]);
-        Render::executeRender(Render::renderBuffers[0], false);
+        runOneFrame();
 
         // Reset future
         pendingScene = std::future<std::shared_ptr<Scene>>();
@@ -114,22 +88,35 @@ void SceneManager::checkLoading(GLFWwindow *window)
     }
 }
 
-inline const char *to_string(BufferState s)
+void SceneManager::runOneFrame()
 {
-    switch (s)
+    // Run one physics tick
+    for (ModelData &model : currentScene.get()->structModels)
     {
-    case BufferState::Free:
-        return "Free";
-    case BufferState::Prepping:
-        return "Prepping";
-    case BufferState::Ready:
-        return "Ready";
-    case BufferState::Rendering:
-        return "Rendering";
-    // … handle any other states you added
-    default:
-        return "Unknown";
+        if (model.physics.has_value())
+        {
+            model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
+            model.physics->getWriteBuffer()->savePrevState();
+            model.physics->getWriteBuffer()->move(model.controlled);
+            model.physics->swapBuffers();
+        }
     }
+
+    // Update all bones once
+    for (ModelData &model : currentScene.get()->structModels)
+    {
+        if (model.animated)
+        {
+            auto &writeBones = model.model->getWriteBuffer();
+            Animation::updateYachtBones(model, 1.0f, writeBones);
+        }
+    }
+
+    ModelUtil::swapBoneBuffers();
+
+    // Render one frame to buffer
+    Render::prepareRender(Render::renderBuffers[0]);
+    Render::executeRender(Render::renderBuffers[0], false);
 }
 
 void SceneManager::unload()

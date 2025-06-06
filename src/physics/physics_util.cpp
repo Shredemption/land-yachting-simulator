@@ -7,6 +7,7 @@
 #include "model/model.hpp"
 #include "scene/scene.hpp"
 #include "scene/scene_defs.h"
+#include "scene_manager/scene_manager.hpp"
 #include "thread_manager/thread_manager.hpp"
 
 void PhysicsUtil::update()
@@ -39,10 +40,10 @@ void PhysicsUtil::update()
 }
 
 
-void PhysicsUtil::setup(Scene &scene)
+void PhysicsUtil::setup()
 {
     // Setup all animated models
-    for (ModelData &model : scene.structModels)
+    for (ModelData &model : SceneManager::currentScene.get()->structModels)
     {
         if (model.animated)
         {
@@ -59,12 +60,13 @@ void PhysicsUtil::setup(Scene &scene)
 
 
 
-void PhysicsUtil::switchControlledYacht(Scene &scene)
+void PhysicsUtil::switchControlledYacht()
 {
     std::string current;
+    Scene *scene = SceneManager::currentScene.get();
 
     // Find current controlled yacht, and stop controlling it
-    for (auto &model : scene.structModels)
+    for (auto &model : scene->structModels)
     {
         if (model.controlled)
         {
@@ -74,13 +76,13 @@ void PhysicsUtil::switchControlledYacht(Scene &scene)
     }
 
     // Find id of current yacht in loaded yachts, increment by 1, overflow
-    int currentId = find(scene.loadedYachts.begin(), scene.loadedYachts.end(), current) - scene.loadedYachts.begin();
-    int newId = (currentId + 1) % scene.loadedYachts.size();
+    int currentId = find(scene->loadedYachts.begin(), scene->loadedYachts.end(), current) - scene->loadedYachts.begin();
+    int newId = (currentId + 1) % scene->loadedYachts.size();
 
     // Control new yacht
-    for (auto &model : scene.structModels)
+    for (auto &model : scene->structModels)
     {
-        if (model.model->name == scene.loadedYachts[newId])
+        if (model.model->name == scene->loadedYachts[newId])
         {
             model.controlled = true;
         }
