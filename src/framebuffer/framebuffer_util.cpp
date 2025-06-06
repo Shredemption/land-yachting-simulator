@@ -14,7 +14,8 @@ void FramebufferUtil::bindFrameBuffer(Framebuffer FBO)
     glBindFramebuffer(GL_FRAMEBUFFER, FBO.frameBuffer);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glViewport(0, 0, FBO.width, FBO.height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void FramebufferUtil::unbindCurrentFrameBuffer()
