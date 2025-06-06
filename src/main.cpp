@@ -151,9 +151,6 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    // Wireframe Mode
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     // Setup render class
     Render::setup();
 

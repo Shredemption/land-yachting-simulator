@@ -2,11 +2,15 @@
 #define UI_MANAGER_H
 
 #include <vector>
+#include <variant>
 
 #include <ui_manager/ui_button.h>
+#include <ui_manager/ui_toggle.h>
 
 enum class EngineState;
 enum class SettingsPage;
+
+using UIElement = std::variant<UIButton*, UIToggle*>;
 
 namespace UIManager
 {
@@ -14,13 +18,11 @@ namespace UIManager
     void load(const EngineState &state);
     void load(const SettingsPage &page);
 
-    void addButtonLine(glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 size, std::vector<std::string> texts,
-                       float scale, glm::vec3 baseColor, glm::vec3 hoverColor, std::vector<std::function<void()>> callbacks);
     void draw();
 
-    int optionCount();
-
+    inline std::vector<UIElement> uiElements;
     inline std::vector<UIButton> buttons;
+    inline std::vector<UIToggle> toggles;
 
     inline int selected = -1;
 

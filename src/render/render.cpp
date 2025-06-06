@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "camera/camera.hpp"
+#include "debug/debug.hpp"
 #include "event_handler/event_handler.hpp"
 #include "framebuffer/framebuffer_util.hpp"
 #include "model/model.hpp"
@@ -223,6 +224,9 @@ void renderGrid(const RenderCommand &cmd)
 
 void renderObjects(std::vector<RenderCommand> &renderBuffer)
 {
+    glPolygonMode(GL_FRONT_AND_BACK, Debug::wireMode ? GL_LINE : GL_FILL);
+    glDisable(GL_CULL_FACE);
+
     for (const RenderCommand &cmd : renderBuffer)
     {
         shader = ShaderUtil::load(cmd.shader);
@@ -246,6 +250,9 @@ void renderObjects(std::vector<RenderCommand> &renderBuffer)
             break;
         }
     }
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_CULL_FACE);
 }
 
 void renderSceneSkyBox()
@@ -1091,7 +1098,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
     std::vector<glm::vec2> offsets;
     std::vector<float> alphas;
 
-    for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
+    for (int i = 0; i < 1 + UIManager::uiElements.size(); i++)
     {
         if (SceneManager::exitState == EngineState::esPause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
@@ -1141,10 +1148,12 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
     renderText(header, 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
     renderText(header, 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
 
-    for (int i = 0; i < UIManager::buttons.size(); i++)
+    for (int i = 0; i < UIManager::uiElements.size(); i++)
     {
-        UIManager::buttons[i].setOffset(offsets[i + 1]);
-        UIManager::buttons[i].setAlpha(alphas[i + 1]);
+        std::visit([&](auto *element)
+                   { element->setOffset(offsets[i + 1]);
+                    element->setAlpha(alphas[i+1]); },
+                   UIManager::uiElements[i]);
     }
 
     glEnable(GL_DEPTH_TEST);
