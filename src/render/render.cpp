@@ -224,8 +224,17 @@ void renderGrid(const RenderCommand &cmd)
 
 void renderObjects(std::vector<RenderCommand> &renderBuffer)
 {
-    glPolygonMode(GL_FRONT_AND_BACK, Debug::wireMode ? GL_LINE : GL_FILL);
-    glDisable(GL_CULL_FACE);
+
+    if (Debug::wireMode)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable(GL_CULL_FACE);
+    }
+    else
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable(GL_CULL_FACE);
+    }
 
     for (const RenderCommand &cmd : renderBuffer)
     {
