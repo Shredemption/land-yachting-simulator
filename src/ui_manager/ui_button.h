@@ -21,8 +21,8 @@ struct ButtonData
 class UIButton
 {
 public:
-    UIButton(const glm::vec2 position, const glm::vec2 size, const std::string &text, const float scale = 1.0f,
-             const glm::vec3 baseColor = glm::vec3(1.0f, 1.0f, 1.0f), const glm::vec3 hoverColor = glm::vec3(0.6f, 0.6f, 0.6f))
+    UIButton(const glm::vec2 position, const glm::vec2 size, const std::string &text, const float scale,
+             const glm::vec3 baseColor, const glm::vec3 hoverColor)
         : pos(position), size(size), onClick(nullptr), text(text), scale(scale), baseColor(baseColor), hoverColor(hoverColor) {};
 
     bool isHovered(const float mouseX, const float mouseY);
@@ -36,7 +36,7 @@ public:
     glm::vec2 offset = {100.0f, 100.0f};
 
     std::string text;
-    float scale = 1.0f;
+    float scale;
     glm::vec3 baseColor;
     glm::vec3 hoverColor;
     float alpha = 1.0f;

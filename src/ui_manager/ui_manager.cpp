@@ -33,6 +33,13 @@ void UIManager::load(EngineState state)
     std::vector<std::string> buttonTexts = {};
     std::vector<std::function<void()>> buttonFunctions = {};
 
+    float scale = 0.5;
+
+    glm::vec2 startPos(0.03, 0.20);
+    glm::vec2 stepPos(0.0, 0.05);
+
+    glm::vec2 size(0.3, scale / 10);
+
     switch (state)
     {
     case EngineState::Title:
@@ -56,8 +63,7 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineState(EngineState::None); }};
 
-        addButtonLine(glm::vec2(0.03, 0.20), glm::vec2(0.0, 0.05), glm::vec2(0.28, 0.03), buttonTexts,
-                      0.5, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
+        addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
         break;
 
     case EngineState::Pause:
@@ -72,14 +78,13 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineState(EngineState::Title); }};
 
-        addButtonLine(glm::vec2(0.03, 0.20), glm::vec2(0.0, 0.05), glm::vec2(0.28, 0.03), buttonTexts,
-                      0.5, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
+        addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
         break;
     }
 
     for (auto button : buttonSet)
     {
-        buttons.push_back(UIButton(button.pos, button.size, button.text, button.scale));
+        buttons.push_back(UIButton(button.pos, button.size, button.text, button.scale, defaultBaseColor, defaultHoverColor));
         buttons.back().setOnClick(button.callback);
     }
 }
@@ -114,8 +119,8 @@ bool UIButton::isHovered(const float mouseX, const float mouseY)
     float xmin = pos.x * EventHandler::screenUIScale * 2560.0f;
     float xmax = (pos.x + size.x) * EventHandler::screenUIScale * 2560.0f;
 
-    float ymin = pos.y * EventHandler::screenUIScale * 1440.0f;
-    float ymax = (pos.y + size.y) * EventHandler::screenUIScale * 1440.0f;
+    float ymin = (pos.y - 0.01f) * EventHandler::screenUIScale * 1440.0f;
+    float ymax = (pos.y - 0.01f + size.y) * EventHandler::screenUIScale * 1440.0f;
 
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
