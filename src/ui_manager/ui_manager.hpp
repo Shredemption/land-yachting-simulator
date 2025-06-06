@@ -17,6 +17,9 @@ namespace UIManager
     void draw();
 
     inline std::vector<UIButton> buttons;
+
+    inline glm::vec3 defaultBaseColor = {1.0f, 1.0f, 1.0f};
+    inline glm::vec3 defaultHoverColor = {0.4f, 0.4f, 0.4f};
 }
 
 #endif
