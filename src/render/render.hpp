@@ -51,6 +51,7 @@ namespace Render
     void resize(int width, int height);
     void savePauseBackground();
 
+    void renderBlankScreen();
     void renderLoadingScreen();
     void renderTitleScreen();
     void renderPauseScreen();

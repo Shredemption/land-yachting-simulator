@@ -923,6 +923,12 @@ void Render::savePauseBackground()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Render::renderBlankScreen()
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 void Render::renderLoadingScreen()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
