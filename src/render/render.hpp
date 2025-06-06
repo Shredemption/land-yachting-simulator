@@ -19,6 +19,7 @@
 
 #include "render/renderbuffer.h"
 #include "render/render_defs.h"
+#include "scene_manager/scene_manager_defs.h"
 
 namespace Render
 {
@@ -54,8 +55,7 @@ namespace Render
     void renderBlankScreen();
     void renderLoadingScreen();
     void renderTitleScreen();
-    void renderPauseScreen();
-    void renderSettingsScreen();
+    void renderMenuScreen(const EngineState &state);
 
     void setup();
     void initQuad();

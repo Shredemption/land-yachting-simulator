@@ -216,12 +216,13 @@ int main()
             break;
 
         case EngineState::esPause:
-            Render::renderPauseScreen();
+            Render::renderMenuScreen(checkState);
             UIManager::update();
             break;
 
         case EngineState::esSettings:
-            Render::renderSettingsScreen();
+        case EngineState::esTitleSettings:
+            Render::renderMenuScreen(checkState);
             UIManager::update();
             break;
 

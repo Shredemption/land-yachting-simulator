@@ -17,6 +17,7 @@ enum class EngineState
     esTitle,
     esPause,
     esSettings,
+    esTitleSettings,
     esRunning
 };
 

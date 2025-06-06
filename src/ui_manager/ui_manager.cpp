@@ -49,6 +49,7 @@ void UIManager::load(EngineState state)
             "Load Realistic Scene",
             "Load Cartoon Scene",
             "Load Test Scene",
+            "Settings",
             "Quit"};
 
         buttonFunctions = {
@@ -59,6 +60,8 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineStateScene("test"); },
             []
+            { SceneManager::switchEngineState(EngineState::esTitleSettings); },
+            []
             { SceneManager::switchEngineState(EngineState::esNone); }};
 
         addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
@@ -68,11 +71,14 @@ void UIManager::load(EngineState state)
 
         buttonTexts = {
             "Resume",
+            "Settings",
             "Exit to Menu"};
 
         buttonFunctions = {
             []
             { SceneManager::switchEngineState(EngineState::esRunning); },
+            []
+            { SceneManager::switchEngineState(EngineState::esSettings); },
             []
             { SceneManager::switchEngineState(EngineState::esTitle); }};
 
