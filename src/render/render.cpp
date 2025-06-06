@@ -979,8 +979,8 @@ void Render::renderLoadingScreen()
     if (SceneManager::loadingState == 100)
         statusString = "Finished Loading";
 
-    renderText(progressString, 0.05f, 0.05f, 0.4f, glm::vec3(0.6f, 0.1f, 0.1f));
-    renderText(statusString, 0.05f, 0.9f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
+    renderText(statusString, 0.05f, 0.05f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+    renderText(progressString, 0.05f, 0.20f, 0.5f, glm::vec3(0.6f, 0.1f, 0.1f));
 
     // Render first frame under it
     if (SceneManager::engineState == EngineState::esLoading)
