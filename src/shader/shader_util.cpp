@@ -59,7 +59,7 @@ shaderID ShaderUtil::ShaderFromName(const std::string shaderName)
         {"toon", shaderID::shToon},
         {"toon-terrain", shaderID::shToonTerrain},
         {"toon-water", shaderID::shToonWater},
-        {"pause", shaderID::shPause},
+        {"darken-blur", shaderID::shDarkenBlur},
         {"post", shaderID::shPost}};
 
     auto it = typeMap.find(shaderName);
@@ -79,7 +79,7 @@ std::string ShaderUtil::NameFromShader(const shaderID shader)
         {shaderID::shToon, "toon"},
         {shaderID::shToonTerrain, "toon-terrain"},
         {shaderID::shToonWater, "toon-water"},
-        {shaderID::shPause, "pause"},
+        {shaderID::shDarkenBlur, "darken-blur"},
         {shaderID::shPost, "post"}};
 
     auto it = typeMap.find(shader);
