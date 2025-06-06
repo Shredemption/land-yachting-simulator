@@ -24,7 +24,7 @@ std::string sceneMapPath = "resources/scenes.json";
 // Load scene in background, show loading screen
 void SceneManager::loadAsync(const std::string &sceneName)
 {
-    switchEngineState(EngineState::Loading);
+    switchEngineState(EngineState::esLoading);
 
     loadingState++;
 
@@ -110,7 +110,7 @@ void SceneManager::checkLoading(GLFWwindow *window)
         ThreadManager::sceneReadyForRender.store(true, std::memory_order_release);
         ThreadManager::startRenderThread();
 
-        switchEngineState(EngineState::Running);
+        switchEngineState(EngineState::esRunning);
     }
 }
 
@@ -192,7 +192,7 @@ void SceneManager::switchEngineState(const EngineState &to)
     exitState = engineState;
     engineState = to;
 
-    if (to == EngineState::Title)
+    if (to == EngineState::esTitle)
     {
         TextureManager::queueStandaloneImage("title-figure.png");
         TextureManager::queueStandaloneImage("title-figure-black.png");
@@ -203,7 +203,7 @@ void SceneManager::switchEngineState(const EngineState &to)
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
 {
-    switchEngineState(EngineState::Loading);
+    switchEngineState(EngineState::esLoading);
 
     upcomingSceneLoad.emplace(sceneName);
 }
@@ -216,14 +216,14 @@ void SceneManager::updateFade()
     switch (exitState)
     {
     // Fade up if not exiting
-    case EngineState::None:
+    case EngineState::esNone:
         menuFade += fadeDelta;
         break;
 
     // Instant fade on exit Running
-    case EngineState::Running:
+    case EngineState::esRunning:
         menuFade = 0.0f;
-        exitState = EngineState::None;
+        exitState = EngineState::esNone;
         UIManager::load(engineState);
         updateCallbacks = true;
         break;
@@ -234,7 +234,7 @@ void SceneManager::updateFade()
 
         if (menuFade <= 0.0f)
         {
-            exitState = EngineState::None;
+            exitState = EngineState::esNone;
             UIManager::load(engineState);
             updateCallbacks = true;
         }

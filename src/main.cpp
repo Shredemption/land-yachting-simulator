@@ -171,7 +171,7 @@ int main()
     // Launch threads
     ThreadManager::startup();
 
-    SceneManager::switchEngineState(EngineState::Title);
+    SceneManager::switchEngineState(EngineState::esTitle);
 
     UIManager::load(SceneManager::engineState);
 
@@ -181,11 +181,11 @@ int main()
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
-        EngineState checkState = (SceneManager::exitState == EngineState::None) ? SceneManager::engineState : SceneManager::exitState;
+        EngineState checkState = (SceneManager::exitState == EngineState::esNone) ? SceneManager::engineState : SceneManager::exitState;
 
         EventHandler::timing(window, checkState);
 
-        if (SceneManager::exitState == EngineState::None && SceneManager::updateCallbacks)
+        if (SceneManager::exitState == EngineState::esNone && SceneManager::updateCallbacks)
             EventHandler::setCallbacks(window);
 
         // If window inactive
@@ -200,27 +200,32 @@ int main()
         // If fading, check fade state
         switch (checkState)
         {
-        case EngineState::None:
+        case EngineState::esNone:
             Render::renderBlankScreen();
             glfwSetWindowShouldClose(window, GLFW_TRUE);
             break;
 
-        case EngineState::Loading:
+        case EngineState::esLoading:
             SceneManager::checkLoading(window);
             Render::renderLoadingScreen();
             break;
 
-        case EngineState::Title:
+        case EngineState::esTitle:
             Render::renderTitleScreen();
             UIManager::update();
             break;
 
-        case EngineState::Pause:
+        case EngineState::esPause:
             Render::renderPauseScreen();
             UIManager::update();
             break;
 
-        case EngineState::Running:
+        case EngineState::esSettings:
+            Render::renderSettingsScreen();
+            UIManager::update();
+            break;
+
+        case EngineState::esRunning:
             EventHandler::processInputRunning(window);
             PhysicsUtil::update();
             Render::render();

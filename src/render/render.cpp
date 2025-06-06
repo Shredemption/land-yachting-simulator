@@ -506,7 +506,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
 
             cmd.lod = 0;
             if (distanceFromCamera > lodDistance) cmd.lod = 1;
-            if (SceneManager::engineState == EngineState::Title) cmd.lod = 0;
+            if (SceneManager::engineState == EngineState::esTitle) cmd.lod = 0;
 
             if (cmd.lod >= model.model->lodMeshes.size())
                 cmd.lod = static_cast<int>(std::round(model.model->lodMeshes.size())) - 1;
@@ -630,7 +630,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     renderObjects(renderBuffer.commandBuffer);
 
     // Render debug menu
-    if (SceneManager::engineState == EngineState::Running)
+    if (SceneManager::engineState == EngineState::esRunning)
     {
         // Set debug data
         std::string debugText;
@@ -983,7 +983,7 @@ void Render::renderLoadingScreen()
     renderText(statusString, 0.05f, 0.9f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Render first frame under it
-    if (SceneManager::engineState == EngineState::Loading)
+    if (SceneManager::engineState == EngineState::esLoading)
         effectiveFade = 1.0f;
     else
         effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
@@ -1028,7 +1028,7 @@ void Render::renderTitleScreen()
     float imageAlpha = easeInOutQuad(0.0f, 1.0f, effectiveFade);
 
     float xpos;
-    if (SceneManager::exitState == EngineState::Title)
+    if (SceneManager::exitState == EngineState::esTitle)
         xpos = easeOutCubic(1.33f, 0.67f, effectiveFade);
     else
         xpos = easeOutCubic(0.0f, 0.67f, effectiveFade);
@@ -1042,7 +1042,7 @@ void Render::renderTitleScreen()
 
     for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
     {
-        if (SceneManager::exitState == EngineState::Pause)
+        if (SceneManager::exitState == EngineState::esPause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
@@ -1098,7 +1098,7 @@ void Render::renderPauseScreen()
 
     for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
     {
-        if (SceneManager::exitState == EngineState::Pause)
+        if (SceneManager::exitState == EngineState::esPause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
@@ -1113,6 +1113,62 @@ void Render::renderPauseScreen()
 
     renderText("Paused", 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
     renderText("Paused", 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
+
+    for (int i = 0; i < UIManager::buttons.size(); i++)
+    {
+        UIManager::buttons[i].setOffset(offsets[i + 1]);
+        UIManager::buttons[i].setAlpha(alphas[i + 1]);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+}
+
+void Render::renderSettingsScreen()
+{
+    float maxDarkFactor = 0.8f;
+
+    float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+
+    float darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, pauseTexture);
+
+    shader = ShaderUtil::load(shaderID::shDarkenBlur);
+    shader->setInt("screenTexture", 0);
+    shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
+    shader->setFloat("darkenAmount", darkfactor);
+    shader->setFloat("darkenPosition", 0.4);
+
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    float fadeOffset = 0.3333f;
+    std::vector<glm::vec2> offsets;
+    std::vector<float> alphas;
+
+    for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
+    {
+        if (SceneManager::exitState == EngineState::esPause)
+            effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
+        else
+            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
+
+        alphas.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
+
+        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
+        float y = 0.0f;
+
+        offsets.push_back(glm::vec2(x, y));
+    }
+
+    renderText("Settings", 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
+    renderText("Settings", 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
 
     for (int i = 0; i < UIManager::buttons.size(); i++)
     {

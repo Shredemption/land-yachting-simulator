@@ -53,6 +53,7 @@ namespace EventHandler
 
     void keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods);
     void keyCallbackPause(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void keyCallbackSettings(GLFWwindow *window, int key, int scancode, int action, int mods);
     void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
 
     void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos);
