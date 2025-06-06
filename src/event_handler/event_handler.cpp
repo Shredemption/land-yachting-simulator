@@ -78,6 +78,7 @@ void EventHandler::setCallbacks(GLFWwindow *window)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
+        break;
 
     default:
         glfwSetKeyCallback(window, nullptr);
