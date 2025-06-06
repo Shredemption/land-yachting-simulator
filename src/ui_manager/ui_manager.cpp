@@ -177,6 +177,18 @@ void UIManager::load(const SettingsPage &page)
         };
 
         break;
+
+    case SettingsPage::spDebug:
+        buttonTexts = {
+            "Back",
+        };
+
+        buttonFunctions = {
+            []
+            { SceneManager::switchSettingsPage(SettingsPage::spStart); },
+        };
+
+        break;
     }
 
     addButtonLine(startPos, stepPos, size, buttonTexts, scale, defaultBaseColor, defaultHoverColor, buttonFunctions);
