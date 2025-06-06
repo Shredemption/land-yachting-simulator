@@ -202,6 +202,13 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
                 UIManager::buttons[UIManager::selected].onClick();
         }
 
+    if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
+    {
+        if (SceneManager::engineState == EngineState::esSettings || SceneManager::engineState == EngineState::esTitleSettings)
+            if (SceneManager::settingsPage == SettingsPage::spStart)
+                SceneManager::switchSettingsPage(SettingsPage::spDebug);
+    }
+
     keyCallbackGlobal(window, key, scancode, action, mods);
 }
 
