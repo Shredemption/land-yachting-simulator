@@ -1113,6 +1113,25 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
         offsets.push_back(glm::vec2(x, y));
     }
 
+    float fadeOffsetSide = 0.1;
+    std::vector<glm::vec2> offsetsSide;
+    std::vector<float> alphasSide;
+
+    for (int i = 0; i < UIManager::uiElementsSide.size(); i++)
+    {
+        if (SceneManager::exitState == EngineState::esPause)
+            effectiveFade = std::clamp(SceneManager::sideFade, 0.0f, 1.0f);
+        else
+            effectiveFade = std::clamp(SceneManager::sideFade - fadeOffsetSide * i, 0.0f, 1.0f);
+
+        alphasSide.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
+
+        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
+        float y = 0.0f;
+
+        offsetsSide.push_back(glm::vec2(x, y));
+    }
+
     std::string header;
 
     switch (state)
@@ -1123,25 +1142,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
     case EngineState::esSettings:
     case EngineState::esTitleSettings:
-        switch (page)
-        {
-        case SettingsPage::spStart:
-            header = "Settings";
-            break;
-
-        case SettingsPage::spGraphics:
-            header = "Settings - Graphics";
-            break;
-
-        case SettingsPage::spPhysics:
-            header = "Settings - Physics";
-            break;
-
-        case SettingsPage::spDebug:
-            header = "Settings - Debug";
-            break;
-        }
-
+        header = "Settings";
         break;
     }
 
@@ -1154,6 +1155,14 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
                    { element->setOffset(offsets[i + 1]);
                     element->setAlpha(alphas[i+1]); },
                    UIManager::uiElements[i]);
+    }
+
+    for (int i = 0; i < UIManager::uiElementsSide.size(); i++)
+    {
+        std::visit([&](auto *element)
+                   { element->setOffset(offsetsSide[i]);
+                    element->setAlpha(alphasSide[i]); },
+                   UIManager::uiElementsSide[i]);
     }
 
     glEnable(GL_DEPTH_TEST);

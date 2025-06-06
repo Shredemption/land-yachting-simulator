@@ -40,6 +40,7 @@ namespace SceneManager
     inline SettingsPage settingsPage = SettingsPage::spStart;
     inline SettingsPage exitPage = SettingsPage::spNone;
     inline float menuFade = -5.0f;
+    inline float sideFade = 0.0f;
     inline std::optional<std::string> upcomingSceneLoad;
 
     void updateFade();

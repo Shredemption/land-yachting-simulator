@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "camera/camera.hpp"
 #include "debug/debug.hpp"
@@ -32,11 +33,21 @@ void UIManager::update()
     {
         toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
     }
+
+    for (auto button : buttonsSide)
+    {
+        button.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+    }
+    for (auto toggle : togglesSide)
+    {
+        toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+    }
 }
 
 void UIManager::load(const EngineState &state)
 {
     selected = -1;
+
     buttons.clear();
     toggles.clear();
     uiElements.clear();
@@ -46,15 +57,18 @@ void UIManager::load(const EngineState &state)
     float scale = 0.5;
     glm::vec3 baseColor = defaultBaseColor;
     glm::vec3 hoverColor = defaultHoverColor;
+    glm::vec3 activeColor = defaultActiveColor;
 
     glm::vec2 startPos(0.03, 0.20);
     glm::vec2 stepPos(0.0, 0.05);
 
-    glm::vec2 size(0.3, scale / 10);
+    glm::vec2 size(0.2, scale / 10);
 
     switch (state)
     {
     case EngineState::esTitle:
+
+        size = {0.3, scale / 10};
 
         elements = {
             {
@@ -138,7 +152,60 @@ void UIManager::load(const EngineState &state)
 
     case EngineState::esSettings:
     case EngineState::esTitleSettings:
-        load(SceneManager::settingsPage);
+
+        elements = {
+            {
+                UIElementType::uiButton,
+                "Graphics",
+                []
+                {
+                    SceneManager::switchSettingsPage(SettingsPage::spGraphics);
+                    inputState = UIInputState::uiSide;
+                },
+                nullptr,
+                SettingsPage::spGraphics,
+            },
+            {
+                UIElementType::uiButton,
+                "Physics",
+                []
+                {
+                    SceneManager::switchSettingsPage(SettingsPage::spPhysics);
+                    inputState = UIInputState::uiSide;
+                },
+                nullptr,
+                SettingsPage::spPhysics,
+            },
+            {
+                UIElementType::uiButton,
+                "Debug",
+                []
+                {
+                    SceneManager::switchSettingsPage(SettingsPage::spDebug);
+                    inputState = UIInputState::uiSide;
+                },
+                nullptr,
+                SettingsPage::spDebug,
+            },
+            {
+                UIElementType::uiButton,
+                "Back",
+                []
+                {
+                    if (SceneManager::engineState == EngineState::esSettings)
+                    {
+                        SceneManager::switchEngineState(EngineState::esPause);
+                    }
+                    else
+                    {
+                        SceneManager::switchEngineState(EngineState::esTitle);
+                    }
+
+                    SceneManager::switchSettingsPage(SettingsPage::spStart);
+                },
+                nullptr,
+            },
+        };
         break;
     }
 
@@ -149,12 +216,14 @@ void UIManager::load(const EngineState &state)
         switch (element.type)
         {
         case UIElementType::uiButton:
-            buttons.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor);
+            buttons.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor, activeColor);
             buttons.back().setOnClick(element.callback);
+            buttons.back().linkedPage = element.linkedPage;
+
             break;
 
         case UIElementType::uiToggle:
-            toggles.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor);
+            toggles.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor, activeColor);
             toggles.back().toggleVariable = element.toggleVariable;
             break;
         }
@@ -176,140 +245,93 @@ void UIManager::load(const EngineState &state)
     }
 }
 
-void UIManager::load(const SettingsPage &page)
+void UIManager::loadSide(const SettingsPage &page)
 {
-    selected = -1;
-    buttons.clear();
-    toggles.clear();
-    uiElements.clear();
+    buttonsSide.clear();
+    togglesSide.clear();
+    uiElementsSide.clear();
 
-    std::vector<UIElementData> elements = {};
+    std::vector<UIElementData> elementsSide = {};
 
-    float scale = 0.5;
-    glm::vec3 baseColor = defaultBaseColor;
-    glm::vec3 hoverColor = defaultHoverColor;
+    float scaleSide = 0.5;
+    glm::vec3 baseColorSide = defaultBaseColor;
+    glm::vec3 hoverColorSide = defaultHoverColor;
+    glm::vec3 activeColorSide = defaultActiveColor;
 
-    glm::vec2 startPos(0.03, 0.20);
-    glm::vec2 stepPos(0.0, 0.05);
+    glm::vec2 startPosSide(0.25, 0.20);
+    glm::vec2 stepPosSide(0.0, 0.05);
 
-    glm::vec2 size(0.3, scale / 10);
+    glm::vec2 sizeSide(0.3, scaleSide / 10);
 
     switch (page)
     {
     case SettingsPage::spStart:
 
-        elements = {
-            {
-                UIElementType::uiButton,
-                "Graphics",
-                []
-                { SceneManager::switchSettingsPage(SettingsPage::spGraphics); },
-                nullptr,
-            },
-            {
-                UIElementType::uiButton,
-                "Physics",
-                []
-                { SceneManager::switchSettingsPage(SettingsPage::spPhysics); },
-                nullptr,
-            },
-            {
-                UIElementType::uiButton,
-                "Back",
-                []
-                { if (SceneManager::engineState == EngineState::esSettings)
-                    SceneManager::switchEngineState(EngineState::esPause);
-                else
-                    SceneManager::switchEngineState(EngineState::esTitle); },
-                nullptr,
-            },
-        };
+        elementsSide = {};
 
         break;
 
     case SettingsPage::spGraphics:
 
-        elements = {
-            {
-                UIElementType::uiButton,
-                "Back",
-                []
-                { SceneManager::switchSettingsPage(SettingsPage::spStart); },
-                nullptr,
-            },
-        };
+        elementsSide = {};
 
         break;
 
     case SettingsPage::spPhysics:
 
-        elements = {
-            {
-                UIElementType::uiButton,
-                "Back",
-                []
-                { SceneManager::switchSettingsPage(SettingsPage::spStart); },
-                nullptr,
-            },
-        };
+        elementsSide = {};
 
         break;
 
     case SettingsPage::spDebug:
 
-        elements = {
+        elementsSide = {
             {
                 UIElementType::uiToggle,
                 "Wireframe",
                 {},
                 &Debug::wireMode,
             },
-            {
-                UIElementType::uiButton,
-                "Back",
-                []
-                { SceneManager::switchSettingsPage(SettingsPage::spStart); },
-                nullptr,
-            },
         };
 
         break;
     }
 
-    for (int i = 0; i < elements.size(); i++)
+    for (int i = 0; i < elementsSide.size(); i++)
     {
-        UIElementData element = elements[i];
+        UIElementData element = elementsSide[i];
 
         switch (element.type)
         {
         case UIElementType::uiButton:
-            buttons.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor);
-            buttons.back().setOnClick(element.callback);
-            uiElements.push_back(&buttons.back());
+            buttonsSide.emplace_back(startPosSide + (float(i) * stepPosSide), sizeSide, element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
+            buttonsSide.back().setOnClick(element.callback);
+            buttonsSide.back().linkedPage = element.linkedPage;
             break;
 
         case UIElementType::uiToggle:
-            toggles.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor);
-            toggles.back().toggleVariable = element.toggleVariable;
-            uiElements.push_back(&toggles.back());
+            togglesSide.emplace_back(startPosSide + (float(i) * stepPosSide), sizeSide, element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
+            togglesSide.back().toggleVariable = element.toggleVariable;
             break;
         }
     }
 
     int buttonIndex = 0;
     int toggleIndex = 0;
-    for (const auto &element : elements)
+    for (const auto &element : elementsSide)
     {
         switch (element.type)
         {
         case UIElementType::uiButton:
-            uiElements.push_back(&buttons[buttonIndex++]);
+            uiElementsSide.push_back(&buttonsSide[buttonIndex++]);
             break;
         case UIElementType::uiToggle:
-            uiElements.push_back(&toggles[toggleIndex++]);
+            uiElementsSide.push_back(&togglesSide[toggleIndex++]);
             break;
         }
     }
+
+    selected = std::clamp(selected, 0, int(uiElementsSide.size() - 1));
 }
 
 void UIManager::draw()
@@ -318,8 +340,36 @@ void UIManager::draw()
     {
         std::visit([i](auto *element)
                    {if (!element) return; 
-                    element->draw(i == selected, EventHandler::inputType, EventHandler::mousePosX, EventHandler::mousePosY); },
+
+                    bool active = false;
+
+                    if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>) {
+                        if (element->linkedPage.has_value() && element->linkedPage.value() == SceneManager::settingsPage)
+                            active = true;
+                    }
+
+                    bool isSelected = i == selected && inputState == UIInputState::uiMain;
+
+                    element->draw(isSelected, active, EventHandler::inputType, EventHandler::mousePosX, EventHandler::mousePosY); },
                    uiElements[i]);
+    }
+
+    for (int i = 0; i < uiElementsSide.size(); i++)
+    {
+        std::visit([i](auto *element)
+                   {if (!element) return; 
+
+                    bool active = false;
+
+                    if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>) {
+                        if (element->linkedPage.has_value() && element->linkedPage.value() == SceneManager::settingsPage)
+                            active = true;
+                    }
+
+                    bool isSelected = i == selected && inputState == UIInputState::uiSide;
+
+                    element->draw(isSelected, active, EventHandler::inputType, EventHandler::mousePosX, EventHandler::mousePosY); },
+                   uiElementsSide[i]);
     }
 }
 
@@ -334,14 +384,16 @@ bool UIButton::isHovered(const float mouseX, const float mouseY)
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
 
-void UIButton::draw(bool selected, InputType inputType, float mouseX, float mouseY)
+void UIButton::draw(bool selected, bool active, InputType inputType, float mouseX, float mouseY)
 {
     glm::vec3 color = baseColor;
 
     if (inputType == InputType::itMouse)
-        color = isHovered(mouseX, mouseY) ? hoverColor : baseColor;
-    else if (selected)
-        color = hoverColor;
+        color = isHovered(mouseX, mouseY) ? hoverColor : active ? activeColor
+                                                                : baseColor;
+    else
+        color = selected ? hoverColor : active ? activeColor
+                                               : baseColor;
 
     float x = pos.x + offset.x;
     float y = pos.y + offset.y;
@@ -363,14 +415,16 @@ bool UIToggle::isHovered(const float mouseX, const float mouseY)
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
 
-void UIToggle::draw(bool selected, InputType inputType, float mouseX, float mouseY)
+void UIToggle::draw(bool selected, bool active, InputType inputType, float mouseX, float mouseY)
 {
     glm::vec3 color = baseColor;
 
     if (inputType == InputType::itMouse)
-        color = isHovered(mouseX, mouseY) ? hoverColor : baseColor;
-    else if (selected)
-        color = hoverColor;
+        color = isHovered(mouseX, mouseY) ? hoverColor : active ? activeColor
+                                                                : baseColor;
+    else
+        color = selected ? hoverColor : active ? activeColor
+                                               : baseColor;
 
     float x = pos.x + offset.x;
     float y = pos.y + offset.y;
