@@ -66,7 +66,7 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineState(EngineState::esNone); }};
 
-        addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
+        addButtonLine(startPos, stepPos, size, buttonTexts, scale, defaultBaseColor, defaultHoverColor, buttonFunctions);
         break;
 
     case EngineState::esPause:
@@ -92,7 +92,7 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineState(EngineState::esTitle); }};
 
-        addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
+        addButtonLine(startPos, stepPos, size, buttonTexts, scale, defaultBaseColor, defaultHoverColor, buttonFunctions);
         break;
     }
 

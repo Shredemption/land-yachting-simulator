@@ -131,6 +131,17 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
     {
         inputType = InputType::itKeyboard;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        for (int i = 0; i < UIManager::optionCount(); i++)
+        {
+            if (i < UIManager::buttons.size())
+            {
+                if (UIManager::buttons[i].isHovered(mousePosX, mousePosY))
+                {
+                    UIManager::selected = i;
+                }
+            }
+        }
     }
 
     // ESC handling

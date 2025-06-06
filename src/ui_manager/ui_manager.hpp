@@ -23,7 +23,7 @@ namespace UIManager
     inline int selected = -1;
 
     inline glm::vec3 defaultBaseColor = {1.0f, 1.0f, 1.0f};
-    inline glm::vec3 defaultHoverColor = {0.4f, 0.4f, 0.4f};
+    inline glm::vec3 defaultHoverColor = {0.9f, 0.5f, 0.5f};
 }
 
 #endif
