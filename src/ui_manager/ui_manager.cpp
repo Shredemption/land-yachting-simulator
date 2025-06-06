@@ -42,7 +42,7 @@ void UIManager::load(EngineState state)
 
     switch (state)
     {
-    case EngineState::Title:
+    case EngineState::esTitle:
 
         buttonTexts = {
             "[1] Load Realistic Scene",
@@ -61,12 +61,12 @@ void UIManager::load(EngineState state)
             []
             { return; },
             []
-            { SceneManager::switchEngineState(EngineState::None); }};
+            { SceneManager::switchEngineState(EngineState::esNone); }};
 
         addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
         break;
 
-    case EngineState::Pause:
+    case EngineState::esPause:
 
         buttonTexts = {
             "[ESC] Resume",
@@ -74,9 +74,9 @@ void UIManager::load(EngineState state)
 
         buttonFunctions = {
             []
-            { SceneManager::switchEngineState(EngineState::Running); },
+            { SceneManager::switchEngineState(EngineState::esRunning); },
             []
-            { SceneManager::switchEngineState(EngineState::Title); }};
+            { SceneManager::switchEngineState(EngineState::esTitle); }};
 
         addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
         break;

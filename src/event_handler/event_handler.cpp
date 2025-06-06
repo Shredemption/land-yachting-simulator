@@ -21,7 +21,7 @@ void EventHandler::timing(GLFWwindow *window, EngineState &state)
     lastTime = now;
     frame++;
 
-    bool timeShouldPause = (state == EngineState::Pause || state == EngineState::Loading);
+    bool timeShouldPause = (state == EngineState::esPause || state == EngineState::esLoading || state == EngineState::esSettings);
 
     if (timeShouldPause)
     {
@@ -51,14 +51,14 @@ void EventHandler::setCallbacks(GLFWwindow *window)
 {
     switch (SceneManager::engineState)
     {
-    case EngineState::Title:
+    case EngineState::esTitle:
         glfwSetKeyCallback(window, keyCallbackTitle);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
 
-    case EngineState::Running:
+    case EngineState::esRunning:
         glfwSetKeyCallback(window, keyCallbackRunning);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, mousePosCallbackRunning);
@@ -66,12 +66,18 @@ void EventHandler::setCallbacks(GLFWwindow *window)
         glfwSetCursorPos(window, screenWidth / 2, screenHeight / 2);
         break;
 
-    case EngineState::Pause:
-        glfwSetKeyCallback(window, EventHandler::keyCallbackPause);
+    case EngineState::esPause:
+        glfwSetKeyCallback(window, keyCallbackPause);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
+
+    case EngineState::esSettings:
+        glfwSetKeyCallback(window, keyCallbackSettings);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
+        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
 
     default:
         glfwSetKeyCallback(window, nullptr);
@@ -121,23 +127,17 @@ void EventHandler::keyCallbackTitle(GLFWwindow *window, int key, int scancode, i
 {
     // Close on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    {
-        SceneManager::switchEngineState(EngineState::None);
-    }
+        SceneManager::switchEngineState(EngineState::esNone);
 
     // Load scenes
     if (key == GLFW_KEY_1 && action == GLFW_PRESS)
-    {
         SceneManager::switchEngineStateScene("realistic");
-    }
+
     if (key == GLFW_KEY_2 && action == GLFW_PRESS)
-    {
         SceneManager::switchEngineStateScene("cartoon");
-    }
+
     if (key == GLFW_KEY_T && action == GLFW_PRESS)
-    {
         SceneManager::switchEngineStateScene("test");
-    }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
 }
@@ -146,15 +146,24 @@ void EventHandler::keyCallbackPause(GLFWwindow *window, int key, int scancode, i
 {
     // Unpause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    {
-        SceneManager::switchEngineState(EngineState::Running);
-    }
+        SceneManager::switchEngineState(EngineState::esRunning);
 
     // To menu on Q
     if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-    {
-        SceneManager::switchEngineState(EngineState::Title);
-    }
+        SceneManager::switchEngineState(EngineState::esTitle);
+
+    // To settings on S
+    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+        SceneManager::switchEngineState(EngineState::esSettings);
+
+    keyCallbackGlobal(window, key, scancode, action, mods);
+}
+
+void EventHandler::keyCallbackSettings(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    // Back on ESC
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        SceneManager::switchEngineState(EngineState::esPause);
 
     keyCallbackGlobal(window, key, scancode, action, mods);
 }
@@ -163,33 +172,23 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
 {
     // Pause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    {
-        SceneManager::switchEngineState(EngineState::Pause);
-    }
+        SceneManager::switchEngineState(EngineState::esPause);
 
     // Toggle FPS debug on F9
     if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
-    {
         Render::debugstate = (Render::debugstate == debugState::dbFPS) ? debugState::dbNone : debugState::dbFPS;
-    }
 
     // Toggle physics debug on F10
     if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
-    {
         Render::debugstate = (Render::debugstate == debugState::dbPhysics) ? debugState::dbNone : debugState::dbPhysics;
-    }
 
     // Toggle Freecam on C
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
-    {
         Camera::freeCam = (Camera::freeCam) ? false : true;
-    }
 
     // Switch to next controllable yacht on N
     if (key == GLFW_KEY_N && action == GLFW_PRESS)
-    {
         PhysicsUtil::switchControlledYacht(*SceneManager::currentScene);
-    }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
 }

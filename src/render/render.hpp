@@ -55,6 +55,7 @@ namespace Render
     void renderLoadingScreen();
     void renderTitleScreen();
     void renderPauseScreen();
+    void renderSettingsScreen();
 
     void setup();
     void initQuad();
