@@ -132,15 +132,10 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
         inputType = InputType::itKeyboard;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-        for (int i = 0; i < UIManager::optionCount(); i++)
+        for (int i = 0; i < UIManager::uiElements.size(); i++)
         {
-            if (i < UIManager::buttons.size())
-            {
-                if (UIManager::buttons[i].isHovered(mousePosX, mousePosY))
-                {
-                    UIManager::selected = i;
-                }
-            }
+            std::visit([&](auto *element)
+                       { if (element->isHovered(mousePosX, mousePosY)) UIManager::selected = i; }, UIManager::uiElements[i]);
         }
     }
 
@@ -188,12 +183,12 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
 
         case GLFW_KEY_W:
         case GLFW_KEY_UP:
-            UIManager::selected = (UIManager::selected <= 0) ? UIManager::optionCount() - 1 : UIManager::selected - 1;
+            UIManager::selected = (UIManager::selected <= 0) ? UIManager::uiElements.size() - 1 : UIManager::selected - 1;
             break;
 
         case GLFW_KEY_S:
         case GLFW_KEY_DOWN:
-            UIManager::selected = (UIManager::selected == UIManager::optionCount() - 1) ? 0 : UIManager::selected + 1;
+            UIManager::selected = (UIManager::selected == UIManager::uiElements.size() - 1) ? 0 : UIManager::selected + 1;
             break;
 
         case GLFW_KEY_ENTER:

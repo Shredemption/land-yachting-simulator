@@ -1,5 +1,5 @@
-#ifndef UI_BUTTON_H
-#define UI_BUTTON_H
+#ifndef UI_TOGGLE_H
+#define UI_TOGGLE_H
 
 #include <glm/glm.hpp>
 
@@ -9,12 +9,12 @@
 
 enum class InputType;
 
-class UIButton
+class UIToggle
 {
 public:
-    UIButton(const glm::vec2 position, const glm::vec2 size, const std::string &text, const float scale,
+    UIToggle(const glm::vec2 position, const glm::vec2 size, const std::string &text, const float scale,
              const glm::vec3 baseColor, const glm::vec3 hoverColor)
-        : pos(position), size(size), onClick(nullptr), text(text), scale(scale), baseColor(baseColor), hoverColor(hoverColor) {};
+        : pos(position), size(size), toggleVariable(nullptr), text(text), scale(scale), baseColor(baseColor), hoverColor(hoverColor) {};
 
     bool isHovered(const float mouseX, const float mouseY);
     void draw(bool selected, InputType inputType, float mouseX, float mouseY);
@@ -22,11 +22,10 @@ public:
     void checkClicked(const float mouseX, const float mouseY, const bool mousePressed)
     {
         if (mousePressed && isHovered(mouseX, mouseY))
-            if (onClick)
-                onClick();
+            if (toggleVariable)
+                *toggleVariable = !(*toggleVariable);
     };
 
-    void setOnClick(std::function<void()> callback) { this->onClick = callback; };
     void setOffset(glm::vec2 offset) { this->offset = offset; };
     void setAlpha(float alpha) { this->alpha = alpha; };
 
@@ -40,7 +39,7 @@ public:
     glm::vec3 hoverColor;
     float alpha = 1.0f;
 
-    std::function<void()> onClick;
+    bool *toggleVariable;
 };
 
 #endif
