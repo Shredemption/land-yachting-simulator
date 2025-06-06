@@ -1057,7 +1057,7 @@ void Render::renderTitleScreen()
     glEnable(GL_DEPTH_TEST);
 }
 
-void Render::renderMenuScreen(const EngineState &state)
+void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page)
 {
     float maxDarkFactor = 0.8f;
 
@@ -1116,7 +1116,25 @@ void Render::renderMenuScreen(const EngineState &state)
 
     case EngineState::esSettings:
     case EngineState::esTitleSettings:
-        header = "Settings";
+        switch (page)
+        {
+        case SettingsPage::spStart:
+            header = "Settings";
+            break;
+
+        case SettingsPage::spGraphics:
+            header = "Settings - Graphics";
+            break;
+
+        case SettingsPage::spPhysics:
+            header = "Settings - Physics";
+            break;
+
+        case SettingsPage::spDebug:
+            header = "Settings - Debug";
+            break;
+        }
+
         break;
     }
 

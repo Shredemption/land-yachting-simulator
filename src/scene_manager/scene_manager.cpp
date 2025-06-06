@@ -188,6 +188,12 @@ void SceneManager::switchEngineState(const EngineState &to)
     }
 }
 
+void SceneManager::switchSettingsPage(const SettingsPage &to)
+{
+    exitPage = settingsPage;
+    settingsPage = to;
+}
+
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
 {
     switchEngineState(EngineState::esLoading);
@@ -204,7 +210,25 @@ void SceneManager::updateFade()
     {
     // Fade up if not exiting
     case EngineState::esNone:
-        menuFade += fadeDelta;
+        if (engineState == EngineState::esSettings || engineState == EngineState::esTitleSettings)
+            switch (exitPage)
+            {
+            case SettingsPage::spNone:
+                menuFade += fadeDelta;
+                break;
+
+            default:
+                menuFade = std::clamp(menuFade - fadeDelta, 0.0f, 1.0f);
+
+                if (menuFade <= 0.0f)
+                {
+                    exitPage = SettingsPage::spNone;
+                    UIManager::load(settingsPage);
+                }
+                break;
+            }
+        else
+            menuFade += fadeDelta;
         break;
 
     // Instant fade on exit Running

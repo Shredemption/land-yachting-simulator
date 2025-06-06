@@ -23,7 +23,10 @@ enum class EngineState
 
 enum class SettingsPage
 {
+    spNone,
     spStart,
+    spGraphics,
+    spPhysics,
     spDebug
 };
 
