@@ -1005,16 +1005,6 @@ void Render::renderLoadingScreen()
 
 void Render::renderTitleScreen()
 {
-    std::vector<std::string> titleEntries = {
-        "Land Yachting Simulator",
-        "",
-        "[1] Load Realistic Scene",
-        "[2] Load Cartoon Scene",
-        "[T] Load Test Scene",
-        "",
-        "[ESC] Quit",
-    };
-
     float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
 
     float color = easeInOutQuad(0.0f, 0.5f, effectiveFade);
@@ -1067,13 +1057,18 @@ void Render::renderTitleScreen()
     glEnable(GL_DEPTH_TEST);
 }
 
-void Render::renderPauseScreen()
+void Render::renderMenuScreen(const EngineState &state)
 {
     float maxDarkFactor = 0.8f;
 
     float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
 
-    float darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
+    float darkfactor;
+
+    if (SceneManager::engineState == EngineState::esTitleSettings)
+        darkfactor = 1.0f;
+    else
+        darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1111,64 +1106,22 @@ void Render::renderPauseScreen()
         offsets.push_back(glm::vec2(x, y));
     }
 
-    renderText("Paused", 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
-    renderText("Paused", 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
+    std::string header;
 
-    for (int i = 0; i < UIManager::buttons.size(); i++)
+    switch (state)
     {
-        UIManager::buttons[i].setOffset(offsets[i + 1]);
-        UIManager::buttons[i].setAlpha(alphas[i + 1]);
+    case EngineState::esPause:
+        header = "Paused";
+        break;
+
+    case EngineState::esSettings:
+    case EngineState::esTitleSettings:
+        header = "Settings";
+        break;
     }
 
-    glEnable(GL_DEPTH_TEST);
-}
-
-void Render::renderSettingsScreen()
-{
-    float maxDarkFactor = 0.8f;
-
-    float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
-
-    float darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, pauseTexture);
-
-    shader = ShaderUtil::load(shaderID::shDarkenBlur);
-    shader->setInt("screenTexture", 0);
-    shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
-    shader->setFloat("darkenAmount", darkfactor);
-    shader->setFloat("darkenPosition", 0.4);
-
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    float fadeOffset = 0.3333f;
-    std::vector<glm::vec2> offsets;
-    std::vector<float> alphas;
-
-    for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
-    {
-        if (SceneManager::exitState == EngineState::esPause)
-            effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
-        else
-            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
-
-        alphas.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
-
-        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
-        float y = 0.0f;
-
-        offsets.push_back(glm::vec2(x, y));
-    }
-
-    renderText("Settings", 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
-    renderText("Settings", 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
+    renderText(header, 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
+    renderText(header, 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
 
     for (int i = 0; i < UIManager::buttons.size(); i++)
     {

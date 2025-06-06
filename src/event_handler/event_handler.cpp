@@ -22,7 +22,7 @@ void EventHandler::timing(GLFWwindow *window, EngineState &state)
     lastTime = now;
     frame++;
 
-    bool timeShouldPause = (state == EngineState::esPause || state == EngineState::esLoading || state == EngineState::esSettings);
+    bool timeShouldPause = (state == EngineState::esPause || state == EngineState::esLoading || state == EngineState::esSettings || state == EngineState::esTitleSettings);
 
     if (timeShouldPause)
     {
@@ -75,8 +75,8 @@ void EventHandler::setCallbacks(GLFWwindow *window)
         break;
 
     case EngineState::esSettings:
+    case EngineState::esTitleSettings:
         glfwSetKeyCallback(window, keyCallbackMenu);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
@@ -151,6 +151,10 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
 
             case EngineState::esSettings:
                 SceneManager::switchEngineState(EngineState::esPause);
+                break;
+
+            case EngineState::esTitleSettings:
+                SceneManager::switchEngineState(EngineState::esTitle);
                 break;
             }
             break;
