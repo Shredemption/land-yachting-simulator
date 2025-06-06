@@ -201,6 +201,7 @@ int main()
         switch (checkState)
         {
         case EngineState::None:
+            Render::renderBlankScreen();
             glfwSetWindowShouldClose(window, GLFW_TRUE);
             break;
 
