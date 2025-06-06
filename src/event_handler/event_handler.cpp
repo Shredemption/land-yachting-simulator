@@ -156,27 +156,11 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
                 break;
 
             case EngineState::esSettings:
-                switch (SceneManager::settingsPage)
-                {
-                case SettingsPage::spStart:
-                    SceneManager::switchEngineState(EngineState::esPause);
-                    break;
-
-                default:
-                    SceneManager::switchSettingsPage(SettingsPage::spStart);
-                }
+                SceneManager::switchEngineState(EngineState::esPause);
                 break;
 
             case EngineState::esTitleSettings:
-                switch (SceneManager::settingsPage)
-                {
-                case SettingsPage::spStart:
-                    SceneManager::switchEngineState(EngineState::esTitle);
-                    break;
-
-                default:
-                    SceneManager::switchSettingsPage(SettingsPage::spStart);
-                }
+                SceneManager::switchEngineState(EngineState::esTitle);
                 break;
             }
             break;

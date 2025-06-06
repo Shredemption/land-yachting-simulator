@@ -1094,7 +1094,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    float fadeOffset = 0.3333f;
+    float fadeOffset = 0.1;
     std::vector<glm::vec2> offsets;
     std::vector<float> alphas;
 
