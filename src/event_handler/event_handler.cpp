@@ -198,7 +198,7 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
 
     // Switch to next controllable yacht on N
     if (key == GLFW_KEY_N && action == GLFW_PRESS)
-        PhysicsUtil::switchControlledYacht(*SceneManager::currentScene);
+        PhysicsUtil::switchControlledYacht();
 
     keyCallbackGlobal(window, key, scancode, action, mods);
 }

@@ -34,8 +34,8 @@ namespace PhysicsUtil
     inline float g = 9.80665f;
 
     // Functions
-    void setup(Scene &scene);
-    void switchControlledYacht(Scene &scene);
+    void setup();
+    void switchControlledYacht();
 
     // Boolmap for tracking inputs
     inline bool keyInputs[5];

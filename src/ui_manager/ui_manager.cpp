@@ -6,7 +6,9 @@
 #include <string>
 #include <vector>
 
+#include "camera/camera.hpp"
 #include "event_handler/event_handler.hpp"
+#include "physics/physics_util.hpp"
 #include "render/render.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
@@ -71,12 +73,20 @@ void UIManager::load(EngineState state)
 
         buttonTexts = {
             "Resume",
+            "Restart",
             "Settings",
             "Exit to Menu"};
 
         buttonFunctions = {
             []
             { SceneManager::switchEngineState(EngineState::esRunning); },
+            []
+            {
+                Camera::reset();
+                PhysicsUtil::setup();
+                SceneManager::runOneFrame();
+                SceneManager::switchEngineState(EngineState::esRunning);
+            },
             []
             { SceneManager::switchEngineState(EngineState::esSettings); },
             []
