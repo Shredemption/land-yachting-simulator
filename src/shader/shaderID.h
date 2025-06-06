@@ -14,7 +14,7 @@ enum class shaderID
     shToon,
     shToonTerrain,
     shToonWater,
-    shPause,
+    shDarkenBlur,
     shPost
 };
 

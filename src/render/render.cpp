@@ -987,10 +987,11 @@ void Render::renderLoadingScreen()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
 
-    shader = ShaderUtil::load(shaderID::shPause);
+    shader = ShaderUtil::load(shaderID::shDarkenBlur);
     shader->setInt("screenTexture", 0);
     shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
     shader->setFloat("darkenAmount", darkfactor);
+    shader->setFloat("darkenPosition", 2);
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -1076,10 +1077,11 @@ void Render::renderPauseScreen()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
 
-    shader = ShaderUtil::load(shaderID::shPause);
+    shader = ShaderUtil::load(shaderID::shDarkenBlur);
     shader->setInt("screenTexture", 0);
     shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
     shader->setFloat("darkenAmount", darkfactor);
+    shader->setFloat("darkenPosition", 0.4);
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
