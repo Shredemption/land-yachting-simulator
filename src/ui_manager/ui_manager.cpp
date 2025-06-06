@@ -27,7 +27,7 @@ void UIManager::update()
     }
 }
 
-void UIManager::load(EngineState state)
+void UIManager::load(const EngineState &state)
 {
     selected = -1;
     buttons.clear();
@@ -52,7 +52,8 @@ void UIManager::load(EngineState state)
             "Load Cartoon Scene",
             "Load Test Scene",
             "Settings",
-            "Quit"};
+            "Quit",
+        };
 
         buttonFunctions = {
             []
@@ -64,9 +65,9 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineState(EngineState::esTitleSettings); },
             []
-            { SceneManager::switchEngineState(EngineState::esNone); }};
+            { SceneManager::switchEngineState(EngineState::esNone); },
+        };
 
-        addButtonLine(startPos, stepPos, size, buttonTexts, scale, defaultBaseColor, defaultHoverColor, buttonFunctions);
         break;
 
     case EngineState::esPause:
@@ -75,7 +76,8 @@ void UIManager::load(EngineState state)
             "Resume",
             "Restart",
             "Settings",
-            "Exit to Menu"};
+            "Exit to Menu",
+        };
 
         buttonFunctions = {
             []
@@ -90,11 +92,94 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineState(EngineState::esSettings); },
             []
-            { SceneManager::switchEngineState(EngineState::esTitle); }};
+            { SceneManager::switchEngineState(EngineState::esTitle); },
+        };
 
-        addButtonLine(startPos, stepPos, size, buttonTexts, scale, defaultBaseColor, defaultHoverColor, buttonFunctions);
+        break;
+
+    case EngineState::esSettings:
+    case EngineState::esTitleSettings:
+        load(SceneManager::settingsPage);
         break;
     }
+
+    addButtonLine(startPos, stepPos, size, buttonTexts, scale, defaultBaseColor, defaultHoverColor, buttonFunctions);
+
+    for (auto button : buttonSet)
+    {
+        buttons.push_back(UIButton(button.pos, button.size, button.text, button.scale, defaultBaseColor, defaultHoverColor));
+        buttons.back().setOnClick(button.callback);
+    }
+}
+
+void UIManager::load(const SettingsPage &page)
+{
+    selected = -1;
+    buttons.clear();
+
+    std::vector<ButtonData> buttonSet = {};
+    std::vector<std::string> buttonTexts = {};
+    std::vector<std::function<void()>> buttonFunctions = {};
+
+    float scale = 0.5;
+
+    glm::vec2 startPos(0.03, 0.20);
+    glm::vec2 stepPos(0.0, 0.05);
+
+    glm::vec2 size(0.3, scale / 10);
+
+    switch (page)
+    {
+    case SettingsPage::spStart:
+
+        buttonTexts = {
+            "Graphics",
+            "Physics",
+            "Back",
+        };
+
+        buttonFunctions = {
+            []
+            { SceneManager::switchSettingsPage(SettingsPage::spGraphics); },
+            []
+            { SceneManager::switchSettingsPage(SettingsPage::spPhysics); },
+            []
+            {
+                if (SceneManager::engineState == EngineState::esSettings)
+                    SceneManager::switchEngineState(EngineState::esPause);
+                else
+                    SceneManager::switchEngineState(EngineState::esTitle);
+            },
+        };
+
+        break;
+
+    case SettingsPage::spGraphics:
+        buttonTexts = {
+            "Back",
+        };
+
+        buttonFunctions = {
+            []
+            { SceneManager::switchSettingsPage(SettingsPage::spStart); },
+        };
+
+        break;
+
+    case SettingsPage::spPhysics:
+        buttonTexts = {
+            "Back",
+        };
+
+        buttonFunctions = {
+            []
+            { SceneManager::switchSettingsPage(SettingsPage::spStart); },
+        };
+
+        break;
+    }
+
+    addButtonLine(startPos, stepPos, size, buttonTexts, scale, defaultBaseColor, defaultHoverColor, buttonFunctions);
 
     for (auto button : buttonSet)
     {

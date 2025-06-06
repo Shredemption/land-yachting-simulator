@@ -19,7 +19,9 @@
 
 #include "render/renderbuffer.h"
 #include "render/render_defs.h"
-#include "scene_manager/scene_manager_defs.h"
+
+enum class EngineState;
+enum class SettingsPage;
 
 namespace Render
 {
@@ -55,7 +57,7 @@ namespace Render
     void renderBlankScreen();
     void renderLoadingScreen();
     void renderTitleScreen();
-    void renderMenuScreen(const EngineState &state);
+    void renderMenuScreen(const EngineState &state, const SettingsPage &page);
 
     void setup();
     void initQuad();

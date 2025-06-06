@@ -182,6 +182,7 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         EngineState checkState = (SceneManager::exitState == EngineState::esNone) ? SceneManager::engineState : SceneManager::exitState;
+        SettingsPage checkPage = (SceneManager::exitPage == SettingsPage::spNone) ? SceneManager::settingsPage : SceneManager::exitPage;
 
         EventHandler::timing(window, checkState);
 
@@ -216,13 +217,13 @@ int main()
             break;
 
         case EngineState::esPause:
-            Render::renderMenuScreen(checkState);
+            Render::renderMenuScreen(checkState, checkPage);
             UIManager::update();
             break;
 
         case EngineState::esSettings:
         case EngineState::esTitleSettings:
-            Render::renderMenuScreen(checkState);
+            Render::renderMenuScreen(checkState, checkPage);
             UIManager::update();
             break;
 
