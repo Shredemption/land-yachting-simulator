@@ -44,6 +44,9 @@ namespace EventHandler
     inline double mousePosX, mousePosY;
     inline MouseButtonState leftMouseButton, rightMouseButton;
 
+    // Input type
+    inline InputType inputType;
+
     // Global input/callback Functions
     void timing(GLFWwindow *window, EngineState &state);
     void update();
@@ -51,9 +54,7 @@ namespace EventHandler
 
     void keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    void keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods);
-    void keyCallbackPause(GLFWwindow *window, int key, int scancode, int action, int mods);
-    void keyCallbackSettings(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods);
     void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
 
     void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos);

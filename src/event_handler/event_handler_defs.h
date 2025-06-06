@@ -11,4 +11,11 @@ struct MouseButtonState
     bool held() const { return isDown; }
 };
 
+enum class InputType
+{
+    itKeyboard,
+    itMouse,
+    itController
+};
+
 #endif

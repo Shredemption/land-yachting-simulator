@@ -27,6 +27,7 @@ void UIManager::update()
 
 void UIManager::load(EngineState state)
 {
+    selected = -1;
     buttons.clear();
 
     std::vector<ButtonData> buttonSet = {};
@@ -45,11 +46,10 @@ void UIManager::load(EngineState state)
     case EngineState::esTitle:
 
         buttonTexts = {
-            "[1] Load Realistic Scene",
-            "[2] Load Cartoon Scene",
-            "[T] Load Test Scene",
-            "",
-            "[ESC] Quit"};
+            "Load Realistic Scene",
+            "Load Cartoon Scene",
+            "Load Test Scene",
+            "Quit"};
 
         buttonFunctions = {
             []
@@ -59,8 +59,6 @@ void UIManager::load(EngineState state)
             []
             { SceneManager::switchEngineStateScene("test"); },
             []
-            { return; },
-            []
             { SceneManager::switchEngineState(EngineState::esNone); }};
 
         addButtonLine(startPos, stepPos, size, buttonTexts, scale, glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.6, 0.6, 0.6), buttonFunctions);
@@ -69,8 +67,8 @@ void UIManager::load(EngineState state)
     case EngineState::esPause:
 
         buttonTexts = {
-            "[ESC] Resume",
-            "[Q] Exit to Menu"};
+            "Resume",
+            "Exit to Menu"};
 
         buttonFunctions = {
             []
@@ -91,9 +89,21 @@ void UIManager::load(EngineState state)
 
 void UIManager::draw()
 {
-    for (auto button : buttons)
+    for (int i = 0; i < buttons.size(); i++)
     {
-        glm::vec3 color = button.isHovered(EventHandler::mousePosX, EventHandler::mousePosY) ? button.hoverColor : button.baseColor;
+        UIButton button = buttons[i];
+
+        glm::vec3 color;
+
+        switch (EventHandler::inputType)
+        {
+        case InputType::itMouse:
+            color = button.isHovered(EventHandler::mousePosX, EventHandler::mousePosY) ? button.hoverColor : button.baseColor;
+            break;
+
+        default:
+            color = i == selected ? button.hoverColor : button.baseColor;
+        }
 
         glDisable(GL_DEPTH_TEST);
         Render::renderText(button.text, button.pos.x + button.offset.x + 0.003f, button.pos.y + button.offset.y + 0.003f, button.scale, glm::vec3(0, 0, 0), button.alpha);
@@ -112,6 +122,11 @@ void UIManager::addButtonLine(glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 s
         buttons.push_back(UIButton(pos, size, texts[i], scale, baseColor, hoverColor));
         buttons.back().setOnClick(callbacks[i]);
     }
+}
+
+int UIManager::optionCount()
+{
+    return buttons.size();
 }
 
 bool UIButton::isHovered(const float mouseX, const float mouseY)

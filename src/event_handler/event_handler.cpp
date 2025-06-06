@@ -9,6 +9,7 @@
 #include "render/render.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
+#include "ui_manager/ui_manager.hpp"
 
 // Generic EventHandler time update
 void EventHandler::timing(GLFWwindow *window, EngineState &state)
@@ -52,7 +53,7 @@ void EventHandler::setCallbacks(GLFWwindow *window)
     switch (SceneManager::engineState)
     {
     case EngineState::esTitle:
-        glfwSetKeyCallback(window, keyCallbackTitle);
+        glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
@@ -67,14 +68,14 @@ void EventHandler::setCallbacks(GLFWwindow *window)
         break;
 
     case EngineState::esPause:
-        glfwSetKeyCallback(window, keyCallbackPause);
+        glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
 
     case EngineState::esSettings:
-        glfwSetKeyCallback(window, keyCallbackSettings);
+        glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
@@ -124,47 +125,51 @@ void EventHandler::keyCallbackGlobal(GLFWwindow *window, int key, int scancode, 
     }
 }
 
-void EventHandler::keyCallbackTitle(GLFWwindow *window, int key, int scancode, int action, int mods)
+void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    // Close on ESC
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        SceneManager::switchEngineState(EngineState::esNone);
+    if (inputType != InputType::itKeyboard)
+    {
+        inputType = InputType::itKeyboard;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 
-    // Load scenes
-    if (key == GLFW_KEY_1 && action == GLFW_PRESS)
-        SceneManager::switchEngineStateScene("realistic");
+    // ESC handling
+    if (action == GLFW_PRESS)
 
-    if (key == GLFW_KEY_2 && action == GLFW_PRESS)
-        SceneManager::switchEngineStateScene("cartoon");
+        switch (key)
+        {
+        case GLFW_KEY_ESCAPE:
+            switch (SceneManager::engineState)
+            {
+            case EngineState::esTitle:
+                SceneManager::switchEngineState(EngineState::esNone);
+                break;
 
-    if (key == GLFW_KEY_T && action == GLFW_PRESS)
-        SceneManager::switchEngineStateScene("test");
+            case EngineState::esPause:
+                SceneManager::switchEngineState(EngineState::esRunning);
+                break;
 
-    keyCallbackGlobal(window, key, scancode, action, mods);
-}
+            case EngineState::esSettings:
+                SceneManager::switchEngineState(EngineState::esPause);
+                break;
+            }
+            break;
 
-void EventHandler::keyCallbackPause(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    // Unpause on ESC
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        SceneManager::switchEngineState(EngineState::esRunning);
+        case GLFW_KEY_W:
+        case GLFW_KEY_UP:
+            UIManager::selected = (UIManager::selected <= 0) ? UIManager::optionCount() - 1 : UIManager::selected - 1;
+            break;
 
-    // To menu on Q
-    if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-        SceneManager::switchEngineState(EngineState::esTitle);
+        case GLFW_KEY_S:
+        case GLFW_KEY_DOWN:
+            UIManager::selected = (UIManager::selected == UIManager::optionCount() - 1) ? 0 : UIManager::selected + 1;
+            break;
 
-    // To settings on S
-    if (key == GLFW_KEY_S && action == GLFW_PRESS)
-        SceneManager::switchEngineState(EngineState::esSettings);
-
-    keyCallbackGlobal(window, key, scancode, action, mods);
-}
-
-void EventHandler::keyCallbackSettings(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    // Back on ESC
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        SceneManager::switchEngineState(EngineState::esPause);
+        case GLFW_KEY_ENTER:
+        case GLFW_KEY_SPACE:
+            if (UIManager::selected != -1)
+                UIManager::buttons[UIManager::selected].onClick();
+        }
 
     keyCallbackGlobal(window, key, scancode, action, mods);
 }
@@ -196,6 +201,12 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
 
 void EventHandler::mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
 {
+    if (inputType != InputType::itMouse)
+    {
+        inputType = InputType::itMouse;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
     mousePosX = xPos;
     mousePosY = yPos;
 }
