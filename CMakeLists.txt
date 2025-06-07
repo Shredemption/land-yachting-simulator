@@ -52,6 +52,7 @@ endif()
 
 # Create the library target
 add_executable(${PROJECT_NAME} WIN32 ${CPP_SOURCES} ${HEADER_FILES})
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Make sure the executable depends on the resource compilation target
 if(TARGET CompileIcon)
@@ -65,9 +66,6 @@ endif()
 
 # Include directories (headers)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-
-# Copy shaders
-file(COPY src/shaders DESTINATION ${CMAKE_BINARY_DIR}/)
 
 # Include src to path for accessing all .h files
 include_directories(${PROJECT_SOURCE_DIR}/src)

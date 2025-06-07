@@ -22,7 +22,8 @@ namespace SceneManager
     inline std::future<std::shared_ptr<Scene>> pendingScene;
 
     // Scenemap and paths
-    static std::map<std::string, std::string> sceneMap;
+    inline std::map<std::string, std::string> sceneMap;
+    inline std::string sceneMapPath = "resources/scenes.json";
     void loadSceneMap();
 
     // Global loading variables

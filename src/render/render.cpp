@@ -101,9 +101,9 @@ void renderOpaquePlane(const RenderCommand &cmd)
 
     if (cmd.shader == shaderID::shToonWater)
     {
-        int toonWater = TextureManager::getStandaloneTextureUnit("../resources/textures/toonWater.jpeg");
-        int normalMap = TextureManager::getStandaloneTextureUnit("../resources/textures/waterNormal.png");
-        int heightmap = TextureManager::getStandaloneTextureUnit("../resources/textures/heightmap.jpg");
+        int toonWater = TextureManager::getStandaloneTextureUnit("resources/textures/toonWater.jpeg");
+        int normalMap = TextureManager::getStandaloneTextureUnit("resources/textures/waterNormal.png");
+        int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
 
         shader->setInt("toonWater", toonWater);
         shader->setInt("normalMap", normalMap);
@@ -147,8 +147,8 @@ void renderTransparentPlane(const RenderCommand &cmd)
     {
         // Load surface textures
         unsigned int waterTexArrayID = TextureManager::getTextureArrayUnit("waterTextureArray");
-        int dudv = TextureManager::getTextureLayerIndex("waterTextureArray", "../resources/textures/waterDUDV.png");
-        int normal = TextureManager::getTextureLayerIndex("waterTextureArray", "../resources/textures/waterNormal.png");
+        int dudv = TextureManager::getTextureLayerIndex("waterTextureArray", "resources/textures/waterDUDV.png");
+        int normal = TextureManager::getTextureLayerIndex("waterTextureArray", "resources/textures/waterNormal.png");
 
         shader->setInt("waterTextureArray", waterTexArrayID);
         shader->setInt("dudvMapLayer", dudv);
@@ -207,7 +207,7 @@ void renderGrid(const RenderCommand &cmd)
 
     if (cmd.shader == shaderID::shToonTerrain)
     {
-        int heightmap = TextureManager::getStandaloneTextureUnit("../resources/textures/heightmap.jpg");
+        int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
         shader->setInt("heightmap", heightmap);
 
         shader->setMat4("u_camXY", Camera::u_camXY);
@@ -321,7 +321,7 @@ void renderImage(const std::string &fileName, const glm::vec2 &position, const f
     shader->setVec2("uScreenSize", glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight));
     glm::vec2 screenSize = glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight);
 
-    unsigned int textureUnit = TextureManager::getStandaloneTextureUnit("../resources/images/" + fileName);
+    unsigned int textureUnit = TextureManager::getStandaloneTextureUnit("resources/images/" + fileName);
     shader->setInt("uTexture", textureUnit);
 
     glm::vec2 posFactor = position; // normalized 0..1
@@ -705,7 +705,7 @@ void Render::initFreeType()
     if (FT_Init_FreeType(&ft))
         std::cerr << "ERROR: Could not initialize FreeType\n";
 
-    const std::string fontPath = "../" + fontpath;
+    const std::string fontPath = fontpath;
 
     // Load font face
     if (FT_New_Face(ft, fontPath.c_str(), 0, &face))

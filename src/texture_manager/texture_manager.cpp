@@ -205,13 +205,13 @@ void queueStandalone(const std::string &path, bool repeating)
 
 void TextureManager::queueStandaloneTexture(const std::string &fileName)
 {
-    std::string path = "../resources/textures/" + fileName;
+    std::string path = "resources/textures/" + fileName;
     queueStandalone(path, true);
 }
 
 void TextureManager::queueStandaloneImage(const std::string &fileName)
 {
-    std::string path = "../resources/images/" + fileName;
+    std::string path = "resources/images/" + fileName;
     queueStandalone(path, false);
 }
 
@@ -245,7 +245,7 @@ void TextureManager::queueTextureToArray(const std::string &arrayName, const std
 
 void TextureManager::queueTextureToArrayByFilename(const std::string &fileName, const std::string &arrayName)
 {
-    static const std::string baseTextureDir = "../resources/textures/";
+    static const std::string baseTextureDir = "resources/textures/";
     std::string fullPath = baseTextureDir + fileName;
     queueTextureToArray(arrayName, fullPath);
 }

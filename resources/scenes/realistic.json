@@ -85,12 +85,12 @@
   ],
   "skyBox": [
     {
-      "up": "../resources/skybox/Daylight Box_Top.bmp",
-      "down": "../resources/skybox/Daylight Box_Bottom.bmp",
-      "left": "../resources/skybox/Daylight Box_Left.bmp",
-      "right": "../resources/skybox/Daylight Box_Right.bmp",
-      "front": "../resources/skybox/Daylight Box_Front.bmp",
-      "back": "../resources/skybox/Daylight Box_Back.bmp"
+      "up": "resources/skybox/Daylight Box_Top.bmp",
+      "down": "resources/skybox/Daylight Box_Bottom.bmp",
+      "left": "resources/skybox/Daylight Box_Left.bmp",
+      "right": "resources/skybox/Daylight Box_Right.bmp",
+      "front": "resources/skybox/Daylight Box_Front.bmp",
+      "back": "resources/skybox/Daylight Box_Back.bmp"
     }
   ]
 }
