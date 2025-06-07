@@ -20,7 +20,7 @@ pushd %BUILD_DIR%
 
 conan install .. --output-folder=. --build=missing --settings=build_type=%BUILD_TYPE%
 
-cmake .. -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
+cmake .. -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
 cmake --build .
 
 popd
