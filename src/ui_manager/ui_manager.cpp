@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "camera/camera.hpp"
-#include "debug/debug.hpp"
+#include "settings/settings.hpp"
 #include "event_handler/event_handler.hpp"
 #include "physics/physics_util.hpp"
 #include "render/render.hpp"
@@ -273,7 +273,17 @@ void UIManager::loadSide(const SettingsPage &page)
 
     case SettingsPage::spGraphics:
 
-        elementsSide = {};
+        elementsSide = {
+            {
+                UIElementType::uiToggle,
+                "VSync",
+                []
+                {
+                    glfwSwapInterval(Settings::vSync ? 1 : 0);
+                },
+                &Settings::vSync,
+            },
+        };
 
         break;
 
@@ -290,7 +300,7 @@ void UIManager::loadSide(const SettingsPage &page)
                 UIElementType::uiToggle,
                 "Wireframe",
                 {},
-                &Debug::wireMode,
+                &Settings::debugWireframeMode,
             },
         };
 
@@ -311,6 +321,7 @@ void UIManager::loadSide(const SettingsPage &page)
 
         case UIElementType::uiToggle:
             togglesSide.emplace_back(startPosSide + (float(i) * stepPosSide), sizeSide, element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
+            togglesSide.back().setOnClick(element.callback);
             togglesSide.back().toggleVariable = element.toggleVariable;
             break;
         }

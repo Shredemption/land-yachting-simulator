@@ -22,11 +22,16 @@ public:
     void checkClicked(const float mouseX, const float mouseY, const bool mousePressed)
     {
         if (mousePressed && isHovered(mouseX, mouseY))
+        {
             toggle();
+            if (onClick)
+                onClick();
+        }
     };
 
     void toggle() { *toggleVariable = !(*toggleVariable); };
 
+    void setOnClick(std::function<void()> callback) { this->onClick = callback; };
     void setOffset(glm::vec2 offset) { this->offset = offset; };
     void setAlpha(float alpha) { this->alpha = alpha; };
 
@@ -42,6 +47,7 @@ public:
     float alpha = 1.0f;
 
     bool *toggleVariable;
+    std::function<void()> onClick;
 };
 
 #endif
