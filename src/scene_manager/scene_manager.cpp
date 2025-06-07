@@ -14,6 +14,7 @@
 #include "render/render.hpp"
 #include "scene/scene.hpp"
 #include "scene_manager/scene_manager_defs.h"
+#include "settings_manager/settings_manager.hpp"
 #include "shader/shader_util.hpp"
 #include "texture_manager/texture_manager.hpp"
 #include "thread_manager/thread_manager.hpp"
@@ -177,6 +178,11 @@ void SceneManager::loadSceneMap()
 
 void SceneManager::switchEngineState(const EngineState &to)
 {
+    if (engineState == EngineState::esSettings || engineState == EngineState::esTitleSettings)
+    {
+        SettingsManager::save();
+    }
+
     exitState = engineState;
     engineState = to;
 

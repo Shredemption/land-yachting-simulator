@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "camera/camera.hpp"
-#include "settings/settings.hpp"
+#include "settings_manager/settings_manager.hpp"
 #include "event_handler/event_handler.hpp"
 #include "physics/physics_util.hpp"
 #include "render/render.hpp"
@@ -274,16 +274,16 @@ void UIManager::loadSide(const SettingsPage &page)
                     EventHandler::setFullscreenState();
                     SceneManager::runOneFrame();
                 },
-                &Settings::fullscreen,
+                &SettingsManager::settings.video.fullscreen,
             },
             {
                 UIElementType::uiToggle,
                 "VSync",
                 []
                 {
-                    glfwSwapInterval(Settings::vSync ? 1 : 0);
+                    glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0);
                 },
-                &Settings::vSync,
+                &SettingsManager::settings.video.vSync,
             },
         };
 
@@ -296,7 +296,7 @@ void UIManager::loadSide(const SettingsPage &page)
                 UIElementType::uiToggle,
                 "Wireframe",
                 {},
-                &Settings::debugWireframeMode,
+                &SettingsManager::settings.debug.wireframeMode,
             },
         };
 

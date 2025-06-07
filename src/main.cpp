@@ -71,6 +71,7 @@ void SetWindowIconFromResource(GLFWwindow *window)
 #include "model/model_util.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
+#include "settings_manager/settings_manager.hpp"
 #include "physics/physics_util.hpp"
 #include "render/render.hpp"
 #include "thread_manager/thread_manager.hpp"
@@ -85,6 +86,8 @@ int main()
     InitAppUserModelID();
     AttachConsoleIfNeeded();
 #endif
+
+    SettingsManager::load();
 
     // Initialize GLFW
     if (!glfwInit())

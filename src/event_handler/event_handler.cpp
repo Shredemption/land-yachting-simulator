@@ -7,7 +7,7 @@
 #include "camera/camera.hpp"
 #include "physics/physics_util.hpp"
 #include "render/render.hpp"
-#include "settings/settings.hpp"
+#include "settings_manager/settings_manager.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
 #include "ui_manager/ui_manager.hpp"
@@ -438,7 +438,7 @@ void EventHandler::setFullscreenState()
     bool currentlyFullscreen = glfwGetWindowAttrib(window, GLFW_DECORATED) == GLFW_FALSE;
     bool stillHidden = glfwGetWindowAttrib(window, GLFW_VISIBLE) == GLFW_FALSE;
 
-    if (Settings::fullscreen)
+    if (SettingsManager::settings.video.fullscreen)
     {
         if (currentlyFullscreen && !stillHidden)
             return;
