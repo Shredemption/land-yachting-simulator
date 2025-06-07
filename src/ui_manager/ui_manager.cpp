@@ -170,17 +170,6 @@ void UIManager::load(const EngineState &state)
             },
             {
                 UIElementType::uiButton,
-                "Physics",
-                []
-                {
-                    SceneManager::switchSettingsPage(SettingsPage::spPhysics);
-                    inputState = UIInputState::uiSide;
-                },
-                nullptr,
-                SettingsPage::spPhysics,
-            },
-            {
-                UIElementType::uiButton,
                 "Debug",
                 []
                 {
@@ -297,12 +286,6 @@ void UIManager::loadSide(const SettingsPage &page)
                 &Settings::vSync,
             },
         };
-
-        break;
-
-    case SettingsPage::spPhysics:
-
-        elementsSide = {};
 
         break;
 
