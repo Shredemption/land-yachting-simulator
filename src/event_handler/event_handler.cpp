@@ -7,12 +7,13 @@
 #include "camera/camera.hpp"
 #include "physics/physics_util.hpp"
 #include "render/render.hpp"
+#include "settings/settings.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "scene_manager/scene_manager_defs.h"
 #include "ui_manager/ui_manager.hpp"
 
 // Generic EventHandler time update
-void EventHandler::timing(GLFWwindow *window, EngineState &state)
+void EventHandler::timing(EngineState &state)
 {
     now = std::chrono::steady_clock::now();
 
@@ -48,7 +49,7 @@ void EventHandler::update()
     rightMouseButton.wasDown = rightMouseButton.isDown;
 }
 
-void EventHandler::setCallbacks(GLFWwindow *window)
+void EventHandler::setCallbacks()
 {
     switch (SceneManager::engineState)
     {
@@ -90,39 +91,6 @@ void EventHandler::setCallbacks(GLFWwindow *window)
     }
 
     SceneManager::updateCallbacks = false;
-}
-
-void EventHandler::keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    // Toggle fullscreen on F12
-    if (key == GLFW_KEY_F12 && action == GLFW_PRESS)
-    {
-        if (fullscreen)
-        {
-            // Set back to window, using saved old size etc.
-            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
-            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
-            glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
-
-            fullscreen = !fullscreen;
-            windowSizeChanged = true;
-        }
-        else
-        {
-            // Store old window size etc.
-            glfwGetWindowPos(window, &windowXpos, &windowYpos);
-            glfwGetWindowSize(window, &windowWidth, &windowHeight);
-
-            // Set to borderless window
-            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
-            glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
-            const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
-
-            fullscreen = !fullscreen;
-            windowSizeChanged = true;
-        }
-    }
 }
 
 void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -236,8 +204,7 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
 
                                    else if constexpr (std::is_same_v<T, UIToggle>)
                                    {
-                                       // Maybe toggle the state or do something else
-                                       element->toggle();
+                                       element->execute();
                                    } }, UIManager::uiElements[UIManager::selected]);
                     break;
 
@@ -255,14 +222,12 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
 
                                    else if constexpr (std::is_same_v<T, UIToggle>)
                                    {
-                                       element->toggle();
+                                       element->execute();
                                    } }, UIManager::uiElementsSide[UIManager::selected]);
                     break;
                 }
             break;
         }
-
-    keyCallbackGlobal(window, key, scancode, action, mods);
 }
 
 void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -286,8 +251,6 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
     // Switch to next controllable yacht on N
     if (key == GLFW_KEY_N && action == GLFW_PRESS)
         PhysicsUtil::switchControlledYacht();
-
-    keyCallbackGlobal(window, key, scancode, action, mods);
 }
 
 void EventHandler::mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
@@ -380,7 +343,7 @@ void EventHandler::mousePosCallbackRunning(GLFWwindow *window, double xPos, doub
     }
 }
 
-void EventHandler::processInputRunning(GLFWwindow *window)
+void EventHandler::processInputRunning()
 {
     // Move cam with WASD, space, shift
     float cameraSpeed = 5.f * deltaTime;
@@ -468,4 +431,40 @@ void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int he
 void EventHandler::errorCallback(int error, const char *description)
 {
     std::cerr << "GLFW Error" << error << ": " << description << std::endl;
+}
+
+void EventHandler::setFullscreenState()
+{
+    bool currentlyFullscreen = glfwGetWindowAttrib(window, GLFW_DECORATED) == GLFW_FALSE;
+    bool stillHidden = glfwGetWindowAttrib(window, GLFW_VISIBLE) == GLFW_FALSE;
+
+    if (Settings::fullscreen)
+    {
+        if (currentlyFullscreen && !stillHidden)
+            return;
+
+        // Store old window size etc.
+        glfwGetWindowPos(window, &windowXpos, &windowYpos);
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+        // Set to borderless window
+        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+        glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
+
+        windowSizeChanged = true;
+    }
+    else
+    {
+        if (!currentlyFullscreen && !stillHidden)
+            return;
+
+        // Set back to window, using saved old size etc.
+        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
+        glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
+        glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
+
+        windowSizeChanged = true;
+    }
 }

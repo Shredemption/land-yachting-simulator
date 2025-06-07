@@ -50,7 +50,7 @@ namespace SceneManager
     void switchSettingsPage(const SettingsPage &to);
 
     // Update and render functions
-    void checkLoading(GLFWwindow *window);
+    void checkLoading();
 
     void runOneFrame();
 };
