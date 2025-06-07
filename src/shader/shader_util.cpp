@@ -21,7 +21,7 @@ Shader *ShaderUtil::load(const shaderID shaderID)
         if (loadedShaders.find(shaderID) == loadedShaders.end())
         {
             Shader shader;
-            shader.init(FileManager::read("shaders/" + NameFromShader(shaderID) + ".vs"), FileManager::read("shaders/" + NameFromShader(shaderID) + ".fs"));
+            shader.init(FileManager::read("resources/shaders/" + NameFromShader(shaderID) + ".vs"), FileManager::read("resources/shaders/" + NameFromShader(shaderID) + ".fs"));
             loadedShaders.emplace(shaderID, shader);
         }
 

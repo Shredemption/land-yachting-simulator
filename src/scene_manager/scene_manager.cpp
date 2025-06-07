@@ -19,8 +19,6 @@
 #include "thread_manager/thread_manager.hpp"
 #include "ui_manager/ui_manager.hpp"
 
-std::string sceneMapPath = "resources/scenes.json";
-
 // Load scene in background, show loading screen
 void SceneManager::loadAsync(const std::string &sceneName)
 {
@@ -142,7 +140,7 @@ void SceneManager::unload()
 
 void SceneManager::loadSceneMap()
 {
-    const std::string path = "../" + sceneMapPath;
+    const std::string path = sceneMapPath;
     // Check if the file exists
     if (!std::filesystem::exists(path))
     {

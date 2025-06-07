@@ -7,26 +7,25 @@
 
 #include "model/model_defs.h"
 
-std::string modelMapPath = "resources/models.json";
-
 // Json setups
 JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 void ModelUtil::loadModelMap()
 {
-    const std::string path = "../" + modelMapPath;
+    auto temp = std::filesystem::current_path();
+
     // Check if the file exists
-    if (!std::filesystem::exists(path))
+    if (!std::filesystem::exists(modelMapPath))
     {
-        throw std::runtime_error("File not found: " + path);
+        throw std::runtime_error("File not found: " + modelMapPath);
     }
 
     // Open the file
-    std::ifstream file(path);
+    std::ifstream file(modelMapPath);
     if (!file.is_open())
     {
-        throw std::runtime_error("Could not open file: " + path);
+        throw std::runtime_error("Could not open file: " + modelMapPath);
     }
 
     JSONModelMap jsonModelMap = jsoncons::decode_json<JSONModelMap>(file);

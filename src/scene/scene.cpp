@@ -28,7 +28,7 @@ JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, grids, skyBox, texts,
 
 Scene::Scene(std::string jsonPath, std::string sceneName)
 {
-    const std::string path = "../" + jsonPath;
+    const std::string path = jsonPath;
     this->name = sceneName;
 
     // Check if the file exists

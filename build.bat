@@ -20,11 +20,13 @@ pushd %BUILD_DIR%
 
 conan install .. --output-folder=. --build=missing --settings=build_type=%BUILD_TYPE%
 
+if exist "..\Marama.exe" del "..\Marama.exe"
+
 cmake .. -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
 cmake --build .
 
-marama.exe
-
 popd
+
+marama.exe
 
 endlocal

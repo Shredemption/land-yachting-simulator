@@ -9,7 +9,7 @@ typedef std::string (*Builder)(const std::string &path);
 std::string const &getRoot()
 {
     static char const *envRoot = getenv("LOGL_ROOT_PATH");
-    static char const *givenRoot = (envRoot != nullptr ? envRoot : "..");
+    static char const *givenRoot = (envRoot != nullptr ? envRoot : "");
     static std::string root = (givenRoot != nullptr ? givenRoot : "");
     return root;
 }
@@ -21,7 +21,7 @@ std::string getPathRelativeRoot(const std::string &path)
 
 std::string getPathRelativeBinary(const std::string &path)
 {
-    return "../../../" + path;
+    return path;
 }
 
 Builder getPathBuilder()

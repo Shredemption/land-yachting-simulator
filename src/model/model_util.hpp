@@ -14,6 +14,7 @@ namespace ModelUtil
 
     // Model map and load function
     inline std::map<std::string, JSONModelMapEntry> modelMap;
+    inline std::string modelMapPath = "resources/models.json";
     void loadModelMap();
 };
 
