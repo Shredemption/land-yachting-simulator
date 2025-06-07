@@ -26,7 +26,6 @@ enum class SettingsPage
     spNone,
     spStart,
     spGraphics,
-    spPhysics,
     spDebug
 };
 
