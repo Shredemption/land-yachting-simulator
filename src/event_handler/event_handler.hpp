@@ -19,9 +19,10 @@ namespace EventHandler
 {
     // Global screen variables
     inline int screenWidth, screenHeight;
-    inline bool fullscreen = true, windowSizeChanged = false, firstFrame = true;
+    inline bool windowSizeChanged = false, firstFrame = true;
     inline float screenUIScale;
     inline GLFWmonitor *monitor;
+    inline GLFWwindow *window;
     inline int windowXpos, windowYpos, windowWidth, windowHeight;
 
     // Global Time
@@ -48,11 +49,9 @@ namespace EventHandler
     inline InputType inputType;
 
     // Global input/callback Functions
-    void timing(GLFWwindow *window, EngineState &state);
+    void timing(EngineState &state);
     void update();
-    void setCallbacks(GLFWwindow *window);
-
-    void keyCallbackGlobal(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void setCallbacks();
 
     void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods);
     void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
@@ -62,10 +61,12 @@ namespace EventHandler
 
     void mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos);
 
-    void processInputRunning(GLFWwindow *window);
+    void processInputRunning();
 
     void errorCallback(int error, const char *description);
     void framebufferSizeCallback(GLFWwindow *window, int width, int height);
+
+    void setFullscreenState();
 };
 
 #endif

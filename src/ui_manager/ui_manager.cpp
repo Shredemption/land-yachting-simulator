@@ -25,22 +25,25 @@ void UIManager::update()
 {
     draw();
 
-    for (auto button : buttons)
+    if (EventHandler::inputType == InputType::itMouse)
     {
-        button.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
-    }
-    for (auto toggle : toggles)
-    {
-        toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
-    }
+        for (auto button : buttons)
+        {
+            button.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+        }
+        for (auto toggle : toggles)
+        {
+            toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+        }
 
-    for (auto button : buttonsSide)
-    {
-        button.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
-    }
-    for (auto toggle : togglesSide)
-    {
-        toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+        for (auto button : buttonsSide)
+        {
+            button.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+        }
+        for (auto toggle : togglesSide)
+        {
+            toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+        }
     }
 }
 
@@ -274,6 +277,16 @@ void UIManager::loadSide(const SettingsPage &page)
     case SettingsPage::spGraphics:
 
         elementsSide = {
+            {
+                UIElementType::uiToggle,
+                "Fullscreen",
+                []
+                {
+                    EventHandler::setFullscreenState();
+                    SceneManager::runOneFrame();
+                },
+                &Settings::fullscreen,
+            },
             {
                 UIElementType::uiToggle,
                 "VSync",

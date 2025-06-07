@@ -43,7 +43,7 @@ void SceneManager::loadAsync(const std::string &sceneName)
     pendingScene = std::move(futureScene);
 }
 
-void SceneManager::checkLoading(GLFWwindow *window)
+void SceneManager::checkLoading()
 {
     if (upcomingSceneLoad.has_value())
     {
@@ -60,7 +60,7 @@ void SceneManager::checkLoading(GLFWwindow *window)
         // Render final loading screen frame
         Render::renderLoadingScreen();
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(EventHandler::window);
 
         // Now upload scene data to OpenGL
         currentScene->uploadToGPU();
@@ -88,6 +88,9 @@ void SceneManager::checkLoading(GLFWwindow *window)
 
 void SceneManager::runOneFrame()
 {
+    if (!currentScene)
+        return;
+
     // Run one physics tick
     for (ModelData &model : currentScene.get()->structModels)
     {

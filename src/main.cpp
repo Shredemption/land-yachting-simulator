@@ -106,8 +106,8 @@ int main()
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 
     // Create Window
-    GLFWwindow *window = glfwCreateWindow(800, 600, "Marama", nullptr, nullptr);
-    if (!window)
+    EventHandler::window = glfwCreateWindow(800, 600, "Marama", nullptr, nullptr);
+    if (!EventHandler::window)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -115,10 +115,10 @@ int main()
     }
 
     // Make OpenGL context current
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(EventHandler::window);
 
 #ifdef _WIN32
-    SetWindowIconFromResource(window);
+    SetWindowIconFromResource(EventHandler::window);
 #endif
 
     // Set swap interval
@@ -136,11 +136,11 @@ int main()
     SceneManager::loadSceneMap();
 
     // Get screen dimensions
-    glfwGetWindowPos(window, &EventHandler::windowXpos, &EventHandler::windowYpos);
-    glfwGetWindowSize(window, &EventHandler::windowWidth, &EventHandler::windowHeight);
-    glfwGetFramebufferSize(window, &EventHandler::screenWidth, &EventHandler::screenHeight);
+    glfwGetWindowPos(EventHandler::window, &EventHandler::windowXpos, &EventHandler::windowYpos);
+    glfwGetWindowSize(EventHandler::window, &EventHandler::windowWidth, &EventHandler::windowHeight);
+    glfwGetFramebufferSize(EventHandler::window, &EventHandler::screenWidth, &EventHandler::screenHeight);
 
-    glfwSetFramebufferSizeCallback(window, EventHandler::framebufferSizeCallback);
+    glfwSetFramebufferSizeCallback(EventHandler::window, EventHandler::framebufferSizeCallback);
 
     // Enable face culling
     glEnable(GL_CULL_FACE);
@@ -155,15 +155,9 @@ int main()
     Render::setup();
 
     // Set window to fullscreen by default
-    if (EventHandler::fullscreen)
-    {
-        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
-        glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
-        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
-    }
+    EventHandler::setFullscreenState();
 
-    glfwShowWindow(window);
+    glfwShowWindow(EventHandler::window);
 
     // Launch threads
     ThreadManager::startup();
@@ -173,21 +167,21 @@ int main()
     UIManager::load(SceneManager::engineState);
 
     glfwPollEvents();
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(EventHandler::window);
 
     // Main Loop
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(EventHandler::window))
     {
         EngineState checkState = (SceneManager::exitState == EngineState::esNone) ? SceneManager::engineState : SceneManager::exitState;
         SettingsPage checkPage = (SceneManager::exitPage == SettingsPage::spNone) ? SceneManager::settingsPage : SceneManager::exitPage;
 
-        EventHandler::timing(window, checkState);
+        EventHandler::timing(checkState);
 
         if (SceneManager::exitState == EngineState::esNone && SceneManager::updateCallbacks)
-            EventHandler::setCallbacks(window);
+            EventHandler::setCallbacks();
 
         // If window inactive
-        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED))
+        if (glfwGetWindowAttrib(EventHandler::window, GLFW_ICONIFIED))
         {
             glfwWaitEvents();
             continue;
@@ -199,11 +193,11 @@ int main()
         {
         case EngineState::esNone:
             Render::renderBlankScreen();
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
+            glfwSetWindowShouldClose(EventHandler::window, GLFW_TRUE);
             break;
 
         case EngineState::esLoading:
-            SceneManager::checkLoading(window);
+            SceneManager::checkLoading();
             Render::renderLoadingScreen();
             break;
 
@@ -224,13 +218,13 @@ int main()
             break;
 
         case EngineState::esRunning:
-            EventHandler::processInputRunning(window);
+            EventHandler::processInputRunning();
             PhysicsUtil::update();
             Render::render();
             break;
         }
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(EventHandler::window);
         EventHandler::update();
         glfwPollEvents();
     }
@@ -242,7 +236,7 @@ int main()
     SceneManager::unload();
 
     // Cleanup GLFW
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(EventHandler::window);
     glfwTerminate();
 
     return 0;

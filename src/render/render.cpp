@@ -800,7 +800,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     // Load the shader for rendering text
     shader = ShaderUtil::load(shaderID::shText);
 
-    if (shader != lastShader)
+    if (shader != lastShader || EventHandler::windowSizeChanged)
     {
         // Set the projection matrix for the text shader
         glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(EventHandler::screenWidth), static_cast<float>(EventHandler::screenHeight), 0.0f);

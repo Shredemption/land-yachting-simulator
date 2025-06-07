@@ -13,8 +13,6 @@ JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
 
 void ModelUtil::loadModelMap()
 {
-    auto temp = std::filesystem::current_path();
-
     // Check if the file exists
     if (!std::filesystem::exists(modelMapPath))
     {
