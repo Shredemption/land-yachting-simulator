@@ -467,4 +467,11 @@ void EventHandler::setFullscreenState()
 
         windowSizeChanged = true;
     }
+
+    if (stillHidden)
+    {
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        framebufferSizeCallback(window, width, height);
+    }
 }
