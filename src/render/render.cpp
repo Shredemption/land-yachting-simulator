@@ -1079,12 +1079,14 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
     float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
 
-    float darkfactor;
+    float darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
+    float darkenPosition = 0.4f;
 
-    if (SceneManager::engineState == EngineState::esTitleSettings)
+    if (state == EngineState::esTitleSettings)
+    {
         darkfactor = 1.0f;
-    else
-        darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
+        darkenPosition = 2.0f;
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1098,7 +1100,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
     shader->setInt("screenTexture", 0);
     shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
     shader->setFloat("darkenAmount", darkfactor);
-    shader->setFloat("darkenPosition", 0.4);
+    shader->setFloat("darkenPosition", darkenPosition);
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
