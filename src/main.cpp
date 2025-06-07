@@ -195,7 +195,6 @@ int main()
 
         SceneManager::updateFade();
 
-        // If fading, check fade state
         switch (checkState)
         {
         case EngineState::esNone:
