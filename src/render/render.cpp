@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "camera/camera.hpp"
-#include "settings/settings.hpp"
+#include "settings_manager/settings_manager.hpp"
 #include "event_handler/event_handler.hpp"
 #include "framebuffer/framebuffer_util.hpp"
 #include "model/model.hpp"
@@ -225,7 +225,7 @@ void renderGrid(const RenderCommand &cmd)
 void renderObjects(std::vector<RenderCommand> &renderBuffer)
 {
 
-    if (Settings::debugWireframeMode)
+    if (SettingsManager::settings.debug.wireframeMode)
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDisable(GL_CULL_FACE);
