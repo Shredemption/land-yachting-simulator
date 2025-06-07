@@ -154,11 +154,11 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    // Setup render class
-    Render::setup();
-
     // Set window to fullscreen by default
     EventHandler::setFullscreenState();
+
+    // Setup render class
+    Render::setup();
 
     glfwShowWindow(EventHandler::window);
 
