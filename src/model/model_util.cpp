@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include <jsoncons/json.hpp>
+
 // Json setups
 JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
 JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);

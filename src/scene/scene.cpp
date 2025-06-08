@@ -2,6 +2,9 @@
 
 #include "pch.h"
 
+#include "file_manager/file_manager.hpp"
+#include "framebuffer/framebuffer_util.hpp"
+
 // Json mappings
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
