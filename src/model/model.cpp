@@ -5,8 +5,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
-#include "model/bone.h"
-
 template <typename MeshType>
 struct ExtractVertexType;
 

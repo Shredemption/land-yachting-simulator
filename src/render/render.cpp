@@ -2,9 +2,6 @@
 
 #include "pch.h"
 
-#include "framebuffer/framebuffer_util.hpp"
-#include "model/bone.h"
-
 // Local variables
 unsigned int quadVAO = 0, quadVBO = 0;
 float quadVertices[] = {0};

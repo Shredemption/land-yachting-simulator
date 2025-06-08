@@ -2,8 +2,6 @@
 
 #include "pch.h"
 
-#include "file_manager/file_manager.hpp"
-
 Shader *ShaderUtil::load(const shaderID shaderID)
 {
     Shader *shaderPtr;

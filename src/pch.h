@@ -30,7 +30,11 @@
 // My project
 #include "animation/animation.hpp"
 #include "camera/camera.hpp"
+#include "controller_manager/controller_manager.hpp"
+#include "file_manager/file_manager.hpp"
+#include "framebuffer/framebuffer_util.hpp"
 #include "input_manager/input_manager.hpp"
+#include "model/bone.h"
 #include "model/model.hpp"
 #include "model/model_util.hpp"
 #include "physics/physics_util.hpp"

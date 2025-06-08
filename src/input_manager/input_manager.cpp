@@ -18,7 +18,7 @@ void InputManager::setCallbacks()
     {
     case EngineState::esTitle:
         glfwSetKeyCallback(window, keyCallbackMenu);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
@@ -58,6 +58,9 @@ void InputManager::setCallbacks()
 
 void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+    if (ControllerManager::controllerConnected)
+        return;
+
     if (inputType != InputType::itKeyboard)
     {
         inputType = InputType::itKeyboard;
@@ -96,74 +99,36 @@ void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
 
         case GLFW_KEY_W:
         case GLFW_KEY_UP:
-            switch (UIManager::inputState)
-            {
-            case UIInputState::uiMain:
-                UIManager::selectedMain = (UIManager::selectedMain <= 0) ? UIManager::uiElements.size() - 1 : UIManager::selectedMain - 1;
-                break;
-
-            case UIInputState::uiSide:
-                UIManager::selectedSide = (UIManager::selectedSide <= 0) ? UIManager::uiElementsSide.size() - 1 : UIManager::selectedSide - 1;
-                break;
-            }
+            menuMoveUp();
             break;
 
         case GLFW_KEY_S:
         case GLFW_KEY_DOWN:
-            switch (UIManager::inputState)
-            {
-            case UIInputState::uiMain:
-                UIManager::selectedMain = (UIManager::selectedMain == UIManager::uiElements.size() - 1) ? 0 : UIManager::selectedMain + 1;
-                break;
-
-            case UIInputState::uiSide:
-                UIManager::selectedSide = (UIManager::selectedSide == UIManager::uiElementsSide.size() - 1) ? 0 : UIManager::selectedSide + 1;
-                break;
-            }
+            menuMoveDown();
             break;
 
         case GLFW_KEY_A:
         case GLFW_KEY_LEFT:
-            if (UIManager::inputState == UIInputState::uiSide)
-                if (SceneManager::settingsPage != SettingsPage::spStart)
-                {
-                    UIManager::inputState = UIInputState::uiMain;
-                }
-
+            menuMoveLeft();
             break;
 
         case GLFW_KEY_D:
         case GLFW_KEY_RIGHT:
-            if (UIManager::inputState == UIInputState::uiMain)
-                if (SceneManager::settingsPage != SettingsPage::spStart)
-                {
-                    UIManager::inputState = UIInputState::uiSide;
-                }
+            menuMoveRight();
             break;
 
         case GLFW_KEY_ENTER:
         case GLFW_KEY_SPACE:
-            auto *selected = UIManager::getSelectedElement();
-            if (!selected)
-                break;
-
-            std::visit([](auto *element)
-                       {
-                           if (!element)
-                               return;
-                            
-                            using T = std::decay_t<decltype(*element)>;
-                            if constexpr (std::is_same_v<T, UIButton>)
-                                element->onClick();
-                            else if constexpr (std::is_same_v<T, UIToggle>)
-                                element->execute(); },
-                       *selected);
+            menuRunSelected();
             break;
         }
 }
 
 void InputManager::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+    if (ControllerManager::controllerConnected)
+        return;
+
     // Pause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         SceneManager::switchEngineState(EngineState::esPause);
@@ -187,6 +152,9 @@ void InputManager::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
 
 void InputManager::mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
 {
+    if (ControllerManager::controllerConnected)
+        return;
+
     if (inputType != InputType::itMouse)
     {
         inputType = InputType::itMouse;
@@ -199,6 +167,9 @@ void InputManager::mousePosCallbackMenu(GLFWwindow *window, double xPos, double 
 
 void InputManager::mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods)
 {
+    if (ControllerManager::controllerConnected)
+        return;
+
     if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
         leftMouseButton.wasDown = leftMouseButton.isDown;
@@ -222,6 +193,9 @@ void InputManager::mouseButtonCallbackMenu(GLFWwindow *window, int button, int a
 
 void InputManager::mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos)
 {
+    if (ControllerManager::controllerConnected)
+        return;
+
     // Check if window size changed last iteration
     if (WindowManager::firstFrame || WindowManager::windowSizeChanged)
     {
@@ -277,8 +251,11 @@ void InputManager::mousePosCallbackRunning(GLFWwindow *window, double xPos, doub
 
 void InputManager::processInputRunning()
 {
+    if (ControllerManager::controllerConnected)
+        return;
+
     GLFWwindow *window = WindowManager::window;
-    
+
     // Move cam with WASD, space, shift
     float cameraSpeed = 5.f * TimeManager::deltaTime;
 
@@ -346,4 +323,69 @@ void InputManager::processInputRunning()
     {
         PhysicsUtil::keyInputs[4] = true;
     }
+}
+
+void InputManager::menuMoveUp()
+{
+    switch (UIManager::inputState)
+    {
+    case UIInputState::uiMain:
+        UIManager::selectedMain = (UIManager::selectedMain <= 0) ? UIManager::uiElements.size() - 1 : UIManager::selectedMain - 1;
+        break;
+
+    case UIInputState::uiSide:
+        UIManager::selectedSide = (UIManager::selectedSide <= 0) ? UIManager::uiElementsSide.size() - 1 : UIManager::selectedSide - 1;
+        break;
+    }
+}
+
+void InputManager::menuMoveDown()
+{
+    switch (UIManager::inputState)
+    {
+    case UIInputState::uiMain:
+        UIManager::selectedMain = (UIManager::selectedMain == UIManager::uiElements.size() - 1) ? 0 : UIManager::selectedMain + 1;
+        break;
+
+    case UIInputState::uiSide:
+        UIManager::selectedSide = (UIManager::selectedSide == UIManager::uiElementsSide.size() - 1) ? 0 : UIManager::selectedSide + 1;
+        break;
+    }
+}
+
+void InputManager::menuMoveLeft()
+{
+    if (UIManager::inputState == UIInputState::uiSide)
+        if (SceneManager::settingsPage != SettingsPage::spStart)
+        {
+            UIManager::inputState = UIInputState::uiMain;
+        }
+}
+
+void InputManager::menuMoveRight()
+{
+    if (UIManager::inputState == UIInputState::uiMain)
+        if (SceneManager::settingsPage != SettingsPage::spStart)
+        {
+            UIManager::inputState = UIInputState::uiSide;
+        }
+}
+
+void InputManager::menuRunSelected()
+{
+    auto *selected = UIManager::getSelectedElement();
+    if (!selected)
+        return;
+
+    std::visit([](auto *element)
+               {
+                if (!element)
+                    return;
+                    
+                    using T = std::decay_t<decltype(*element)>;
+                    if constexpr (std::is_same_v<T, UIButton>)
+                        element->onClick();
+                    else if constexpr (std::is_same_v<T, UIToggle>)
+                        element->execute(); },
+               *selected);
 }
