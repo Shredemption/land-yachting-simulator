@@ -150,6 +150,7 @@ int main()
 
         glfwSwapBuffers(WindowManager::window);
         InputManager::update();
+        ControllerManager::update();
         glfwPollEvents();
     }
 

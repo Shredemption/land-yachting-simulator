@@ -30,4 +30,10 @@ namespace InputManager
     void mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos);
 
     void processInputRunning();
+
+    void menuMoveUp();
+    void menuMoveDown();
+    void menuMoveLeft();
+    void menuMoveRight();
+    void menuRunSelected();
 };
