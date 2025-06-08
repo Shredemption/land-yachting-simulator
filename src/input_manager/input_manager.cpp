@@ -213,9 +213,9 @@ void InputManager::mousePosCallbackRunning(GLFWwindow *window, double xPos, doub
     yPos -= WindowManager::screenHeight / 2;
 
     // Apply sensitivity
-    float sensitvity = 0.1f;
-    xPos *= sensitvity;
-    yPos *= sensitvity;
+    float sensitvity = 5.0f;
+    xPos *= sensitvity / 50;
+    yPos *= sensitvity / 50;
 
     // If camera moved
     if (xPos != 0 || yPos != 0)
