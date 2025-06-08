@@ -9,7 +9,10 @@ void ControllerManager::update()
     if (!controllerConnected)
         return;
     else if (InputManager::inputType != InputType::itController)
+    {
         InputManager::inputType = InputType::itController;
+        glfwSetInputMode(WindowManager::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 
     GLFWgamepadstate newState;
     if (glfwGetGamepadState(GLFW_JOYSTICK_1, &newState))
