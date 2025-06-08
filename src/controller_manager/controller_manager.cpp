@@ -165,6 +165,25 @@ void ControllerManager::buttonsRunning()
 
 void ControllerManager::sticksRunning()
 {
+    float sensitivity = 5.0f;
+    float x = sensitivity / 3 * state.sticks[1].x;
+    float y = sensitivity / 3 * state.sticks[1].y;
+
+    if (Camera::freeCam)
+    {
+        Camera::yawFree += glm::radians(x);
+        Camera::pitchFree += glm::radians(y);
+
+        Camera::pitchFree = std::clamp(Camera::pitchFree, glm::radians(-89.0f), glm::radians(89.0f));
+    }
+    else
+    {
+        Camera::yawOffset += glm::radians(x);
+        Camera::pitchOffset += glm::radians(y);
+
+        Camera::yawOffset = std::clamp(Camera::yawOffset, glm::radians(-100.0f), glm::radians(100.0f));
+        Camera::pitchOffset = std::clamp(Camera::pitchOffset, glm::radians(-45.0f), glm::radians(60.0f));
+    }
 }
 
 bool ControllerManager::shouldTriggerNavigation(StickInput &stick)
