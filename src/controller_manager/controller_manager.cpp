@@ -142,6 +142,25 @@ void ControllerManager::sticksMenu()
 
 void ControllerManager::buttonsRunning()
 {
+    for (int i = 0; i < BUTTON_COUNT; i++)
+    {
+        if (state.buttons[i].pressed())
+        {
+            switch (i)
+            {
+            case GLFW_GAMEPAD_BUTTON_START:
+                SceneManager::switchEngineState(EngineState::esPause);
+                break;
+
+            case GLFW_GAMEPAD_BUTTON_BACK:
+                PhysicsUtil::switchControlledYacht();
+                break;
+
+            case GLFW_GAMEPAD_BUTTON_Y:
+                Camera::freeCam = (Camera::freeCam) ? false : true;
+            }
+        }
+    }
 }
 
 void ControllerManager::sticksRunning()

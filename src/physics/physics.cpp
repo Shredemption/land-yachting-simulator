@@ -152,28 +152,48 @@ void Physics::move(bool &controlled)
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
 
-    if (controlled)
+    if (InputManager::inputType == InputType::itController)
     {
-        if (PhysicsUtil::keyInputs[0])
+        if (controlled)
         {
-            sailControlFactor += 1.f * PhysicsUtil::tickRate;
+            if (ControllerManager::state.buttons[GLFW_GAMEPAD_BUTTON_A].held())
+            {
+                forwardAcceleration += 1.f;
+            }
+
+            steeringChange = -ControllerManager::state.sticks[0].x;
+
+            sailControlFactor += -ControllerManager::state.sticks[0].y * PhysicsUtil::tickRate;
         }
-        if (PhysicsUtil::keyInputs[1])
+
+        steeringAngle = 0.5 * steeringAngle + 0.5 * steeringChange * maxSteeringAngle;
+    }
+    else if (controlled)
+    {
         {
-            sailControlFactor -= 0.4f * PhysicsUtil::tickRate;
+            if (PhysicsUtil::keyInputs[0])
+            {
+                sailControlFactor += 1.f * PhysicsUtil::tickRate;
+            }
+            if (PhysicsUtil::keyInputs[1])
+            {
+                sailControlFactor -= 0.4f * PhysicsUtil::tickRate;
+            }
+            if (PhysicsUtil::keyInputs[2])
+            {
+                steeringChange += steeringSmoothness * maxSteeringAngle;
+            }
+            if (PhysicsUtil::keyInputs[3])
+            {
+                steeringChange -= steeringSmoothness * maxSteeringAngle;
+            }
+            if (PhysicsUtil::keyInputs[4])
+            {
+                forwardAcceleration += 1.f;
+            }
         }
-        if (PhysicsUtil::keyInputs[2])
-        {
-            steeringChange += steeringSmoothness * maxSteeringAngle;
-        }
-        if (PhysicsUtil::keyInputs[3])
-        {
-            steeringChange -= steeringSmoothness * maxSteeringAngle;
-        }
-        if (PhysicsUtil::keyInputs[4])
-        {
-            forwardAcceleration += 1.f;
-        }
+
+        steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * PhysicsUtil::tickRate;
     }
 
     // Clamp sail control
@@ -250,7 +270,6 @@ void Physics::move(bool &controlled)
 
     // Apply accelerations
     forwardVelocity += forwardAcceleration * PhysicsUtil::tickRate;
-    steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * PhysicsUtil::tickRate;
     float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
 
     // Transform with velocities
