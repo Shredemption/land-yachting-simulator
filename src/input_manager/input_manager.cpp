@@ -18,7 +18,6 @@ void InputManager::setCallbacks()
     {
     case EngineState::esTitle:
         glfwSetKeyCallback(window, keyCallbackMenu);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
