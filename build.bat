@@ -25,6 +25,8 @@ cmake --build .
 
 popd
 
+strip marama.exe
+
 marama.exe
 
 endlocal
