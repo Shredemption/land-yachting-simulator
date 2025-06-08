@@ -99,12 +99,7 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
     {
         inputType = InputType::itKeyboard;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-        for (int i = 0; i < UIManager::uiElements.size(); i++)
-        {
-            std::visit([&](auto *element)
-                       { if (element->isHovered(mousePosX, mousePosY)) UIManager::selected = i; }, UIManager::uiElements[i]);
-        }
+        return;
     }
 
     // ESC handling
@@ -141,11 +136,11 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
             switch (UIManager::inputState)
             {
             case UIInputState::uiMain:
-                UIManager::selected = (UIManager::selected <= 0) ? UIManager::uiElements.size() - 1 : UIManager::selected - 1;
+                UIManager::selectedMain = (UIManager::selectedMain <= 0) ? UIManager::uiElements.size() - 1 : UIManager::selectedMain - 1;
                 break;
 
             case UIInputState::uiSide:
-                UIManager::selected = (UIManager::selected <= 0) ? UIManager::uiElementsSide.size() - 1 : UIManager::selected - 1;
+                UIManager::selectedSide = (UIManager::selectedSide <= 0) ? UIManager::uiElementsSide.size() - 1 : UIManager::selectedSide - 1;
                 break;
             }
             break;
@@ -155,11 +150,11 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
             switch (UIManager::inputState)
             {
             case UIInputState::uiMain:
-                UIManager::selected = (UIManager::selected == UIManager::uiElements.size() - 1) ? 0 : UIManager::selected + 1;
+                UIManager::selectedMain = (UIManager::selectedMain == UIManager::uiElements.size() - 1) ? 0 : UIManager::selectedMain + 1;
                 break;
 
             case UIInputState::uiSide:
-                UIManager::selected = (UIManager::selected == UIManager::uiElementsSide.size() - 1) ? 0 : UIManager::selected + 1;
+                UIManager::selectedSide = (UIManager::selectedSide == UIManager::uiElementsSide.size() - 1) ? 0 : UIManager::selectedSide + 1;
                 break;
             }
             break;
@@ -170,7 +165,6 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
                 if (SceneManager::settingsPage != SettingsPage::spStart)
                 {
                     UIManager::inputState = UIInputState::uiMain;
-                    UIManager::selected = std::clamp(UIManager::selected, 0, int(UIManager::uiElements.size() - 1));
                 }
 
             break;
@@ -181,51 +175,26 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
                 if (SceneManager::settingsPage != SettingsPage::spStart)
                 {
                     UIManager::inputState = UIInputState::uiSide;
-                    UIManager::selected = std::clamp(UIManager::selected, 0, int(UIManager::uiElementsSide.size() - 1));
                 }
             break;
 
         case GLFW_KEY_ENTER:
         case GLFW_KEY_SPACE:
-            if (UIManager::selected != -1)
-                switch (UIManager::inputState)
-                {
-                case UIInputState::uiMain:
-                    std::visit([](auto *element)
-                               {
-                                   if (!element)
-                                       return;
+            auto *selected = UIManager::getSelectedElement();
+            if (!selected)
+                break;
 
-                                   using T = std::decay_t<decltype(*element)>;
-                                   if constexpr (std::is_same_v<T, UIButton>)
-                                   {
-                                       element->onClick();
-                                   }
-
-                                   else if constexpr (std::is_same_v<T, UIToggle>)
-                                   {
-                                       element->execute();
-                                   } }, UIManager::uiElements[UIManager::selected]);
-                    break;
-
-                case UIInputState::uiSide:
-                    std::visit([](auto *element)
-                               {
-                                   if (!element)
-                                       return;
-
-                                   using T = std::decay_t<decltype(*element)>;
-                                   if constexpr (std::is_same_v<T, UIButton>)
-                                   {
-                                       element->onClick();
-                                   }
-
-                                   else if constexpr (std::is_same_v<T, UIToggle>)
-                                   {
-                                       element->execute();
-                                   } }, UIManager::uiElementsSide[UIManager::selected]);
-                    break;
-                }
+            std::visit([](auto *element)
+                       {
+                           if (!element)
+                               return;
+                            
+                            using T = std::decay_t<decltype(*element)>;
+                            if constexpr (std::is_same_v<T, UIButton>)
+                                element->onClick();
+                            else if constexpr (std::is_same_v<T, UIToggle>)
+                                element->execute(); },
+                       *selected);
             break;
         }
 }
