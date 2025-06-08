@@ -25,10 +25,10 @@ void renderModel(const RenderCommand &cmd)
         shader->setInt("textureArray", cmd.textureUnit);
 
         // Send light and view position to shader
-        shader->setVec3("lightPos", EventHandler::lightPos);
+        shader->setVec3("lightPos", SceneManager::currentScene.get()->lightPos);
         shader->setVec3("viewPos", Camera::getPosition());
-        shader->setFloat("lightIntensity", EventHandler::lightInsensity);
-        shader->setVec3("lightCol", EventHandler::lightCol);
+        shader->setFloat("lightIntensity", SceneManager::currentScene.get()->lightInsensity);
+        shader->setVec3("lightCol", SceneManager::currentScene.get()->lightCol);
 
         // Apply view and projection to whole scene
         shader->setMat4("u_view", Camera::u_view);
@@ -91,7 +91,7 @@ void renderOpaquePlane(const RenderCommand &cmd)
         shader->setInt("normalMap", normalMap);
         shader->setInt("heightmap", heightmap);
 
-        shader->setFloat("moveOffset", EventHandler::time);
+        shader->setFloat("moveOffset", TimeManager::time);
         shader->setMat4("u_camXY", Camera::u_camXY);
     }
 
@@ -146,10 +146,10 @@ void renderTransparentPlane(const RenderCommand &cmd)
         shader->setInt("reflectionTexture", 1);
         shader->setInt("refractionTexture", 2);
         shader->setInt("depthMap", 3);
-        shader->setFloat("moveOffset", EventHandler::time);
+        shader->setFloat("moveOffset", TimeManager::time);
         shader->setVec3("cameraPosition", Camera::getPosition());
-        shader->setVec3("lightPos", EventHandler::lightPos);
-        shader->setVec3("lightCol", EventHandler::lightCol);
+        shader->setVec3("lightPos", SceneManager::currentScene.get()->lightPos);
+        shader->setVec3("lightCol", SceneManager::currentScene.get()->lightCol);
         shader->setMat4("u_camXY", Camera::u_camXY);
     }
 
@@ -300,16 +300,16 @@ void renderImage(const std::string &fileName, const glm::vec2 &position, const f
 
     glBindVertexArray(quadVAO);
 
-    shader->setVec2("uScreenSize", glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight));
-    glm::vec2 screenSize = glm::vec2(EventHandler::screenWidth, EventHandler::screenHeight);
+    shader->setVec2("uScreenSize", glm::vec2(WindowManager::screenWidth, WindowManager::screenHeight));
+    glm::vec2 screenSize = glm::vec2(WindowManager::screenWidth, WindowManager::screenHeight);
 
     unsigned int textureUnit = TextureManager::getStandaloneTextureUnit("resources/images/" + fileName);
     shader->setInt("uTexture", textureUnit);
 
     glm::vec2 posFactor = position; // normalized 0..1
 
-    float scaleX = EventHandler::screenWidth / 2560.0f;
-    float scaleY = EventHandler::screenHeight / 1440.0f;
+    float scaleX = WindowManager::screenWidth / 2560.0f;
+    float scaleY = WindowManager::screenHeight / 1440.0f;
     glm::vec2 scaleFactors(scaleX, scaleY);
 
     glm::vec2 scaledScreenSize = glm::vec2(2560.0f, 1440.0f) * scaleFactors;
@@ -383,7 +383,7 @@ void renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
 
 void renderTestQuad(unsigned int texture, int x, int y)
 {
-    glViewport(x, y, EventHandler::screenWidth / 3, EventHandler::screenHeight / 3);
+    glViewport(x, y, WindowManager::screenWidth / 3, WindowManager::screenHeight / 3);
 
     // Bind the framebuffer texture
     glActiveTexture(GL_TEXTURE1);
@@ -398,14 +398,23 @@ void renderTestQuad(unsigned int texture, int x, int y)
     glBindVertexArray(0);
 
     // restore viewport
-    glViewport(0, 0, EventHandler::screenWidth, EventHandler::screenHeight);
+    glViewport(0, 0, WindowManager::screenWidth, WindowManager::screenHeight);
 }
 
 void Render::setup()
 {
     initQuad();
     initFreeType();
-    createSceneFBO(EventHandler::windowWidth, EventHandler::windowHeight);
+    createSceneFBO(WindowManager::windowWidth, WindowManager::windowHeight);
+
+    // Enable face culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    // Enable Depth buffer (Z-buffer)
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 }
 
 void Render::initQuad()
@@ -614,7 +623,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     renderSceneSkyBox();
 
     // If water loaded, render buffers
-    if (ShaderUtil::waterLoaded && (EventHandler::frame % 2 == 0 || !toScreen))
+    if (ShaderUtil::waterLoaded && (TimeManager::frame % 2 == 0 || !toScreen))
     {
         WaterPass = true;
         renderReflectRefract(renderBuffer.commandBuffer);
@@ -632,7 +641,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     {
         // Set debug data
         std::string debugText;
-        FPS = (0.9f * FPS + 0.1f / EventHandler::deltaTime);
+        FPS = (0.9f * FPS + 0.1f / TimeManager::deltaTime);
 
         // Select which debug renderer to use
         switch (debugstate)
@@ -775,17 +784,17 @@ void Render::initFreeType()
 
 void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha)
 {
-    x *= EventHandler::screenUIScale * 2560.0f;
-    y *= EventHandler::screenUIScale * 1440.0f;
-    scale *= EventHandler::screenUIScale;
+    x *= WindowManager::screenUIScale * 2560.0f;
+    y *= WindowManager::screenUIScale * 1440.0f;
+    scale *= WindowManager::screenUIScale;
 
     // Load the shader for rendering text
     shader = ShaderUtil::load(shaderID::shText);
 
-    if (shader != lastShader || EventHandler::windowSizeChanged)
+    if (shader != lastShader || WindowManager::windowSizeChanged)
     {
         // Set the projection matrix for the text shader
-        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(EventHandler::screenWidth), static_cast<float>(EventHandler::screenHeight), 0.0f);
+        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WindowManager::screenWidth), static_cast<float>(WindowManager::screenHeight), 0.0f);
         shader->setMat4("projection", projection);
 
         lastShader = shader;
@@ -856,7 +865,7 @@ void Render::createSceneFBO(int width, int height)
 {
     glGenTextures(1, &pauseTexture);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, EventHandler::screenWidth, EventHandler::screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WindowManager::screenWidth, WindowManager::screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -913,8 +922,8 @@ void Render::savePauseBackground()
 
     // Perform blit
     glBlitFramebuffer(
-        0, 0, EventHandler::screenWidth, EventHandler::screenHeight,
-        0, 0, EventHandler::screenWidth, EventHandler::screenHeight,
+        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
+        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
         GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
     // Unbind
@@ -993,7 +1002,7 @@ void Render::renderLoadingScreen()
 
     shader = ShaderUtil::load(shaderID::shDarkenBlur);
     shader->setInt("screenTexture", 0);
-    shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
+    shader->setVec2("texelSize", glm::vec2(1.0f / WindowManager::screenWidth, 1.0f / WindowManager::screenHeight));
     shader->setFloat("darkenAmount", darkfactor);
     shader->setFloat("darkenPosition", 2);
 
@@ -1080,7 +1089,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
     shader = ShaderUtil::load(shaderID::shDarkenBlur);
     shader->setInt("screenTexture", 0);
-    shader->setVec2("texelSize", glm::vec2(1.0f / EventHandler::screenWidth, 1.0f / EventHandler::screenHeight));
+    shader->setVec2("texelSize", glm::vec2(1.0f / WindowManager::screenWidth, 1.0f / WindowManager::screenHeight));
     shader->setFloat("darkenAmount", darkfactor);
     shader->setFloat("darkenPosition", darkenPosition);
 

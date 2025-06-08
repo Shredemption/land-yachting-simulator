@@ -66,78 +66,22 @@ int main()
 
     SettingsManager::load();
 
-    // Initialize GLFW
-    if (!glfwInit())
-    {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        return -1;
-    }
-
-    // Set GLFW error callback
-    glfwSetErrorCallback(EventHandler::errorCallback);
-
-    // Set OpenGL version and profile
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // OpenGL 4.1
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1); // OpenGL 4.1
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_FOCUS_ON_SHOW, GL_TRUE);
-    glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
-    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-
-    // Create Window
-    EventHandler::window = glfwCreateWindow(800, 600, "Marama", nullptr, nullptr);
-    if (!EventHandler::window)
-    {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    // Make OpenGL context current
-    glfwMakeContextCurrent(EventHandler::window);
+    WindowManager::setup();
 
 #ifdef _WIN32
-    SetWindowIconFromResource(EventHandler::window);
+    SetWindowIconFromResource(WindowManager::window);
 #endif
-
-    // Set swap interval
-    glfwSwapInterval(1);
-
-    // GLAD loads all OpenGL pointers
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
 
     // Import JSON file model registry
     ModelUtil::loadModelMap();
     SceneManager::loadSceneMap();
 
-    // Get screen dimensions
-    glfwGetWindowPos(EventHandler::window, &EventHandler::windowXpos, &EventHandler::windowYpos);
-    glfwGetWindowSize(EventHandler::window, &EventHandler::windowWidth, &EventHandler::windowHeight);
-    glfwGetFramebufferSize(EventHandler::window, &EventHandler::screenWidth, &EventHandler::screenHeight);
-
-    glfwSetFramebufferSizeCallback(EventHandler::window, EventHandler::framebufferSizeCallback);
-
-    // Enable face culling
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
-
-    // Enable Depth buffer (Z-buffer)
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    // Setup render class
     Render::setup();
 
     // Set window to fullscreen by default
-    EventHandler::setFullscreenState();
+    WindowManager::setFullscreenState();
 
-    glfwShowWindow(EventHandler::window);
+    glfwShowWindow(WindowManager::window);
 
     // Launch threads
     ThreadManager::startup();
@@ -147,21 +91,21 @@ int main()
     UIManager::load(SceneManager::engineState);
 
     glfwPollEvents();
-    glfwSwapBuffers(EventHandler::window);
+    glfwSwapBuffers(WindowManager::window);
 
     // Main Loop
-    while (!glfwWindowShouldClose(EventHandler::window))
+    while (!glfwWindowShouldClose(WindowManager::window))
     {
         EngineState checkState = (SceneManager::exitState == EngineState::esNone) ? SceneManager::engineState : SceneManager::exitState;
         SettingsPage checkPage = (SceneManager::exitPage == SettingsPage::spNone) ? SceneManager::settingsPage : SceneManager::exitPage;
 
-        EventHandler::timing(checkState);
+        TimeManager::timing(checkState);
 
         if (SceneManager::exitState == EngineState::esNone && SceneManager::updateCallbacks)
-            EventHandler::setCallbacks();
+            InputManager::setCallbacks();
 
         // If window inactive
-        if (glfwGetWindowAttrib(EventHandler::window, GLFW_ICONIFIED))
+        if (glfwGetWindowAttrib(WindowManager::window, GLFW_ICONIFIED))
         {
             glfwWaitEvents();
             continue;
@@ -173,7 +117,7 @@ int main()
         {
         case EngineState::esNone:
             Render::renderBlankScreen();
-            glfwSetWindowShouldClose(EventHandler::window, GLFW_TRUE);
+            glfwSetWindowShouldClose(WindowManager::window, GLFW_TRUE);
             break;
 
         case EngineState::esLoading:
@@ -198,14 +142,14 @@ int main()
             break;
 
         case EngineState::esRunning:
-            EventHandler::processInputRunning();
+            InputManager::processInputRunning();
             PhysicsUtil::update();
             Render::render();
             break;
         }
 
-        glfwSwapBuffers(EventHandler::window);
-        EventHandler::update();
+        glfwSwapBuffers(WindowManager::window);
+        InputManager::update();
         glfwPollEvents();
     }
 
@@ -216,7 +160,7 @@ int main()
     SceneManager::unload();
 
     // Cleanup GLFW
-    glfwDestroyWindow(EventHandler::window);
+    glfwDestroyWindow(WindowManager::window);
     glfwTerminate();
 
     return 0;
