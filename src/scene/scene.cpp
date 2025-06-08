@@ -1,21 +1,6 @@
 #include <scene/scene.hpp>
 
-#include <jsoncons/json.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <iostream>
-#include <filesystem>
-#include <fstream>
-
-#include "file_manager/file_manager.hpp"
-#include "framebuffer/framebuffer_util.hpp"
-#include "mesh/mesh_util.hpp"
-#include "model/model.hpp"
-#include "model/model_util.hpp"
-#include "scene_manager/scene_manager.hpp"
-#include "shader/shader_util.hpp"
-#include "texture_manager/texture_manager.hpp"
-#include "texture_manager/texture_manager_defs.h"
+#include "pch.h"
 
 // Json mappings
 JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, animated, controlled);

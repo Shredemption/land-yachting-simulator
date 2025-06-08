@@ -1,5 +1,4 @@
-#ifndef SETTINGS_MANAGER_H
-#define SETTINGS_MANAGER_H
+#pragma once
 
 #include <string>
 
@@ -13,5 +12,3 @@ namespace SettingsManager
     void load();
     void save();
 }
-
-#endif

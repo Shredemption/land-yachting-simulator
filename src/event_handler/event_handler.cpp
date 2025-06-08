@@ -1,16 +1,6 @@
 #include "event_handler/event_handler.hpp"
 
-#include <iostream>
-#include <vector>
-#include <algorithm>
-
-#include "camera/camera.hpp"
-#include "physics/physics_util.hpp"
-#include "render/render.hpp"
-#include "settings_manager/settings_manager.hpp"
-#include "scene_manager/scene_manager.hpp"
-#include "scene_manager/scene_manager_defs.h"
-#include "ui_manager/ui_manager.hpp"
+#include "pch.h"
 
 // Generic EventHandler time update
 void EventHandler::timing(EngineState &state)

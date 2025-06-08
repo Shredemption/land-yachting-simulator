@@ -1,5 +1,4 @@
-#ifndef MESH_HPP
-#define MESH_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -24,5 +23,3 @@ public:
     void setupVertexAttributes();
     void uploadToGPU();
 };
-    
-#endif

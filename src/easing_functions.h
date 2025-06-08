@@ -1,12 +1,11 @@
-#ifndef EASING_FUNCTIONS_H
-#define EASING_FUNCTIONS_H
+#pragma once
 
 #include <cmath>
 
 inline float easeOutCubic(float start, float end, float alpha)
 {
     return start + (end - start) * (1 - std::pow((1 - alpha), 3));
-};
+}
 
 inline float easeOutBack(float start, float end, float alpha, float overshootFactor)
 {
@@ -22,4 +21,3 @@ inline float easeInOutQuad(float start, float end, float alpha)
 {
     return start + (end - start) * (alpha < 0.5f ? 2.0f * alpha * alpha : 1.0f - std::pow(-2.0f * alpha + 2.0f, 2.0f) / 2.0f);
 }
-#endif

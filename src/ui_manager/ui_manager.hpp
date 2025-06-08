@@ -1,5 +1,4 @@
-#ifndef UI_MANAGER_H
-#define UI_MANAGER_H
+#pragma once
 
 #include <vector>
 #include <variant>
@@ -47,6 +46,4 @@ namespace UIManager
     inline glm::vec3 defaultBaseColor = {1.0f, 1.0f, 1.0f};
     inline glm::vec3 defaultHoverColor = {0.9f, 0.4f, 0.4f};
     inline glm::vec3 defaultActiveColor = {0.6f, 0.1f, 0.1f};
-}
-
-#endif
+};

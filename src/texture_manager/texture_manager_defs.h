@@ -1,5 +1,4 @@
-#ifndef TEXTURE_MANAGER_DEFS_H
-#define TEXTURE_MANAGER_DEFS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -38,5 +37,3 @@ struct TextureArray
 
     int textureUnit = -1;
 };
-
-#endif

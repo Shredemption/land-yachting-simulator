@@ -1,5 +1,4 @@
-#ifndef RENDERBUFFER_H
-#define RENDERBUFFER_H
+#pragma once
 
 #include <memory>
 
@@ -34,6 +33,3 @@ struct RenderBuffer
     float camYaw;
     glm::vec3 camPos;
 };
-
-
-#endif

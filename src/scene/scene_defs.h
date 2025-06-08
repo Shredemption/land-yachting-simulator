@@ -1,5 +1,4 @@
-#ifndef SCENE_DEFS_H
-#define SCENE_DEFS_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -158,5 +157,3 @@ struct ImageData
     bool mirrored;
     unsigned int textureID;
 };
-
-#endif

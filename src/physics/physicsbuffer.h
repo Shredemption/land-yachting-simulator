@@ -1,5 +1,4 @@
-#ifndef PHYSICSBUFFER_H
-#define PHYSICSBUFFER_H
+#pragma once
 
 #include <memory>
 #include <thread>
@@ -25,5 +24,3 @@ struct PhysicsBuffer
 
     void swapBuffers() { readIndex = (readIndex + 1) % 2; }
 };
-
-#endif

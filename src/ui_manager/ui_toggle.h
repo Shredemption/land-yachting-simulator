@@ -1,5 +1,4 @@
-#ifndef UI_TOGGLE_H
-#define UI_TOGGLE_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -51,5 +50,3 @@ public:
     bool *toggleVariable;
     std::function<void()> onClick;
 };
-
-#endif

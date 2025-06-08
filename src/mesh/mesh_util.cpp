@@ -1,9 +1,6 @@
 #include "mesh/mesh_util.hpp"
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
+#include "pch.h"
 
 unsigned int MeshUtil::setupSkyBoxMesh()
 {

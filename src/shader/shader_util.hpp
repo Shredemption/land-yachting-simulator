@@ -1,5 +1,4 @@
-#ifndef SHADER_UTIL_HPP
-#define SHADER_UTIL_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -23,5 +22,3 @@ namespace ShaderUtil
     inline shaderID lastShader;
     inline bool waterLoaded = false;
 };
-
-#endif

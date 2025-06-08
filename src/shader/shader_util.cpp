@@ -1,13 +1,6 @@
 #include "shader/shader_util.hpp"
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
-
-#include "file_manager/file_manager.hpp"
-#include "shader/shader.hpp"
-#include "shader/shaderID.h"
+#include "pch.h"
 
 Shader *ShaderUtil::load(const shaderID shaderID)
 {

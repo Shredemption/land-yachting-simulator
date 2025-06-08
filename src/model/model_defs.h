@@ -1,5 +1,4 @@
-#ifndef MODEL_DEFS_H
-#define MODEL_DEFS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -23,5 +22,3 @@ struct JSONModelMap
     std::map<std::string, JSONModelMapEntry> yachts;
     std::map<std::string, JSONModelMapEntry> models;
 };
-
-#endif

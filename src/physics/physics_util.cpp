@@ -1,14 +1,6 @@
 #include "physics/physics_util.hpp"
 
-#include <mutex>
-#include <string>
-
-#include "event_handler/event_handler.hpp"
-#include "model/model.hpp"
-#include "scene/scene.hpp"
-#include "scene/scene_defs.h"
-#include "scene_manager/scene_manager.hpp"
-#include "thread_manager/thread_manager.hpp"
+#include "pch.h"
 
 void PhysicsUtil::update()
 {

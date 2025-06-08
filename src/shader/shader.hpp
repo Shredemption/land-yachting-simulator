@@ -1,5 +1,4 @@
-#ifndef SHADER_HPP
-#define SHADER_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -42,5 +41,3 @@ private:
     void checkCompileError(unsigned int shader, const std::string type);
     void checkLinkingError();
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef MODEL_UTIL_HPP
-#define MODEL_UTIL_HPP
+#pragma once
 
 #include <atomic>
 #include <string>
@@ -17,5 +16,3 @@ namespace ModelUtil
     inline std::string modelMapPath = "resources/models.json";
     void loadModelMap();
 };
-
-#endif

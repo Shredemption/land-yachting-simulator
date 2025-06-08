@@ -1,5 +1,4 @@
-#ifndef THREAD_MANAGER_HPP
-#define THREAD_MANAGER_HPP
+#pragma once
 
 #include <thread>
 #include <mutex>
@@ -45,5 +44,3 @@ namespace ThreadManager
     void startRenderThread();
     void stopRenderThread();
 };
-
-#endif

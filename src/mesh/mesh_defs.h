@@ -1,5 +1,4 @@
-#ifndef MESH_DEFS_H
-#define MESH_DEFS_H
+#pragma once
 
 #include <glm/glm.hpp>
 #include <string>
@@ -31,5 +30,3 @@ struct VertexSkybox
 {
     glm::vec3 Position;
 };
-
-#endif

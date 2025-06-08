@@ -1,12 +1,6 @@
 #include "physics/physics.hpp"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/vector_angle.hpp>
-
-#include <algorithm>
-
-#include "physics/physics_util.hpp"
-#include "render/render.hpp"
+#include "pch.h"
 
 Physics::Physics(const std::string &name)
 {

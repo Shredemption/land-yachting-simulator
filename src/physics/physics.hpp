@@ -1,5 +1,4 @@
-#ifndef PHYSICS_HPP
-#define PHYSICS_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -46,5 +45,3 @@ public:
     float bodyDragCoefficient;
     float bodyArea;
 };
-
-#endif

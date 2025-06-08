@@ -1,5 +1,4 @@
-#ifndef UI_BUTTON_H
-#define UI_BUTTON_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -48,5 +47,3 @@ public:
 
     std::optional<SettingsPage> linkedPage;
 };
-
-#endif

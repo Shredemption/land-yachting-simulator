@@ -1,5 +1,4 @@
-#ifndef ANIMATION_HPP
-#define ANIMATION_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -14,5 +13,3 @@ namespace Animation
 {
     void updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones);
 };
-
-#endif

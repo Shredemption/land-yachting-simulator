@@ -1,5 +1,4 @@
-#ifndef UI_MANAGER_DEFS_H
-#define UI_MANAGER_DEFS_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -29,5 +28,3 @@ enum class UIInputState
     uiMain,
     uiSide,
 };
-
-#endif

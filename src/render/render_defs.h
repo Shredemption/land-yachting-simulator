@@ -1,5 +1,4 @@
-#ifndef RENDER_DEFS_H
-#define RENDER_DEFS_H
+#pragma once
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -35,5 +34,3 @@ enum class RenderType
     rtTransparentPlane,
     rtGrid
 };
-
-#endif
