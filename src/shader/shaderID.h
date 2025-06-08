@@ -1,5 +1,4 @@
-#ifndef SHADERID_H
-#define SHADERID_H
+#pragma once
 
 enum class shaderID
 {
@@ -17,5 +16,3 @@ enum class shaderID
     shDarkenBlur,
     shPost
 };
-
-#endif

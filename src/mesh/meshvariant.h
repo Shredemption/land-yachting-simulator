@@ -1,5 +1,4 @@
-#ifndef MESHVARIANT_H
-#define MESHVARIANT_H
+#pragma once
 
 #include <variant>
 
@@ -10,5 +9,3 @@ using MeshVariant = std::variant<
     Mesh<VertexAnimated>,
     Mesh<VertexSimple>,
     Mesh<VertexTextured>>;
-
-#endif

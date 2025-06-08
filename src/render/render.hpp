@@ -1,5 +1,4 @@
-#ifndef RENDER_HPP
-#define RENDER_HPP
+#pragma once
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -68,5 +67,3 @@ namespace Render
     void initFreeType();
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f);
 };
-
-#endif

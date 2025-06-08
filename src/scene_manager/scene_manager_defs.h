@@ -1,5 +1,4 @@
-#ifndef SCENE_MANAGER_DEFS_H
-#define SCENE_MANAGER_DEFS_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -28,5 +27,3 @@ enum class SettingsPage
     spGraphics,
     spDebug
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef FRAMEBUFFER_UTIL_HPP
-#define FRAMEBUFFER_UTIL_HPP
+#pragma once
 
 #include "framebuffer/framebuffer.hpp"
 
@@ -16,5 +15,3 @@ namespace FramebufferUtil
     void unbindCurrentFrameBuffer();
     void genWaterFrameBuffers();
 };
-
-#endif

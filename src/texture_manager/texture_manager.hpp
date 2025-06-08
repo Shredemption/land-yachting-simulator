@@ -1,5 +1,4 @@
-#ifndef TEXTURE_MANAGER_HPP
-#define TEXTURE_MANAGER_HPP
+#pragma once
 
 #include <string>
 #include <vector>
@@ -59,5 +58,3 @@ namespace TextureManager
     int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath);
     void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers);
 };
-
-#endif

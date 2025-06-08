@@ -1,5 +1,4 @@
-#ifndef SCENE_MANAGER_HPP
-#define SCENE_MANAGER_HPP
+#pragma once
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -54,5 +53,3 @@ namespace SceneManager
 
     void runOneFrame();
 };
-
-#endif

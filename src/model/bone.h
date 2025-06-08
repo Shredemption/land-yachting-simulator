@@ -1,5 +1,4 @@
-#ifndef BONE_H
-#define BONE_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -18,5 +17,3 @@ struct Bone
     Bone(std::string boneName, int boneIndex, const glm::mat4 &offset, Bone *parentBone = nullptr)
         : name(boneName), index(boneIndex), offsetMatrix(offset), parent(parentBone) {}
 };
-
-#endif

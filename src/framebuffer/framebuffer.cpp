@@ -1,11 +1,6 @@
 #include "framebuffer/framebuffer.hpp"
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
-
-#include "event_handler/event_handler.hpp"
+#include "pch.h"
 
 Framebuffer::Framebuffer(int w, int h)
 {

@@ -1,12 +1,6 @@
 #include "framebuffer/framebuffer_util.hpp"
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
-
-#include "event_handler/event_handler.hpp"
-#include "render/render.hpp"
+#include "pch.h"
 
 void FramebufferUtil::bindFrameBuffer(Framebuffer FBO)
 {

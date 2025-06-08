@@ -1,21 +1,9 @@
 #include "texture_manager/texture_manager.hpp"
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
+#include "pch.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
-#include <algorithm>
-#include <iostream>
-#include <filesystem>
-#include <future>
-
-#include "model/model.hpp"
-#include "scene/scene_defs.h"
-#include "scene_manager/scene_manager.hpp"
 
 int nextFreeUnit = 5;
 std::mutex unitMutex;

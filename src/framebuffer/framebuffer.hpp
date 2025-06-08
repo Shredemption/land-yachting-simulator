@@ -1,5 +1,4 @@
-#ifndef FRAMEBUFFER_HPP
-#define FRAMEBUFFER_HPP
+#pragma once
 
 class Framebuffer
 {
@@ -25,5 +24,3 @@ public:
     int createDepthTextureAttachment();
     int createDepthBufferAttachment();
 };
-
-#endif

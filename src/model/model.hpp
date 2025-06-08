@@ -1,5 +1,4 @@
-#ifndef MODEL_HPP
-#define MODEL_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
@@ -59,5 +58,3 @@ private:
     Mesh<VertexType> combineMeshes(const std::vector<Mesh<VertexType>> &meshes);
     MeshVariant combineMeshVariants(const std::vector<MeshVariant> &variants);
 };
-
-#endif

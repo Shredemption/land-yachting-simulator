@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #include <iostream>
@@ -14,19 +16,6 @@ void AttachConsoleIfNeeded()
     }
 }
 #endif
-
-#include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <cmath>
-#include <vector>
-#include <map>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <stb_image.h>
 
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -66,18 +55,6 @@ void SetWindowIconFromResource(GLFWwindow *window)
     SetClassLongPtr(hwnd, GCLP_HICONSM, (LONG_PTR)hIconSmall);
 }
 #endif
-
-#include "event_handler/event_handler.hpp"
-#include "model/model_util.hpp"
-#include "scene_manager/scene_manager.hpp"
-#include "scene_manager/scene_manager_defs.h"
-#include "settings_manager/settings_manager.hpp"
-#include "physics/physics_util.hpp"
-#include "render/render.hpp"
-#include "thread_manager/thread_manager.hpp"
-#include "ui_manager/ui_manager.hpp"
-
-#define STB_IMAGE_IMPLEMENTATION
 
 int main()
 {

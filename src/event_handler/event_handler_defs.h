@@ -1,5 +1,4 @@
-#ifndef EVENT_HANDLER_DEFS_H
-#define EVENT_HANDLER_DEFS_H
+#pragma once
 
 struct MouseButtonState
 {
@@ -17,5 +16,3 @@ enum class InputType
     itMouse,
     itController
 };
-
-#endif

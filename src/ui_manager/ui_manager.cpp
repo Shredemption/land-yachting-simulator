@@ -2,24 +2,7 @@
 #include "ui_manager/ui_button.h"
 #include "ui_manager/ui_toggle.h"
 
-#include <glm/glm.hpp>
-
-#include <string>
-#include <vector>
-#include <algorithm>
-
-#include "camera/camera.hpp"
-#include "settings_manager/settings_manager.hpp"
-#include "event_handler/event_handler.hpp"
-#include "physics/physics_util.hpp"
-#include "render/render.hpp"
-#include "scene_manager/scene_manager.hpp"
-#include "scene_manager/scene_manager_defs.h"
-#include "shader/shader_util.hpp"
-#include "shader/shaderID.h"
-#include "ui_manager/ui_manager_defs.h"
-
-#include "iostream"
+#include "pch.h"
 
 void UIManager::update()
 {

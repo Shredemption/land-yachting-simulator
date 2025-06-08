@@ -1,5 +1,4 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include <jsoncons/json.hpp>
 
@@ -100,5 +99,3 @@ namespace jsoncons
         }
     };
 };
-
-#endif

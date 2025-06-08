@@ -1,5 +1,4 @@
-#ifndef MESH_UTIL_HPP
-#define MESH_UTIL_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -124,5 +123,3 @@ namespace MeshUtil
 
     unsigned int setupSkyBoxMesh();
 };
-
-#endif

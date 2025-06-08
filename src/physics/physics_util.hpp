@@ -1,5 +1,4 @@
-#ifndef PHYSICS_UTIL_HPP
-#define PHYSICS_UTIL_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -41,5 +40,3 @@ namespace PhysicsUtil
     inline bool keyInputs[5];
 
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef EVENT_HANDLER_HPP
-#define EVENT_HANDLER_HPP
+#pragma once
 
 #ifndef __glad_h_
 #include <glad/glad.h>
@@ -68,5 +67,3 @@ namespace EventHandler
 
     void setFullscreenState();
 };
-
-#endif

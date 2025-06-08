@@ -1,14 +1,6 @@
 #include "thread_manager/thread_manager.hpp"
 
-#include <algorithm>
-
-#include "animation/animation.hpp"
-#include "model/model.hpp"
-#include "model/model_util.hpp"
-#include "physics/physics_util.hpp"
-#include "render/render.hpp"
-#include "scene/scene.hpp"
-#include "scene_manager/scene_manager.hpp"
+#include "pch.h"
 
 void ThreadManager::startup()
 {

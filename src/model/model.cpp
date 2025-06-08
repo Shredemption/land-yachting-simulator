@@ -1,22 +1,10 @@
 #include "model/model.hpp"
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
+#include "pch.h"
 
+// Assimp
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <atomic>
-#include <iostream>
-
-#include "model/bone.h"
-#include "model/model_util.hpp"
-#include "shader/shaderID.h"
-#include "texture_manager/texture_manager.hpp"
 
 template <typename MeshType>
 struct ExtractVertexType;

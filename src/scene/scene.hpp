@@ -1,5 +1,4 @@
-#ifndef SCENE_HPP
-#define SCENE_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -39,5 +38,3 @@ private:
     void loadTextToScene(JSONText text);
     void loadImageToScene(JSONImage image);
 };
-
-#endif

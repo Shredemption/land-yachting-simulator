@@ -1,5 +1,4 @@
-#ifndef CAMERA_HPP
-#define CAMERA_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -35,5 +34,3 @@ namespace Camera
     glm::vec3 getPosition();
     glm::vec3 getRotation();
 };
-
-#endif

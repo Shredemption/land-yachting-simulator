@@ -1,13 +1,6 @@
 #include "shader/shader.hpp"
 
-#ifndef __glad_h_
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#endif
-
-#include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
+#include "pch.h"
 
 void Shader::init(const std::string &vertexCode, const std::string &fragmentCode)
 {

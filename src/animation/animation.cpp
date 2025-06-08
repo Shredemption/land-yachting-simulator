@@ -1,11 +1,6 @@
 #include "animation/animation.hpp"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
- 
-#include "model/model.hpp"
-#include "model/bone.h"
-#include "scene/scene_defs.h"
+#include "pch.h"
 
 void Animation::updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones)
 {

@@ -1,27 +1,6 @@
 #include "render/render.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <future>
-#include <iostream>
-#include <algorithm>
-
-#include "camera/camera.hpp"
-#include "settings_manager/settings_manager.hpp"
-#include "event_handler/event_handler.hpp"
-#include "framebuffer/framebuffer_util.hpp"
-#include "model/model.hpp"
-#include "model/bone.h"
-#include "scene/scene.hpp"
-#include "scene_manager/scene_manager.hpp"
-#include "scene_manager/scene_manager_defs.h"
-#include "shader/shader.hpp"
-#include "shader/shader_util.hpp"
-#include "texture_manager/texture_manager.hpp"
-#include "thread_manager/thread_manager.hpp"
-#include "ui_manager/ui_manager.hpp"
-#include "easing_functions.h"
+#include "pch.h"
 
 // Local variables
 unsigned int quadVAO = 0, quadVBO = 0;

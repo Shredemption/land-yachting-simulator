@@ -1,10 +1,6 @@
 #include "camera/camera.hpp"
 
-#include <glm/gtc/matrix_transform.hpp>
-
-#include "event_handler/event_handler.hpp"
-#include "scene_manager/scene_manager.hpp"
-#include "scene_manager/scene_manager_defs.h"
+#include "pch.h"
 
 // Update cam matrices from positions etc
 void Camera::update()
