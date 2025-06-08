@@ -10,18 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Prioritize static libraries (static libraries first, dynamic ones ignored)
 set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib)
-
-# Check if using MinGW or UNIX
-if(MINGW OR UNIX)
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc")
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc")
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++")
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lpthread")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread")
-endif()
+set(BUILD_SHARED_LIBS OFF)
 
 # Set Conan's toolchain and dependency paths
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_BINARY_DIR}/build/conan_toolchain.cmake" CACHE FILEPATH "Conan toolchain file")
@@ -81,18 +70,26 @@ find_package(jsoncons REQUIRED)
 find_package(freetype REQUIRED)
 
 # Link libraries to the target
-target_link_libraries(${PROJECT_NAME} stdc++)
-target_link_libraries(${PROJECT_NAME} glfw)
-target_link_libraries(${PROJECT_NAME} GLEW::GLEW)
-target_link_libraries(${PROJECT_NAME} glm::glm)
-target_link_libraries(${PROJECT_NAME} glad::glad)
-target_link_libraries(${PROJECT_NAME} assimp::assimp)
-target_link_libraries(${PROJECT_NAME} jsoncons)
-target_link_libraries(${PROJECT_NAME} Freetype::Freetype)
+target_link_libraries(${PROJECT_NAME}
+    glfw
+    GLEW::GLEW
+    glm::glm
+    glad::glad
+    assimp::assimp
+    jsoncons
+    Freetype::Freetype
+)
 
+# Link static libraries
+target_link_options(${PROJECT_NAME} PRIVATE
+    "-static-libgcc"
+    "-static-libstdc++"
+    "-pthread"
+    "$<$<CONFIG:Release>:-s>"
+)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Set as Windows application
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
+# Set as Windows application and static compiler
+set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++ -mwindows")
 
 message(STATUS "Include directories: ${CMAKE_INCLUDE_PATH}")
