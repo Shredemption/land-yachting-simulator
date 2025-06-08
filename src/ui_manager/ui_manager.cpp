@@ -49,7 +49,7 @@ void UIManager::update()
 
 void UIManager::load(const EngineState &state)
 {
-    selected = -1;
+    selectedMain = 0;
 
     buttons.clear();
     toggles.clear();
@@ -235,10 +235,14 @@ void UIManager::load(const EngineState &state)
             break;
         }
     }
+
+    rebuildTotalElements();
 }
 
 void UIManager::loadSide(const SettingsPage &page)
 {
+    selectedSide = 0;
+
     buttonsSide.clear();
     togglesSide.clear();
     uiElementsSide.clear();
@@ -338,45 +342,75 @@ void UIManager::loadSide(const SettingsPage &page)
         }
     }
 
-    selected = std::clamp(selected, 0, int(uiElementsSide.size() - 1));
+    rebuildTotalElements();
+}
+
+void UIManager::rebuildTotalElements()
+{
+    uiElementsTotal.clear();
+
+    int mainIdx = 0;
+    for (auto &element : uiElements)
+        uiElementsTotal.push_back({&element, UIInputState::uiMain, mainIdx++});
+    int sideIdx = 0;
+    for (auto &element : uiElementsSide)
+        uiElementsTotal.push_back({&element, UIInputState::uiSide, sideIdx++});
+}
+
+UIElement *UIManager::getSelectedElement()
+{
+    int selectedIndex = -1;
+    switch (inputState)
+    {
+    case UIInputState::uiMain:
+        selectedIndex = selectedMain;
+        break;
+    case UIInputState::uiSide:
+        selectedIndex = selectedSide;
+        break;
+    }
+
+    if (selectedIndex == -1)
+        return nullptr;
+
+    int groupIndex = 0;
+    for (auto &elementRef : uiElementsTotal)
+    {
+        if (elementRef.linkedState != inputState)
+            continue;
+
+        if (groupIndex == selectedIndex)
+            return elementRef.element;
+
+        ++groupIndex;
+    }
+
+    return nullptr;
 }
 
 void UIManager::draw()
 {
-    for (int i = 0; i < uiElements.size(); i++)
+    for (const auto &ref : uiElementsTotal)
     {
-        std::visit([i](auto *element)
-                   {if (!element) return; 
+        if (!ref.element)
+            continue;
 
-                    bool active = false;
+        std::visit([&](auto *element)
+                   {
+            if (!element) return;
 
-                    if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>) {
-                        if (element->linkedPage.has_value() && element->linkedPage.value() == SceneManager::settingsPage)
-                            active = true;
-                    }
+            bool active = false;
+            if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>)
+                if (element->linkedPage == SceneManager::settingsPage)
+                    active = true;
 
-                    bool isSelected = i == selected && inputState == UIInputState::uiMain;
+            bool isSelected = false;
+            if (ref.linkedState == UIInputState::uiMain && inputState == UIInputState::uiMain)
+                isSelected = ref.localIndex == selectedMain;
+            else if (ref.linkedState == UIInputState::uiSide && inputState == UIInputState::uiSide)
+                isSelected = ref.localIndex == selectedSide;
 
-                    element->draw(isSelected, active, EventHandler::inputType, EventHandler::mousePosX, EventHandler::mousePosY); },
-                   uiElements[i]);
-    }
-
-    for (int i = 0; i < uiElementsSide.size(); i++)
-    {
-        std::visit([i](auto *element)
-                   {if (!element) return; 
-
-                    bool active = false;
-
-                    if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>) {
-                        if (element->linkedPage.has_value() && element->linkedPage.value() == SceneManager::settingsPage)
-                            active = true;
-                    }
-
-                    bool isSelected = i == selected && inputState == UIInputState::uiSide;
-
-                    element->draw(isSelected, active, EventHandler::inputType, EventHandler::mousePosX, EventHandler::mousePosY); },
-                   uiElementsSide[i]);
+            element->draw(isSelected, active, EventHandler::inputType, EventHandler::mousePosX, EventHandler::mousePosY); }, *ref.element);
     }
 }
 

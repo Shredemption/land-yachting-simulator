@@ -13,6 +13,13 @@ enum class SettingsPage;
 
 using UIElement = std::variant<UIButton *, UIToggle *>;
 
+struct UIElementRef
+{
+    UIElement *element;
+    UIInputState linkedState;
+    int localIndex;
+};
+
 namespace UIManager
 {
     void update();
@@ -20,6 +27,10 @@ namespace UIManager
     void loadSide(const SettingsPage &page);
 
     void draw();
+
+    inline std::vector<UIElementRef> uiElementsTotal;
+    void rebuildTotalElements();
+    UIElement *getSelectedElement();
 
     inline std::vector<UIElement> uiElements;
     inline std::vector<UIButton> buttons;
@@ -29,7 +40,8 @@ namespace UIManager
     inline std::vector<UIButton> buttonsSide;
     inline std::vector<UIToggle> togglesSide;
 
-    inline int selected = -1;
+    inline int selectedMain = -1;
+    inline int selectedSide = -1;
     inline UIInputState inputState = UIInputState::uiMain;
 
     inline glm::vec3 defaultBaseColor = {1.0f, 1.0f, 1.0f};
