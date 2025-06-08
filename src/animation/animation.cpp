@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include "model/bone.h"
+
 void Animation::updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones)
 {
     // Abreviations
