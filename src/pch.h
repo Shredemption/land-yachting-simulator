@@ -30,7 +30,7 @@
 // My project
 #include "animation/animation.hpp"
 #include "camera/camera.hpp"
-#include "event_handler/event_handler.hpp"
+#include "input_manager/input_manager.hpp"
 #include "model/model.hpp"
 #include "model/model_util.hpp"
 #include "physics/physics_util.hpp"
@@ -42,7 +42,9 @@
 #include "shader/shader_util.hpp"
 #include "texture_manager/texture_manager.hpp"
 #include "thread_manager/thread_manager.hpp"
+#include "time_manager/time_manager.hpp"
 #include "ui_manager/ui_manager.hpp"
+#include "window_manager/window_manager.hpp"
 
 // Utilites
 #include "easing_functions.h"

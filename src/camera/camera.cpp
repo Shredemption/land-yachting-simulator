@@ -60,7 +60,7 @@ void Camera::setCamDirection(glm::vec3 rotation)
 void Camera::genProjectionMatrix()
 {
     u_projection = glm::perspective(glm::radians(75.0f),
-                                    (float)EventHandler::screenWidth / (float)EventHandler::screenHeight,
+                                    (float)WindowManager::screenWidth / (float)WindowManager::screenHeight,
                                     0.1f,
                                     1000.0f);
 }

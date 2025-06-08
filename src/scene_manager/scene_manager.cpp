@@ -43,7 +43,7 @@ void SceneManager::checkLoading()
         // Render final loading screen frame
         Render::renderLoadingScreen();
 
-        glfwSwapBuffers(EventHandler::window);
+        glfwSwapBuffers(WindowManager::window);
 
         // Now upload scene data to OpenGL
         currentScene->uploadToGPU();
@@ -193,7 +193,7 @@ void SceneManager::switchEngineStateScene(const std::string &sceneName)
 void SceneManager::updateFade()
 {
     const float fadeTime = 0.2f; // seconds
-    float fadeDelta = EventHandler::deltaTime / fadeTime;
+    float fadeDelta = TimeManager::deltaTime / fadeTime;
 
     switch (exitState)
     {

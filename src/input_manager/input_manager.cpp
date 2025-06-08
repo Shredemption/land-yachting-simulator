@@ -1,46 +1,19 @@
-#include "event_handler/event_handler.hpp"
+#include "input_manager/input_manager.hpp"
 
 #include "pch.h"
 
-// Generic EventHandler time update
-void EventHandler::timing(EngineState &state)
-{
-    now = std::chrono::steady_clock::now();
+#include "input_manager/input_manager_defs.h"
 
-    std::chrono::duration<double> delta = now - lastTime;
-    deltaTime = delta.count();
-
-    lastTime = now;
-    frame++;
-
-    bool timeShouldPause = (state == EngineState::esPause || state == EngineState::esLoading || state == EngineState::esSettings || state == EngineState::esTitleSettings);
-
-    if (timeShouldPause)
-    {
-        if (!pauseStart.has_value())
-            pauseStart = now;
-    }
-    else
-    {
-        if (pauseStart.has_value())
-        {
-            pausedDuration += now - *pauseStart;
-            pauseStart.reset();
-        }
-
-        std::chrono::duration<double> total = now - startTime - pausedDuration;
-        time = total.count();
-    }
-}
-
-void EventHandler::update()
+void InputManager::update()
 {
     leftMouseButton.wasDown = leftMouseButton.isDown;
     rightMouseButton.wasDown = rightMouseButton.isDown;
 }
 
-void EventHandler::setCallbacks()
+void InputManager::setCallbacks()
 {
+    GLFWwindow *window = WindowManager::window;
+
     switch (SceneManager::engineState)
     {
     case EngineState::esTitle:
@@ -55,7 +28,7 @@ void EventHandler::setCallbacks()
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, mousePosCallbackRunning);
         glfwSetMouseButtonCallback(window, nullptr);
-        glfwSetCursorPos(window, screenWidth / 2, screenHeight / 2);
+        glfwSetCursorPos(window, WindowManager::screenWidth / 2, WindowManager::screenHeight / 2);
         break;
 
     case EngineState::esPause:
@@ -83,7 +56,7 @@ void EventHandler::setCallbacks()
     SceneManager::updateCallbacks = false;
 }
 
-void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
+void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (inputType != InputType::itKeyboard)
     {
@@ -189,7 +162,7 @@ void EventHandler::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
         }
 }
 
-void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
+void InputManager::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     // Pause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -212,7 +185,7 @@ void EventHandler::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
         PhysicsUtil::switchControlledYacht();
 }
 
-void EventHandler::mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
+void InputManager::mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
 {
     if (inputType != InputType::itMouse)
     {
@@ -224,7 +197,7 @@ void EventHandler::mousePosCallbackMenu(GLFWwindow *window, double xPos, double 
     mousePosY = yPos;
 }
 
-void EventHandler::mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods)
+void InputManager::mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
@@ -247,24 +220,24 @@ void EventHandler::mouseButtonCallbackMenu(GLFWwindow *window, int button, int a
     }
 }
 
-void EventHandler::mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos)
+void InputManager::mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos)
 {
     // Check if window size changed last iteration
-    if (firstFrame || windowSizeChanged)
+    if (WindowManager::firstFrame || WindowManager::windowSizeChanged)
     {
-        xPos = screenWidth / 2;
-        yPos = screenHeight / 2;
+        xPos = WindowManager::screenWidth / 2;
+        yPos = WindowManager::screenHeight / 2;
 
         // Reset state changed trackers
-        firstFrame = false;
-        windowSizeChanged = false;
+        WindowManager::firstFrame = false;
+        WindowManager::windowSizeChanged = false;
 
         // Reset mouse to 0,0
-        glfwSetCursorPos(window, screenWidth / 2, screenHeight / 2);
+        glfwSetCursorPos(window, WindowManager::screenWidth / 2, WindowManager::screenHeight / 2);
     }
 
-    xPos -= screenWidth / 2;
-    yPos -= screenHeight / 2;
+    xPos -= WindowManager::screenWidth / 2;
+    yPos -= WindowManager::screenHeight / 2;
 
     // Apply sensitivity
     float sensitvity = 0.1f;
@@ -298,14 +271,16 @@ void EventHandler::mousePosCallbackRunning(GLFWwindow *window, double xPos, doub
         }
 
         // Reset mouse to 0,0
-        glfwSetCursorPos(window, screenWidth / 2, screenHeight / 2);
+        glfwSetCursorPos(window, WindowManager::screenWidth / 2, WindowManager::screenHeight / 2);
     }
 }
 
-void EventHandler::processInputRunning()
+void InputManager::processInputRunning()
 {
+    GLFWwindow *window = WindowManager::window;
+    
     // Move cam with WASD, space, shift
-    float cameraSpeed = 5.f * deltaTime;
+    float cameraSpeed = 5.f * TimeManager::deltaTime;
 
     // Find XY plane view direction
     glm::vec3 forwardXY = Camera::cameraViewDirection;
@@ -370,67 +345,5 @@ void EventHandler::processInputRunning()
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
         PhysicsUtil::keyInputs[4] = true;
-    }
-}
-
-void EventHandler::framebufferSizeCallback(GLFWwindow *window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-    screenWidth = width;
-    screenHeight = height;
-
-    screenUIScale = std::min(width / 2560.0f, height / 1440.0f);
-
-    // Track window size change for mouse movement
-    windowSizeChanged = true;
-
-    Render::resize(width, height);
-}
-
-void EventHandler::errorCallback(int error, const char *description)
-{
-    std::cerr << "GLFW Error" << error << ": " << description << std::endl;
-}
-
-void EventHandler::setFullscreenState()
-{
-    bool currentlyFullscreen = glfwGetWindowAttrib(window, GLFW_DECORATED) == GLFW_FALSE;
-    bool stillHidden = glfwGetWindowAttrib(window, GLFW_VISIBLE) == GLFW_FALSE;
-
-    if (SettingsManager::settings.video.fullscreen)
-    {
-        if (currentlyFullscreen && !stillHidden)
-            return;
-
-        // Store old window size etc.
-        glfwGetWindowPos(window, &windowXpos, &windowYpos);
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-
-        // Set to borderless window
-        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
-        glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
-        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height, mode->refreshRate);
-
-        windowSizeChanged = true;
-    }
-    else
-    {
-        if (!currentlyFullscreen && !stillHidden)
-            return;
-
-        // Set back to window, using saved old size etc.
-        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
-        glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
-        glfwSetWindowMonitor(window, NULL, windowXpos, windowYpos, windowWidth, windowHeight, GLFW_DONT_CARE);
-
-        windowSizeChanged = true;
-    }
-
-    if (stillHidden)
-    {
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        framebufferSizeCallback(window, width, height);
     }
 }

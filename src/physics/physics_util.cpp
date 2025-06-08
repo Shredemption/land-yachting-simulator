@@ -4,7 +4,7 @@
 
 void PhysicsUtil::update()
 {
-    atomicAdd(accumulator, EventHandler::deltaTime);
+    atomicAdd(accumulator, TimeManager::deltaTime);
 
     int steps = 0;
     double acc = accumulator.load(std::memory_order_acquire);

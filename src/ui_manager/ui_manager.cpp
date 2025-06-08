@@ -8,24 +8,24 @@ void UIManager::update()
 {
     draw();
 
-    if (EventHandler::inputType == InputType::itMouse)
+    if (InputManager::inputType == InputType::itMouse)
     {
         for (auto button : buttons)
         {
-            button.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+            button.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
         for (auto toggle : toggles)
         {
-            toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+            toggle.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
 
         for (auto button : buttonsSide)
         {
-            button.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+            button.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
         for (auto toggle : togglesSide)
         {
-            toggle.checkClicked(EventHandler::mousePosX, EventHandler::mousePosY, EventHandler::leftMouseButton.pressed());
+            toggle.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
     }
 }
@@ -258,7 +258,7 @@ void UIManager::loadSide(const SettingsPage &page)
                 "Fullscreen",
                 []
                 {
-                    EventHandler::setFullscreenState();
+                    WindowManager::setFullscreenState();
                     SceneManager::runOneFrame();
                 },
                 &SettingsManager::settings.video.fullscreen,
@@ -393,17 +393,17 @@ void UIManager::draw()
             else if (ref.linkedState == UIInputState::uiSide && inputState == UIInputState::uiSide)
                 isSelected = ref.localIndex == selectedSide;
 
-            element->draw(isSelected, active, EventHandler::inputType, EventHandler::mousePosX, EventHandler::mousePosY); }, *ref.element);
+            element->draw(isSelected, active, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY); }, *ref.element);
     }
 }
 
 bool UIButton::isHovered(const float mouseX, const float mouseY)
 {
-    float xmin = pos.x * EventHandler::screenUIScale * 2560.0f;
-    float xmax = (pos.x + size.x) * EventHandler::screenUIScale * 2560.0f;
+    float xmin = pos.x * WindowManager::screenUIScale * 2560.0f;
+    float xmax = (pos.x + size.x) * WindowManager::screenUIScale * 2560.0f;
 
-    float ymin = (pos.y - 0.01f) * EventHandler::screenUIScale * 1440.0f;
-    float ymax = (pos.y - 0.01f + size.y) * EventHandler::screenUIScale * 1440.0f;
+    float ymin = (pos.y - 0.01f) * WindowManager::screenUIScale * 1440.0f;
+    float ymax = (pos.y - 0.01f + size.y) * WindowManager::screenUIScale * 1440.0f;
 
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
@@ -430,11 +430,11 @@ void UIButton::draw(bool selected, bool active, InputType inputType, float mouse
 
 bool UIToggle::isHovered(const float mouseX, const float mouseY)
 {
-    float xmin = pos.x * EventHandler::screenUIScale * 2560.0f;
-    float xmax = (pos.x + size.x) * EventHandler::screenUIScale * 2560.0f;
+    float xmin = pos.x * WindowManager::screenUIScale * 2560.0f;
+    float xmax = (pos.x + size.x) * WindowManager::screenUIScale * 2560.0f;
 
-    float ymin = (pos.y - 0.01f) * EventHandler::screenUIScale * 1440.0f;
-    float ymax = (pos.y - 0.01f + size.y) * EventHandler::screenUIScale * 1440.0f;
+    float ymin = (pos.y - 0.01f) * WindowManager::screenUIScale * 1440.0f;
+    float ymax = (pos.y - 0.01f + size.y) * WindowManager::screenUIScale * 1440.0f;
 
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
