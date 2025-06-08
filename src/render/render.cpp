@@ -638,7 +638,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
             break;
 
         case debugState::dbFPS:
-            renderText(std::to_string(static_cast<int>(FPS)), 0.01f, 0.01f, 0.75f, debugColor);
+            renderText(std::to_string(static_cast<int>(FPS)), 0.01f, 0.01f, 0.33f, debugColor);
             break;
 
         case debugState::dbPhysics:
@@ -649,7 +649,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
                 debugText = debugText + entry.first + ": " + std::to_string(entry.second) + "\n";
             }
 
-            renderText(debugText, 0.01f, 0.01f, 1, debugColor);
+            renderText(debugText, 0.01f, 0.01f, 0.33f, debugColor);
             break;
         }
     }
