@@ -2,7 +2,7 @@
 setlocal
 
 set BUILD_DIR="build"
-set BUILD_TYPE="Debug"
+set BUILD_TYPE="Release"
 
 set CLEAN_BUILD=false
 if "%1"=="/clean" (
