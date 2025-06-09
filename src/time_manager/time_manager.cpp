@@ -12,7 +12,7 @@ void TimeManager::timing(EngineState &state)
     lastTime = now;
     frame++;
 
-    bool timeShouldPause = (state == EngineState::esPause || state == EngineState::esLoading || state == EngineState::esSettings || state == EngineState::esTitleSettings);
+    bool timeShouldPause = (state == EngineState::Pause || state == EngineState::Loading || state == EngineState::Settings || state == EngineState::TitleSettings);
 
     if (timeShouldPause)
     {

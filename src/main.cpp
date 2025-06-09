@@ -86,7 +86,7 @@ int main()
     // Launch threads
     ThreadManager::startup();
 
-    SceneManager::switchEngineState(EngineState::esTitle);
+    SceneManager::switchEngineState(EngineState::Title);
 
     UIManager::load(SceneManager::engineState);
 
@@ -96,12 +96,12 @@ int main()
     // Main Loop
     while (!glfwWindowShouldClose(WindowManager::window))
     {
-        EngineState checkState = (SceneManager::exitState == EngineState::esNone) ? SceneManager::engineState : SceneManager::exitState;
-        SettingsPage checkPage = (SceneManager::exitPage == SettingsPage::spNone) ? SceneManager::settingsPage : SceneManager::exitPage;
+        EngineState checkState = (SceneManager::exitState == EngineState::None) ? SceneManager::engineState : SceneManager::exitState;
+        SettingsPage checkPage = (SceneManager::exitPage == SettingsPage::None) ? SceneManager::settingsPage : SceneManager::exitPage;
 
         TimeManager::timing(checkState);
 
-        if (SceneManager::exitState == EngineState::esNone && SceneManager::updateCallbacks)
+        if (SceneManager::exitState == EngineState::None && SceneManager::updateCallbacks)
             InputManager::setCallbacks();
 
         // If window inactive
@@ -115,33 +115,33 @@ int main()
 
         switch (checkState)
         {
-        case EngineState::esNone:
+        case EngineState::None:
             Render::renderBlankScreen();
             glfwSetWindowShouldClose(WindowManager::window, GLFW_TRUE);
             break;
 
-        case EngineState::esLoading:
+        case EngineState::Loading:
             SceneManager::checkLoading();
             Render::renderLoadingScreen();
             break;
 
-        case EngineState::esTitle:
+        case EngineState::Title:
             Render::renderTitleScreen();
             UIManager::update();
             break;
 
-        case EngineState::esPause:
+        case EngineState::Pause:
             Render::renderMenuScreen(checkState, checkPage);
             UIManager::update();
             break;
 
-        case EngineState::esSettings:
-        case EngineState::esTitleSettings:
+        case EngineState::Settings:
+        case EngineState::TitleSettings:
             Render::renderMenuScreen(checkState, checkPage);
             UIManager::update();
             break;
 
-        case EngineState::esRunning:
+        case EngineState::Running:
             InputManager::processInputRunning();
             PhysicsUtil::update();
             Render::render();

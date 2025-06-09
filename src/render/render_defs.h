@@ -14,9 +14,9 @@ struct Character
 
 enum class debugState
 {
-    dbNone,
-    dbFPS,
-    dbPhysics
+    None,
+    FPS,
+    Physics
 };
 
 enum class BufferState
@@ -29,10 +29,10 @@ enum class BufferState
 
 enum class RenderType
 {
-    rtModel,
-    rtOpaquePlane,
-    rtTransparentPlane,
-    rtGrid
+    Model,
+    OpaquePlane,
+    TransparentPlane,
+    Grid
 };
 
 enum class TextAlign

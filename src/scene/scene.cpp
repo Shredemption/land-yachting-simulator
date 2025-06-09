@@ -126,11 +126,11 @@ void Scene::loadModelToScene(JSONModel model)
     // Find model location using map
     auto &modelEntry = ModelUtil::modelMap[model.name];
 
-    ModelType modelType = ModelType::mtModel;
+    ModelType modelType = ModelType::Model;
 
     if (modelEntry.type == "yacht")
     {
-        modelType = ModelType::mtYacht;
+        modelType = ModelType::Yacht;
     }
 
     std::vector<std::string> paths = {FileManager::getPath(modelEntry.mainPath)};
@@ -191,7 +191,7 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     loadUnitPlane.shader = ShaderUtil::ShaderFromName(unitPlane.shader);
 
     // Generate mesh from color and shader
-    if (loadUnitPlane.shader == shaderID::shSimple)
+    if (loadUnitPlane.shader == shaderID::Simple)
         loadUnitPlane.unitPlane = MeshUtil::genUnitPlane<VertexSimple>(loadUnitPlane.color, loadUnitPlane.shader);
     else
         loadUnitPlane.unitPlane = MeshUtil::genUnitPlane<VertexTextured>(loadUnitPlane.color, loadUnitPlane.shader);
@@ -223,13 +223,13 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
         this->opaqueUnitPlanes.push_back(loadUnitPlane);
     }
 
-    if (loadUnitPlane.shader == shaderID::shWater)
+    if (loadUnitPlane.shader == shaderID::Water)
     {
         TextureManager::queueTextureToArrayByFilename("waterDUDV.png", "waterTextureArray");
         TextureManager::queueTextureToArrayByFilename("waterNormal.png", "waterTextureArray");
     }
 
-    if (loadUnitPlane.shader == shaderID::shToonWater)
+    if (loadUnitPlane.shader == shaderID::ToonWater)
     {
         TextureManager::queueStandaloneTexture("toonWater.jpeg");
         TextureManager::queueStandaloneTexture("waterNormal.png");
@@ -271,7 +271,7 @@ void Scene::loadGridToScene(JSONGrid grid)
     // Push loaded grid to scene
     this->grids.push_back(loadGrid);
 
-    if (loadGrid.shader == shaderID::shToonTerrain)
+    if (loadGrid.shader == shaderID::ToonTerrain)
     {
         TextureManager::queueStandaloneTexture("heightmap.jpg");
     }
@@ -340,7 +340,7 @@ void Scene::uploadToGPU()
                    { mesh.uploadToGPU(); },
                    transparentUnitPlane.unitPlane);
 
-        if (transparentUnitPlane.shader == shaderID::shWater && !ShaderUtil::waterLoaded)
+        if (transparentUnitPlane.shader == shaderID::Water && !ShaderUtil::waterLoaded)
         {
             ShaderUtil::waterLoaded = true;
             FramebufferUtil::genWaterFrameBuffers();

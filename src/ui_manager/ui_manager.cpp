@@ -6,7 +6,7 @@
 
 void UIManager::update()
 {
-    if (InputManager::inputType == InputType::itMouse)
+    if (InputManager::inputType == InputType::Mouse)
     {
         for (auto &button : buttons)
         {
@@ -52,131 +52,131 @@ void UIManager::load(const EngineState &state)
 
     switch (state)
     {
-    case EngineState::esTitle:
+    case EngineState::Title:
 
         size = {0.3, scale / 10};
 
         elements = {
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Load Realistic Scene",
                 []
                 { SceneManager::switchEngineStateScene("realistic"); },
                 nullptr,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Load Cartoon Scene",
                 []
                 { SceneManager::switchEngineStateScene("cartoon"); },
                 nullptr,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Load Test Scene",
                 []
                 { SceneManager::switchEngineStateScene("test"); },
                 nullptr,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Settings",
                 []
-                { SceneManager::switchEngineState(EngineState::esTitleSettings); },
+                { SceneManager::switchEngineState(EngineState::TitleSettings); },
                 nullptr,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Quit",
                 []
-                { SceneManager::switchEngineState(EngineState::esNone); },
+                { SceneManager::switchEngineState(EngineState::None); },
                 nullptr,
             },
         };
 
         break;
 
-    case EngineState::esPause:
+    case EngineState::Pause:
 
         elements = {
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Resume",
                 []
-                { SceneManager::switchEngineState(EngineState::esRunning); },
+                { SceneManager::switchEngineState(EngineState::Running); },
                 nullptr,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Restart",
                 []
                 {
                     Camera::reset();
                     PhysicsUtil::setup();
                     SceneManager::runOneFrame();
-                    SceneManager::switchEngineState(EngineState::esRunning);
+                    SceneManager::switchEngineState(EngineState::Running);
                 },
                 nullptr,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Settings",
                 []
-                { SceneManager::switchEngineState(EngineState::esSettings); },
+                { SceneManager::switchEngineState(EngineState::Settings); },
                 nullptr,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Exit to Menu",
                 []
-                { SceneManager::switchEngineState(EngineState::esTitle); },
+                { SceneManager::switchEngineState(EngineState::Title); },
                 nullptr,
             },
         };
 
         break;
 
-    case EngineState::esSettings:
-    case EngineState::esTitleSettings:
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
 
         elements = {
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Graphics",
                 []
                 {
-                    SceneManager::switchSettingsPage(SettingsPage::spGraphics);
-                    inputState = UIInputState::uiSide;
+                    SceneManager::switchSettingsPage(SettingsPage::Graphics);
+                    inputState = UIInputState::Side;
                 },
                 nullptr,
-                SettingsPage::spGraphics,
+                SettingsPage::Graphics,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Debug",
                 []
                 {
-                    SceneManager::switchSettingsPage(SettingsPage::spDebug);
-                    inputState = UIInputState::uiSide;
+                    SceneManager::switchSettingsPage(SettingsPage::Debug);
+                    inputState = UIInputState::Side;
                 },
                 nullptr,
-                SettingsPage::spDebug,
+                SettingsPage::Debug,
             },
             {
-                UIElementType::uiButton,
+                UIElementType::Button,
                 "Back",
                 []
                 {
-                    if (SceneManager::engineState == EngineState::esSettings)
+                    if (SceneManager::engineState == EngineState::Settings)
                     {
-                        SceneManager::switchEngineState(EngineState::esPause);
+                        SceneManager::switchEngineState(EngineState::Pause);
                     }
                     else
                     {
-                        SceneManager::switchEngineState(EngineState::esTitle);
+                        SceneManager::switchEngineState(EngineState::Title);
                     }
 
-                    SceneManager::switchSettingsPage(SettingsPage::spStart);
+                    SceneManager::switchSettingsPage(SettingsPage::Start);
                 },
                 nullptr,
             },
@@ -190,14 +190,14 @@ void UIManager::load(const EngineState &state)
 
         switch (element.type)
         {
-        case UIElementType::uiButton:
+        case UIElementType::Button:
             buttons.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor, activeColor);
             buttons.back().setOnClick(element.callback);
             buttons.back().linkedPage = element.linkedPage;
 
             break;
 
-        case UIElementType::uiToggle:
+        case UIElementType::Toggle:
             toggles.emplace_back(startPos + (float(i) * stepPos), element.text, scale, baseColor, hoverColor, activeColor);
             toggles.back().toggleVariable = element.toggleVariable;
             break;
@@ -210,10 +210,10 @@ void UIManager::load(const EngineState &state)
     {
         switch (element.type)
         {
-        case UIElementType::uiButton:
+        case UIElementType::Button:
             uiElements.push_back(&buttons[buttonIndex++]);
             break;
-        case UIElementType::uiToggle:
+        case UIElementType::Toggle:
             uiElements.push_back(&toggles[toggleIndex++]);
             break;
         }
@@ -244,17 +244,17 @@ void UIManager::loadSide(const SettingsPage &page)
 
     switch (page)
     {
-    case SettingsPage::spStart:
+    case SettingsPage::Start:
 
         elementsSide = {};
 
         break;
 
-    case SettingsPage::spGraphics:
+    case SettingsPage::Graphics:
 
         elementsSide = {
             {
-                UIElementType::uiToggle,
+                UIElementType::Toggle,
                 "Fullscreen",
                 []
                 {
@@ -264,7 +264,7 @@ void UIManager::loadSide(const SettingsPage &page)
                 &SettingsManager::settings.video.fullscreen,
             },
             {
-                UIElementType::uiToggle,
+                UIElementType::Toggle,
                 "VSync",
                 []
                 {
@@ -276,11 +276,11 @@ void UIManager::loadSide(const SettingsPage &page)
 
         break;
 
-    case SettingsPage::spDebug:
+    case SettingsPage::Debug:
 
         elementsSide = {
             {
-                UIElementType::uiToggle,
+                UIElementType::Toggle,
                 "Wireframe",
                 {},
                 &SettingsManager::settings.debug.wireframeMode,
@@ -296,13 +296,13 @@ void UIManager::loadSide(const SettingsPage &page)
 
         switch (element.type)
         {
-        case UIElementType::uiButton:
+        case UIElementType::Button:
             buttonsSide.emplace_back(startPosSide + (float(i) * stepPosSide), sizeSide, element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
             buttonsSide.back().setOnClick(element.callback);
             buttonsSide.back().linkedPage = element.linkedPage;
             break;
 
-        case UIElementType::uiToggle:
+        case UIElementType::Toggle:
             togglesSide.emplace_back(startPosSide + (float(i) * stepPosSide), element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
             togglesSide.back().setOnClick(element.callback);
             togglesSide.back().toggleVariable = element.toggleVariable;
@@ -316,10 +316,10 @@ void UIManager::loadSide(const SettingsPage &page)
     {
         switch (element.type)
         {
-        case UIElementType::uiButton:
+        case UIElementType::Button:
             uiElementsSide.push_back(&buttonsSide[buttonIndex++]);
             break;
-        case UIElementType::uiToggle:
+        case UIElementType::Toggle:
             uiElementsSide.push_back(&togglesSide[toggleIndex++]);
             break;
         }
@@ -334,10 +334,10 @@ void UIManager::rebuildTotalElements()
 
     int mainIdx = 0;
     for (auto &element : uiElements)
-        uiElementsTotal.push_back({&element, UIInputState::uiMain, mainIdx++});
+        uiElementsTotal.push_back({&element, UIInputState::Main, mainIdx++});
     int sideIdx = 0;
     for (auto &element : uiElementsSide)
-        uiElementsTotal.push_back({&element, UIInputState::uiSide, sideIdx++});
+        uiElementsTotal.push_back({&element, UIInputState::Side, sideIdx++});
 }
 
 UIElement *UIManager::getSelectedElement()
@@ -345,10 +345,10 @@ UIElement *UIManager::getSelectedElement()
     int selectedIndex = -1;
     switch (inputState)
     {
-    case UIInputState::uiMain:
+    case UIInputState::Main:
         selectedIndex = selectedMain;
         break;
-    case UIInputState::uiSide:
+    case UIInputState::Side:
         selectedIndex = selectedSide;
         break;
     }
@@ -389,9 +389,9 @@ void UIManager::draw()
                     active = true;
 
                 bool isSelected = false;
-                if (ref.linkedState == UIInputState::uiMain && inputState == UIInputState::uiMain)
+                if (ref.linkedState == UIInputState::Main && inputState == UIInputState::Main)
                     isSelected = ref.localIndex == selectedMain;
-                else if (ref.linkedState == UIInputState::uiSide && inputState == UIInputState::uiSide)
+                else if (ref.linkedState == UIInputState::Side && inputState == UIInputState::Side)
                     isSelected = ref.localIndex == selectedSide;
 
                 element->draw(isSelected, active, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
@@ -400,9 +400,9 @@ void UIManager::draw()
             if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIToggle>)
                 {
                     bool isSelected = false;
-                    if (ref.linkedState == UIInputState::uiMain && inputState == UIInputState::uiMain)
+                    if (ref.linkedState == UIInputState::Main && inputState == UIInputState::Main)
                         isSelected = ref.localIndex == selectedMain;
-                    else if (ref.linkedState == UIInputState::uiSide && inputState == UIInputState::uiSide)
+                    else if (ref.linkedState == UIInputState::Side && inputState == UIInputState::Side)
                         isSelected = ref.localIndex == selectedSide;
                         
                    element->draw(isSelected, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
@@ -426,7 +426,7 @@ void UIButton::draw(bool selected, bool active, InputType inputType, float mouse
 {
     glm::vec3 color = baseColor;
 
-    if (inputType == InputType::itMouse)
+    if (inputType == InputType::Mouse)
         color = isHovered(mouseX, mouseY) ? hoverColor : active ? activeColor
                                                                 : baseColor;
     else

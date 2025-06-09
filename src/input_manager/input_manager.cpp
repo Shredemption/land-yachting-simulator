@@ -16,13 +16,13 @@ void InputManager::setCallbacks()
 
     switch (SceneManager::engineState)
     {
-    case EngineState::esTitle:
+    case EngineState::Title:
         glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
 
-    case EngineState::esRunning:
+    case EngineState::Running:
         glfwSetKeyCallback(window, keyCallbackRunning);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, mousePosCallbackRunning);
@@ -30,15 +30,15 @@ void InputManager::setCallbacks()
         glfwSetCursorPos(window, WindowManager::screenWidth / 2, WindowManager::screenHeight / 2);
         break;
 
-    case EngineState::esPause:
+    case EngineState::Pause:
         glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
 
-    case EngineState::esSettings:
-    case EngineState::esTitleSettings:
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
         glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
@@ -60,9 +60,9 @@ void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
     if (ControllerManager::controllerConnected)
         return;
 
-    if (inputType != InputType::itKeyboard)
+    if (inputType != InputType::Keyboard)
     {
-        inputType = InputType::itKeyboard;
+        inputType = InputType::Keyboard;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         return;
     }
@@ -74,24 +74,24 @@ void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
         case GLFW_KEY_ESCAPE:
             switch (SceneManager::engineState)
             {
-            case EngineState::esTitle:
-                SceneManager::switchEngineState(EngineState::esNone);
+            case EngineState::Title:
+                SceneManager::switchEngineState(EngineState::None);
                 break;
 
-            case EngineState::esPause:
-                SceneManager::switchEngineState(EngineState::esRunning);
+            case EngineState::Pause:
+                SceneManager::switchEngineState(EngineState::Running);
                 break;
 
-            case EngineState::esSettings:
-                SceneManager::switchEngineState(EngineState::esPause);
-                SceneManager::switchSettingsPage(SettingsPage::spStart);
-                UIManager::inputState = UIInputState::uiMain;
+            case EngineState::Settings:
+                SceneManager::switchEngineState(EngineState::Pause);
+                SceneManager::switchSettingsPage(SettingsPage::Start);
+                UIManager::inputState = UIInputState::Main;
                 break;
 
-            case EngineState::esTitleSettings:
-                SceneManager::switchEngineState(EngineState::esTitle);
-                SceneManager::switchSettingsPage(SettingsPage::spStart);
-                UIManager::inputState = UIInputState::uiMain;
+            case EngineState::TitleSettings:
+                SceneManager::switchEngineState(EngineState::Title);
+                SceneManager::switchSettingsPage(SettingsPage::Start);
+                UIManager::inputState = UIInputState::Main;
                 break;
             }
             break;
@@ -130,15 +130,15 @@ void InputManager::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
 
     // Pause on ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        SceneManager::switchEngineState(EngineState::esPause);
+        SceneManager::switchEngineState(EngineState::Pause);
 
     // Toggle FPS debug on F9
     if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
-        Render::debugstate = (Render::debugstate == debugState::dbFPS) ? debugState::dbNone : debugState::dbFPS;
+        Render::debugstate = (Render::debugstate == debugState::FPS) ? debugState::None : debugState::FPS;
 
     // Toggle physics debug on F10
     if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
-        Render::debugstate = (Render::debugstate == debugState::dbPhysics) ? debugState::dbNone : debugState::dbPhysics;
+        Render::debugstate = (Render::debugstate == debugState::Physics) ? debugState::None : debugState::Physics;
 
     // Toggle Freecam on C
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
@@ -154,9 +154,9 @@ void InputManager::mousePosCallbackMenu(GLFWwindow *window, double xPos, double 
     if (ControllerManager::controllerConnected)
         return;
 
-    if (inputType != InputType::itMouse)
+    if (inputType != InputType::Mouse)
     {
-        inputType = InputType::itMouse;
+        inputType = InputType::Mouse;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
@@ -328,11 +328,11 @@ void InputManager::menuMoveUp()
 {
     switch (UIManager::inputState)
     {
-    case UIInputState::uiMain:
+    case UIInputState::Main:
         UIManager::selectedMain = (UIManager::selectedMain <= 0) ? UIManager::uiElements.size() - 1 : UIManager::selectedMain - 1;
         break;
 
-    case UIInputState::uiSide:
+    case UIInputState::Side:
         UIManager::selectedSide = (UIManager::selectedSide <= 0) ? UIManager::uiElementsSide.size() - 1 : UIManager::selectedSide - 1;
         break;
     }
@@ -342,11 +342,11 @@ void InputManager::menuMoveDown()
 {
     switch (UIManager::inputState)
     {
-    case UIInputState::uiMain:
+    case UIInputState::Main:
         UIManager::selectedMain = (UIManager::selectedMain == UIManager::uiElements.size() - 1) ? 0 : UIManager::selectedMain + 1;
         break;
 
-    case UIInputState::uiSide:
+    case UIInputState::Side:
         UIManager::selectedSide = (UIManager::selectedSide == UIManager::uiElementsSide.size() - 1) ? 0 : UIManager::selectedSide + 1;
         break;
     }
@@ -354,19 +354,19 @@ void InputManager::menuMoveDown()
 
 void InputManager::menuMoveLeft()
 {
-    if (UIManager::inputState == UIInputState::uiSide)
-        if (SceneManager::settingsPage != SettingsPage::spStart)
+    if (UIManager::inputState == UIInputState::Side)
+        if (SceneManager::settingsPage != SettingsPage::Start)
         {
-            UIManager::inputState = UIInputState::uiMain;
+            UIManager::inputState = UIInputState::Main;
         }
 }
 
 void InputManager::menuMoveRight()
 {
-    if (UIManager::inputState == UIInputState::uiMain)
-        if (SceneManager::settingsPage != SettingsPage::spStart)
+    if (UIManager::inputState == UIInputState::Main)
+        if (SceneManager::settingsPage != SettingsPage::Start)
         {
-            UIManager::inputState = UIInputState::uiSide;
+            UIManager::inputState = UIInputState::Side;
         }
 }
 

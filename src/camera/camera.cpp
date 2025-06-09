@@ -15,7 +15,7 @@ void Camera::update()
 // Reset cam to starting position/orientation
 void Camera::reset()
 {
-    if (SceneManager::engineState == EngineState::esTitle)
+    if (SceneManager::engineState == EngineState::Title)
     {
         cameraPosition = glm::vec3(0.f, 0.f, 0.f);
         yaw = 0, pitch = 0, roll = 0;

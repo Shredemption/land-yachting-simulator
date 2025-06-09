@@ -12,7 +12,7 @@ struct MouseButtonState
 
 enum class InputType
 {
-    itKeyboard,
-    itMouse,
-    itController
+    Keyboard,
+    Mouse,
+    Controller
 };
