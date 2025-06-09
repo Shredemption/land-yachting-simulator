@@ -65,5 +65,6 @@ namespace Render
     void executeRender(RenderBuffer &renderBuffer, bool toScreen = true);
 
     void initFreeType();
-    void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f);
+    void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left);
+    float calculateTextWidth(const std::string& text, float scale);
 };

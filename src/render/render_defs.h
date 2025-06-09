@@ -34,3 +34,10 @@ enum class RenderType
     rtTransparentPlane,
     rtGrid
 };
+
+enum class TextAlign
+{
+    Left,
+    Right,
+    Center
+};

@@ -6,28 +6,28 @@
 
 void UIManager::update()
 {
-    draw();
-
     if (InputManager::inputType == InputType::itMouse)
     {
-        for (auto button : buttons)
+        for (auto &button : buttons)
         {
             button.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
-        for (auto toggle : toggles)
+        for (auto &toggle : toggles)
         {
             toggle.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
 
-        for (auto button : buttonsSide)
+        for (auto &button : buttonsSide)
         {
             button.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
-        for (auto toggle : togglesSide)
+        for (auto &toggle : togglesSide)
         {
             toggle.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
     }
+
+    draw();
 }
 
 void UIManager::load(const EngineState &state)
@@ -198,7 +198,7 @@ void UIManager::load(const EngineState &state)
             break;
 
         case UIElementType::uiToggle:
-            toggles.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor, activeColor);
+            toggles.emplace_back(startPos + (float(i) * stepPos), element.text, scale, baseColor, hoverColor, activeColor);
             toggles.back().toggleVariable = element.toggleVariable;
             break;
         }
@@ -303,7 +303,7 @@ void UIManager::loadSide(const SettingsPage &page)
             break;
 
         case UIElementType::uiToggle:
-            togglesSide.emplace_back(startPosSide + (float(i) * stepPosSide), sizeSide, element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
+            togglesSide.emplace_back(startPosSide + (float(i) * stepPosSide), element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
             togglesSide.back().setOnClick(element.callback);
             togglesSide.back().toggleVariable = element.toggleVariable;
             break;
@@ -384,16 +384,30 @@ void UIManager::draw()
 
             bool active = false;
             if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>)
+            {
                 if (element->linkedPage == SceneManager::settingsPage)
                     active = true;
 
-            bool isSelected = false;
-            if (ref.linkedState == UIInputState::uiMain && inputState == UIInputState::uiMain)
-                isSelected = ref.localIndex == selectedMain;
-            else if (ref.linkedState == UIInputState::uiSide && inputState == UIInputState::uiSide)
-                isSelected = ref.localIndex == selectedSide;
+                bool isSelected = false;
+                if (ref.linkedState == UIInputState::uiMain && inputState == UIInputState::uiMain)
+                    isSelected = ref.localIndex == selectedMain;
+                else if (ref.linkedState == UIInputState::uiSide && inputState == UIInputState::uiSide)
+                    isSelected = ref.localIndex == selectedSide;
 
-            element->draw(isSelected, active, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY); }, *ref.element);
+                element->draw(isSelected, active, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
+            } 
+
+            if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIToggle>)
+                {
+                    bool isSelected = false;
+                    if (ref.linkedState == UIInputState::uiMain && inputState == UIInputState::uiMain)
+                        isSelected = ref.localIndex == selectedMain;
+                    else if (ref.linkedState == UIInputState::uiSide && inputState == UIInputState::uiSide)
+                        isSelected = ref.localIndex == selectedSide;
+                        
+                   element->draw(isSelected, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
+                } },
+                   *ref.element);
     }
 }
 
@@ -402,8 +416,8 @@ bool UIButton::isHovered(const float mouseX, const float mouseY)
     float xmin = pos.x * WindowManager::screenUIScale * 2560.0f;
     float xmax = (pos.x + size.x) * WindowManager::screenUIScale * 2560.0f;
 
-    float ymin = (pos.y - 0.01f) * WindowManager::screenUIScale * 1440.0f;
-    float ymax = (pos.y - 0.01f + size.y) * WindowManager::screenUIScale * 1440.0f;
+    float ymin = (pos.y - 0.005f) * WindowManager::screenUIScale * 1440.0f;
+    float ymax = (pos.y - 0.005f + size.y) * WindowManager::screenUIScale * 1440.0f;
 
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
@@ -428,33 +442,71 @@ void UIButton::draw(bool selected, bool active, InputType inputType, float mouse
     glEnable(GL_DEPTH_TEST);
 }
 
-bool UIToggle::isHovered(const float mouseX, const float mouseY)
+bool UIToggle::isInside(const float mouseX, const float mouseY, glm::vec2 pos, glm::vec2 size)
 {
-    float xmin = pos.x * WindowManager::screenUIScale * 2560.0f;
-    float xmax = (pos.x + size.x) * WindowManager::screenUIScale * 2560.0f;
+    float xmin = (pos.x - size.x / 2.0f) * WindowManager::screenUIScale * 2560.0f;
+    float xmax = (pos.x + size.x / 2.0f) * WindowManager::screenUIScale * 2560.0f;
 
-    float ymin = (pos.y - 0.01f) * WindowManager::screenUIScale * 1440.0f;
-    float ymax = (pos.y - 0.01f + size.y) * WindowManager::screenUIScale * 1440.0f;
+    float ymin = (pos.y - 0.005f) * WindowManager::screenUIScale * 1440.0f;
+    float ymax = (pos.y - 0.005f + size.y) * WindowManager::screenUIScale * 1440.0f;
 
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
 
-void UIToggle::draw(bool selected, bool active, InputType inputType, float mouseX, float mouseY)
+void UIToggle::draw(bool selected, InputType inputType, float mouseX, float mouseY)
 {
-    glm::vec3 color = baseColor;
+    if (animating)
+    {
+        animTime += animSpeed * TimeManager::deltaTime;
+        if (animTime >= 1.0f)
+        {
+            animTime = 1.0f;
+            animating = false;
+        }
+    }
 
-    if (inputType == InputType::itMouse)
-        color = isHovered(mouseX, mouseY) ? hoverColor : active ? activeColor
-                                                                : baseColor;
-    else
-        color = selected ? hoverColor : active ? activeColor
-                                               : baseColor;
+    const std::string &currentLabel = *toggleVariable ? trueText : falseText;
+    const std::string &prevLabel = *toggleVariable ? falseText : trueText;
+
+    float slide = 0.0f;
+    if (animating)
+    {
+        float progress = animTime;
+        slide = (animDirection ? (1.0f - progress) : progress) * slideDistance;
+    }
 
     float x = pos.x + offset.x;
     float y = pos.y + offset.y;
 
     glDisable(GL_DEPTH_TEST);
-    Render::renderText(text + (*toggleVariable ? ": True" : ": False"), x + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha);
-    Render::renderText(text + (*toggleVariable ? ": True" : ": False"), x, y, scale, color, alpha);
+    Render::renderText(text, x + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha);
+    Render::renderText(text, x, y, scale, baseColor, alpha);
+
+    Render::renderText("<", x + labelOffset - arrowSpacing + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha, TextAlign::Center);
+    Render::renderText(">", x + labelOffset + arrowSpacing + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha, TextAlign::Center);
+    Render::renderText("<", x + labelOffset - arrowSpacing, y, scale, (selected || hoverLeft) ? hoverColor : baseColor, alpha, TextAlign::Center);
+    Render::renderText(">", x + labelOffset + arrowSpacing, y, scale, (selected || hoverRight) ? hoverColor : baseColor, alpha, TextAlign::Center);
+
+    if (animating)
+    {
+        float alphaA = std::clamp(1.0f - animTime * animTime, 0.0f, 1.0f);
+        float alphaB = std::clamp(animTime * animTime, 0.0f, 1.0f);
+
+        Render::renderText(prevLabel,
+                           x + labelOffset + (animDirection ? -slide : slide) + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha * alphaA, TextAlign::Center);
+        Render::renderText(currentLabel,
+                           x + labelOffset + (animDirection ? slideDistance - slide : slide - slideDistance) + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha * alphaB, TextAlign::Center);
+
+        Render::renderText(prevLabel,
+                           x + labelOffset + (animDirection ? -slide : slide), y, scale, baseColor, alpha * alphaA, TextAlign::Center);
+        Render::renderText(currentLabel,
+                           x + labelOffset + (animDirection ? slideDistance - slide : slide - slideDistance), y, scale, baseColor, alpha * alphaB, TextAlign::Center);
+    }
+    else
+    {
+        Render::renderText(currentLabel, x + labelOffset + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha, TextAlign::Center);
+        Render::renderText(currentLabel, x + labelOffset, y, scale, baseColor, alpha, TextAlign::Center);
+    }
+
     glEnable(GL_DEPTH_TEST);
 }
