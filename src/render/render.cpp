@@ -779,11 +779,22 @@ void Render::initFreeType()
     glEnableVertexAttribArray(0);
 }
 
-void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha)
+void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha, TextAlign textAlign)
 {
     x *= WindowManager::screenUIScale * 2560.0f;
     y *= WindowManager::screenUIScale * 1440.0f;
     scale *= WindowManager::screenUIScale;
+
+    float originalX = x;
+
+    if (textAlign != TextAlign::Left)
+    {
+        float textWidth = calculateTextWidth(text, scale);
+        if (textAlign == TextAlign::Center)
+            x -= textWidth / 2.0f;
+        else if (textAlign == TextAlign::Right)
+            x -= textWidth;
+    }
 
     // Load the shader for rendering text
     shader = ShaderUtil::load(shaderID::shText);
@@ -889,6 +900,30 @@ void Render::createSceneFBO(int width, int height)
         std::cerr << "Scene FBO is not complete!" << std::endl;
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+float Render::calculateTextWidth(const std::string &text, float scale)
+{
+    float width = 0.0f;
+    float lineWidth = 0.0f;
+
+    for (char c : text)
+    {
+        if (c == '\n')
+        {
+            width = std::max(width, lineWidth);
+            lineWidth = 0.0f;
+            continue;
+        }
+
+        if (Characters.count(c) == 0)
+            continue;
+        Character ch = Characters[c];
+        lineWidth += (ch.Advance >> 6) * scale;
+    }
+
+    width = std::max(width, lineWidth);
+    return width;
 }
 
 void Render::resize(int width, int height)
