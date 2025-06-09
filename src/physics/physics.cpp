@@ -152,7 +152,7 @@ void Physics::move(bool &controlled)
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
 
-    if (InputManager::inputType == InputType::itController)
+    if (InputManager::inputType == InputType::Controller)
     {
         if (controlled)
         {

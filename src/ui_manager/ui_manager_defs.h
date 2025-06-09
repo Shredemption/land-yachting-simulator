@@ -10,8 +10,8 @@ enum class SettingsPage;
 
 enum class UIElementType
 {
-    uiButton,
-    uiToggle,
+    Button,
+    Toggle,
 };
 
 struct UIElementData
@@ -25,6 +25,6 @@ struct UIElementData
 
 enum class UIInputState
 {
-    uiMain,
-    uiSide,
+    Main,
+    Side,
 };

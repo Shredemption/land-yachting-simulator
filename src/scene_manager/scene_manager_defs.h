@@ -11,19 +11,19 @@ struct LoadingStep
 
 enum class EngineState
 {
-    esNone,
-    esLoading,
-    esTitle,
-    esPause,
-    esSettings,
-    esTitleSettings,
-    esRunning
+    None,
+    Loading,
+    Title,
+    Pause,
+    Settings,
+    TitleSettings,
+    Running
 };
 
 enum class SettingsPage
 {
-    spNone,
-    spStart,
-    spGraphics,
-    spDebug
+    None,
+    Start,
+    Graphics,
+    Debug
 };

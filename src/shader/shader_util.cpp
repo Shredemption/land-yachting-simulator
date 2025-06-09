@@ -34,7 +34,7 @@ void ShaderUtil::unload()
     }
 
     loadedShaders.clear();
-    lastShader = shaderID::shNone;
+    lastShader = shaderID::None;
 
     waterLoaded = false;
 }
@@ -42,38 +42,38 @@ void ShaderUtil::unload()
 shaderID ShaderUtil::ShaderFromName(const std::string shaderName)
 {
     static const std::unordered_map<std::string, shaderID> typeMap = {
-        {"default", shaderID::shDefault},
-        {"gui", shaderID::shGui},
-        {"simple", shaderID::shSimple},
-        {"text", shaderID::shText},
-        {"image", shaderID::shImage},
-        {"water", shaderID::shWater},
-        {"skybox", shaderID::shSkybox},
-        {"toon", shaderID::shToon},
-        {"toon-terrain", shaderID::shToonTerrain},
-        {"toon-water", shaderID::shToonWater},
-        {"darken-blur", shaderID::shDarkenBlur},
-        {"post", shaderID::shPost}};
+        {"default", shaderID::Default},
+        {"gui", shaderID::Gui},
+        {"simple", shaderID::Simple},
+        {"text", shaderID::Text},
+        {"image", shaderID::Image},
+        {"water", shaderID::Water},
+        {"skybox", shaderID::Skybox},
+        {"toon", shaderID::Toon},
+        {"toon-terrain", shaderID::ToonTerrain},
+        {"toon-water", shaderID::ToonWater},
+        {"darken-blur", shaderID::DarkenBlur},
+        {"post", shaderID::Post}};
 
     auto it = typeMap.find(shaderName);
-    return it != typeMap.end() ? it->second : shaderID::shNone;
+    return it != typeMap.end() ? it->second : shaderID::None;
 }
 
 std::string ShaderUtil::NameFromShader(const shaderID shader)
 {
     static const std::unordered_map<shaderID, std::string> typeMap = {
-        {shaderID::shDefault, "default"},
-        {shaderID::shGui, "gui"},
-        {shaderID::shSimple, "simple"},
-        {shaderID::shText, "text"},
-        {shaderID::shImage, "image"},
-        {shaderID::shWater, "water"},
-        {shaderID::shSkybox, "skybox"},
-        {shaderID::shToon, "toon"},
-        {shaderID::shToonTerrain, "toon-terrain"},
-        {shaderID::shToonWater, "toon-water"},
-        {shaderID::shDarkenBlur, "darken-blur"},
-        {shaderID::shPost, "post"}};
+        {shaderID::Default, "default"},
+        {shaderID::Gui, "gui"},
+        {shaderID::Simple, "simple"},
+        {shaderID::Text, "text"},
+        {shaderID::Image, "image"},
+        {shaderID::Water, "water"},
+        {shaderID::Skybox, "skybox"},
+        {shaderID::Toon, "toon"},
+        {shaderID::ToonTerrain, "toon-terrain"},
+        {shaderID::ToonWater, "toon-water"},
+        {shaderID::DarkenBlur, "darken-blur"},
+        {shaderID::Post, "post"}};
 
     auto it = typeMap.find(shader);
     return it != typeMap.end() ? it->second : "";

@@ -41,7 +41,7 @@ namespace UIManager
 
     inline int selectedMain = -1;
     inline int selectedSide = -1;
-    inline UIInputState inputState = UIInputState::uiMain;
+    inline UIInputState inputState = UIInputState::Main;
 
     inline glm::vec3 defaultBaseColor = {1.0f, 1.0f, 1.0f};
     inline glm::vec3 defaultHoverColor = {0.9f, 0.4f, 0.4f};

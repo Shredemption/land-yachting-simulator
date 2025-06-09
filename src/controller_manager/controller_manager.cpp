@@ -8,9 +8,9 @@ void ControllerManager::update()
 
     if (!controllerConnected)
         return;
-    else if (InputManager::inputType != InputType::itController)
+    else if (InputManager::inputType != InputType::Controller)
     {
-        InputManager::inputType = InputType::itController;
+        InputManager::inputType = InputType::Controller;
         glfwSetInputMode(WindowManager::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
@@ -22,15 +22,15 @@ void ControllerManager::update()
 
     switch (SceneManager::engineState)
     {
-    case EngineState::esTitle:
-    case EngineState::esSettings:
-    case EngineState::esPause:
-    case EngineState::esTitleSettings:
+    case EngineState::Title:
+    case EngineState::Settings:
+    case EngineState::Pause:
+    case EngineState::TitleSettings:
         sticksMenu();
         buttonsMenu();
         break;
 
-    case EngineState::esRunning:
+    case EngineState::Running:
         sticksRunning();
         buttonsRunning();
         break;
@@ -89,24 +89,24 @@ void ControllerManager::buttonsMenu()
             case GLFW_GAMEPAD_BUTTON_B:
                 switch (SceneManager::engineState)
                 {
-                case EngineState::esTitle:
-                    SceneManager::switchEngineState(EngineState::esNone);
+                case EngineState::Title:
+                    SceneManager::switchEngineState(EngineState::None);
                     break;
 
-                case EngineState::esPause:
-                    SceneManager::switchEngineState(EngineState::esRunning);
+                case EngineState::Pause:
+                    SceneManager::switchEngineState(EngineState::Running);
                     break;
 
-                case EngineState::esSettings:
-                    SceneManager::switchEngineState(EngineState::esPause);
-                    SceneManager::switchSettingsPage(SettingsPage::spStart);
-                    UIManager::inputState = UIInputState::uiMain;
+                case EngineState::Settings:
+                    SceneManager::switchEngineState(EngineState::Pause);
+                    SceneManager::switchSettingsPage(SettingsPage::Start);
+                    UIManager::inputState = UIInputState::Main;
                     break;
 
-                case EngineState::esTitleSettings:
-                    SceneManager::switchEngineState(EngineState::esTitle);
-                    SceneManager::switchSettingsPage(SettingsPage::spStart);
-                    UIManager::inputState = UIInputState::uiMain;
+                case EngineState::TitleSettings:
+                    SceneManager::switchEngineState(EngineState::Title);
+                    SceneManager::switchSettingsPage(SettingsPage::Start);
+                    UIManager::inputState = UIInputState::Main;
                     break;
                 }
                 break;
@@ -149,7 +149,7 @@ void ControllerManager::buttonsRunning()
             switch (i)
             {
             case GLFW_GAMEPAD_BUTTON_START:
-                SceneManager::switchEngineState(EngineState::esPause);
+                SceneManager::switchEngineState(EngineState::Pause);
                 break;
 
             case GLFW_GAMEPAD_BUTTON_BACK:

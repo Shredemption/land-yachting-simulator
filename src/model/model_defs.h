@@ -6,8 +6,8 @@
 
 enum class ModelType
 {
-    mtModel,
-    mtYacht
+    Model,
+    Yacht
 };
 
 struct JSONModelMapEntry

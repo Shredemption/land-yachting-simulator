@@ -123,7 +123,7 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &sha
 {
     std::vector<unsigned int> indices;
 
-    bool isAnimated = (shader == shaderID::shDefault || shader == shaderID::shToon);
+    bool isAnimated = (shader == shaderID::Default || shader == shaderID::Toon);
 
     // Process Indices
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)

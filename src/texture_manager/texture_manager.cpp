@@ -51,7 +51,7 @@ void TextureManager::loadTexturesForShader(const shaderID &shader, const std::st
 
     std::vector<std::string> texturePaths;
 
-    if (shader == shaderID::shDefault)
+    if (shader == shaderID::Default)
     {
         auto diffuseMaps = loadMaterialTexturePaths("diffuse", directory);
         texturePaths.insert(texturePaths.end(), diffuseMaps.begin(), diffuseMaps.end());
@@ -59,7 +59,7 @@ void TextureManager::loadTexturesForShader(const shaderID &shader, const std::st
         auto propertiesMaps = loadMaterialTexturePaths("properties", directory);
         texturePaths.insert(texturePaths.end(), propertiesMaps.begin(), propertiesMaps.end());
     }
-    else if (shader == shaderID::shToon)
+    else if (shader == shaderID::Toon)
     {
         auto highlightMaps = loadMaterialTexturePaths("highlight", directory);
         texturePaths.insert(texturePaths.end(), highlightMaps.begin(), highlightMaps.end());
@@ -515,7 +515,7 @@ std::string TextureManager::getTextureArrayName(ModelType modelType)
 {
     switch (modelType)
     {
-    case ModelType::mtYacht:
+    case ModelType::Yacht:
         return "yachtTextureArray";
     default:
         return ""; // Empty goes to standalone

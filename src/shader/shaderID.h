@@ -2,17 +2,17 @@
 
 enum class shaderID
 {
-    shNone,
-    shDefault,
-    shGui,
-    shSimple,
-    shText,
-    shImage,
-    shWater,
-    shSkybox,
-    shToon,
-    shToonTerrain,
-    shToonWater,
-    shDarkenBlur,
-    shPost
+    None,
+    Default,
+    Gui,
+    Simple,
+    Text,
+    Image,
+    Water,
+    Skybox,
+    Toon,
+    ToonTerrain,
+    ToonWater,
+    DarkenBlur,
+    Post
 };

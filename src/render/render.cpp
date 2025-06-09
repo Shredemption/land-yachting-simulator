@@ -78,7 +78,7 @@ void renderOpaquePlane(const RenderCommand &cmd)
     shader->setMat4("u_model", cmd.modelMatrix);
     shader->setMat4("u_normal", cmd.normalMatrix);
 
-    if (cmd.shader == shaderID::shToonWater)
+    if (cmd.shader == shaderID::ToonWater)
     {
         int toonWater = TextureManager::getStandaloneTextureUnit("resources/textures/toonWater.jpeg");
         int normalMap = TextureManager::getStandaloneTextureUnit("resources/textures/waterNormal.png");
@@ -122,7 +122,7 @@ void renderTransparentPlane(const RenderCommand &cmd)
     shader->setMat4("u_model", cmd.modelMatrix);
     shader->setMat4("u_normal", cmd.normalMatrix);
 
-    if (cmd.shader == shaderID::shWater)
+    if (cmd.shader == shaderID::Water)
     {
         // Load surface textures
         unsigned int waterTexArrayID = TextureManager::getTextureArrayUnit("waterTextureArray");
@@ -151,7 +151,7 @@ void renderTransparentPlane(const RenderCommand &cmd)
     }
 
     // Draw meshes
-    if (cmd.shader == shaderID::shWater && !WaterPass)
+    if (cmd.shader == shaderID::Water && !WaterPass)
     {
         for (auto &mesh : *cmd.meshes)
         {
@@ -184,7 +184,7 @@ void renderGrid(const RenderCommand &cmd)
 
     shader->setFloat("lod", cmd.lod);
 
-    if (cmd.shader == shaderID::shToonTerrain)
+    if (cmd.shader == shaderID::ToonTerrain)
     {
         int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
         shader->setInt("heightmap", heightmap);
@@ -221,19 +221,19 @@ void renderObjects(std::vector<RenderCommand> &renderBuffer)
 
         switch (cmd.type)
         {
-        case RenderType::rtModel:
+        case RenderType::Model:
             renderModel(cmd);
             break;
 
-        case RenderType::rtOpaquePlane:
+        case RenderType::OpaquePlane:
             renderOpaquePlane(cmd);
             break;
 
-        case RenderType::rtTransparentPlane:
+        case RenderType::TransparentPlane:
             renderTransparentPlane(cmd);
             break;
 
-        case RenderType::rtGrid:
+        case RenderType::Grid:
             renderGrid(cmd);
             break;
         }
@@ -252,7 +252,7 @@ void renderSceneSkyBox()
         glDisable(GL_DEPTH_TEST);
 
         // Load shader
-        shader = ShaderUtil::load(shaderID::shSkybox);
+        shader = ShaderUtil::load(shaderID::Skybox);
 
         // Bind skybox
         glBindVertexArray(SceneManager::currentScene.get()->skyBox.VAO);
@@ -289,7 +289,7 @@ void renderSceneTexts()
 
 void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f, const glm::vec2 scale = {1.0, 1.0f}, const float rotation = 0.0f, const bool mirrored = false)
 {
-    shader = ShaderUtil::load(shaderID::shImage);
+    shader = ShaderUtil::load(shaderID::Image);
     lastShader = shader;
 
     glEnable(GL_BLEND);
@@ -386,7 +386,7 @@ void renderTestQuad(unsigned int texture, int x, int y)
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    Shader *quadShader = ShaderUtil::load(shaderID::shGui);
+    Shader *quadShader = ShaderUtil::load(shaderID::Gui);
     quadShader->setInt("screenTexture", 1);
 
     // Render the quad
@@ -489,7 +489,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
                                      {
             RenderCommand cmd;
             
-            cmd.type = RenderType::rtModel;
+            cmd.type = RenderType::Model;
 
             cmd.shader = model.shader; 
             
@@ -510,7 +510,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
 
             cmd.lod = 0;
             if (distanceFromCamera > lodDistance) cmd.lod = 1;
-            if (SceneManager::engineState == EngineState::esTitle) cmd.lod = 0;
+            if (SceneManager::engineState == EngineState::Title) cmd.lod = 0;
 
             if (cmd.lod >= model.model->lodMeshes.size())
                 cmd.lod = static_cast<int>(std::round(model.model->lodMeshes.size())) - 1;
@@ -533,7 +533,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
                                      {
             RenderCommand cmd;
             
-            cmd.type = RenderType::rtOpaquePlane;
+            cmd.type = RenderType::OpaquePlane;
 
             cmd.shader = opaquePlane.shader;
 
@@ -561,7 +561,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
                                      {
             RenderCommand cmd;
             
-            cmd.type = RenderType::rtTransparentPlane;
+            cmd.type = RenderType::TransparentPlane;
 
             cmd.shader = transparentPlane.shader;
 
@@ -581,7 +581,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
                                      {
             RenderCommand cmd;
             
-            cmd.type = RenderType::rtGrid;
+            cmd.type = RenderType::Grid;
 
             cmd.shader = grid.shader;
 
@@ -634,7 +634,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     renderObjects(renderBuffer.commandBuffer);
 
     // Render debug menu
-    if (SceneManager::engineState == EngineState::esRunning)
+    if (SceneManager::engineState == EngineState::Running)
     {
         // Set debug data
         std::string debugText;
@@ -643,14 +643,14 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
         // Select which debug renderer to use
         switch (debugstate)
         {
-        case debugState::dbNone:
+        case debugState::None:
             break;
 
-        case debugState::dbFPS:
+        case debugState::FPS:
             renderText(std::to_string(static_cast<int>(FPS)), 0.01f, 0.01f, 0.33f, debugColor);
             break;
 
-        case debugState::dbPhysics:
+        case debugState::Physics:
             debugText = "Physics:\n";
 
             for (auto entry : debugPhysicsData)
@@ -674,7 +674,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader = ShaderUtil::load(shaderID::shPost);
+        shader = ShaderUtil::load(shaderID::Post);
         shader->setInt("screenTexture", 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sceneTexture);
@@ -797,7 +797,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     }
 
     // Load the shader for rendering text
-    shader = ShaderUtil::load(shaderID::shText);
+    shader = ShaderUtil::load(shaderID::Text);
 
     if (shader != lastShader || WindowManager::windowSizeChanged)
     {
@@ -1022,7 +1022,7 @@ void Render::renderLoadingScreen()
     renderText(progressString, 0.05f, 0.20f, 0.5f, glm::vec3(0.6f, 0.1f, 0.1f));
 
     // Render first frame under it
-    if (SceneManager::engineState == EngineState::esLoading)
+    if (SceneManager::engineState == EngineState::Loading)
         effectiveFade = 1.0f;
     else
         effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
@@ -1032,7 +1032,7 @@ void Render::renderLoadingScreen()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
 
-    shader = ShaderUtil::load(shaderID::shDarkenBlur);
+    shader = ShaderUtil::load(shaderID::DarkenBlur);
     shader->setInt("screenTexture", 0);
     shader->setVec2("texelSize", glm::vec2(1.0f / WindowManager::screenWidth, 1.0f / WindowManager::screenHeight));
     shader->setFloat("darkenAmount", darkfactor);
@@ -1057,7 +1057,7 @@ void Render::renderTitleScreen()
     float imageAlpha = easeInOutQuad(0.0f, 1.0f, effectiveFade);
 
     float xpos;
-    if (SceneManager::exitState == EngineState::esTitle)
+    if (SceneManager::exitState == EngineState::Title)
         xpos = easeOutCubic(1.33f, 0.67f, effectiveFade);
     else
         xpos = easeOutCubic(0.0f, 0.67f, effectiveFade);
@@ -1071,7 +1071,7 @@ void Render::renderTitleScreen()
 
     for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
     {
-        if (SceneManager::exitState == EngineState::esPause)
+        if (SceneManager::exitState == EngineState::Pause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
@@ -1105,7 +1105,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
     float darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
     float darkenPosition = 0.4f;
 
-    if (state == EngineState::esTitleSettings)
+    if (state == EngineState::TitleSettings)
     {
         darkfactor = 1.0f;
         darkenPosition = 2.0f;
@@ -1119,7 +1119,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
 
-    shader = ShaderUtil::load(shaderID::shDarkenBlur);
+    shader = ShaderUtil::load(shaderID::DarkenBlur);
     shader->setInt("screenTexture", 0);
     shader->setVec2("texelSize", glm::vec2(1.0f / WindowManager::screenWidth, 1.0f / WindowManager::screenHeight));
     shader->setFloat("darkenAmount", darkfactor);
@@ -1134,7 +1134,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
     for (int i = 0; i < 1 + UIManager::uiElements.size(); i++)
     {
-        if (SceneManager::exitState == EngineState::esPause)
+        if (SceneManager::exitState == EngineState::Pause)
             effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
         else
             effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
@@ -1153,7 +1153,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
     for (int i = 0; i < UIManager::uiElementsSide.size(); i++)
     {
-        if (SceneManager::exitState == EngineState::esPause)
+        if (SceneManager::exitState == EngineState::Pause)
             effectiveFade = std::clamp(SceneManager::sideFade, 0.0f, 1.0f);
         else
             effectiveFade = std::clamp(SceneManager::sideFade - fadeOffsetSide * i, 0.0f, 1.0f);
@@ -1170,12 +1170,12 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
     switch (state)
     {
-    case EngineState::esPause:
+    case EngineState::Pause:
         header = "Paused";
         break;
 
-    case EngineState::esSettings:
-    case EngineState::esTitleSettings:
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
         header = "Settings";
         break;
     }
