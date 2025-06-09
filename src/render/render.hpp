@@ -29,7 +29,6 @@ namespace Render
 
     inline float waterHeight = 0.25;
 
-    inline debugState debugstate;
     inline float FPS = 0.0f;
     inline std::vector<std::pair<std::string, float>> debugPhysicsData;
 

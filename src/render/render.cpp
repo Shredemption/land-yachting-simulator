@@ -641,16 +641,16 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
         FPS = (0.9f * FPS + 0.1f / TimeManager::deltaTime);
 
         // Select which debug renderer to use
-        switch (debugstate)
+        switch (SettingsManager::settings.debug.debugOverlay)
         {
-        case debugState::None:
+        case debugOverlay::None:
             break;
 
-        case debugState::FPS:
+        case debugOverlay::FPS:
             renderText(std::to_string(static_cast<int>(FPS)), 0.01f, 0.01f, 0.33f, debugColor);
             break;
 
-        case debugState::Physics:
+        case debugOverlay::Physics:
             debugText = "Physics:\n";
 
             for (auto entry : debugPhysicsData)

@@ -1,8 +1,8 @@
-#include "ui_manager/ui_toggle.hpp"
+#include "ui_manager/ui_selector.hpp"
 
 #include "pch.h"
 
-void UIToggle::checkClicked(const float mouseX, const float mouseY, const bool mousePressed)
+void UISelector::checkClicked(const float mouseX, const float mouseY, const bool mousePressed)
 {
     glm::vec2 leftArrowPos = glm::vec2(pos.x + labelOffset - arrowSpacing, pos.y);
     glm::vec2 rightArrowPos = glm::vec2(pos.x + labelOffset + arrowSpacing, pos.y);
@@ -16,46 +16,33 @@ void UIToggle::checkClicked(const float mouseX, const float mouseY, const bool m
     {
         hoverLeft = true;
         if (mousePressed)
-            execute(false);
+            updateValue(false);
     }
     else if (isInside(mouseX, mouseY, rightArrowPos, arrowSize))
     {
         hoverRight = true;
         if (mousePressed)
-            execute(true);
+            updateValue(true);
     }
 }
 
-void UIToggle::toggle(bool toRight)
+void UISelector::updateValue(bool toRight)
 {
-    if (!toggleVariable)
-        return;
-
+    prevIndex = currentIndex;
+    int newIndex = toRight ? currentIndex + 1 : currentIndex - 1;
+    currentIndex = (newIndex + static_cast<int>(optionLabels.size())) % optionLabels.size();
     startAnimation(toRight);
-    *toggleVariable = !(*toggleVariable);
+    writeCallback(*this);
 }
 
-void UIToggle::execute(bool toRight)
-{
-    toggle(toRight);
-    if (onClick)
-        onClick();
-}
-
-void UIToggle::setTextOptions(const std::string &falseLabel, const std::string &trueLabel)
-{
-    falseText = falseLabel;
-    trueText = trueLabel;
-}
-
-void UIToggle::startAnimation(bool toRight)
+void UISelector::startAnimation(bool toRight)
 {
     animDirection = toRight;
     animTime = 0.0f;
     animating = true;
 }
 
-bool UIToggle::isInside(const float mouseX, const float mouseY, glm::vec2 pos, glm::vec2 size)
+bool UISelector::isInside(const float mouseX, const float mouseY, glm::vec2 pos, glm::vec2 size)
 {
     float xmin = (pos.x - size.x / 2.0f) * WindowManager::screenUIScale * 2560.0f;
     float xmax = (pos.x + size.x / 2.0f) * WindowManager::screenUIScale * 2560.0f;
@@ -66,7 +53,7 @@ bool UIToggle::isInside(const float mouseX, const float mouseY, glm::vec2 pos, g
     return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
 }
 
-void UIToggle::draw(bool selected, InputType inputType, float mouseX, float mouseY)
+void UISelector::draw(bool selected, InputType inputType, float mouseX, float mouseY)
 {
     if (animating)
     {
@@ -78,8 +65,8 @@ void UIToggle::draw(bool selected, InputType inputType, float mouseX, float mous
         }
     }
 
-    const std::string &currentLabel = *toggleVariable ? trueText : falseText;
-    const std::string &prevLabel = *toggleVariable ? falseText : trueText;
+    const std::string &currentLabel = optionLabels[currentIndex];
+    const std::string &prevLabel = optionLabels[prevIndex];
 
     float slide = 0.0f;
     if (animating)
@@ -124,17 +111,27 @@ void UIToggle::draw(bool selected, InputType inputType, float mouseX, float mous
     glEnable(GL_DEPTH_TEST);
 }
 
-void UIToggle::setOnClick(std::function<void()> callback)
+void UISelector::setOnRead(std::function<void(UISelector &)> callback)
 {
-    this->onClick = callback;
+    this->readCallback = callback;
 }
 
-void UIToggle::setOffset(glm::vec2 offset)
+void UISelector::setOnWrite(std::function<void(UISelector &)> callback)
+{
+    this->writeCallback = callback;
+}
+
+void UISelector::setOptionLabels(std::vector<std::string> labels)
+{
+    this->optionLabels = labels;
+}
+
+void UISelector::setOffset(glm::vec2 offset)
 {
     this->offset = offset;
 }
 
-void UIToggle::setAlpha(float alpha)
+void UISelector::setAlpha(float alpha)
 {
     this->alpha = alpha;
 }

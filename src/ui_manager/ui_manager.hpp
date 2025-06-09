@@ -8,7 +8,7 @@
 enum class EngineState;
 enum class SettingsPage;
 
-using UIElement = std::variant<UIButton *, UIToggle *>;
+using UIElement = std::variant<UIButton *, UIToggle *, UISelector *>;
 
 struct UIElementRef
 {
@@ -27,17 +27,17 @@ namespace UIManager
 
     inline std::vector<UIElementRef> uiElementsTotal;
     void loadElements(std::vector<UIElementData> elementData, glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 size, float scale, glm::vec3 baseCol, glm::vec3 hoverCol, glm::vec3 activeCol,
-                      std::vector<UIElement> &UIelements, std::vector<UIButton> &UIbuttons, std::vector<UIToggle> &UItoggles);
+                      std::vector<UIElement> &UIelements, std::vector<UIButton> &UIbuttons, std::vector<UIToggle> &UItoggles, std::vector<UISelector> &UISelectors);
     void rebuildTotalElements();
     UIElement *getSelectedElement();
 
     inline std::vector<UIElement> uiElements;
     inline std::vector<UIButton> buttons;
-    inline std::vector<UIToggle> toggles;
 
     inline std::vector<UIElement> uiElementsSide;
     inline std::vector<UIButton> buttonsSide;
     inline std::vector<UIToggle> togglesSide;
+    inline std::vector<UISelector> selectorsSide;
 
     inline int selectedMain = -1;
     inline int selectedSide = -1;
