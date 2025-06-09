@@ -6,6 +6,9 @@
 #include <functional>
 #include <optional>
 
+#include "ui_manager/ui_button.hpp"
+#include "ui_manager/ui_toggle.hpp"
+
 enum class SettingsPage;
 
 enum class UIElementType

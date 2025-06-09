@@ -3,9 +3,7 @@
 #include <vector>
 #include <variant>
 
-#include <ui_manager/ui_button.h>
-#include <ui_manager/ui_toggle.h>
-#include <ui_manager/ui_manager_defs.h>
+#include "ui_manager/ui_manager_defs.h"
 
 enum class EngineState;
 enum class SettingsPage;
