@@ -21,16 +21,10 @@ public:
     bool isHovered(const float mouseX, const float mouseY);
     void draw(bool selected, bool active, InputType inputType, float mouseX, float mouseY);
 
-    void checkClicked(const float mouseX, const float mouseY, const bool mousePressed)
-    {
-        if (mousePressed && isHovered(mouseX, mouseY))
-            if (onClick)
-                onClick();
-    };
-
-    void setOnClick(std::function<void()> callback) { this->onClick = callback; };
-    void setOffset(glm::vec2 offset) { this->offset = offset; };
-    void setAlpha(float alpha) { this->alpha = alpha; };
+    void checkClicked(const float mouseX, const float mouseY, const bool mousePressed);
+    void setOnClick(std::function<void()> callback);
+    void setOffset(glm::vec2 offset);
+    void setAlpha(float alpha);
 
     glm::vec2 pos;
     glm::vec2 size;

@@ -1,6 +1,4 @@
 #include "ui_manager/ui_manager.hpp"
-#include "ui_manager/ui_button.h"
-#include "ui_manager/ui_toggle.h"
 
 #include "pch.h"
 
@@ -249,12 +247,13 @@ void UIManager::loadSide(const SettingsPage &page)
     case SettingsPage::Debug:
 
         elementsSide = {
-            {
-                UIElementType::Toggle,
-                "Wireframe",
-                {},
-                &SettingsManager::settings.debug.wireframeMode,
-            },
+            {UIElementType::Toggle,
+             "Wireframe",
+             {},
+             &SettingsManager::settings.debug.wireframeMode,
+             std::nullopt,
+             "On",
+             "Off"},
         };
 
         break;
@@ -387,104 +386,4 @@ void UIManager::draw()
                 } },
                    *ref.element);
     }
-}
-
-bool UIButton::isHovered(const float mouseX, const float mouseY)
-{
-    float xmin = pos.x * WindowManager::screenUIScale * 2560.0f;
-    float xmax = (pos.x + size.x) * WindowManager::screenUIScale * 2560.0f;
-
-    float ymin = (pos.y - 0.005f) * WindowManager::screenUIScale * 1440.0f;
-    float ymax = (pos.y - 0.005f + size.y) * WindowManager::screenUIScale * 1440.0f;
-
-    return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
-}
-
-void UIButton::draw(bool selected, bool active, InputType inputType, float mouseX, float mouseY)
-{
-    glm::vec3 color = baseColor;
-
-    if (inputType == InputType::Mouse)
-        color = isHovered(mouseX, mouseY) ? hoverColor : active ? activeColor
-                                                                : baseColor;
-    else
-        color = selected ? hoverColor : active ? activeColor
-                                               : baseColor;
-
-    float x = pos.x + offset.x;
-    float y = pos.y + offset.y;
-
-    glDisable(GL_DEPTH_TEST);
-    Render::renderText(text, x + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha);
-    Render::renderText(text, x, y, scale, color, alpha);
-    glEnable(GL_DEPTH_TEST);
-}
-
-bool UIToggle::isInside(const float mouseX, const float mouseY, glm::vec2 pos, glm::vec2 size)
-{
-    float xmin = (pos.x - size.x / 2.0f) * WindowManager::screenUIScale * 2560.0f;
-    float xmax = (pos.x + size.x / 2.0f) * WindowManager::screenUIScale * 2560.0f;
-
-    float ymin = (pos.y - 0.005f) * WindowManager::screenUIScale * 1440.0f;
-    float ymax = (pos.y - 0.005f + size.y) * WindowManager::screenUIScale * 1440.0f;
-
-    return mouseX >= xmin && mouseX <= xmax && mouseY >= ymin && mouseY <= ymax;
-}
-
-void UIToggle::draw(bool selected, InputType inputType, float mouseX, float mouseY)
-{
-    if (animating)
-    {
-        animTime += animSpeed * TimeManager::deltaTime;
-        if (animTime >= 1.0f)
-        {
-            animTime = 1.0f;
-            animating = false;
-        }
-    }
-
-    const std::string &currentLabel = *toggleVariable ? trueText : falseText;
-    const std::string &prevLabel = *toggleVariable ? falseText : trueText;
-
-    float slide = 0.0f;
-    if (animating)
-    {
-        float progress = animTime;
-        slide = (animDirection ? (1.0f - progress) : progress) * slideDistance;
-    }
-
-    float x = pos.x + offset.x;
-    float y = pos.y + offset.y;
-
-    glDisable(GL_DEPTH_TEST);
-    Render::renderText(text, x + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha);
-    Render::renderText(text, x, y, scale, baseColor, alpha);
-
-    Render::renderText("<", x + labelOffset - arrowSpacing + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha, TextAlign::Center);
-    Render::renderText(">", x + labelOffset + arrowSpacing + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha, TextAlign::Center);
-    Render::renderText("<", x + labelOffset - arrowSpacing, y, scale, (selected || hoverLeft) ? hoverColor : baseColor, alpha, TextAlign::Center);
-    Render::renderText(">", x + labelOffset + arrowSpacing, y, scale, (selected || hoverRight) ? hoverColor : baseColor, alpha, TextAlign::Center);
-
-    if (animating)
-    {
-        float alphaA = std::clamp(1.0f - animTime * animTime, 0.0f, 1.0f);
-        float alphaB = std::clamp(animTime * animTime, 0.0f, 1.0f);
-
-        Render::renderText(prevLabel,
-                           x + labelOffset + (animDirection ? -slide : slide) + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha * alphaA, TextAlign::Center);
-        Render::renderText(currentLabel,
-                           x + labelOffset + (animDirection ? slideDistance - slide : slide - slideDistance) + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha * alphaB, TextAlign::Center);
-
-        Render::renderText(prevLabel,
-                           x + labelOffset + (animDirection ? -slide : slide), y, scale, baseColor, alpha * alphaA, TextAlign::Center);
-        Render::renderText(currentLabel,
-                           x + labelOffset + (animDirection ? slideDistance - slide : slide - slideDistance), y, scale, baseColor, alpha * alphaB, TextAlign::Center);
-    }
-    else
-    {
-        Render::renderText(currentLabel, x + labelOffset + 0.003f, y + 0.003f, scale, glm::vec3(0, 0, 0), alpha, TextAlign::Center);
-        Render::renderText(currentLabel, x + labelOffset, y, scale, baseColor, alpha, TextAlign::Center);
-    }
-
-    glEnable(GL_DEPTH_TEST);
 }
