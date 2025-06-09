@@ -21,6 +21,8 @@ struct UIElementData
     std::function<void()> callback;
     bool *toggleVariable;
     std::optional<SettingsPage> linkedPage;
+    std::string trueText;
+    std::string falseText;
 };
 
 enum class UIInputState

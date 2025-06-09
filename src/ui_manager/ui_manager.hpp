@@ -28,6 +28,8 @@ namespace UIManager
     void draw();
 
     inline std::vector<UIElementRef> uiElementsTotal;
+    void loadElements(std::vector<UIElementData> elementData, glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 size, float scale, glm::vec3 baseCol, glm::vec3 hoverCol, glm::vec3 activeCol,
+                      std::vector<UIElement> &UIelements, std::vector<UIButton> &UIbuttons, std::vector<UIToggle> &UItoggles);
     void rebuildTotalElements();
     UIElement *getSelectedElement();
 
