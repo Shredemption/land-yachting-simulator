@@ -157,6 +157,8 @@ void InputManager::mousePosCallbackMenu(GLFWwindow *window, double xPos, double 
     if (inputType != InputType::Mouse)
     {
         inputType = InputType::Mouse;
+        UIManager::selectedMain = -1;
+        UIManager::selectedSide = -1;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 

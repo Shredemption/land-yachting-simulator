@@ -224,7 +224,7 @@ void UIManager::load(const EngineState &state)
 
 void UIManager::loadSide(const SettingsPage &page)
 {
-    selectedSide = 0;
+    selectedSide = (InputManager::inputType != InputType::Mouse) ? 0 : -1;
 
     buttonsSide.clear();
     togglesSide.clear();
