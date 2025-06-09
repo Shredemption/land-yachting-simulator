@@ -12,13 +12,6 @@ struct Character
     glm::vec4 TexCoords; // (x, y, width, height)
 };
 
-enum class debugState
-{
-    None,
-    FPS,
-    Physics
-};
-
 enum class BufferState
 {
     Free,

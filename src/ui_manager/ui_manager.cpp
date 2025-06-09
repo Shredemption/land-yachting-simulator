@@ -10,10 +10,6 @@ void UIManager::update()
         {
             button.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
-        for (auto &toggle : toggles)
-        {
-            toggle.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
-        }
 
         for (auto &button : buttonsSide)
         {
@@ -22,6 +18,10 @@ void UIManager::update()
         for (auto &toggle : togglesSide)
         {
             toggle.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
+        }
+        for (auto &selector : selectorsSide)
+        {
+            selector.checkClicked(InputManager::mousePosX, InputManager::mousePosY, InputManager::leftMouseButton.pressed());
         }
     }
 
@@ -33,7 +33,6 @@ void UIManager::load(const EngineState &state)
     selectedMain = 0;
 
     buttons.clear();
-    toggles.clear();
     uiElements.clear();
 
     std::vector<UIElementData> elements = {};
@@ -160,31 +159,31 @@ void UIManager::load(const EngineState &state)
                 nullptr,
                 SettingsPage::Debug,
             },
-            {
-                UIElementType::Button,
-                "Back",
-                []
-                {
-                    if (SceneManager::engineState == EngineState::Settings)
-                    {
-                        SceneManager::switchEngineState(EngineState::Pause);
-                    }
-                    else
-                    {
-                        SceneManager::switchEngineState(EngineState::Title);
-                    }
+            {UIElementType::Button,
+             "Back",
+             []
+             {
+                 if (SceneManager::engineState == EngineState::Settings)
+                 {
+                     SceneManager::switchEngineState(EngineState::Pause);
+                 }
+                 else
+                 {
+                     SceneManager::switchEngineState(EngineState::Title);
+                 }
 
-                    SceneManager::switchSettingsPage(SettingsPage::Start);
-                },
-                nullptr,
-            },
+                 SceneManager::switchSettingsPage(SettingsPage::Start);
+             }},
         };
         break;
     }
 
+    std::vector<UIToggle> dummyToggles;
+    std::vector<UISelector> dummySelectors;
+
     loadElements(elements, startPos, stepPos, size,
                  scale, baseColor, hoverColor, activeColor,
-                 uiElements, buttons, toggles);
+                 uiElements, buttons, dummyToggles, dummySelectors);
     rebuildTotalElements();
 }
 
@@ -219,27 +218,29 @@ void UIManager::loadSide(const SettingsPage &page)
     case SettingsPage::Graphics:
 
         elementsSide = {
-            {UIElementType::Toggle,
-             "Fullscreen",
-             []
-             {
-                 WindowManager::setFullscreenState();
-                 SceneManager::runOneFrame();
-             },
-             &SettingsManager::settings.video.fullscreen,
-             std::nullopt,
-             "Borderless",
-             "Off"},
-            {UIElementType::Toggle,
-             "VSync",
-             []
-             {
-                 glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0);
-             },
-             &SettingsManager::settings.video.vSync,
-             std::nullopt,
-             "On",
-             "Off"},
+            {
+                UIElementType::Toggle,
+                "Fullscreen",
+                []
+                {
+                    WindowManager::setFullscreenState();
+                    SceneManager::runOneFrame();
+                },
+                &SettingsManager::settings.video.fullscreen,
+                std::nullopt,
+                {"Borderless", "Off"},
+            },
+            {
+                UIElementType::Toggle,
+                "VSync",
+                []
+                {
+                    glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0);
+                },
+                &SettingsManager::settings.video.vSync,
+                std::nullopt,
+                {"On", "Off"},
+            },
         };
 
         break;
@@ -247,13 +248,26 @@ void UIManager::loadSide(const SettingsPage &page)
     case SettingsPage::Debug:
 
         elementsSide = {
-            {UIElementType::Toggle,
-             "Wireframe",
-             {},
-             &SettingsManager::settings.debug.wireframeMode,
-             std::nullopt,
-             "On",
-             "Off"},
+            {
+                UIElementType::Toggle,
+                "Wireframe",
+                {},
+                &SettingsManager::settings.debug.wireframeMode,
+                std::nullopt,
+                {"On", "Off"},
+            },
+            {
+                UIElementType::Selector,
+                "Debug Overlay",
+                {},
+                nullptr,
+                std::nullopt,
+                {"Off", "FPS", "Physics"},
+                [](UISelector &sel)
+                { sel.currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay); },
+                [](UISelector &sel)
+                { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(sel.currentIndex); },
+            },
         };
 
         break;
@@ -261,12 +275,12 @@ void UIManager::loadSide(const SettingsPage &page)
 
     loadElements(elementsSide, startPosSide, stepPosSide, sizeSide,
                  scaleSide, baseColorSide, hoverColorSide, activeColorSide,
-                 uiElementsSide, buttonsSide, togglesSide);
+                 uiElementsSide, buttonsSide, togglesSide, selectorsSide);
     rebuildTotalElements();
 }
 
 void UIManager::loadElements(std::vector<UIElementData> elementData, glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 size, float scale, glm::vec3 baseCol, glm::vec3 hoverCol, glm::vec3 activeCol,
-                             std::vector<UIElement> &UIelements, std::vector<UIButton> &UIbuttons, std::vector<UIToggle> &UItoggles)
+                             std::vector<UIElement> &UIelements, std::vector<UIButton> &UIbuttons, std::vector<UIToggle> &UItoggles, std::vector<UISelector> &UIselectors)
 {
     for (int i = 0; i < elementData.size(); i++)
     {
@@ -284,13 +298,21 @@ void UIManager::loadElements(std::vector<UIElementData> elementData, glm::vec2 s
             UItoggles.emplace_back(startPos + (float(i) * stepPos), element.text, scale, baseCol, hoverCol, activeCol);
             UItoggles.back().setOnClick(element.callback);
             UItoggles.back().toggleVariable = element.toggleVariable;
-            UItoggles.back().setTextOptions(element.falseText, element.trueText);
+            UItoggles.back().setTextOptions(element.optionLabels[1], element.optionLabels[0]);
+            break;
+        case UIElementType::Selector:
+            UIselectors.emplace_back(startPos + (float(i) * stepPos), element.text, scale, baseCol, hoverCol, activeCol);
+            UIselectors.back().setOnWrite(element.writeCallback);
+            UIselectors.back().setOnRead(element.readCallback);
+            UIselectors.back().setOptionLabels(element.optionLabels);
+            UIselectors.back().readCallback(UIselectors.back());
             break;
         }
     }
 
     int buttonIndex = 0;
     int toggleIndex = 0;
+    int selectorIndex = 0;
     for (const auto &element : elementData)
     {
         switch (element.type)
@@ -301,6 +323,8 @@ void UIManager::loadElements(std::vector<UIElementData> elementData, glm::vec2 s
         case UIElementType::Toggle:
             UIelements.push_back(&UItoggles[toggleIndex++]);
             break;
+        case UIElementType::Selector:
+            UIelements.push_back(&UIselectors[selectorIndex++]);
         }
     }
 }
@@ -357,33 +381,45 @@ void UIManager::draw()
 
         std::visit([&](auto *element)
                    {
-            if (!element) return;
+                       if (!element)
+                           return;
 
-            bool active = false;
-            if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>)
-            {
-                if (element->linkedPage == SceneManager::settingsPage)
-                    active = true;
+                       bool active = false;
+                       if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIButton>)
+                       {
+                           if (element->linkedPage == SceneManager::settingsPage)
+                               active = true;
 
-                bool isSelected = false;
-                if (ref.linkedState == UIInputState::Main && inputState == UIInputState::Main)
-                    isSelected = ref.localIndex == selectedMain;
-                else if (ref.linkedState == UIInputState::Side && inputState == UIInputState::Side)
-                    isSelected = ref.localIndex == selectedSide;
+                           bool isSelected = false;
+                           if (ref.linkedState == UIInputState::Main && inputState == UIInputState::Main)
+                               isSelected = ref.localIndex == selectedMain;
+                           else if (ref.linkedState == UIInputState::Side && inputState == UIInputState::Side)
+                               isSelected = ref.localIndex == selectedSide;
 
-                element->draw(isSelected, active, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
-            } 
+                           element->draw(isSelected, active, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
+                       }
 
-            if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIToggle>)
-                {
-                    bool isSelected = false;
-                    if (ref.linkedState == UIInputState::Main && inputState == UIInputState::Main)
-                        isSelected = ref.localIndex == selectedMain;
-                    else if (ref.linkedState == UIInputState::Side && inputState == UIInputState::Side)
-                        isSelected = ref.localIndex == selectedSide;
-                        
-                   element->draw(isSelected, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
-                } },
+                       if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UIToggle>)
+                       {
+                           bool isSelected = false;
+                           if (ref.linkedState == UIInputState::Main && inputState == UIInputState::Main)
+                               isSelected = ref.localIndex == selectedMain;
+                           else if (ref.linkedState == UIInputState::Side && inputState == UIInputState::Side)
+                               isSelected = ref.localIndex == selectedSide;
+
+                           element->draw(isSelected, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
+                       }
+
+                       if constexpr (std::is_same_v<std::decay_t<decltype(*element)>, UISelector>)
+                       {
+                           bool isSelected = false;
+                           if (ref.linkedState == UIInputState::Main && inputState == UIInputState::Main)
+                               isSelected = ref.localIndex == selectedMain;
+                           else if (ref.linkedState == UIInputState::Side && inputState == UIInputState::Side)
+                               isSelected = ref.localIndex == selectedSide;
+
+                           element->draw(isSelected, InputManager::inputType, InputManager::mousePosX, InputManager::mousePosY);
+                       } },
                    *ref.element);
     }
 }

@@ -132,14 +132,6 @@ void InputManager::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         SceneManager::switchEngineState(EngineState::Pause);
 
-    // Toggle FPS debug on F9
-    if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
-        Render::debugstate = (Render::debugstate == debugState::FPS) ? debugState::None : debugState::FPS;
-
-    // Toggle physics debug on F10
-    if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
-        Render::debugstate = (Render::debugstate == debugState::Physics) ? debugState::None : debugState::Physics;
-
     // Toggle Freecam on C
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
         Camera::freeCam = (Camera::freeCam) ? false : true;
@@ -387,6 +379,8 @@ void InputManager::menuRunSelected()
                     if constexpr (std::is_same_v<T, UIButton>)
                         element->onClick();
                     else if constexpr (std::is_same_v<T, UIToggle>)
-                        element->execute(); },
+                        element->execute(); 
+                    else if constexpr (std::is_same_v<T, UISelector>)
+                        element->updateValue();},
                *selected);
 }
