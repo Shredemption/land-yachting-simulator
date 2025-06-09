@@ -184,41 +184,9 @@ void UIManager::load(const EngineState &state)
         break;
     }
 
-    for (int i = 0; i < elements.size(); i++)
-    {
-        UIElementData element = elements[i];
-
-        switch (element.type)
-        {
-        case UIElementType::Button:
-            buttons.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseColor, hoverColor, activeColor);
-            buttons.back().setOnClick(element.callback);
-            buttons.back().linkedPage = element.linkedPage;
-
-            break;
-
-        case UIElementType::Toggle:
-            toggles.emplace_back(startPos + (float(i) * stepPos), element.text, scale, baseColor, hoverColor, activeColor);
-            toggles.back().toggleVariable = element.toggleVariable;
-            break;
-        }
-    }
-
-    int buttonIndex = 0;
-    int toggleIndex = 0;
-    for (const auto &element : elements)
-    {
-        switch (element.type)
-        {
-        case UIElementType::Button:
-            uiElements.push_back(&buttons[buttonIndex++]);
-            break;
-        case UIElementType::Toggle:
-            uiElements.push_back(&toggles[toggleIndex++]);
-            break;
-        }
-    }
-
+    loadElements(elements, startPos, stepPos, size,
+                 scale, baseColor, hoverColor, activeColor,
+                 uiElements, buttons, toggles);
     rebuildTotalElements();
 }
 
@@ -253,25 +221,27 @@ void UIManager::loadSide(const SettingsPage &page)
     case SettingsPage::Graphics:
 
         elementsSide = {
-            {
-                UIElementType::Toggle,
-                "Fullscreen",
-                []
-                {
-                    WindowManager::setFullscreenState();
-                    SceneManager::runOneFrame();
-                },
-                &SettingsManager::settings.video.fullscreen,
-            },
-            {
-                UIElementType::Toggle,
-                "VSync",
-                []
-                {
-                    glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0);
-                },
-                &SettingsManager::settings.video.vSync,
-            },
+            {UIElementType::Toggle,
+             "Fullscreen",
+             []
+             {
+                 WindowManager::setFullscreenState();
+                 SceneManager::runOneFrame();
+             },
+             &SettingsManager::settings.video.fullscreen,
+             std::nullopt,
+             "Borderless",
+             "Off"},
+            {UIElementType::Toggle,
+             "VSync",
+             []
+             {
+                 glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0);
+             },
+             &SettingsManager::settings.video.vSync,
+             std::nullopt,
+             "On",
+             "Off"},
         };
 
         break;
@@ -290,42 +260,50 @@ void UIManager::loadSide(const SettingsPage &page)
         break;
     }
 
-    for (int i = 0; i < elementsSide.size(); i++)
+    loadElements(elementsSide, startPosSide, stepPosSide, sizeSide,
+                 scaleSide, baseColorSide, hoverColorSide, activeColorSide,
+                 uiElementsSide, buttonsSide, togglesSide);
+    rebuildTotalElements();
+}
+
+void UIManager::loadElements(std::vector<UIElementData> elementData, glm::vec2 startPos, glm::vec2 stepPos, glm::vec2 size, float scale, glm::vec3 baseCol, glm::vec3 hoverCol, glm::vec3 activeCol,
+                             std::vector<UIElement> &UIelements, std::vector<UIButton> &UIbuttons, std::vector<UIToggle> &UItoggles)
+{
+    for (int i = 0; i < elementData.size(); i++)
     {
-        UIElementData element = elementsSide[i];
+        UIElementData element = elementData[i];
 
         switch (element.type)
         {
         case UIElementType::Button:
-            buttonsSide.emplace_back(startPosSide + (float(i) * stepPosSide), sizeSide, element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
-            buttonsSide.back().setOnClick(element.callback);
-            buttonsSide.back().linkedPage = element.linkedPage;
+            UIbuttons.emplace_back(startPos + (float(i) * stepPos), size, element.text, scale, baseCol, hoverCol, activeCol);
+            UIbuttons.back().setOnClick(element.callback);
+            UIbuttons.back().linkedPage = element.linkedPage;
             break;
 
         case UIElementType::Toggle:
-            togglesSide.emplace_back(startPosSide + (float(i) * stepPosSide), element.text, scaleSide, baseColorSide, hoverColorSide, activeColorSide);
-            togglesSide.back().setOnClick(element.callback);
-            togglesSide.back().toggleVariable = element.toggleVariable;
+            UItoggles.emplace_back(startPos + (float(i) * stepPos), element.text, scale, baseCol, hoverCol, activeCol);
+            UItoggles.back().setOnClick(element.callback);
+            UItoggles.back().toggleVariable = element.toggleVariable;
+            UItoggles.back().setTextOptions(element.falseText, element.trueText);
             break;
         }
     }
 
     int buttonIndex = 0;
     int toggleIndex = 0;
-    for (const auto &element : elementsSide)
+    for (const auto &element : elementData)
     {
         switch (element.type)
         {
         case UIElementType::Button:
-            uiElementsSide.push_back(&buttonsSide[buttonIndex++]);
+            UIelements.push_back(&UIbuttons[buttonIndex++]);
             break;
         case UIElementType::Toggle:
-            uiElementsSide.push_back(&togglesSide[toggleIndex++]);
+            UIelements.push_back(&UItoggles[toggleIndex++]);
             break;
         }
     }
-
-    rebuildTotalElements();
 }
 
 void UIManager::rebuildTotalElements()
