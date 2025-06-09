@@ -83,15 +83,8 @@ void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
                 break;
 
             case EngineState::Settings:
-                SceneManager::switchEngineState(EngineState::Pause);
-                SceneManager::switchSettingsPage(SettingsPage::Start);
-                UIManager::inputState = UIInputState::Main;
-                break;
-
             case EngineState::TitleSettings:
-                SceneManager::switchEngineState(EngineState::Title);
-                SceneManager::switchSettingsPage(SettingsPage::Start);
-                UIManager::inputState = UIInputState::Main;
+                menuReturn();
                 break;
             }
             break;
@@ -348,20 +341,61 @@ void InputManager::menuMoveDown()
 
 void InputManager::menuMoveLeft()
 {
-    if (UIManager::inputState == UIInputState::Side)
-        if (SceneManager::settingsPage != SettingsPage::Start)
-        {
-            UIManager::inputState = UIInputState::Main;
-        }
+    auto *selected = UIManager::getSelectedElement();
+    if (!selected)
+        return;
+
+    std::visit([](auto *element)
+               {
+                if (!element)
+                    return;
+                    
+                    using T = std::decay_t<decltype(*element)>;
+                    if constexpr (std::is_same_v<T, UIToggle>)
+                        element->execute(false); 
+                    else if constexpr (std::is_same_v<T, UISelector>)
+                        element->updateValue(false); },
+               *selected);
 }
 
 void InputManager::menuMoveRight()
 {
-    if (UIManager::inputState == UIInputState::Main)
-        if (SceneManager::settingsPage != SettingsPage::Start)
+    auto *selected = UIManager::getSelectedElement();
+    if (!selected)
+        return;
+
+    std::visit([](auto *element)
+               {
+                if (!element)
+                    return;
+                    
+                    using T = std::decay_t<decltype(*element)>;
+                    if constexpr (std::is_same_v<T, UIToggle>)
+                        element->execute(true); 
+                    else if constexpr (std::is_same_v<T, UISelector>)
+                        element->updateValue(true); },
+               *selected);
+}
+
+void InputManager::menuReturn()
+{
+    switch (UIManager::inputState)
+    {
+    case UIInputState::Side:
+        UIManager::inputState = UIInputState::Main;
+        break;
+
+    case UIInputState::Main:
+        switch (SceneManager::engineState)
         {
-            UIManager::inputState = UIInputState::Side;
+        case EngineState::Settings:
+            SceneManager::switchEngineState(EngineState::Pause);
+            break;
+        case EngineState::TitleSettings:
+            SceneManager::switchEngineState(EngineState::Title);
+            break;
         }
+    }
 }
 
 void InputManager::menuRunSelected()
@@ -381,6 +415,6 @@ void InputManager::menuRunSelected()
                     else if constexpr (std::is_same_v<T, UIToggle>)
                         element->execute(); 
                     else if constexpr (std::is_same_v<T, UISelector>)
-                        element->updateValue();},
+                        element->updateValue(); },
                *selected);
 }

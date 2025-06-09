@@ -35,5 +35,6 @@ namespace InputManager
     void menuMoveDown();
     void menuMoveLeft();
     void menuMoveRight();
+    void menuReturn();
     void menuRunSelected();
 };
