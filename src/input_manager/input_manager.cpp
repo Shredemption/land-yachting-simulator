@@ -390,9 +390,11 @@ void InputManager::menuReturn()
         {
         case EngineState::Settings:
             SceneManager::switchEngineState(EngineState::Pause);
+            SceneManager::switchSettingsPage(SettingsPage::None);
             break;
         case EngineState::TitleSettings:
             SceneManager::switchEngineState(EngineState::Title);
+            SceneManager::switchSettingsPage(SettingsPage::None);
             break;
         }
     }
