@@ -46,7 +46,7 @@ public:
     void checkClicked(const float mouseX, const float mouseY, const bool mousePressed);
 
     float animTime = 0.0f;
-    float animSpeed = 10.0f;
+    float animSpeed = 7.5f;
     float slideDistance = 0.1f;
     bool animating = false;
     bool animDirection = true;
