@@ -41,7 +41,7 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # Create the library target
-add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${HEADER_FILES})
+add_executable(${PROJECT_NAME} WIN32 ${CPP_SOURCES} ${HEADER_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}
@@ -49,6 +49,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}
 )
 
+# Use main()
+if (MSVC)
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+endif()
 
 # Make sure the executable depends on the resource compilation target
 if(TARGET CompileIcon)
