@@ -23,25 +23,30 @@ file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADER_FILES src/*.h)
 
 # Add exe icon
-if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(WIN32)
     set(ICON_RC "${CMAKE_SOURCE_DIR}/resources/icon/icon.rc")
-    set(ICON_RES "${CMAKE_BINARY_DIR}/icon.res")
-
-    add_custom_command(
-        OUTPUT ${ICON_RES}
-        COMMAND windres ${ICON_RC} -O coff -o ${ICON_RES}
-        DEPENDS ${ICON_RC}
-        COMMENT "Compiling Windows resource file (icon.rc)"
-        VERBATIM
-    )
-
-    add_custom_target(CompileIcon ALL DEPENDS ${ICON_RES})
-
-    set_source_files_properties(${ICON_RES} PROPERTIES GENERATED TRUE)
+    
+    if(MSVC)
+        # Just add the .rc file directly to the sources
+        set(APP_ICON_RESOURCE_FILES ${ICON_RC})
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # Use windres to compile .rc into .res for MinGW
+        set(ICON_RES "${CMAKE_BINARY_DIR}/icon.res")
+        add_custom_command(
+            OUTPUT ${ICON_RES}
+            COMMAND windres ${ICON_RC} -O coff -o ${ICON_RES}
+            DEPENDS ${ICON_RC}
+            COMMENT "Compiling Windows resource file (icon.rc)"
+            VERBATIM
+        )
+        add_custom_target(CompileIcon ALL DEPENDS ${ICON_RES})
+        set_source_files_properties(${ICON_RES} PROPERTIES GENERATED TRUE)
+        set(APP_ICON_RESOURCE_FILES ${ICON_RES})
+    endif()
 endif()
 
 # Create the library target
-add_executable(${PROJECT_NAME} WIN32 ${CPP_SOURCES} ${HEADER_FILES})
+add_executable(${PROJECT_NAME} WIN32 ${CPP_SOURCES} ${HEADER_FILES} ${APP_ICON_RESOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}
