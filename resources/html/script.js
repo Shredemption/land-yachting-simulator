@@ -35,4 +35,11 @@ window.addEventListener("DOMContentLoaded", () => {
     el.style.animationDelay = `${i * 0.08}s`;
     el.classList.add("animate-line");
   });
+
+  const images = document.querySelectorAll(".fade-img");
+
+  images.forEach((el, i) => {
+    el.style.animationDelay = `${i * 0.08}s`;
+    el.classList.add("animate-img");
+  });
 });
