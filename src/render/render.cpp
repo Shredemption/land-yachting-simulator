@@ -2,12 +2,36 @@
 
 #include "pch.h"
 
-// Local variables
+// Text
+unsigned int textVAO, textVBO;
+unsigned int textTexture;
+std::map<GLchar, Character> Characters;
+std::string fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
+float textTextureSize = 128;
+
+FT_Library ft;
+FT_Face face;
+
+// Framebuffer
+unsigned int sceneTexture = 0, sceneDepthRBO = 0;
+unsigned int pauseTexture;
+unsigned int copyFBO;
+
+// Clipping and culling
+glm::vec4 clipPlane(0, 0, 0, 0);
+float lodDistance = 30.0f;
+
+// Quad for rendering
 unsigned int quadVAO = 0, quadVBO = 0;
 float quadVertices[] = {0};
+
+// Water
 bool WaterPass = true;
+float waterHeight = 0.25;
+
+// Debug
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
-float textTextureSize = 128;
+float FPS = 0.0f;
 
 // Track current and last used shader
 Shader *shader;
@@ -32,7 +56,7 @@ void renderModel(const RenderCommand &cmd)
         shader->setMat4("u_projection", Camera::u_projection);
 
         // Set clipping plane
-        shader->setVec4("location_plane", Render::clipPlane);
+        shader->setVec4("location_plane", clipPlane);
 
         lastShader = shader;
     }
@@ -69,7 +93,7 @@ void renderOpaquePlane(const RenderCommand &cmd)
         shader->setMat4("u_projection", Camera::u_projection);
 
         // Clipping Plane
-        shader->setVec4("location_plane", Render::clipPlane);
+        shader->setVec4("location_plane", clipPlane);
 
         lastShader = shader;
     }
@@ -113,7 +137,7 @@ void renderTransparentPlane(const RenderCommand &cmd)
         shader->setMat4("u_projection", Camera::u_projection);
 
         // Clipping Plane
-        shader->setVec4("location_plane", Render::clipPlane);
+        shader->setVec4("location_plane", clipPlane);
 
         lastShader = shader;
     }
@@ -173,7 +197,7 @@ void renderGrid(const RenderCommand &cmd)
         shader->setMat4("u_projection", Camera::u_projection);
 
         // Clipping Plane
-        shader->setVec4("location_plane", Render::clipPlane);
+        shader->setVec4("location_plane", clipPlane);
 
         lastShader = shader;
     }
@@ -345,9 +369,9 @@ void renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
     // Bind reflection buffer
     FramebufferUtil::bindFrameBuffer(FramebufferUtil::reflectionFBO);
 
-    Render::clipPlane = {0, 0, 1, -Render::waterHeight};
+    clipPlane = {0, 0, 1, -waterHeight};
     Camera::setCamDirection(glm::vec3(-Camera::getRotation()[0], Camera::getRotation()[1], Camera::getRotation()[2]));
-    float distance = 2 * (Camera::getPosition()[2] - Render::waterHeight);
+    float distance = 2 * (Camera::getPosition()[2] - waterHeight);
     Camera::genViewMatrix(Camera::getPosition() + glm::vec3(0, 0, -distance));
 
     // Draw to it
@@ -362,7 +386,7 @@ void renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
     // Bind refraction buffer
     FramebufferUtil::bindFrameBuffer(FramebufferUtil::refractionFBO);
 
-    Render::clipPlane = {0, 0, -1, Render::waterHeight};
+    clipPlane = {0, 0, -1, waterHeight};
     Camera::setCamDirection(Camera::getRotation());
     Camera::genViewMatrix(Camera::getPosition());
 
@@ -398,23 +422,7 @@ void renderTestQuad(unsigned int texture, int x, int y)
     glViewport(0, 0, WindowManager::screenWidth, WindowManager::screenHeight);
 }
 
-void Render::setup()
-{
-    initQuad();
-    initFreeType();
-    createSceneFBO(WindowManager::windowWidth, WindowManager::windowHeight);
-
-    // Enable face culling
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
-
-    // Enable Depth buffer (Z-buffer)
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-}
-
-void Render::initQuad()
+void initQuad()
 {
     if (quadVAO == 0)
     {
@@ -441,10 +449,212 @@ void Render::initQuad()
     }
 }
 
+void initFreeType()
+{
+    // Initialize FreeType
+    if (FT_Init_FreeType(&ft))
+        std::cerr << "ERROR: Could not initialize FreeType\n";
+
+    const std::string fontPath = fontpath;
+
+    // Load font face
+    if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
+        std::cerr << "ERROR: Failed to load font\n";
+
+    // Set font size
+    FT_Set_Pixel_Sizes(face, 0, textTextureSize);
+
+    // Generate texture for each character
+    glGenTextures(1, &textTexture);
+    glBindTexture(GL_TEXTURE_2D, textTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Store the texture in your character map
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // To prevent padding issues
+
+    // Define the width and height of the atlas
+    const int atlasWidth = textTextureSize * 10;
+    const int atlasHeight = textTextureSize * 10;
+    GLubyte *atlasData = new GLubyte[atlasWidth * atlasHeight * 4]; // RGBA
+
+    int xPos = 0, yPos = 0;
+    const int gapX = 2; // Define a small gap between characters
+    const int gapY = textTextureSize;
+
+    for (unsigned int c = 0; c < 128; c++)
+    {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        {
+            std::cerr << "ERROR: Failed to load Glyph\n";
+            continue;
+        }
+
+        // Check if the character fits in the current line
+        if (xPos + face->glyph->bitmap.width + gapX >= atlasWidth)
+        {
+            xPos = 0;
+            yPos += gapY;
+        }
+
+        // Copy the character bitmap into the atlasData
+        for (int y = 0; y < face->glyph->bitmap.rows; y++)
+        {
+            for (int x = 0; x < face->glyph->bitmap.width; x++)
+            {
+                int index = (yPos + y) * atlasWidth * 4 + (xPos + x) * 4;
+                atlasData[index] = 255;                                                               // R
+                atlasData[index + 1] = 255;                                                           // G
+                atlasData[index + 2] = 255;                                                           // B
+                atlasData[index + 3] = face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x]; // A
+            }
+        }
+
+        // Store character information in the map
+        Character ch = {
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            static_cast<unsigned int>(face->glyph->advance.x),
+            glm::vec4(xPos / (float)atlasWidth, yPos / (float)atlasHeight, face->glyph->bitmap.width / (float)atlasWidth, face->glyph->bitmap.rows / (float)atlasHeight)};
+        Characters[c] = ch;
+
+        // Update xPos for the next character in the atlas
+        xPos += face->glyph->bitmap.width + gapX; // Add gap to x position
+    }
+
+    // Now upload the entire atlas texture to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasWidth, atlasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlasData);
+    delete[] atlasData; // Free the memory
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Generate VAO and VBO for text rendering
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+
+    // Set up vertex attributes (assuming position and texture coordinates)
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+}
+
+void createSceneFBO(int width, int height)
+{
+    glGenTextures(1, &pauseTexture);
+    glBindTexture(GL_TEXTURE_2D, pauseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WindowManager::screenWidth, WindowManager::screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenFramebuffers(1, &copyFBO);
+
+    glGenFramebuffers(1, &Render::sceneFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, Render::sceneFBO);
+
+    // Color texture
+    glGenTextures(1, &sceneTexture);
+    glBindTexture(GL_TEXTURE_2D, sceneTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Good for post
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTexture, 0);
+
+    // Depth renderbuffer
+    glGenRenderbuffers(1, &sceneDepthRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Scene FBO is not complete!" << std::endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+float calculateTextWidth(const std::string &text, float scale)
+{
+    float width = 0.0f;
+    float lineWidth = 0.0f;
+
+    for (char c : text)
+    {
+        if (c == '\n')
+        {
+            width = std::max(width, lineWidth);
+            lineWidth = 0.0f;
+            continue;
+        }
+
+        if (Characters.count(c) == 0)
+            continue;
+        Character ch = Characters[c];
+        lineWidth += (ch.Advance >> 6) * scale;
+    }
+
+    width = std::max(width, lineWidth);
+    return width;
+}
+
+void savePauseBackground()
+{
+    // Bind FBOs
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, Render::sceneFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFBO);
+
+    // Attach target texture to copy FBO
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pauseTexture, 0);
+
+    // Check framebuffer completeness (optional but useful for debugging)
+    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Copy FBO is not complete!" << std::endl;
+
+    // Perform blit
+    glBlitFramebuffer(
+        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
+        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
+        GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    // Unbind
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Render::setup()
+{
+
+    initQuad();
+    initFreeType();
+    createSceneFBO(WindowManager::windowWidth, WindowManager::windowHeight);
+
+    // Enable face culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    // Enable Depth buffer (Z-buffer)
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+}
+
+void Render::resize(int width, int height)
+{
+    // Delete old FBO attachments
+    glDeleteFramebuffers(1, &sceneFBO);
+    glDeleteTextures(1, &sceneTexture);
+    glDeleteRenderbuffers(1, &sceneDepthRBO);
+
+    glDeleteFramebuffers(1, &copyFBO);
+    glDeleteTextures(1, &pauseTexture);
+
+    createSceneFBO(width, height);
+}
+
 void Render::render()
 {
-    int currentIndex = Render::renderIndex.load(std::memory_order_acquire);
-    auto &buffer = Render::renderBuffers[currentIndex];
+    int currentIndex = renderIndex.load(std::memory_order_acquire);
+    auto &buffer = renderBuffers[currentIndex];
 
     // Only render if the buffer is ready
     BufferState expected = BufferState::Ready;
@@ -459,9 +669,9 @@ void Render::render()
         // Rotate render index to the next ready buffer (if available)
         for (int i = 0; i < 3; ++i)
         {
-            if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Ready)
+            if (renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Ready)
             {
-                Render::renderIndex.store(i, std::memory_order_release);
+                renderIndex.store(i, std::memory_order_release);
                 break;
             }
         }
@@ -687,98 +897,6 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     lastShader = nullptr;
 }
 
-void Render::initFreeType()
-{
-    // Initialize FreeType
-    if (FT_Init_FreeType(&ft))
-        std::cerr << "ERROR: Could not initialize FreeType\n";
-
-    const std::string fontPath = fontpath;
-
-    // Load font face
-    if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
-        std::cerr << "ERROR: Failed to load font\n";
-
-    // Set font size
-    FT_Set_Pixel_Sizes(face, 0, textTextureSize);
-
-    // Generate texture for each character
-    glGenTextures(1, &textTexture);
-    glBindTexture(GL_TEXTURE_2D, textTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // Store the texture in your character map
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // To prevent padding issues
-
-    // Define the width and height of the atlas
-    const int atlasWidth = textTextureSize * 10;
-    const int atlasHeight = textTextureSize * 10;
-    GLubyte *atlasData = new GLubyte[atlasWidth * atlasHeight * 4]; // RGBA
-
-    int xPos = 0, yPos = 0;
-    const int gapX = 2; // Define a small gap between characters
-    const int gapY = textTextureSize;
-
-    for (unsigned int c = 0; c < 128; c++)
-    {
-        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-        {
-            std::cerr << "ERROR: Failed to load Glyph\n";
-            continue;
-        }
-
-        // Check if the character fits in the current line
-        if (xPos + face->glyph->bitmap.width + gapX >= atlasWidth)
-        {
-            xPos = 0;
-            yPos += gapY;
-        }
-
-        // Copy the character bitmap into the atlasData
-        for (int y = 0; y < face->glyph->bitmap.rows; y++)
-        {
-            for (int x = 0; x < face->glyph->bitmap.width; x++)
-            {
-                int index = (yPos + y) * atlasWidth * 4 + (xPos + x) * 4;
-                atlasData[index] = 255;                                                               // R
-                atlasData[index + 1] = 255;                                                           // G
-                atlasData[index + 2] = 255;                                                           // B
-                atlasData[index + 3] = face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x]; // A
-            }
-        }
-
-        // Store character information in the map
-        Character ch = {
-            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            static_cast<unsigned int>(face->glyph->advance.x),
-            glm::vec4(xPos / (float)atlasWidth, yPos / (float)atlasHeight, face->glyph->bitmap.width / (float)atlasWidth, face->glyph->bitmap.rows / (float)atlasHeight)};
-        Characters[c] = ch;
-
-        // Update xPos for the next character in the atlas
-        xPos += face->glyph->bitmap.width + gapX; // Add gap to x position
-    }
-
-    // Now upload the entire atlas texture to OpenGL
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasWidth, atlasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlasData);
-    delete[] atlasData; // Free the memory
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Generate VAO and VBO for text rendering
-    glGenVertexArrays(1, &textVAO);
-    glGenBuffers(1, &textVBO);
-    glBindVertexArray(textVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-
-    // Set up vertex attributes (assuming position and texture coordinates)
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-}
-
 void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha, TextAlign textAlign)
 {
     x *= WindowManager::screenUIScale * 2560.0f;
@@ -813,16 +931,16 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     shader->setFloat("textAlpha", alpha);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, Render::textTexture);
+    glBindTexture(GL_TEXTURE_2D, textTexture);
 
-    glBindVertexArray(Render::textVAO);
+    glBindVertexArray(textVAO);
 
     // Enable blending for text rendering
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    float startX = x;                                                  // Store the initial x position
-    float lineSpacing = Render::Characters['H'].Size.y * scale * 1.5f; // Adjust line spacing with a small padding
+    float startX = x;                                          // Store the initial x position
+    float lineSpacing = Characters['H'].Size.y * scale * 1.5f; // Adjust line spacing with a small padding
 
     for (char c : text)
     {
@@ -833,11 +951,11 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
             continue;
         }
 
-        Character ch = Render::Characters[c];
+        Character ch = Characters[c];
 
         // Calculate the position of each character
         float xpos = x + ch.Bearing.x * scale;
-        float ypos = y + (Render::Characters['H'].Size.y - ch.Bearing.y) * scale; // Adjust y-coordinate calculation
+        float ypos = y + (Characters['H'].Size.y - ch.Bearing.y) * scale; // Adjust y-coordinate calculation
         float w = ch.Size.x * scale;
         float h = ch.Size.y * scale;
 
@@ -853,7 +971,7 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
         };
 
         // Update VBO with new vertex data
-        glBindBuffer(GL_ARRAY_BUFFER, Render::textVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -867,99 +985,6 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
 
     // Disable blending after text rendering
     glDisable(GL_BLEND);
-}
-
-void Render::createSceneFBO(int width, int height)
-{
-    glGenTextures(1, &pauseTexture);
-    glBindTexture(GL_TEXTURE_2D, pauseTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WindowManager::screenWidth, WindowManager::screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glGenFramebuffers(1, &copyFBO);
-
-    glGenFramebuffers(1, &sceneFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
-
-    // Color texture
-    glGenTextures(1, &sceneTexture);
-    glBindTexture(GL_TEXTURE_2D, sceneTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Good for post
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTexture, 0);
-
-    // Depth renderbuffer
-    glGenRenderbuffers(1, &sceneDepthRBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRBO);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cerr << "Scene FBO is not complete!" << std::endl;
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-float Render::calculateTextWidth(const std::string &text, float scale)
-{
-    float width = 0.0f;
-    float lineWidth = 0.0f;
-
-    for (char c : text)
-    {
-        if (c == '\n')
-        {
-            width = std::max(width, lineWidth);
-            lineWidth = 0.0f;
-            continue;
-        }
-
-        if (Characters.count(c) == 0)
-            continue;
-        Character ch = Characters[c];
-        lineWidth += (ch.Advance >> 6) * scale;
-    }
-
-    width = std::max(width, lineWidth);
-    return width;
-}
-
-void Render::resize(int width, int height)
-{
-    // Delete old FBO attachments
-    glDeleteFramebuffers(1, &sceneFBO);
-    glDeleteTextures(1, &sceneTexture);
-    glDeleteRenderbuffers(1, &sceneDepthRBO);
-
-    glDeleteFramebuffers(1, &copyFBO);
-    glDeleteTextures(1, &pauseTexture);
-
-    createSceneFBO(width, height);
-}
-
-void Render::savePauseBackground()
-{
-    // Bind FBOs
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, sceneFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFBO);
-
-    // Attach target texture to copy FBO
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pauseTexture, 0);
-
-    // Check framebuffer completeness (optional but useful for debugging)
-    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cerr << "Copy FBO is not complete!" << std::endl;
-
-    // Perform blit
-    glBlitFramebuffer(
-        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
-        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
-        GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-    // Unbind
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Render::renderBlankScreen()
@@ -1200,4 +1225,8 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
     }
 
     glEnable(GL_DEPTH_TEST);
+}
+
+void Render::renderHTML()
+{
 }
