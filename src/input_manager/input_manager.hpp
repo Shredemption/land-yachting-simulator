@@ -21,14 +21,6 @@ namespace InputManager
     void update();
     void setCallbacks();
 
-    void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods);
-    void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods);
-
-    void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos);
-    void mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods);
-
-    void mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos);
-
     void processInputRunning();
 
     void menuMoveUp();

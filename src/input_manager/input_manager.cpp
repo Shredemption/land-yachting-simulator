@@ -4,65 +4,14 @@
 
 #include "input_manager/input_manager_defs.h"
 
-void InputManager::update()
-{
-    leftMouseButton.wasDown = leftMouseButton.isDown;
-    rightMouseButton.wasDown = rightMouseButton.isDown;
-}
-
-void InputManager::setCallbacks()
-{
-    GLFWwindow *window = WindowManager::window;
-
-    switch (SceneManager::engineState)
-    {
-    case EngineState::Title:
-        glfwSetKeyCallback(window, keyCallbackMenu);
-        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
-        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
-        break;
-
-    case EngineState::Running:
-        glfwSetKeyCallback(window, keyCallbackRunning);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPosCallback(window, mousePosCallbackRunning);
-        glfwSetMouseButtonCallback(window, nullptr);
-        glfwSetCursorPos(window, WindowManager::screenWidth / 2, WindowManager::screenHeight / 2);
-        break;
-
-    case EngineState::Pause:
-        glfwSetKeyCallback(window, keyCallbackMenu);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
-        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
-        break;
-
-    case EngineState::Settings:
-    case EngineState::TitleSettings:
-        glfwSetKeyCallback(window, keyCallbackMenu);
-        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
-        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
-        break;
-
-    default:
-        glfwSetKeyCallback(window, nullptr);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPosCallback(window, nullptr);
-        glfwSetMouseButtonCallback(window, nullptr);
-        break;
-    }
-
-    SceneManager::updateCallbacks = false;
-}
-
-void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
+void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (ControllerManager::controllerConnected)
         return;
 
-    if (inputType != InputType::Keyboard)
+    if (InputManager::inputType != InputType::Keyboard)
     {
-        inputType = InputType::Keyboard;
+        InputManager::inputType = InputType::Keyboard;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         return;
     }
@@ -84,39 +33,39 @@ void InputManager::keyCallbackMenu(GLFWwindow *window, int key, int scancode, in
 
             case EngineState::Settings:
             case EngineState::TitleSettings:
-                menuReturn();
+                InputManager::menuReturn();
                 break;
             }
             break;
 
         case GLFW_KEY_W:
         case GLFW_KEY_UP:
-            menuMoveUp();
+            InputManager::menuMoveUp();
             break;
 
         case GLFW_KEY_S:
         case GLFW_KEY_DOWN:
-            menuMoveDown();
+            InputManager::menuMoveDown();
             break;
 
         case GLFW_KEY_A:
         case GLFW_KEY_LEFT:
-            menuMoveLeft();
+            InputManager::menuMoveLeft();
             break;
 
         case GLFW_KEY_D:
         case GLFW_KEY_RIGHT:
-            menuMoveRight();
+            InputManager::menuMoveRight();
             break;
 
         case GLFW_KEY_ENTER:
         case GLFW_KEY_SPACE:
-            menuRunSelected();
+            InputManager::menuRunSelected();
             break;
         }
 }
 
-void InputManager::keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
+void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (ControllerManager::controllerConnected)
         return;
@@ -134,50 +83,50 @@ void InputManager::keyCallbackRunning(GLFWwindow *window, int key, int scancode,
         PhysicsUtil::switchControlledYacht();
 }
 
-void InputManager::mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
+void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
 {
     if (ControllerManager::controllerConnected)
         return;
 
-    if (inputType != InputType::Mouse)
+    if (InputManager::inputType != InputType::Mouse)
     {
-        inputType = InputType::Mouse;
+        InputManager::inputType = InputType::Mouse;
         UIManager::selectedMain = -1;
         UIManager::selectedSide = -1;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
-    mousePosX = xPos;
-    mousePosY = yPos;
+    InputManager::mousePosX = xPos;
+    InputManager::mousePosY = yPos;
 }
 
-void InputManager::mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods)
+void mouseButtonCallbackMenu(GLFWwindow *window, int button, int action, int mods)
 {
     if (ControllerManager::controllerConnected)
         return;
 
     if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
-        leftMouseButton.wasDown = leftMouseButton.isDown;
+        InputManager::leftMouseButton.wasDown = InputManager::leftMouseButton.isDown;
 
         if (action == GLFW_PRESS)
-            leftMouseButton.isDown = true;
+            InputManager::leftMouseButton.isDown = true;
         else if (action == GLFW_RELEASE)
-            leftMouseButton.isDown = false;
+            InputManager::leftMouseButton.isDown = false;
     }
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT)
     {
-        rightMouseButton.wasDown = rightMouseButton.isDown;
+        InputManager::rightMouseButton.wasDown = InputManager::rightMouseButton.isDown;
 
         if (action == GLFW_PRESS)
-            rightMouseButton.isDown = true;
+            InputManager::rightMouseButton.isDown = true;
         else if (action == GLFW_RELEASE)
-            rightMouseButton.isDown = false;
+            InputManager::rightMouseButton.isDown = false;
     }
 }
 
-void InputManager::mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos)
+void mousePosCallbackRunning(GLFWwindow *window, double xPos, double yPos)
 {
     if (ControllerManager::controllerConnected)
         return;
@@ -233,6 +182,57 @@ void InputManager::mousePosCallbackRunning(GLFWwindow *window, double xPos, doub
         // Reset mouse to 0,0
         glfwSetCursorPos(window, WindowManager::screenWidth / 2, WindowManager::screenHeight / 2);
     }
+}
+
+void InputManager::update()
+{
+    leftMouseButton.wasDown = leftMouseButton.isDown;
+    rightMouseButton.wasDown = rightMouseButton.isDown;
+}
+
+void InputManager::setCallbacks()
+{
+    GLFWwindow *window = WindowManager::window;
+
+    switch (SceneManager::engineState)
+    {
+    case EngineState::Title:
+        glfwSetKeyCallback(window, keyCallbackMenu);
+        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
+        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
+        break;
+
+    case EngineState::Running:
+        glfwSetKeyCallback(window, keyCallbackRunning);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, mousePosCallbackRunning);
+        glfwSetMouseButtonCallback(window, nullptr);
+        glfwSetCursorPos(window, WindowManager::screenWidth / 2, WindowManager::screenHeight / 2);
+        break;
+
+    case EngineState::Pause:
+        glfwSetKeyCallback(window, keyCallbackMenu);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
+        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
+        break;
+
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
+        glfwSetKeyCallback(window, keyCallbackMenu);
+        glfwSetCursorPosCallback(window, mousePosCallbackMenu);
+        glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
+        break;
+
+    default:
+        glfwSetKeyCallback(window, nullptr);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, nullptr);
+        glfwSetMouseButtonCallback(window, nullptr);
+        break;
+    }
+
+    SceneManager::updateCallbacks = false;
 }
 
 void InputManager::processInputRunning()
