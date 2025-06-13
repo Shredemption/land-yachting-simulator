@@ -2,9 +2,6 @@
 
 #include "pch.h"
 
-#include <Ultralight/Ultralight.h>
-#include <AppCore/Platform.h>
-
 using namespace ultralight;
 
 // Text
@@ -43,9 +40,7 @@ Shader *shader;
 Shader *lastShader = nullptr;
 
 // Ultralight
-ultralight::RefPtr<View> view;
 ultralight::ViewConfig view_config;
-ultralight::RefPtr<Renderer> renderer;
 ultralight::Config config;
 GLuint ultralightTex;
 
@@ -654,12 +649,12 @@ void Render::setup()
     Platform::instance().set_file_system(GetPlatformFileSystem("."));
     Platform::instance().set_logger(GetDefaultLogger("ultralight.log"));
 
-    renderer = Renderer::Create();
+    Render::UL_renderer = Renderer::Create();
 
     view_config.is_accelerated = false;
     view_config.is_transparent = true;
 
-    view = renderer->CreateView(WindowManager::windowWidth, WindowManager::windowHeight, view_config, nullptr);
+    Render::UL_view = Render::UL_renderer->CreateView(WindowManager::windowWidth, WindowManager::windowHeight, view_config, nullptr);
 
     glGenTextures(1, &ultralightTex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -680,7 +675,7 @@ void Render::resize(int width, int height)
 
     createSceneFBO(width, height);
 
-    view = renderer->CreateView(width, height, view_config, nullptr);
+    Render::UL_view = Render::UL_renderer->CreateView(width, height, view_config, nullptr);
 }
 
 void Render::render()
@@ -1262,11 +1257,7 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
 void Render::renderHTML()
 {
-    renderer->Update();
-    renderer->Render();
-    renderer->RefreshDisplay(0);
-
-    auto surface = static_cast<BitmapSurface *>(view->surface());
+    auto surface = static_cast<BitmapSurface *>(Render::UL_view->surface());
 
     if (surface && surface->dirty_bounds().width() > 0 && surface->dirty_bounds().height() > 0)
     {
@@ -1301,12 +1292,4 @@ void Render::renderHTML()
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-}
-
-void Render::loadHTML(const std::string file)
-{
-    std::filesystem::path full_path = std::filesystem::absolute("resources/html/" + file);
-    std::string url = "file:///" + full_path.string();
-    std::replace(url.begin(), url.end(), '\\', '/');
-    view->LoadURL(ultralight::String(url.c_str()));
 }
