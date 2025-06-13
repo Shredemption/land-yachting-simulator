@@ -654,7 +654,7 @@ void Render::setup()
 
     Render::UL_renderer = Renderer::Create();
 
-    view_config.is_accelerated = true;
+    view_config.is_accelerated = false;
     view_config.is_transparent = true;
 
     Render::UL_view = Render::UL_renderer->CreateView(WindowManager::windowWidth, WindowManager::windowHeight, view_config, nullptr);
