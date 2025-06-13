@@ -28,12 +28,6 @@ void SceneManager::loadAsync(const std::string &sceneName)
 
 void SceneManager::checkLoading()
 {
-    if (upcomingSceneLoad.has_value())
-    {
-        loadAsync(upcomingSceneLoad.value());
-        upcomingSceneLoad.reset();
-    }
-
     // If background loading scene is complete
     if (loadingState > 0 && pendingScene.valid() && pendingScene.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
     {
@@ -165,82 +159,11 @@ void SceneManager::switchEngineState(const EngineState &to)
         SettingsManager::save();
     }
 
-    if (to == EngineState::Settings || to == EngineState::TitleSettings)
-    {
-        UIManager::loadHTML("settings.html");
-    }
-
-    exitState = engineState;
     engineState = to;
-
-    if (to == EngineState::Title)
-    {
-        TextureManager::queueStandaloneImage("title-figure.png");
-        TextureManager::queueStandaloneImage("title-figure-black.png");
-        TextureManager::loadQueuedPixelData();
-        TextureManager::uploadToGPU();
-    }
-}
-
-void SceneManager::switchSettingsPage(const SettingsPage &to)
-{
-    exitPage = settingsPage;
-    settingsPage = to;
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
 {
     switchEngineState(EngineState::Loading);
-
-    upcomingSceneLoad.emplace(sceneName);
-}
-
-void SceneManager::updateFade()
-{
-    const float fadeTime = 0.2f; // seconds
-    float fadeDelta = TimeManager::deltaTime / fadeTime;
-
-    switch (exitState)
-    {
-    // Fade up if not exiting
-    case EngineState::None:
-        menuFade += fadeDelta;
-        break;
-
-    // Instant fade on exit Running
-    case EngineState::Running:
-        menuFade = 0.0f;
-        exitState = EngineState::None;
-        UIManager::load(engineState);
-        updateCallbacks = true;
-        break;
-
-    // Else, fade out
-    default:
-        menuFade = std::clamp(menuFade - fadeDelta, 0.0f, 1.0f);
-
-        if (menuFade <= 0.0f)
-        {
-            exitState = EngineState::None;
-            UIManager::load(engineState);
-            updateCallbacks = true;
-        }
-        break;
-    }
-
-    switch (exitPage)
-    {
-    case SettingsPage::None:
-        sideFade += fadeDelta;
-        break;
-
-    default:
-        sideFade = std::clamp(sideFade - fadeDelta, 0.0f, 1.0f);
-
-        if (sideFade <= 0.0f)
-        {
-            exitPage = SettingsPage::None;
-            UIManager::loadSide(settingsPage);
-        }
-    }
+    loadAsync(sceneName);
 }

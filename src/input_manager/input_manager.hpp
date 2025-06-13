@@ -22,11 +22,4 @@ namespace InputManager
     void setCallbacks();
 
     void processInputRunning();
-
-    void menuMoveUp();
-    void menuMoveDown();
-    void menuMoveLeft();
-    void menuMoveRight();
-    void menuReturn();
-    void menuRunSelected();
 };

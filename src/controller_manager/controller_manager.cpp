@@ -65,50 +65,23 @@ void ControllerManager::buttonsMenu()
             switch (i)
             {
             case GLFW_GAMEPAD_BUTTON_DPAD_UP:
-                InputManager::menuMoveUp();
                 break;
 
             case GLFW_GAMEPAD_BUTTON_BACK:
             case GLFW_GAMEPAD_BUTTON_DPAD_DOWN:
-                InputManager::menuMoveDown();
                 break;
 
             case GLFW_GAMEPAD_BUTTON_DPAD_LEFT:
-                InputManager::menuMoveLeft();
                 break;
 
             case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT:
-                InputManager::menuMoveRight();
                 break;
 
             case GLFW_GAMEPAD_BUTTON_A:
             case GLFW_GAMEPAD_BUTTON_START:
-                InputManager::menuRunSelected();
                 break;
 
             case GLFW_GAMEPAD_BUTTON_B:
-                switch (SceneManager::engineState)
-                {
-                case EngineState::Title:
-                    SceneManager::switchEngineState(EngineState::None);
-                    break;
-
-                case EngineState::Pause:
-                    SceneManager::switchEngineState(EngineState::Running);
-                    break;
-
-                case EngineState::Settings:
-                    SceneManager::switchEngineState(EngineState::Pause);
-                    SceneManager::switchSettingsPage(SettingsPage::Start);
-                    UIManager::inputState = UIInputState::Main;
-                    break;
-
-                case EngineState::TitleSettings:
-                    SceneManager::switchEngineState(EngineState::Title);
-                    SceneManager::switchSettingsPage(SettingsPage::Start);
-                    UIManager::inputState = UIInputState::Main;
-                    break;
-                }
                 break;
             }
         }
@@ -122,19 +95,15 @@ void ControllerManager::sticksMenu()
         switch (state.sticks[0].currentDir)
         {
         case StickDirection::Up:
-            InputManager::menuMoveUp();
             break;
 
         case StickDirection::Down:
-            InputManager::menuMoveDown();
             break;
 
         case StickDirection::Left:
-            InputManager::menuMoveLeft();
             break;
 
         case StickDirection::Right:
-            InputManager::menuMoveRight();
             break;
         }
     }
