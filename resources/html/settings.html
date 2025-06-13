@@ -4,32 +4,32 @@
     <meta charset="UTF-8" />
     <title>Settings</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="script.js"></script>
   </head>
 
   <body>
     <h1 class="fade-line">Settings</h1>
 
     <nav class="menu">
-      <button class="fade-line" data-page="general" onclick="showPage('general')">General</button>
-      <button class="fade-line" data-page="audio" onclick="showPage('audio')">Audio</button>
-      <button class="fade-line" data-page="video" onclick="showPage('video')">Video</button>
+      <button class="fade-line" data-page="video" onclick="showPage('video')">
+        Graphics
+      </button>
+      <button class="fade-line" data-page="debug" onclick="showPage('debug')">
+        Debug
+      </button>
+      <button class="fade-line">
+        Back
+      </button>
     </nav>
 
-    <div id="general" class="page">
-      <h2 class="fade-line">General Settings</h2>
-      <p class="fade-line">Here are general options.</p>
+    <div id="video" class="page">
+      <h2 class="fade-line">Graphics Settings</h2>
+      <p class="fade-line">...</p>
     </div>
 
-    <div id="audio" class="page hidden">
-      <h2 class="fade-line">Audio Settings</h2>
-      <p class="fade-line">Volume, etc.</p>
+    <div id="debug" class="page hidden">
+      <h2 class="fade-line">Debug Settings </h2>
+      <p class="fade-line">...</p>
     </div>
-
-    <div id="video" class="page hidden">
-      <h2 class="fade-line">Video Settings</h2>
-      <p class="fade-line">Resolution, fullscreen, etc.</p>
-    </div>
-
-    <script src="script.js"></script>
   </body>
 </html>
