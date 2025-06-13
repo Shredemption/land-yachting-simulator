@@ -45,6 +45,7 @@ Shader *lastShader = nullptr;
 ultralight::ViewConfig view_config;
 ultralight::Config config;
 GLuint ultralightTex;
+GLuint pbo;
 
 void renderModel(const RenderCommand &cmd)
 {
@@ -653,12 +654,20 @@ void Render::setup()
 
     Render::UL_renderer = Renderer::Create();
 
-    view_config.is_accelerated = false;
+    view_config.is_accelerated = true;
     view_config.is_transparent = true;
 
     Render::UL_view = Render::UL_renderer->CreateView(WindowManager::windowWidth, WindowManager::windowHeight, view_config, nullptr);
 
+    glGenBuffers(1, &pbo);
+    const int texSize = WindowManager::windowWidth * WindowManager::windowHeight * 4;
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, texSize, nullptr, GL_STREAM_DRAW);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
     glGenTextures(1, &ultralightTex);
+    glBindTexture(GL_TEXTURE_2D, ultralightTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, WindowManager::windowWidth, WindowManager::windowHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -678,6 +687,14 @@ void Render::resize(int width, int height)
     createSceneFBO(width, height);
 
     Render::UL_view = Render::UL_renderer->CreateView(width, height, view_config, nullptr);
+
+    const int texSize = width * height * 4;
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, texSize, nullptr, GL_STREAM_DRAW);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+    glBindTexture(GL_TEXTURE_2D, ultralightTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
 }
 
 void Render::render()
@@ -1101,21 +1118,45 @@ void Render::renderHTML()
 
     if (surface && surface->dirty_bounds().width() > 0 && surface->dirty_bounds().height() > 0)
     {
-        const unsigned char *pixels = static_cast<const unsigned char *>(surface->bitmap()->LockPixels());
-        int width = surface->width();
-        int height = surface->height();
+        auto dirty = surface->dirty_bounds();
+        int x = dirty.x();
+        int y = dirty.y();
+        int width = dirty.width();
+        int height = dirty.height();
+        size_t rowBytes = surface->bitmap()->row_bytes();
+        unsigned int texSize = rowBytes * height;
+
+        const unsigned char *fullPixels = static_cast<const unsigned char *>(surface->bitmap()->LockPixels());
+        const unsigned char *pixelsStart = fullPixels + y * rowBytes + x * 4;
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, ultralightTex);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+        glBufferData(GL_PIXEL_UNPACK_BUFFER, texSize, nullptr, GL_STREAM_DRAW);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        void *ptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+        if (ptr)
+        {
+            unsigned char *dest = static_cast<unsigned char *>(ptr);
+            const unsigned char *src = pixelsStart;
+            int rowSize = width * 4;
+
+            for (int row = 0; row < height; ++row)
+            {
+                memcpy(dest + row * rowSize, src + row * rowBytes, rowSize);
+            }
+            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        }
 
         surface->bitmap()->UnlockPixels();
+
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
         surface->ClearDirtyBounds();
     }
 
