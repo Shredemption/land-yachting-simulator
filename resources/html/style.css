@@ -1,0 +1,70 @@
+@font-face {
+  font-family: "MusticaPro";
+  src: url("../fonts/MusticaPro-SemiBold.otf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "MusticaPro", sans-serif;
+  background-color: black;
+  color: white;
+  font-size: 64px;
+  padding-left: 1%;
+}
+
+.hidden {
+  display: none;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.menu button {
+  font-family: "MusticaPro", sans-serif;
+  background: none;
+  border: none;
+  color: rgb(255, 255, 255);
+  font-size: 64px;
+  cursor: pointer;
+}
+
+.menu button:hover {
+  color: rgb(255, 128, 128);
+}
+
+.menu button.active {
+  color: rgb(128, 0, 0);
+}
+
+.fade-line {
+  opacity: 0;
+  transform: translateX(-50px);
+  visibility: hidden;
+}
+
+.animate-line {
+  animation: fadeSlideIn 0.2s ease-in-out forwards;
+  visibility: visible;
+}
