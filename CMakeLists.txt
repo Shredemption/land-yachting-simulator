@@ -25,7 +25,7 @@ file(GLOB_RECURSE HEADER_FILES src/*.h)
 # Add exe icon
 if(WIN32)
     set(ICON_RC "${CMAKE_SOURCE_DIR}/resources/icon/icon.rc")
-    
+
     if(MSVC)
         # Just add the .rc file directly to the sources
         set(APP_ICON_RESOURCE_FILES ${ICON_RC})
@@ -48,14 +48,14 @@ endif()
 # Create the library target
 add_executable(${PROJECT_NAME} WIN32 ${CPP_SOURCES} ${HEADER_FILES} ${APP_ICON_RESOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}
-    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_SOURCE_DIR}
-    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/Release
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/Release
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_SOURCE_DIR}/Release
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}/Release
 )
 
 # Use main()
-if (MSVC)
+if(MSVC)
     set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 endif()
 
@@ -97,8 +97,24 @@ target_link_libraries(${PROJECT_NAME}
     jsoncons
     Freetype::Freetype
     Ultralight
+    UltralightCore
     AppCore
     WebCore
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+add_custom_command(TARGET Marama POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Ultralight/bin/Ultralight.dll"
+    "$<TARGET_FILE_DIR:Marama>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Ultralight/bin/AppCore.dll"
+    "$<TARGET_FILE_DIR:Marama>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Ultralight/bin/WebCore.dll"
+    "$<TARGET_FILE_DIR:Marama>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Ultralight/bin/UltralightCore.dll"
+    "$<TARGET_FILE_DIR:Marama>"
+)
