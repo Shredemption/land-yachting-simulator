@@ -13,7 +13,7 @@ void SettingsManager::load()
     try
     {
         jsoncons::json j = jsoncons::json::parse(file);
-        settings = j.as<Settings>();
+        settings = j.as<SettingsStruct>();
     }
     catch (const std::exception &e)
     {

@@ -6,7 +6,7 @@
 
 namespace SettingsManager
 {
-    inline Settings settings;
+    inline SettingsStruct settings;
     inline std::string settingsFile = "settings.json";
 
     void load();

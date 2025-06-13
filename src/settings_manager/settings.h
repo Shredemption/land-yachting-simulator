@@ -9,7 +9,7 @@ enum class debugOverlay
     Physics
 };
 
-struct Settings
+struct SettingsStruct
 {
     struct Debug
     {
@@ -65,16 +65,16 @@ namespace jsoncons
     };
 
     template <>
-    struct json_type_traits<Json, Settings::Debug>
+    struct json_type_traits<Json, SettingsStruct::Debug>
     {
         static bool is(const Json &j) noexcept
         {
             return j.is_object();
         }
 
-        static Settings::Debug as(const Json &j)
+        static SettingsStruct::Debug as(const Json &j)
         {
-            Settings::Debug s;
+            SettingsStruct::Debug s;
             if (j.contains("wireframeMode"))
                 s.wireframeMode = j["wireframeMode"].template as<bool>();
             if (j.contains("debugOverlay"))
@@ -82,7 +82,7 @@ namespace jsoncons
             return s;
         }
 
-        static Json to_json(const Settings::Debug &s)
+        static Json to_json(const SettingsStruct::Debug &s)
         {
             Json j;
             j["wireframeMode"] = s.wireframeMode;
@@ -92,16 +92,16 @@ namespace jsoncons
     };
 
     template <>
-    struct json_type_traits<Json, Settings::Video>
+    struct json_type_traits<Json, SettingsStruct::Video>
     {
         static bool is(const Json &j) noexcept
         {
             return j.is_object();
         }
 
-        static Settings::Video as(const Json &j)
+        static SettingsStruct::Video as(const Json &j)
         {
-            Settings::Video s;
+            SettingsStruct::Video s;
             if (j.contains("fullscreen"))
                 s.fullscreen = j["fullscreen"].template as<bool>();
             if (j.contains("vsync"))
@@ -109,7 +109,7 @@ namespace jsoncons
             return s;
         }
 
-        static Json to_json(const Settings::Video &s)
+        static Json to_json(const SettingsStruct::Video &s)
         {
             Json j;
             j["fullscreen"] = s.fullscreen;
@@ -119,24 +119,24 @@ namespace jsoncons
     };
 
     template <>
-    struct json_type_traits<Json, Settings>
+    struct json_type_traits<Json, SettingsStruct>
     {
         static bool is(const Json &j) noexcept
         {
             return j.is_object();
         }
 
-        static Settings as(const Json &j)
+        static SettingsStruct as(const Json &j)
         {
-            Settings s;
+            SettingsStruct s;
             if (j.contains("debug"))
-                s.debug = j["debug"].template as<Settings::Debug>();
+                s.debug = j["debug"].template as<SettingsStruct::Debug>();
             if (j.contains("video"))
-                s.video = j["video"].template as<Settings::Video>();
+                s.video = j["video"].template as<SettingsStruct::Video>();
             return s;
         }
 
-        static Json to_json(const Settings &s)
+        static Json to_json(const SettingsStruct &s)
         {
             Json j;
             j["debug"] = s.debug;
