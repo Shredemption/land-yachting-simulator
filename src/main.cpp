@@ -137,8 +137,9 @@ int main()
 
         case EngineState::Settings:
         case EngineState::TitleSettings:
-            Render::renderMenuScreen(checkState, checkPage);
-            UIManager::update();
+            // Render::renderMenuScreen(checkState, checkPage);
+            Render::renderHTML();
+            // UIManager::update();
             break;
 
         case EngineState::Running:

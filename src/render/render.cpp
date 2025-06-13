@@ -2,6 +2,11 @@
 
 #include "pch.h"
 
+#include <Ultralight/Ultralight.h>
+#include <AppCore/Platform.h>
+
+using namespace ultralight;
+
 // Text
 unsigned int textVAO, textVBO;
 unsigned int textTexture;
@@ -36,6 +41,13 @@ float FPS = 0.0f;
 // Track current and last used shader
 Shader *shader;
 Shader *lastShader = nullptr;
+
+// Ultralight
+ultralight::RefPtr<View> view;
+ultralight::ViewConfig view_config;
+ultralight::RefPtr<Renderer> renderer;
+ultralight::Config config;
+GLuint ultralightTex;
 
 void renderModel(const RenderCommand &cmd)
 {
@@ -623,7 +635,6 @@ void savePauseBackground()
 
 void Render::setup()
 {
-
     initQuad();
     initFreeType();
     createSceneFBO(WindowManager::windowWidth, WindowManager::windowHeight);
@@ -636,6 +647,25 @@ void Render::setup()
     // Enable Depth buffer (Z-buffer)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    // Ultralight
+    Platform::instance().set_config(config);
+    Platform::instance().set_font_loader(GetPlatformFontLoader());
+    Platform::instance().set_file_system(GetPlatformFileSystem("."));
+    Platform::instance().set_logger(GetDefaultLogger("ultralight.log"));
+
+    renderer = Renderer::Create();
+
+    view_config.is_accelerated = false;
+    view_config.is_transparent = true;
+
+    view = renderer->CreateView(WindowManager::windowWidth, WindowManager::windowHeight, view_config, nullptr);
+
+    glGenTextures(1, &ultralightTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
 void Render::resize(int width, int height)
@@ -649,6 +679,8 @@ void Render::resize(int width, int height)
     glDeleteTextures(1, &pauseTexture);
 
     createSceneFBO(width, height);
+
+    view = renderer->CreateView(width, height, view_config, nullptr);
 }
 
 void Render::render()
@@ -680,7 +712,7 @@ void Render::render()
     }
 }
 
-void Render::prepareRender(RenderBuffer &prepBuffer)
+void Render::prepareRender(::RenderBuffer &prepBuffer)
 {
     // Clear and reserve size for buffer
     prepBuffer.commandBuffer.clear();
@@ -812,7 +844,7 @@ void Render::prepareRender(RenderBuffer &prepBuffer)
     }
 }
 
-void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
+void Render::executeRender(::RenderBuffer &renderBuffer, bool toScreen)
 {
     // Set camera from buffer
     Camera::cameraPosition = renderBuffer.camPos;
@@ -886,6 +918,7 @@ void Render::executeRender(RenderBuffer &renderBuffer, bool toScreen)
 
         shader = ShaderUtil::load(shaderID::Post);
         shader->setInt("screenTexture", 0);
+        shader->setBool("flipY", false);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sceneTexture);
 
@@ -1229,4 +1262,51 @@ void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page
 
 void Render::renderHTML()
 {
+    renderer->Update();
+    renderer->Render();
+    renderer->RefreshDisplay(0);
+
+    auto surface = static_cast<BitmapSurface *>(view->surface());
+
+    if (surface && surface->dirty_bounds().width() > 0 && surface->dirty_bounds().height() > 0)
+    {
+        const unsigned char *pixels = static_cast<const unsigned char *>(surface->bitmap()->LockPixels());
+        int width = surface->width();
+        int height = surface->height();
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, ultralightTex);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+
+        surface->bitmap()->UnlockPixels();
+        surface->ClearDirtyBounds();
+    }
+
+    shader = ShaderUtil::load(shaderID::Post);
+    shader->setInt("screenTexture", 1);
+    shader->setBool("flipY", true);
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, WindowManager::screenWidth, WindowManager::screenHeight);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+}
+
+void Render::loadHTML(const std::string file)
+{
+    std::filesystem::path full_path = std::filesystem::absolute("resources/html/" + file);
+    std::string url = "file:///" + full_path.string();
+    std::replace(url.begin(), url.end(), '\\', '/');
+    view->LoadURL(ultralight::String(url.c_str()));
 }
