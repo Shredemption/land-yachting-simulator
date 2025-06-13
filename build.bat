@@ -36,6 +36,17 @@ cmake --build . --config %BUILD_TYPE%
 
 popd
 
+if not exist Release\resources mkdir Release\resources
+
+robocopy resources Release\resources /MIR /NFL /NDL /NJH /NJS /NC /NS /NP >nul
+robocopy thirdparty\Ultralight\resources Release\resources /E /XO /NFL /NDL /NJH /NJS >nul
+
+echo Resource copy complete.
+
+pushd "Release"
+
 marama.exe
+
+popd
 
 endlocal
