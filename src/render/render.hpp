@@ -41,8 +41,6 @@ namespace Render
 
     void renderBlankScreen();
     void renderLoadingScreen();
-    void renderTitleScreen();
-    void renderMenuScreen(const EngineState &state, const SettingsPage &page);
     void renderHTML();
 
     void setup();
