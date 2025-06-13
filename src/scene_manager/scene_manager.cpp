@@ -165,6 +165,11 @@ void SceneManager::switchEngineState(const EngineState &to)
         SettingsManager::save();
     }
 
+    if (to == EngineState::Settings || to == EngineState::TitleSettings)
+    {
+        Render::loadHTML("settings.html");
+    }
+
     exitState = engineState;
     engineState = to;
 

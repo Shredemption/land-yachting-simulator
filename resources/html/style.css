@@ -23,10 +23,14 @@
   box-sizing: border-box;
 }
 
+html  {
+  background: transparent;
+}
+
 body {
   font-family: "MusticaPro", sans-serif;
-  background-color: black;
-  color: white;
+  background: transparent;
+  color: rgb(255, 255, 255);
   font-size: 64px;
   padding-left: 1%;
 }

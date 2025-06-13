@@ -24,7 +24,7 @@ enum class SettingsPage;
 
 namespace Render
 {
-    inline std::array<RenderBuffer, 3> renderBuffers;
+    inline std::array<::RenderBuffer, 3> renderBuffers;
     inline std::atomic<int> prepIndex = 0, renderIndex = 1, standbyIndex = 2;
 
     inline unsigned int sceneFBO = 0;
@@ -36,13 +36,14 @@ namespace Render
     void renderTitleScreen();
     void renderMenuScreen(const EngineState &state, const SettingsPage &page);
     void renderHTML();
+    void loadHTML(const std::string file);
 
     void setup();
     void resize(int width, int height);
 
     void render();
-    void prepareRender(RenderBuffer &prepBuffer);
-    void executeRender(RenderBuffer &renderBuffer, bool toScreen = true);
+    void prepareRender(::RenderBuffer &prepBuffer);
+    void executeRender(::RenderBuffer &renderBuffer, bool toScreen = true);
 
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left);
 };
