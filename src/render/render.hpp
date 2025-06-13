@@ -10,6 +10,11 @@
 
 #include <glm/glm.hpp>
 
+#include <Ultralight/Ultralight.h>
+#include <AppCore/Platform.h>
+
+using namespace ultralight;
+
 #include <memory>
 #include <array>
 #include <atomic>
@@ -31,12 +36,14 @@ namespace Render
 
     inline std::vector<std::pair<std::string, float>> debugPhysicsData;
 
+    inline ultralight::RefPtr<View> UL_view;
+    inline ultralight::RefPtr<Renderer> UL_renderer;
+
     void renderBlankScreen();
     void renderLoadingScreen();
     void renderTitleScreen();
     void renderMenuScreen(const EngineState &state, const SettingsPage &page);
     void renderHTML();
-    void loadHTML(const std::string file);
 
     void setup();
     void resize(int width, int height);
