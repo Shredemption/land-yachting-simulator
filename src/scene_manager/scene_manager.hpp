@@ -36,14 +36,7 @@ namespace SceneManager
 
     // Transition variables
     inline EngineState engineState = EngineState::None;
-    inline EngineState exitState = EngineState::None;
-    inline SettingsPage settingsPage = SettingsPage::Start;
-    inline SettingsPage exitPage = SettingsPage::None;
-    inline float menuFade = -5.0f;
-    inline float sideFade = 0.0f;
-    inline std::optional<std::string> upcomingSceneLoad;
 
-    void updateFade();
     void switchEngineState(const EngineState &to);
     void switchEngineStateScene(const std::string &sceneName);
     void switchSettingsPage(const SettingsPage &to);

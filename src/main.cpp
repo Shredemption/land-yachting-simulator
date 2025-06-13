@@ -96,12 +96,9 @@ int main()
     // Main Loop
     while (!glfwWindowShouldClose(WindowManager::window))
     {
-        EngineState checkState = (SceneManager::exitState == EngineState::None) ? SceneManager::engineState : SceneManager::exitState;
-        SettingsPage checkPage = (SceneManager::exitPage == SettingsPage::None) ? SceneManager::settingsPage : SceneManager::exitPage;
+        TimeManager::timing(SceneManager::engineState);
 
-        TimeManager::timing(checkState);
-
-        if (SceneManager::exitState == EngineState::None && SceneManager::updateCallbacks)
+        if (SceneManager::updateCallbacks)
             InputManager::setCallbacks();
 
         // If window inactive
@@ -111,9 +108,7 @@ int main()
             continue;
         }
 
-        SceneManager::updateFade();
-
-        switch (checkState)
+        switch (SceneManager::engineState)
         {
         case EngineState::None:
             Render::renderBlankScreen();
@@ -126,18 +121,17 @@ int main()
             break;
 
         case EngineState::Title:
-            Render::renderTitleScreen();
-            UIManager::update();
+            UIManager::updateHTML();
+            Render::renderHTML();
             break;
 
         case EngineState::Pause:
-            Render::renderMenuScreen(checkState, checkPage);
-            UIManager::update();
+            UIManager::updateHTML();
+            Render::renderHTML();
             break;
 
         case EngineState::Settings:
         case EngineState::TitleSettings:
-            // Render::renderMenuScreen(checkState, checkPage);
             UIManager::updateHTML();
             Render::renderHTML();
             break;

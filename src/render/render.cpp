@@ -14,6 +14,8 @@ float textTextureSize = 128;
 FT_Library ft;
 FT_Face face;
 
+float fade;
+
 // Framebuffer
 unsigned int sceneTexture = 0, sceneDepthRBO = 0;
 unsigned int pauseTexture;
@@ -1029,8 +1031,6 @@ void Render::renderLoadingScreen()
     std::string progressString;
     std::string statusString = "Loading...";
 
-    float effectiveFade;
-
     std::vector<LoadingStep> loadingSteps = {
         {"Unloaded Success", []
          { return "Clearing Previous"; }},
@@ -1069,18 +1069,18 @@ void Render::renderLoadingScreen()
 
     // Loading complete
     if (SceneManager::loadingState == 100)
+    {
         statusString = "Finished Loading";
+        fade = 0.0f;
+    }
 
     renderText(statusString, 0.05f, 0.05f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
     renderText(progressString, 0.05f, 0.20f, 0.5f, glm::vec3(0.6f, 0.1f, 0.1f));
 
     // Render first frame under it
-    if (SceneManager::engineState == EngineState::Loading)
-        effectiveFade = 1.0f;
-    else
-        effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
 
-    float darkfactor = easeInOutQuad(0.0f, 1.0f, effectiveFade);
+    fade += TimeManager::deltaTime;
+    float darkfactor = easeInOutQuad(0.0f, 1.0f, fade);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
@@ -1093,166 +1093,6 @@ void Render::renderLoadingScreen()
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void Render::renderTitleScreen()
-{
-    float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
-
-    float color = easeInOutQuad(0.0f, 0.5f, effectiveFade);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glClearColor(color, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-
-    float imageAlpha = easeInOutQuad(0.0f, 1.0f, effectiveFade);
-
-    float xpos;
-    if (SceneManager::exitState == EngineState::Title)
-        xpos = easeOutCubic(1.33f, 0.67f, effectiveFade);
-    else
-        xpos = easeOutCubic(0.0f, 0.67f, effectiveFade);
-
-    renderImage("title-figure-black.png", glm::vec2(xpos, 0.5f) + glm::vec2(0.003f, -0.01f), 835, 1024, imageAlpha);
-    renderImage("title-figure.png", glm::vec2(xpos, 0.5f), 835, 1024, imageAlpha);
-
-    float fadeOffset = 0.3333f;
-    std::vector<glm::vec2> offsets;
-    std::vector<float> alphas;
-
-    for (int i = 0; i < 1 + UIManager::buttons.size(); i++)
-    {
-        if (SceneManager::exitState == EngineState::Pause)
-            effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
-        else
-            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
-
-        alphas.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
-
-        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
-        float y = 0.0f;
-
-        offsets.push_back(glm::vec2(x, y));
-    }
-
-    renderText("Land Yachting Simulator", 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
-    renderText("Land Yachting Simulator", 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
-
-    for (int i = 0; i < UIManager::buttons.size(); i++)
-    {
-        UIManager::buttons[i].setOffset(offsets[i + 1]);
-        UIManager::buttons[i].setAlpha(alphas[i + 1]);
-    }
-
-    glEnable(GL_DEPTH_TEST);
-}
-
-void Render::renderMenuScreen(const EngineState &state, const SettingsPage &page)
-{
-    float maxDarkFactor = 0.8f;
-
-    float effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
-
-    float darkfactor = easeInOutQuad(0.0f, maxDarkFactor, effectiveFade);
-    float darkenPosition = 0.4f;
-
-    if (state == EngineState::TitleSettings)
-    {
-        darkfactor = 1.0f;
-        darkenPosition = 2.0f;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, pauseTexture);
-
-    shader = ShaderUtil::load(shaderID::DarkenBlur);
-    shader->setInt("screenTexture", 0);
-    shader->setVec2("texelSize", glm::vec2(1.0f / WindowManager::screenWidth, 1.0f / WindowManager::screenHeight));
-    shader->setFloat("darkenAmount", darkfactor);
-    shader->setFloat("darkenPosition", darkenPosition);
-
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    float fadeOffset = 0.1;
-    std::vector<glm::vec2> offsets;
-    std::vector<float> alphas;
-
-    for (int i = 0; i < 1 + UIManager::uiElements.size(); i++)
-    {
-        if (SceneManager::exitState == EngineState::Pause)
-            effectiveFade = std::clamp(SceneManager::menuFade, 0.0f, 1.0f);
-        else
-            effectiveFade = std::clamp(SceneManager::menuFade - fadeOffset * i, 0.0f, 1.0f);
-
-        alphas.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
-
-        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
-        float y = 0.0f;
-
-        offsets.push_back(glm::vec2(x, y));
-    }
-
-    float fadeOffsetSide = 0.1;
-    std::vector<glm::vec2> offsetsSide;
-    std::vector<float> alphasSide;
-
-    for (int i = 0; i < UIManager::uiElementsSide.size(); i++)
-    {
-        if (SceneManager::exitState == EngineState::Pause)
-            effectiveFade = std::clamp(SceneManager::sideFade, 0.0f, 1.0f);
-        else
-            effectiveFade = std::clamp(SceneManager::sideFade - fadeOffsetSide * i, 0.0f, 1.0f);
-
-        alphasSide.push_back(easeOutCubic(0.0f, 1.0f, effectiveFade));
-
-        float x = easeOutBack(-0.1f, 0.0f, effectiveFade, 2.0f);
-        float y = 0.0f;
-
-        offsetsSide.push_back(glm::vec2(x, y));
-    }
-
-    std::string header;
-
-    switch (state)
-    {
-    case EngineState::Pause:
-        header = "Paused";
-        break;
-
-    case EngineState::Settings:
-    case EngineState::TitleSettings:
-        header = "Settings";
-        break;
-    }
-
-    renderText(header, 0.033f + offsets[0].x, 0.053f, 1, glm::vec3(0.0f, 0.0f, 0.0f), alphas[0]);
-    renderText(header, 0.03f + offsets[0].x, 0.05f, 1, glm::vec3(1.0f, 1.0f, 1.0f), alphas[0]);
-
-    for (int i = 0; i < UIManager::uiElements.size(); i++)
-    {
-        std::visit([&](auto *element)
-                   { element->setOffset(offsets[i + 1]);
-                    element->setAlpha(alphas[i+1]); },
-                   UIManager::uiElements[i]);
-    }
-
-    for (int i = 0; i < UIManager::uiElementsSide.size(); i++)
-    {
-        std::visit([&](auto *element)
-                   { element->setOffset(offsetsSide[i]);
-                    element->setAlpha(alphasSide[i]); },
-                   UIManager::uiElementsSide[i]);
-    }
-
-    glEnable(GL_DEPTH_TEST);
 }
 
 void Render::renderHTML()

@@ -4,67 +4,6 @@
 
 #include "input_manager/input_manager_defs.h"
 
-void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    if (ControllerManager::controllerConnected)
-        return;
-
-    if (InputManager::inputType != InputType::Keyboard)
-    {
-        InputManager::inputType = InputType::Keyboard;
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        return;
-    }
-
-    // ESC handling
-    if (action == GLFW_PRESS)
-        switch (key)
-        {
-        case GLFW_KEY_ESCAPE:
-            switch (SceneManager::engineState)
-            {
-            case EngineState::Title:
-                SceneManager::switchEngineState(EngineState::None);
-                break;
-
-            case EngineState::Pause:
-                SceneManager::switchEngineState(EngineState::Running);
-                break;
-
-            case EngineState::Settings:
-            case EngineState::TitleSettings:
-                InputManager::menuReturn();
-                break;
-            }
-            break;
-
-        case GLFW_KEY_W:
-        case GLFW_KEY_UP:
-            InputManager::menuMoveUp();
-            break;
-
-        case GLFW_KEY_S:
-        case GLFW_KEY_DOWN:
-            InputManager::menuMoveDown();
-            break;
-
-        case GLFW_KEY_A:
-        case GLFW_KEY_LEFT:
-            InputManager::menuMoveLeft();
-            break;
-
-        case GLFW_KEY_D:
-        case GLFW_KEY_RIGHT:
-            InputManager::menuMoveRight();
-            break;
-
-        case GLFW_KEY_ENTER:
-        case GLFW_KEY_SPACE:
-            InputManager::menuRunSelected();
-            break;
-        }
-}
-
 void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (ControllerManager::controllerConnected)
@@ -83,6 +22,7 @@ void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, i
         PhysicsUtil::switchControlledYacht();
 }
 
+
 void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
 {
     if (ControllerManager::controllerConnected)
@@ -91,8 +31,6 @@ void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
     if (InputManager::inputType != InputType::Mouse)
     {
         InputManager::inputType = InputType::Mouse;
-        UIManager::selectedMain = -1;
-        UIManager::selectedSide = -1;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
@@ -197,7 +135,7 @@ void InputManager::setCallbacks()
     switch (SceneManager::engineState)
     {
     case EngineState::Title:
-        glfwSetKeyCallback(window, keyCallbackMenu);
+        glfwSetKeyCallback(window, nullptr);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
@@ -211,7 +149,7 @@ void InputManager::setCallbacks()
         break;
 
     case EngineState::Pause:
-        glfwSetKeyCallback(window, keyCallbackMenu);
+        glfwSetKeyCallback(window, nullptr);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
@@ -219,7 +157,7 @@ void InputManager::setCallbacks()
 
     case EngineState::Settings:
     case EngineState::TitleSettings:
-        glfwSetKeyCallback(window, keyCallbackMenu);
+        glfwSetKeyCallback(window, nullptr);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
@@ -309,114 +247,4 @@ void InputManager::processInputRunning()
     {
         PhysicsUtil::keyInputs[4] = true;
     }
-}
-
-void InputManager::menuMoveUp()
-{
-    switch (UIManager::inputState)
-    {
-    case UIInputState::Main:
-        UIManager::selectedMain = (UIManager::selectedMain <= 0) ? UIManager::uiElements.size() - 1 : UIManager::selectedMain - 1;
-        break;
-
-    case UIInputState::Side:
-        UIManager::selectedSide = (UIManager::selectedSide <= 0) ? UIManager::uiElementsSide.size() - 1 : UIManager::selectedSide - 1;
-        break;
-    }
-}
-
-void InputManager::menuMoveDown()
-{
-    switch (UIManager::inputState)
-    {
-    case UIInputState::Main:
-        UIManager::selectedMain = (UIManager::selectedMain == UIManager::uiElements.size() - 1) ? 0 : UIManager::selectedMain + 1;
-        break;
-
-    case UIInputState::Side:
-        UIManager::selectedSide = (UIManager::selectedSide == UIManager::uiElementsSide.size() - 1) ? 0 : UIManager::selectedSide + 1;
-        break;
-    }
-}
-
-void InputManager::menuMoveLeft()
-{
-    auto *selected = UIManager::getSelectedElement();
-    if (!selected)
-        return;
-
-    std::visit([](auto *element)
-               {
-                if (!element)
-                    return;
-                    
-                    using T = std::decay_t<decltype(*element)>;
-                    if constexpr (std::is_same_v<T, UIToggle>)
-                        element->execute(false); 
-                    else if constexpr (std::is_same_v<T, UISelector>)
-                        element->updateValue(false); },
-               *selected);
-}
-
-void InputManager::menuMoveRight()
-{
-    auto *selected = UIManager::getSelectedElement();
-    if (!selected)
-        return;
-
-    std::visit([](auto *element)
-               {
-                if (!element)
-                    return;
-                    
-                    using T = std::decay_t<decltype(*element)>;
-                    if constexpr (std::is_same_v<T, UIToggle>)
-                        element->execute(true); 
-                    else if constexpr (std::is_same_v<T, UISelector>)
-                        element->updateValue(true); },
-               *selected);
-}
-
-void InputManager::menuReturn()
-{
-    switch (UIManager::inputState)
-    {
-    case UIInputState::Side:
-        UIManager::inputState = UIInputState::Main;
-        break;
-
-    case UIInputState::Main:
-        switch (SceneManager::engineState)
-        {
-        case EngineState::Settings:
-            SceneManager::switchEngineState(EngineState::Pause);
-            SceneManager::switchSettingsPage(SettingsPage::None);
-            break;
-        case EngineState::TitleSettings:
-            SceneManager::switchEngineState(EngineState::Title);
-            SceneManager::switchSettingsPage(SettingsPage::None);
-            break;
-        }
-    }
-}
-
-void InputManager::menuRunSelected()
-{
-    auto *selected = UIManager::getSelectedElement();
-    if (!selected)
-        return;
-
-    std::visit([](auto *element)
-               {
-                if (!element)
-                    return;
-                    
-                    using T = std::decay_t<decltype(*element)>;
-                    if constexpr (std::is_same_v<T, UIButton>)
-                        element->onClick();
-                    else if constexpr (std::is_same_v<T, UIToggle>)
-                        element->execute(); 
-                    else if constexpr (std::is_same_v<T, UISelector>)
-                        element->updateValue(); },
-               *selected);
 }
