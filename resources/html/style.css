@@ -29,9 +29,11 @@ html  {
 
 body {
   font-family: "MusticaPro", sans-serif;
+  background-color: cornflowerblue;
   background: transparent;
   color: rgb(255, 255, 255);
   font-size: 64px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
   padding-left: 1%;
 }
 
@@ -51,6 +53,7 @@ body {
   border: none;
   color: rgb(255, 255, 255);
   font-size: 64px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
   cursor: pointer;
 }
 
