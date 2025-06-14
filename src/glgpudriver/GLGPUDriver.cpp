@@ -65,11 +65,20 @@ void GLGPUDriver::CreateTexture(uint32_t id, RefPtr<Bitmap> bitmap)
     void *pixels = bitmap->LockPixels();
     if (!pixels)
     {
-        std::cerr << "LockPixels() returned nullptr!" << std::endl;
         return;
     }
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 0);
+    int bytes_per_pixel = (format == BitmapFormat::A8_UNORM) ? 1 : 4;
+    int stride = bitmap->row_bytes(); // or similar, check your Bitmap API
+    if (stride != bitmap->width() * bytes_per_pixel)
+    {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, stride / bytes_per_pixel);
+    }
+    else
+    {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
+
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
                  bitmap->width(), bitmap->height(), 0,
                  data_format, GL_UNSIGNED_BYTE, pixels);
@@ -94,11 +103,20 @@ void GLGPUDriver::UpdateTexture(uint32_t id, RefPtr<Bitmap> bitmap)
     void *pixels = bitmap->LockPixels();
     if (!pixels)
     {
-        std::cerr << "LockPixels() returned nullptr!" << std::endl;
         return;
     }
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    int bytes_per_pixel = (format == BitmapFormat::A8_UNORM) ? 1 : 4;
+    int stride = bitmap->row_bytes(); // or similar, check your Bitmap API
+    if (stride != bitmap->width() * bytes_per_pixel)
+    {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, stride / bytes_per_pixel);
+    }
+    else
+    {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
+
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap->width(), bitmap->height(),
                     data_format, GL_UNSIGNED_BYTE, pixels);
     bitmap->UnlockPixels();
