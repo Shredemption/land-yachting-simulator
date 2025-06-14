@@ -20,6 +20,7 @@ float fade;
 
 // Framebuffer
 unsigned int sceneTexture = 0, sceneDepthRBO = 0;
+unsigned int htmlTexture = 0;
 unsigned int pauseTexture;
 unsigned int copyFBO;
 
@@ -554,6 +555,7 @@ void initFreeType()
 
 void createSceneFBO(int width, int height)
 {
+    // Pause Buffer
     glGenTextures(1, &pauseTexture);
     glBindTexture(GL_TEXTURE_2D, pauseTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WindowManager::screenWidth, WindowManager::screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
@@ -562,6 +564,7 @@ void createSceneFBO(int width, int height)
 
     glGenFramebuffers(1, &copyFBO);
 
+    // Scene Buffer
     glGenFramebuffers(1, &Render::sceneFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, Render::sceneFBO);
 
@@ -578,6 +581,18 @@ void createSceneFBO(int width, int height)
     glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRBO);
+
+    // HTML Buffer
+    glGenFramebuffers(1, &Render::htmlFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, Render::htmlFBO);
+
+    // Color texture
+    glGenTextures(1, &htmlTexture);
+    glBindTexture(GL_TEXTURE_2D, htmlTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Good for post
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, htmlTexture, 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cerr << "Scene FBO is not complete!" << std::endl;
@@ -671,6 +686,9 @@ void Render::resize(int width, int height)
 
     glDeleteFramebuffers(1, &copyFBO);
     glDeleteTextures(1, &pauseTexture);
+
+    glDeleteFramebuffers(1, &htmlFBO);
+    glDeleteTextures(1, &htmlTexture);
 
     createSceneFBO(width, height);
 
@@ -1094,35 +1112,12 @@ void Render::renderLoadingScreen()
 
 void Render::renderHTML()
 {
-    auto surface = static_cast<BitmapSurface *>(Render::UL_view->surface());
-    if (!surface)
-        return;
-
-    Bitmap *bitmap = surface->bitmap().get();
-
-    auto base_driver = Platform::instance().gpu_driver();
-    GLGPUDriver *gl_driver = dynamic_cast<GLGPUDriver *>(base_driver);
-
-    if (!gl_driver)
-    {
-        std::cerr << "GLGPUDriver cast failed!" << std::endl;
-        return;
-    }
-
-    GLuint ulTex;
-    if (gl_driver)
-    {
-        ulTex = gl_driver->GetTextureForBitmap(bitmap);
-    }
-    if (ulTex == 0)
-        return;
-
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, ulTex);
+    glBindTexture(GL_TEXTURE_2D, htmlTexture);
 
     shader = ShaderUtil::load(shaderID::Post);
     shader->setInt("screenTexture", 1);
-    shader->setBool("flipY", true);
+    shader->setBool("flipY", false);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);

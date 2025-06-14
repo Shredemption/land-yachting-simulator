@@ -3,10 +3,11 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include <iostream>
+
+#include "render/render.hpp"
 #include "shader/shader_util.hpp"
 #include "shader/shaderID.h"
-
-#include <iostream>
 
 using namespace ultralight;
 
@@ -139,7 +140,7 @@ uint32_t GLGPUDriver::NextRenderBufferId()
     return next_renderbuffer_id_++;
 }
 
-void GLGPUDriver::CreateRenderBuffer(uint32_t id, const RenderBuffer &buf)
+void GLGPUDriver::CreateRenderBuffer(uint32_t id, const ultralight::RenderBuffer &buf)
 {
     // Stub: Ultralight handles its own internal framebuffer; no-op unless integrating custom FBOs
 }
@@ -227,6 +228,12 @@ void GLGPUDriver::DestroyGeometry(uint32_t id)
 
 void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
 {
+    bool fboCleared = false;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, Render::htmlFBO);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
     auto &commands = command_list.commands;
     uint32_t num_commands = command_list.size;
 
@@ -381,8 +388,13 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
 
         case ultralight::CommandType::ClearRenderBuffer:
         {
-            glClearColor(0, 0, 0, 1);
-            glClear(GL_COLOR_BUFFER_BIT);
+            if (!fboCleared)
+            {
+                glClearColor(0, 0, 0, 1);
+                glClear(GL_COLOR_BUFFER_BIT);
+
+                fboCleared = true;
+            }
             break;
         }
 

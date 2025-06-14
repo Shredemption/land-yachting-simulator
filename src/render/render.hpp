@@ -32,7 +32,7 @@ namespace Render
     inline std::array<::RenderBuffer, 3> renderBuffers;
     inline std::atomic<int> prepIndex = 0, renderIndex = 1, standbyIndex = 2;
 
-    inline unsigned int sceneFBO = 0;
+    inline unsigned int sceneFBO = 0, htmlFBO = 0;
 
     inline std::vector<std::pair<std::string, float>> debugPhysicsData;
 
