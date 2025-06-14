@@ -663,6 +663,11 @@ void Render::setup()
     glDepthFunc(GL_LESS);
 
     // Ultralight
+    config.animation_timer_delay = 0.0f;
+    config.effect_quality = EffectQuality::High;
+    config.force_repaint = true;
+    config.scroll_timer_delay = 0.0f;
+
     Platform::instance().set_gpu_driver(new GLGPUDriver());
     Platform::instance().set_config(config);
     Platform::instance().set_font_loader(GetPlatformFontLoader());
