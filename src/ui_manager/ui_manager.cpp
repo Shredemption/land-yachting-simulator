@@ -6,7 +6,7 @@
 #include <JavaScriptCore/JSContextRef.h>
 #include <JavaScriptCore/JSObjectRef.h>
 
-JSValueRef LoadHTMLCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)
+JSValueRef SwitchEngineStateCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)
 {
     if (argumentCount < 1 || !JSValueIsString(ctx, arguments[0]))
     {
@@ -21,7 +21,7 @@ JSValueRef LoadHTMLCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef 
     std::string arg(buffer.data());
     JSStringRelease(jsStr);
 
-    UIManager::loadHTML(arg);
+    SceneManager::switchEngineState(parseEngineState(arg));
 
     return JSValueMakeUndefined(ctx);
 };
@@ -31,8 +31,8 @@ void BindJSFunctions(RefPtr<View> view)
     JSContextRef ctx = view->LockJSContext()->ctx();
     JSObjectRef global = JSContextGetGlobalObject(ctx);
 
-    JSStringRef name = JSStringCreateWithUTF8CString("loadHTML");
-    JSObjectRef func = JSObjectMakeFunctionWithCallback(ctx, name, LoadHTMLCallback);
+    JSStringRef name = JSStringCreateWithUTF8CString("switchEngineState");
+    JSObjectRef func = JSObjectMakeFunctionWithCallback(ctx, name, SwitchEngineStateCallback);
 
     JSObjectSetProperty(ctx, global, name, func, kJSPropertyAttributeNone, nullptr);
     JSStringRelease(name);

@@ -166,6 +166,10 @@ void SceneManager::switchEngineState(const EngineState &to)
         break;
     case EngineState::TitleSettings:
         UIManager::loadHTML("titlesettings.html");
+        break;
+    case EngineState::Title:
+        UIManager::loadHTML("title.html");
+        break;
     }
 
     engineState = to;

@@ -39,7 +39,6 @@ namespace SceneManager
 
     void switchEngineState(const EngineState &to);
     void switchEngineStateScene(const std::string &sceneName);
-    void switchSettingsPage(const SettingsPage &to);
 
     // Update and render functions
     void checkLoading();
