@@ -159,6 +159,15 @@ void SceneManager::switchEngineState(const EngineState &to)
         SettingsManager::save();
     }
 
+    switch (to)
+    {
+    case EngineState::Settings:
+        UIManager::loadHTML("settings.html");
+        break;
+    case EngineState::TitleSettings:
+        UIManager::loadHTML("titlesettings.html");
+    }
+
     engineState = to;
 }
 
