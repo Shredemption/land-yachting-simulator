@@ -248,6 +248,8 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
 
             ultralight::GPUState patchedState = cmd.gpu_state;
 
+            bool flipY = false;
+
             if (width == WindowManager::screenWidth && height == WindowManager::screenHeight)
             {
                 // Composite
@@ -255,7 +257,10 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
                 glViewport(0, 0, width, height);
 
                 if (tempTexId != 0)
+                {
                     patchedState.texture_1_id = tempTexId;
+                    flipY = true;
+                }
             }
 
             else if (makeBuffer)
@@ -328,6 +333,8 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
             shader->setInt("Texture1", 1);
             shader->setInt("Texture2", 2);
             shader->setInt("Texture3", 3);
+
+            shader->setBool("flipY", flipY);
 
             // Get VAO from geometry ID
             auto it_vao = geometries_.find(cmd.geometry_id);
