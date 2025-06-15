@@ -10,9 +10,15 @@
     <h1 class="fade-line">Land Yachting Simulator</h1>
 
     <nav class="menu">
-      <button class="fade-line">Load Realistic Scene</button>
-      <button class="fade-line">Load Cartoon Scene</button>
-      <button class="fade-line">Load Test Scene</button>
+      <button class="fade-line" onclick="switchEngineStateScene('realistic')">
+        Load Realistic Scene
+      </button>
+      <button class="fade-line" onclick="switchEngineStateScene('cartoon')">
+        Load Cartoon Scene
+      </button>
+      <button class="fade-line" onclick="switchEngineStateScene('test')">
+        Load Test Scene
+      </button>
       <button class="fade-line" onclick="switchEngineState('TitleSettings')">
         Settings
       </button>
