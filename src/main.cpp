@@ -88,10 +88,12 @@ int main()
 
     SceneManager::switchEngineState(EngineState::Title);
 
-    UIManager::load(SceneManager::engineState);
+    InputManager::setCallbacks();
 
     glfwPollEvents();
     glfwSwapBuffers(WindowManager::window);
+
+    UIManager::load(SceneManager::engineState);
 
     // Main Loop
     while (!glfwWindowShouldClose(WindowManager::window))
