@@ -173,6 +173,8 @@ void SceneManager::switchEngineState(const EngineState &to)
     }
 
     engineState = to;
+
+    updateCallbacks = true;
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
