@@ -2,6 +2,42 @@
 
 #include "pch.h"
 
+#include <Ultralight/JavaScript.h>
+#include <JavaScriptCore/JSContextRef.h>
+#include <JavaScriptCore/JSObjectRef.h>
+
+JSValueRef LoadHTMLCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)
+{
+    if (argumentCount < 1 || !JSValueIsString(ctx, arguments[0]))
+    {
+        std::cerr << "Expected one string argument." << std::endl;
+        return JSValueMakeUndefined(ctx);
+    }
+
+    JSStringRef jsStr = JSValueToStringCopy(ctx, arguments[0], exception);
+    size_t size = JSStringGetMaximumUTF8CStringSize(jsStr);
+    std::vector<char> buffer(size);
+    JSStringGetUTF8CString(jsStr, buffer.data(), size);
+    std::string arg(buffer.data());
+    JSStringRelease(jsStr);
+
+    UIManager::loadHTML(arg);
+
+    return JSValueMakeUndefined(ctx);
+};
+
+void BindJSFunctions(RefPtr<View> view)
+{
+    JSContextRef ctx = view->LockJSContext()->ctx();
+    JSObjectRef global = JSContextGetGlobalObject(ctx);
+
+    JSStringRef name = JSStringCreateWithUTF8CString("loadHTML");
+    JSObjectRef func = JSObjectMakeFunctionWithCallback(ctx, name, LoadHTMLCallback);
+
+    JSObjectSetProperty(ctx, global, name, func, kJSPropertyAttributeNone, nullptr);
+    JSStringRelease(name);
+}
+
 void UIManager::load(EngineState state)
 {
     switch (state)
@@ -51,4 +87,9 @@ void UIManager::loadHTML(const std::string file)
     std::string url = "file:///" + full_path.string();
     std::replace(url.begin(), url.end(), '\\', '/');
     Render::UL_view->LoadURL(ultralight::String(url.c_str()));
+
+    while (Render::UL_view->is_loading())
+        Render::UL_renderer->Update();
+
+    BindJSFunctions(Render::UL_view);
 }
