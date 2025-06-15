@@ -678,6 +678,7 @@ void Render::setup()
 
     view_config.is_accelerated = true;
     view_config.is_transparent = true;
+    view_config.initial_device_scale = WindowManager::screenUIScale;
 
     Render::UL_view = Render::UL_renderer->CreateView(WindowManager::windowWidth, WindowManager::windowHeight, view_config, nullptr);
 }
@@ -697,6 +698,7 @@ void Render::resize(int width, int height)
 
     createSceneFBO(width, height);
 
+    view_config.initial_device_scale = WindowManager::screenUIScale;
     Render::UL_view = Render::UL_renderer->CreateView(width, height, view_config, nullptr);
 }
 
