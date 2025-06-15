@@ -8,6 +8,8 @@ uniform vec4 Vector[8];
 uniform uint ClipSize;
 uniform mat4 Clip[8];
 
+uniform bool flipY;
+
 // Uniform Accessor Functions
 float Time()
 {
@@ -69,6 +71,8 @@ void main(void)
   gl_Position = Transform * vec4(in_Position, 0.0, 1.0);
   ex_Color = in_Color;
   ex_TexCoord = in_TexCoord;
+  if(flipY)
+    ex_TexCoord.y = 1.0 - ex_TexCoord.y;
   ex_Data0 = in_Data0;
   ex_Data1 = in_Data1;
   ex_Data2 = in_Data2;
