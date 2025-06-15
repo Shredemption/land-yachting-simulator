@@ -51,6 +51,10 @@ body {
   background-color: rgb(128, 0, 0);
 }
 
+.title-settings-screen {
+  background-color: rgb(128, 0, 0);
+}
+
 .settings-screen {
   background-color: rgb(128, 0, 0);
   background: transparent;
@@ -77,11 +81,11 @@ body {
 }
 
 .menu button:hover {
-  color: rgb(255, 128, 128);
+  color: rgb(226, 131, 131);
 }
 
 .menu button.active {
-  color: rgb(128, 0, 0);
+  color: rgb(211, 55, 55);
 }
 
 .fade-line {
