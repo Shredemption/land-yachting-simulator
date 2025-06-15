@@ -253,6 +253,9 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
                 // Composite
                 glBindFramebuffer(GL_FRAMEBUFFER, Render::htmlFBO);
                 glViewport(0, 0, width, height);
+
+                if (tempTexId != 0)
+                    patchedState.texture_1_id = tempTexId;
             }
 
             else if (makeBuffer)
