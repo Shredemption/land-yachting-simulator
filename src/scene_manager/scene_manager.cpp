@@ -161,6 +161,9 @@ void SceneManager::switchEngineState(const EngineState &to)
 
     switch (to)
     {
+    case EngineState::Pause:
+        UIManager::loadHTML("pause.html");
+        break;
     case EngineState::Settings:
         UIManager::loadHTML("settings.html");
         break;

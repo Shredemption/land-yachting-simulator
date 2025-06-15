@@ -42,6 +42,7 @@ namespace Render
     void renderBlankScreen();
     void renderLoadingScreen();
     void renderHTML();
+    void savePauseBackground();
 
     void setup();
     void resize(int width, int height);
