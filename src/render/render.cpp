@@ -16,8 +16,6 @@ float textTextureSize = 128;
 FT_Library ft;
 FT_Face face;
 
-float fade;
-
 // Framebuffer
 unsigned int sceneTexture = 0, sceneDepthRBO = 0;
 unsigned int htmlTexture = 0;
@@ -1088,28 +1086,13 @@ void Render::renderLoadingScreen()
     }
 
     // Loading complete
-    if (SceneManager::loadingState == 100)
+    if (SceneManager::loadingState == loadingSteps.size())
     {
         statusString = "Finished Loading";
-        fade = 0.0f;
     }
 
     renderText(statusString, 0.05f, 0.05f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
     renderText(progressString, 0.05f, 0.20f, 0.5f, glm::vec3(0.6f, 0.1f, 0.1f));
-
-    // Render first frame under it
-
-    fade += TimeManager::deltaTime;
-    float darkfactor = easeInOutQuad(0.0f, 1.0f, fade);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, pauseTexture);
-
-    shader = ShaderUtil::load(shaderID::DarkenBlur);
-    shader->setInt("screenTexture", 0);
-    shader->setVec2("texelSize", glm::vec2(1.0f / WindowManager::screenWidth, 1.0f / WindowManager::screenHeight));
-    shader->setFloat("darkenAmount", darkfactor);
-    shader->setFloat("darkenPosition", 2);
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
