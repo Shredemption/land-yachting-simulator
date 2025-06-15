@@ -22,7 +22,6 @@ void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, i
         PhysicsUtil::switchControlledYacht();
 }
 
-
 void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
 {
     if (ControllerManager::controllerConnected)

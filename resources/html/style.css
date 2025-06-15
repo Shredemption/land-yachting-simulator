@@ -55,9 +55,14 @@ body {
   background-color: rgb(128, 0, 0);
 }
 
+.pause-screen {
+  background-color: rgb(128, 0, 0);
+  /* background: transparent; */
+}
+
 .settings-screen {
   background-color: rgb(128, 0, 0);
-  background: transparent;
+  /* background: transparent; */
 }
 
 .hidden {

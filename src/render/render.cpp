@@ -622,29 +622,6 @@ float calculateTextWidth(const std::string &text, float scale)
     return width;
 }
 
-void savePauseBackground()
-{
-    // Bind FBOs
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, Render::sceneFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFBO);
-
-    // Attach target texture to copy FBO
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pauseTexture, 0);
-
-    // Check framebuffer completeness (optional but useful for debugging)
-    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cerr << "Copy FBO is not complete!" << std::endl;
-
-    // Perform blit
-    glBlitFramebuffer(
-        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
-        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
-        GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-    // Unbind
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void Render::setup()
 {
     initQuad();
@@ -1115,12 +1092,32 @@ void Render::renderHTML()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(quadVAO);
 
-    glBindTexture(GL_TEXTURE_2D, pauseTexture);
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindTexture(GL_TEXTURE_2D, htmlTexture);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+}
+
+void Render::savePauseBackground()
+{
+    // Bind FBOs
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, Render::sceneFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFBO);
+
+    // Attach target texture to copy FBO
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pauseTexture, 0);
+
+    // Check framebuffer completeness (optional but useful for debugging)
+    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Copy FBO is not complete!" << std::endl;
+
+    // Perform blit
+    glBlitFramebuffer(
+        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
+        0, 0, WindowManager::screenWidth, WindowManager::screenHeight,
+        GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    // Unbind
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
