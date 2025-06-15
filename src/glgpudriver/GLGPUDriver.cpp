@@ -1,13 +1,6 @@
 #include "GLGPUDriver.h"
-#include <glad/glad.h>
 
-#include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
-
-#include "render/render.hpp"
-#include "shader/shader_util.hpp"
-#include "shader/shaderID.h"
+#include "pch.h"
 
 using namespace ultralight;
 
@@ -228,11 +221,10 @@ void GLGPUDriver::DestroyGeometry(uint32_t id)
 
 void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
 {
-    bool fboCleared = false;
-
-    glBindFramebuffer(GL_FRAMEBUFFER, Render::htmlFBO);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    GLuint tempTexId = 0;
+    GLuint tempFBO = 0;
+    bool usingTemp = false;
+    bool pendingTemp = false;
 
     auto &commands = command_list.commands;
     uint32_t num_commands = command_list.size;
@@ -242,8 +234,52 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
         const auto &cmd = commands[i];
         switch (cmd.command_type)
         {
+        case ultralight::CommandType::ClearRenderBuffer:
+        {
+            pendingTemp = true;
+        }
+
         case ultralight::CommandType::DrawGeometry:
         {
+            if (pendingTemp)
+            {
+                int width = cmd.gpu_state.viewport_width;
+                int height = cmd.gpu_state.viewport_height;
+                if (width > 0 && height > 0)
+                {
+                    std::cout << "[Frame " << TimeManager::frame << "]Creating texture of size " << width << " x " << height << std::endl;
+                    tempTexId = NextTextureId();
+                    RefPtr<Bitmap> tempBitmap = Bitmap::Create(width, height, BitmapFormat::BGRA8_UNORM_SRGB);
+                    CreateTexture(tempTexId, tempBitmap);
+
+                    GLuint tempTexture = textures_[tempTexId];
+                    glGenFramebuffers(1, &tempFBO);
+                    glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
+                    glViewport(0, 0, width, height);
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tempTexture, 0);
+                    glClearColor(0, 0, 0, 0);
+                    glClear(GL_COLOR_BUFFER_BIT);
+                    usingTemp = true;
+                    pendingTemp = false;
+                }
+                else
+                {
+                    // Still waiting for a valid viewport, skip this draw
+                    std::cout << "[Frame " << TimeManager::frame << "]Skipping temp texture creation (viewport " << width << " x " << height << ")\n";
+                    break;
+                }
+            }
+            if (usingTemp &&
+                (cmd.gpu_state.texture_1_id == tempTexId ||
+                 cmd.gpu_state.texture_2_id == tempTexId ||
+                 cmd.gpu_state.texture_3_id == tempTexId))
+            {
+                glBindFramebuffer(GL_FRAMEBUFFER, Render::htmlFBO);
+                glDeleteFramebuffers(1, &tempFBO);
+                DestroyTexture(tempTexId);
+                usingTemp = false;
+            }
+
             glm::mat4 ortho = glm::ortho(
                 0.0f,
                 static_cast<float>(cmd.gpu_state.viewport_width),
@@ -266,7 +302,8 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
 
             GLint loc_State = glGetUniformLocation(shader->m_id, "State");
             GLint loc_Transform = glGetUniformLocation(shader->m_id, "Transform");
-            GLint loc_Scalar4 = glGetUniformLocation(shader->m_id, "Scalar4");
+            GLint loc_Scalar4_0 = glGetUniformLocation(shader->m_id, "Scalar4[0]");
+            GLint loc_Scalar4_1 = glGetUniformLocation(shader->m_id, "Scalar4[1]");
             GLint loc_Vector = glGetUniformLocation(shader->m_id, "Vector");
             GLint loc_ClipSize = glGetUniformLocation(shader->m_id, "ClipSize");
             GLint loc_Clip = glGetUniformLocation(shader->m_id, "Clip");
@@ -278,20 +315,21 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
 
             glm::mat4 finalTransform = ortho * ToGLM(cmd.gpu_state.transform);
 
-            loc_State = glGetUniformLocation(shader->m_id, "State");
-            loc_Transform = glGetUniformLocation(shader->m_id, "Transform");
-            loc_Scalar4 = glGetUniformLocation(shader->m_id, "Scalar4");
-            loc_Vector = glGetUniformLocation(shader->m_id, "Vector");
-            loc_ClipSize = glGetUniformLocation(shader->m_id, "ClipSize");
-            loc_Clip = glGetUniformLocation(shader->m_id, "Clip");
-
             glUniform4fv(loc_State, 1, glm::value_ptr(state));
             glUniformMatrix4fv(loc_Transform, 1, GL_FALSE, glm::value_ptr(finalTransform));
-            glUniform4fv(loc_Scalar4, 1, &cmd.gpu_state.uniform_scalar[0]);
-            glUniform4fv(loc_Scalar4 + 1, 1, &cmd.gpu_state.uniform_scalar[4]);
+            glUniform4fv(loc_Scalar4_0, 1, &cmd.gpu_state.uniform_scalar[0]);
+            glUniform4fv(loc_Scalar4_1, 1, &cmd.gpu_state.uniform_scalar[4]);
             glUniform4fv(loc_Vector, 8, (const float *)&cmd.gpu_state.uniform_vector[0]);
             glUniform1ui(loc_ClipSize, cmd.gpu_state.clip_size);
-            glUniformMatrix4fv(loc_Clip, 8, GL_FALSE, (const float *)&cmd.gpu_state.clip[0]);
+
+            for (int i = 0; i < cmd.gpu_state.clip_size; ++i)
+            {
+                char name[32];
+                snprintf(name, sizeof(name), "Clip[%d]", i);
+                GLint loc = glGetUniformLocation(shader->m_id, name);
+                if (loc >= 0)
+                    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(ToGLM(cmd.gpu_state.clip[i])));
+            }
 
             shader->setInt("Texture1", 1);
             shader->setInt("Texture2", 2);
@@ -342,21 +380,13 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
             }
 
             // Set scissor rect
-            if (cmd.gpu_state.scissor_rect.width() > 0 && cmd.gpu_state.scissor_rect.height() > 0)
-            {
-                glEnable(GL_SCISSOR_TEST);
-                glScissor(cmd.gpu_state.scissor_rect.x(), cmd.gpu_state.scissor_rect.y(), cmd.gpu_state.scissor_rect.width(), cmd.gpu_state.scissor_rect.height());
-            }
-            else
-            {
-                glDisable(GL_SCISSOR_TEST);
-            }
-
             if (cmd.gpu_state.enable_scissor)
             {
                 glEnable(GL_SCISSOR_TEST);
-                const auto &r = cmd.gpu_state.scissor_rect;
-                glScissor(r.x(), r.y(), r.width(), r.height());
+                glScissor(cmd.gpu_state.scissor_rect.x(),
+                          cmd.gpu_state.viewport_height - cmd.gpu_state.scissor_rect.y() - cmd.gpu_state.scissor_rect.height(),
+                          cmd.gpu_state.scissor_rect.width(),
+                          cmd.gpu_state.scissor_rect.height());
             }
             else
             {
@@ -374,34 +404,17 @@ void GLGPUDriver::UpdateCommandList(const ultralight::CommandList &command_list)
             }
 
             glDisable(GL_DEPTH_TEST);
-            // Draw elements
             glDrawElements(GL_TRIANGLES, cmd.indices_count, GL_UNSIGNED_INT, (void *)(cmd.indices_offset * sizeof(uint32_t)));
-
-            // Cleanup
-            glBindVertexArray(0);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            glDisable(GL_SCISSOR_TEST);
-            glEnable(GL_DEPTH_TEST);
-
             break;
         }
-
-        case ultralight::CommandType::ClearRenderBuffer:
-        {
-            if (!fboCleared)
-            {
-                glClearColor(0, 0, 0, 1);
-                glClear(GL_COLOR_BUFFER_BIT);
-
-                fboCleared = true;
-            }
-            break;
-        }
-
-        default:
-            break;
         }
     }
+
+    // Cleanup
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_SCISSOR_TEST);
+    glEnable(GL_DEPTH_TEST);
 }
 
 GLuint GLGPUDriver::GetTextureForBitmap(Bitmap *bitmap)
