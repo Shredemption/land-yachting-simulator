@@ -1118,7 +1118,6 @@ void Render::renderLoadingScreen()
 void Render::renderHTML()
 {
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, htmlTexture);
 
     shader = ShaderUtil::load(shaderID::Post);
     shader->setInt("screenTexture", 1);
@@ -1126,11 +1125,19 @@ void Render::renderHTML()
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, WindowManager::screenWidth, WindowManager::screenHeight);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(quadVAO);
+
+    glBindTexture(GL_TEXTURE_2D, pauseTexture);
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindTexture(GL_TEXTURE_2D, htmlTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 }
