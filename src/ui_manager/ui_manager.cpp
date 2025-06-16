@@ -104,6 +104,34 @@ std::shared_ptr<Widget> buildPause()
     return root;
 }
 
+std::shared_ptr<Widget> buildSettings(EngineState state)
+{
+    auto root = std::make_shared<Widget>();
+
+    float x = 0.025f;
+    float y = 0.15f;
+    float yStep = 0.05f;
+    int steps = 0;
+
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Exit";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+
+        if (state == EngineState::Settings)
+            btn->onClick = []()
+            { SceneManager::switchEngineState(EngineState::Pause); };
+        else
+            btn->onClick = []()
+            { SceneManager::switchEngineState(EngineState::Title); };
+
+        root->AddChild(btn);
+    }
+
+    return root;
+}
+
 void UIManager::load(EngineState state)
 {
     activeWidgets.reset();
@@ -115,6 +143,10 @@ void UIManager::load(EngineState state)
         break;
     case EngineState::Pause:
         activeWidgets = buildPause();
+        break;
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
+        activeWidgets = buildSettings(state);
         break;
     }
 }
