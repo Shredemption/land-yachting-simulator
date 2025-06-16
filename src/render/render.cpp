@@ -1056,14 +1056,6 @@ void Render::renderMenu(EngineState state)
 {
     glDisable(GL_DEPTH_TEST);
 
-    switch (state)
-    {
-    case EngineState::Title:
-        glClearColor(0.5, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-        break;
-    }
-
     float titleX = 0.02, titleY = 0.04;
     float shadowDistance = 0.003f;
     std::string titleText;
@@ -1071,8 +1063,31 @@ void Render::renderMenu(EngineState state)
     switch (state)
     {
     case EngineState::Title:
+    {
         titleText = "Land Yachting Simulator";
+
+        glClearColor(0.5, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
         break;
+    }
+    case EngineState::Pause:
+    {
+        titleText = "Paused";
+
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, pauseTexture);
+
+        shader = ShaderUtil::load(shaderID::DarkenBlur);
+        shader->setInt("screenTexture", 0);
+        shader->setVec2("texelSize", glm::vec2(1.0 / WindowManager::screenWidth, 1.0 / WindowManager::screenHeight));
+        shader->setFloat("darkenAmount", 0.5f);
+        shader->setFloat("darkenPosition", 0.3f);
+
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
     }
 
     renderText(titleText, titleX + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), 1.0f, TextAlign::Left);
@@ -1082,7 +1097,7 @@ void Render::renderMenu(EngineState state)
     {
         glm::vec2 pos = {0.7f, 0.5f};
 
-        renderImage("title-figure-black.png", pos + glm::vec2(0.005f,-0.01f), 835, 1024);
+        renderImage("title-figure-black.png", pos + glm::vec2(0.005f, -0.01f), 835, 1024);
         renderImage("title-figure.png", pos, 835, 1024);
     }
 
