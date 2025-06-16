@@ -165,12 +165,20 @@ void SceneManager::switchEngineState(const EngineState &to)
 
     UIManager::load(to);
 
-    if (to == EngineState::Title)
+    switch (to)
+    {
+    case EngineState::Title:
     {
         TextureManager::queueStandaloneImage("title-figure.png");
         TextureManager::queueStandaloneImage("title-figure-black.png");
         TextureManager::loadQueuedPixelData();
         TextureManager::uploadToGPU();
+        break;
+    }
+    case EngineState::Pause:
+    {
+        Render::savePauseBackground();
+    }
     }
 }
 

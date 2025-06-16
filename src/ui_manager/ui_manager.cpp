@@ -16,49 +16,89 @@ std::shared_ptr<Widget> buildTitle()
     int steps = 0;
 
     {
-        auto realisticBtn = std::make_shared<Button>();
-        realisticBtn->text = "Load Realistic Scene";
-        realisticBtn->pos = glm::vec2(x, y + yStep * steps++);
-        realisticBtn->size = glm::vec2(0.3f, 0.05f);
-        realisticBtn->onClick = []()
+        auto btn = std::make_shared<Button>();
+        btn->text = "Load Realistic Scene";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
         { SceneManager::switchEngineStateScene("realistic"); };
-        root->AddChild(realisticBtn);
+        root->AddChild(btn);
     }
     {
-        auto cartoonButton = std::make_shared<Button>();
-        cartoonButton->text = "Load Cartoon Scene";
-        cartoonButton->pos = glm::vec2(x, y + yStep * steps++);
-        cartoonButton->size = glm::vec2(0.3f, 0.05f);
-        cartoonButton->onClick = []()
+        auto btn = std::make_shared<Button>();
+        btn->text = "Load Cartoon Scene";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
         { SceneManager::switchEngineStateScene("cartoon"); };
-        root->AddChild(cartoonButton);
+        root->AddChild(btn);
     }
     {
-        auto testBtn = std::make_shared<Button>();
-        testBtn->text = "Load Test Scene";
-        testBtn->pos = glm::vec2(x, y + yStep * steps++);
-        testBtn->size = glm::vec2(0.3f, 0.05f);
-        testBtn->onClick = []()
+        auto btn = std::make_shared<Button>();
+        btn->text = "Load Test Scene";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
         { SceneManager::switchEngineStateScene("test"); };
-        root->AddChild(testBtn);
+        root->AddChild(btn);
     }
     {
-        auto settingsBtn = std::make_shared<Button>();
-        settingsBtn->text = "Settings";
-        settingsBtn->pos = glm::vec2(x, y + yStep * steps++);
-        settingsBtn->size = glm::vec2(0.3f, 0.05f);
-        settingsBtn->onClick = []()
+        auto btn = std::make_shared<Button>();
+        btn->text = "Settings";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
         { SceneManager::switchEngineState(EngineState::TitleSettings); };
-        root->AddChild(settingsBtn);
+        root->AddChild(btn);
     }
     {
-        auto quitBtn = std::make_shared<Button>();
-        quitBtn->text = "Quit";
-        quitBtn->pos = glm::vec2(x, y + yStep * steps++);
-        quitBtn->size = glm::vec2(0.3f, 0.05f);
-        quitBtn->onClick = []()
+        auto btn = std::make_shared<Button>();
+        btn->text = "Quit";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
         { SceneManager::switchEngineState(EngineState::None); };
-        root->AddChild(quitBtn);
+        root->AddChild(btn);
+    }
+
+    return root;
+}
+
+std::shared_ptr<Widget> buildPause()
+{
+    auto root = std::make_shared<Widget>();
+
+    float x = 0.025f;
+    float y = 0.15f;
+    float yStep = 0.05f;
+    int steps = 0;
+
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Resume";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
+        { SceneManager::switchEngineState(EngineState::Running); };
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Settings";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
+        { SceneManager::switchEngineState(EngineState::Settings); };
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Exit";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
+        { SceneManager::switchEngineState(EngineState::Title); };
+        root->AddChild(btn);
     }
 
     return root;
@@ -72,6 +112,9 @@ void UIManager::load(EngineState state)
     {
     case EngineState::Title:
         activeWidgets = buildTitle();
+        break;
+    case EngineState::Pause:
+        activeWidgets = buildPause();
         break;
     }
 }
