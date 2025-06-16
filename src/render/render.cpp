@@ -1051,3 +1051,34 @@ void Render::savePauseBackground()
     // Unbind
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+void Render::renderMenu(EngineState state)
+{
+    glDisable(GL_DEPTH_TEST);
+
+    switch (state)
+    {
+    case EngineState::Title:
+        glClearColor(0.5, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+        break;
+    }
+
+    float titleX = 0.02, titleY = 0.04;
+    float shadowDistance = 0.003f;
+    std::string titleText;
+
+    switch (state)
+    {
+    case EngineState::Title:
+        titleText = "Land Yachting Simulator";
+        break;
+    }
+
+    renderText(titleText, titleX + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), 1.0f, TextAlign::Left);
+    renderText(titleText, titleX, titleY, 1.0f, glm::vec3(1.0f), 1.0f, TextAlign::Left);
+
+    UIManager::render();
+
+    glEnable(GL_DEPTH_TEST);
+}

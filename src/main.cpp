@@ -121,13 +121,11 @@ int main()
             break;
 
         case EngineState::Title:
-            break;
-
         case EngineState::Pause:
-            break;
-
         case EngineState::Settings:
         case EngineState::TitleSettings:
+            UIManager::update();
+            Render::renderMenu(SceneManager::engineState);
             break;
 
         case EngineState::Running:

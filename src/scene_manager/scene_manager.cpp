@@ -162,6 +162,8 @@ void SceneManager::switchEngineState(const EngineState &to)
     engineState = to;
 
     updateCallbacks = true;
+
+    UIManager::load(to);
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)

@@ -20,7 +20,6 @@
 #include "render/render_defs.h"
 
 enum class EngineState;
-enum class SettingsPage;
 
 namespace Render
 {
@@ -34,6 +33,7 @@ namespace Render
     void renderBlankScreen();
     void renderLoadingScreen();
     void savePauseBackground();
+    void renderMenu(EngineState state);
 
     void setup();
     void resize(int width, int height);
