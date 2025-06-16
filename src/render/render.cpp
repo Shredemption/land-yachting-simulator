@@ -1056,24 +1056,18 @@ void Render::renderMenu(EngineState state)
 {
     glDisable(GL_DEPTH_TEST);
 
-    float titleX = 0.02, titleY = 0.04;
-    float shadowDistance = 0.003f;
-    std::string titleText;
-
     switch (state)
     {
     case EngineState::Title:
+    case EngineState::TitleSettings:
     {
-        titleText = "Land Yachting Simulator";
-
         glClearColor(0.5, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         break;
     }
     case EngineState::Pause:
+    case EngineState::Settings:
     {
-        titleText = "Paused";
-
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
@@ -1088,6 +1082,24 @@ void Render::renderMenu(EngineState state)
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
+    }
+
+    float titleX = 0.02, titleY = 0.04;
+    float shadowDistance = 0.003f;
+    std::string titleText;
+
+    switch (state)
+    {
+    case EngineState::Title:
+        titleText = "Land Yachting Simulator";
+        break;
+    case EngineState::Pause:
+        titleText = "Paused";
+        break;
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
+        titleText = "Settings";
+        break;
     }
 
     renderText(titleText, titleX + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), 1.0f, TextAlign::Left);
