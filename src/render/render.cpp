@@ -1078,6 +1078,14 @@ void Render::renderMenu(EngineState state)
     renderText(titleText, titleX + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), 1.0f, TextAlign::Left);
     renderText(titleText, titleX, titleY, 1.0f, glm::vec3(1.0f), 1.0f, TextAlign::Left);
 
+    if (state == EngineState::Title)
+    {
+        glm::vec2 pos = {0.7f, 0.5f};
+
+        renderImage("title-figure-black.png", pos + glm::vec2(0.005f,-0.01f), 835, 1024);
+        renderImage("title-figure.png", pos, 835, 1024);
+    }
+
     UIManager::render();
 
     glEnable(GL_DEPTH_TEST);

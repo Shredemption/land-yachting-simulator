@@ -158,12 +158,20 @@ void SceneManager::switchEngineState(const EngineState &to)
     {
         SettingsManager::save();
     }
-    
+
     engineState = to;
 
     updateCallbacks = true;
 
     UIManager::load(to);
+
+    if (to == EngineState::Title)
+    {
+        TextureManager::queueStandaloneImage("title-figure.png");
+        TextureManager::queueStandaloneImage("title-figure-black.png");
+        TextureManager::loadQueuedPixelData();
+        TextureManager::uploadToGPU();
+    }
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
