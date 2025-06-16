@@ -2,10 +2,6 @@
 
 #include "pch.h"
 
-#include "glgpudriver/GLGPUDriver.h"
-
-using namespace ultralight;
-
 // Text
 unsigned int textVAO, textVBO;
 unsigned int textTexture;
@@ -18,7 +14,6 @@ FT_Face face;
 
 // Framebuffer
 unsigned int sceneTexture = 0, sceneDepthRBO = 0;
-unsigned int htmlTexture = 0;
 unsigned int pauseTexture;
 unsigned int copyFBO;
 
@@ -41,11 +36,6 @@ float FPS = 0.0f;
 // Track current and last used shader
 Shader *shader;
 Shader *lastShader = nullptr;
-
-// Ultralight
-ultralight::ViewConfig view_config;
-ultralight::Config config;
-GLuint ulFBO;
 
 void renderModel(const RenderCommand &cmd)
 {
@@ -580,18 +570,6 @@ void createSceneFBO(int width, int height)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRBO);
 
-    // HTML Buffer
-    glGenFramebuffers(1, &Render::htmlFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, Render::htmlFBO);
-
-    // Color texture
-    glGenTextures(1, &htmlTexture);
-    glBindTexture(GL_TEXTURE_2D, htmlTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Good for post
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, htmlTexture, 0);
-
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cerr << "Scene FBO is not complete!" << std::endl;
 
@@ -636,25 +614,6 @@ void Render::setup()
     // Enable Depth buffer (Z-buffer)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-
-    // Ultralight
-    config.animation_timer_delay = 0.0f;
-    config.effect_quality = EffectQuality::High;
-    config.force_repaint = true;
-    config.scroll_timer_delay = 0.0f;
-
-    Platform::instance().set_gpu_driver(new GLGPUDriver());
-    Platform::instance().set_config(config);
-    Platform::instance().set_font_loader(GetPlatformFontLoader());
-    Platform::instance().set_file_system(GetPlatformFileSystem("."));
-    Platform::instance().set_logger(GetDefaultLogger("ultralight.log"));
-
-    Render::UL_renderer = Renderer::Create();
-
-    view_config.is_accelerated = true;
-    view_config.is_transparent = true;
-
-    Render::UL_view = Render::UL_renderer->CreateView(WindowManager::windowWidth, WindowManager::windowHeight, view_config, nullptr);
 }
 
 void Render::resize(int width, int height)
@@ -667,12 +626,7 @@ void Render::resize(int width, int height)
     glDeleteFramebuffers(1, &copyFBO);
     glDeleteTextures(1, &pauseTexture);
 
-    glDeleteFramebuffers(1, &htmlFBO);
-    glDeleteTextures(1, &htmlTexture);
-
     createSceneFBO(width, height);
-
-    Render::UL_view = Render::UL_renderer->CreateView(width, height, view_config, nullptr);
 }
 
 void Render::render()
@@ -1073,30 +1027,6 @@ void Render::renderLoadingScreen()
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void Render::renderHTML()
-{
-    glActiveTexture(GL_TEXTURE1);
-
-    shader = ShaderUtil::load(shaderID::Post);
-    shader->setInt("screenTexture", 1);
-    shader->setBool("flipY", false);
-
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, WindowManager::screenWidth, WindowManager::screenHeight);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBindVertexArray(quadVAO);
-
-    glBindTexture(GL_TEXTURE_2D, htmlTexture);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
 }
 
 void Render::savePauseBackground()

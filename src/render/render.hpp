@@ -10,11 +10,6 @@
 
 #include <glm/glm.hpp>
 
-#include <Ultralight/Ultralight.h>
-#include <AppCore/Platform.h>
-
-using namespace ultralight;
-
 #include <memory>
 #include <array>
 #include <atomic>
@@ -32,16 +27,12 @@ namespace Render
     inline std::array<::RenderBuffer, 3> renderBuffers;
     inline std::atomic<int> prepIndex = 0, renderIndex = 1, standbyIndex = 2;
 
-    inline unsigned int sceneFBO = 0, htmlFBO = 0;
+    inline unsigned int sceneFBO = 0;
 
     inline std::vector<std::pair<std::string, float>> debugPhysicsData;
 
-    inline ultralight::RefPtr<View> UL_view;
-    inline ultralight::RefPtr<Renderer> UL_renderer;
-
     void renderBlankScreen();
     void renderLoadingScreen();
-    void renderHTML();
     void savePauseBackground();
 
     void setup();

@@ -2,7 +2,6 @@ build/*
 Release/*
 .vscode/*
 .cache/*
-thirdparty/*
 CMakeUserPresets.json
 Marama.exe
 settings.json
