@@ -93,8 +93,6 @@ int main()
     glfwPollEvents();
     glfwSwapBuffers(WindowManager::window);
 
-    UIManager::load(SceneManager::engineState);
-
     // Main Loop
     while (!glfwWindowShouldClose(WindowManager::window))
     {
@@ -123,19 +121,13 @@ int main()
             break;
 
         case EngineState::Title:
-            UIManager::updateHTML();
-            Render::renderHTML();
             break;
 
         case EngineState::Pause:
-            UIManager::updateHTML();
-            Render::renderHTML();
             break;
 
         case EngineState::Settings:
         case EngineState::TitleSettings:
-            UIManager::updateHTML();
-            Render::renderHTML();
             break;
 
         case EngineState::Running:

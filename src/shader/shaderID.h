@@ -14,7 +14,5 @@ enum class shaderID
     ToonTerrain,
     ToonWater,
     DarkenBlur,
-    Post,
-    Fill,
-    FillPath
+    Post
 };

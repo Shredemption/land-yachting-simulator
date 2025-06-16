@@ -54,8 +54,7 @@ shaderID ShaderUtil::ShaderFromName(const std::string shaderName)
         {"toon-water", shaderID::ToonWater},
         {"darken-blur", shaderID::DarkenBlur},
         {"post", shaderID::Post},
-        {"fill", shaderID::Fill},
-        {"fillpath", shaderID::FillPath}};
+    };
 
     auto it = typeMap.find(shaderName);
     return it != typeMap.end() ? it->second : shaderID::None;
@@ -76,8 +75,7 @@ std::string ShaderUtil::NameFromShader(const shaderID shader)
         {shaderID::ToonWater, "toon-water"},
         {shaderID::DarkenBlur, "darken-blur"},
         {shaderID::Post, "post"},
-        {shaderID::Fill, "fill"},
-        {shaderID::FillPath, "fillpath"}};
+    };
 
     auto it = typeMap.find(shader);
     return it != typeMap.end() ? it->second : "";
