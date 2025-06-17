@@ -117,7 +117,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         auto btn = std::make_shared<Button>();
         btn->text = "Graphics";
         btn->pos = glm::vec2(x, y + yStep * steps++);
-        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->size = glm::vec2(0.2f, 0.05f);
         btn->linkedPage = SettingsPage::Graphics;
         btn->onClick = []()
         { SceneManager::settingsPage = SettingsPage::Graphics; };
@@ -127,7 +127,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         auto btn = std::make_shared<Button>();
         btn->text = "Debug";
         btn->pos = glm::vec2(x, y + yStep * steps++);
-        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->size = glm::vec2(0.2f, 0.05f);
         btn->linkedPage = SettingsPage::Debug;
         btn->onClick = []()
         { SceneManager::settingsPage = SettingsPage::Debug; };
@@ -137,16 +137,55 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         auto btn = std::make_shared<Button>();
         btn->text = "Exit";
         btn->pos = glm::vec2(x, y + yStep * steps++);
-        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->size = glm::vec2(0.2f, 0.05f);
 
         if (state == EngineState::Settings)
             btn->onClick = []()
-            { SceneManager::switchEngineState(EngineState::Pause); };
+            {
+                SceneManager::settingsPage = SettingsPage::None;
+                SceneManager::switchEngineState(EngineState::Pause);
+            };
         else
             btn->onClick = []()
-            { SceneManager::switchEngineState(EngineState::Title); };
+            {
+                SceneManager::settingsPage = SettingsPage::None;
+                SceneManager::switchEngineState(EngineState::Title);
+            };
 
         root->AddChild(btn);
+    }
+
+    // Graphics Page
+    x = 0.3f;
+    y = 0.15f;
+    yStep = 0.05f;
+    steps = 0;
+
+    {
+        auto tgl = std::make_shared<Toggle>();
+        tgl->text = "Fullscreen";
+        tgl->pos = glm::vec2(x, y + yStep * steps++);
+        tgl->size = glm::vec2(0.3f, 0.05f);
+        tgl->linkedPage = SettingsPage::Graphics;
+        tgl->linkedVariable = &SettingsManager::settings.video.fullscreen;
+        tgl->trueLabel = "Borderless";
+        tgl->falseLabel = "Off";
+        tgl->onChange = []()
+        { WindowManager::setFullscreenState(); };
+        root->AddChild(tgl);
+    }
+    {
+        auto tgl = std::make_shared<Toggle>();
+        tgl->text = "VSync";
+        tgl->pos = glm::vec2(x, y + yStep * steps++);
+        tgl->size = glm::vec2(0.3f, 0.05f);
+        tgl->linkedPage = SettingsPage::Graphics;
+        tgl->linkedVariable = &SettingsManager::settings.video.vSync;
+        tgl->trueLabel = "On";
+        tgl->falseLabel = "Off";
+        tgl->onChange = []()
+        { glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0); };
+        root->AddChild(tgl);
     }
 
     return root;

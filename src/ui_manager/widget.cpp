@@ -51,3 +51,43 @@ void Button::Update()
     if (hover && InputManager::leftMouseButton.released())
         onClick();
 }
+
+void Toggle::Render()
+{
+    if (hidden)
+        return;
+
+    glm::vec3 currentColor = hover ? hoverColor : color;
+
+    Render::renderText(text + ": " + (*linkedVariable ? trueLabel : falseLabel), pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
+    Render::renderText(text + ": " + (*linkedVariable ? trueLabel : falseLabel), pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+}
+
+void Toggle::Update()
+{
+    float xmin = WindowManager::screenWidth * (pos.x);
+    float xmax = WindowManager::screenWidth * (pos.x + size.x);
+    float ymin = WindowManager::screenHeight * (pos.y);
+    float ymax = WindowManager::screenHeight * (pos.y + size.y);
+
+    if (linkedPage == SceneManager::settingsPage)
+    {
+        hidden = false;
+        if (InputManager::mousePosX > xmin && InputManager::mousePosX < xmax && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
+            hover = true;
+        else
+            hover = false;
+    }
+    else
+    {
+        hidden = true;
+        hover = false;
+    }
+
+    if (hover && InputManager::leftMouseButton.released())
+    {
+        *linkedVariable = !(*linkedVariable);
+        if (onChange)
+            onChange();
+    }
+}

@@ -163,8 +163,6 @@ void SceneManager::switchEngineState(const EngineState &to)
 
     updateCallbacks = true;
 
-    UIManager::load(to);
-
     switch (to)
     {
     case EngineState::Title:
@@ -188,6 +186,8 @@ void SceneManager::switchEngineState(const EngineState &to)
         break;
     }
     }
+
+    UIManager::load(to);
 }
 
 void SceneManager::switchEngineStateScene(const std::string &sceneName)
