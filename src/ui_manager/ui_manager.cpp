@@ -245,7 +245,19 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         sldr->lowerLim = 10.0f;
         sldr->upperLim = 100.0f;
         sldr->stepSize = 10.0f;
-        sldr->onChange = []() {};
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "Water Framerate";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Graphics;
+        sldr->linkedFloat = &SettingsManager::settings.video.waterFrameRate;
+        sldr->lowerLim = 10.0f;
+        sldr->upperLim = 120.0f;
+        sldr->stepSize = 1.0f;
         sldr->index = index++;
         root->AddChild(sldr);
     }
@@ -268,7 +280,6 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         sldr->upperLim = 8.0f;
         sldr->stepSize = 0.1f;
         sldr->decimals = 2;
-        sldr->onChange = []() {};
         sldr->index = index++;
         root->AddChild(sldr);
     }
@@ -283,7 +294,6 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         sldr->upperLim = 8.0f;
         sldr->stepSize = 0.1f;
         sldr->decimals = 2;
-        sldr->onChange = []() {};
         sldr->index = index++;
         root->AddChild(sldr);
     }
