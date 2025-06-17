@@ -61,8 +61,8 @@ public:
     std::string trueLabel;
     std::string falseLabel;
 
-    float leftOffset = 0.25f;
-    float labelOffset = 0.4f;
+    float leftOffset = 0.3f;
+    float labelOffset = 0.425f;
     float rightOffset = 0.55f;
 
     void Render() override;
@@ -83,8 +83,8 @@ public:
 
     std::function<void()> onChange;
 
-    float leftOffset = 0.25f;
-    float labelOffset = 0.4f;
+    float leftOffset = 0.3f;
+    float labelOffset = 0.425f;
     float rightOffset = 0.55f;
 
     void Render() override;
@@ -109,8 +109,8 @@ public:
 
     std::function<void()> onChange;
 
-    float leftOffset = 0.25f;
-    float labelOffset = 0.4f;
+    float leftOffset = 0.3f;
+    float labelOffset = 0.425f;
     float rightOffset = 0.55f;
     float valueOffset = 0.6f;
 
