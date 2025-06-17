@@ -21,6 +21,7 @@ struct SettingsStruct
     {
         bool fullscreen = true;
         bool vSync = true;
+        float lodDistance = 50.0f;
     } video;
 };
 
@@ -106,6 +107,8 @@ namespace jsoncons
                 s.fullscreen = j["fullscreen"].template as<bool>();
             if (j.contains("vsync"))
                 s.vSync = j["vsync"].template as<bool>();
+            if (j.contains("lodDistance"))
+                s.lodDistance = j["lodDistance"].template as<float>();
             return s;
         }
 
@@ -114,6 +117,7 @@ namespace jsoncons
             Json j;
             j["fullscreen"] = s.fullscreen;
             j["vsync"] = s.vSync;
+            j["lodDistance"] = s.lodDistance;
             return j;
         }
     };
