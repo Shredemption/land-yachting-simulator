@@ -7,6 +7,8 @@
 #include <vector>
 #include <memory>
 
+#include "scene_manager/scene_manager_defs.h"
+
 class Widget
 {
 public:
@@ -18,6 +20,8 @@ public:
     float alpha = 1.0f;
     glm::vec3 color = glm::vec3(1.0f);
     glm::vec3 hoverColor = glm::vec3(0.9f, 0.5f, 0.5f);
+
+    SettingsPage linkedPage = SettingsPage::None;
 
     virtual ~Widget() = default;
 
@@ -40,4 +44,7 @@ public:
 
 private:
     bool hover;
+    bool active;
+
+    glm::vec3 activeColor = glm::vec3(0.8f, 0.2f, 0.2f);
 };

@@ -169,6 +169,7 @@ void SceneManager::switchEngineState(const EngineState &to)
     {
     case EngineState::Title:
     {
+        unload();
         TextureManager::queueStandaloneImage("title-figure.png");
         TextureManager::queueStandaloneImage("title-figure-black.png");
         TextureManager::loadQueuedPixelData();
@@ -178,6 +179,13 @@ void SceneManager::switchEngineState(const EngineState &to)
     case EngineState::Pause:
     {
         Render::savePauseBackground();
+        break;
+    }
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
+    {
+        settingsPage = SettingsPage::Start;
+        break;
     }
     }
 }
