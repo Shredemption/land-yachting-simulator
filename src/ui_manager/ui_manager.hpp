@@ -10,4 +10,5 @@ namespace UIManager
 
     inline int selected;
     inline int options;
+    inline bool trigger = false;
 };

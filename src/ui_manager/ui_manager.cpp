@@ -80,7 +80,7 @@ std::shared_ptr<Widget> buildPause()
     float y = 0.15f;
     float yStep = 0.05f;
     int steps = 0;
-    int index;
+    int index = 0;
 
     {
         auto btn = std::make_shared<Button>();
@@ -126,7 +126,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
     float y = 0.15f;
     float yStep = 0.05f;
     int steps = 0;
-    int index;
+    int index = 0;
 
     {
         auto btn = std::make_shared<Button>();
@@ -245,6 +245,8 @@ void UIManager::load(EngineState state)
 {
     activeWidgets.reset();
 
+    selected = -1;
+
     switch (state)
     {
     case EngineState::Title:
@@ -264,6 +266,8 @@ void UIManager::update()
 {
     if (activeWidgets)
         activeWidgets->Update();
+
+    trigger = false;
 }
 
 void UIManager::render()

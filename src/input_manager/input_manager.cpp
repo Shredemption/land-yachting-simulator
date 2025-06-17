@@ -19,6 +19,11 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
     {
         switch (key)
         {
+        case GLFW_KEY_ENTER:
+        case GLFW_KEY_SPACE:
+            UIManager::trigger = true;
+            break;
+
         case GLFW_KEY_W:
         case GLFW_KEY_UP:
             UIManager::selected = (UIManager::selected - 1 + UIManager::options) % UIManager::options;
@@ -27,6 +32,8 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
         case GLFW_KEY_S:
         case GLFW_KEY_DOWN:
             UIManager::selected = (UIManager::selected + 1 + UIManager::options) % UIManager::options;
+
+            std::cout << UIManager::selected << "/" << UIManager::options << std::endl;
             break;
         }
     }
