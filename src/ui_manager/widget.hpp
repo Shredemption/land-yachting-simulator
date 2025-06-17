@@ -48,3 +48,20 @@ private:
 
     glm::vec3 activeColor = glm::vec3(0.8f, 0.2f, 0.2f);
 };
+
+class Toggle : public Widget
+{
+public:
+    bool *linkedVariable;
+    std::function<void()> onChange;
+
+    std::string trueLabel;
+    std::string falseLabel;
+
+    void Render() override;
+    void Update() override;
+
+private:
+    bool hover;
+    bool hidden;
+};
