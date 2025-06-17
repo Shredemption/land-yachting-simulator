@@ -133,9 +133,14 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->text = "Graphics";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.2f, 0.05f);
-        btn->linkedPage = SettingsPage::Graphics;
+        btn->activePage = SettingsPage::Graphics;
+        btn->shownOnPage = SettingsPage::Start;
         btn->onClick = []()
-        { SceneManager::settingsPage = SettingsPage::Graphics; };
+        {
+            SceneManager::settingsPage = SettingsPage::Graphics;
+            UIManager::selected = 0;
+            UIManager::countOptions(SettingsPage::Graphics);
+        };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -144,9 +149,14 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->text = "Debug";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.2f, 0.05f);
-        btn->linkedPage = SettingsPage::Debug;
+        btn->activePage = SettingsPage::Debug;
+        btn->shownOnPage = SettingsPage::Start;
         btn->onClick = []()
-        { SceneManager::settingsPage = SettingsPage::Debug; };
+        {
+            SceneManager::settingsPage = SettingsPage::Debug;
+            UIManager::selected = 0;
+            UIManager::countOptions(SettingsPage::Debug);
+        };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -155,7 +165,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->text = "Exit";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.2f, 0.05f);
-
+        btn->shownOnPage = SettingsPage::Start;
         if (state == EngineState::Settings)
             btn->onClick = []()
             {
@@ -168,28 +178,31 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
                 SceneManager::settingsPage = SettingsPage::None;
                 SceneManager::switchEngineState(EngineState::Title);
             };
-
         btn->index = index++;
         root->AddChild(btn);
     }
+
+    UIManager::options = index;
 
     // Graphics Page
     x = 0.3f;
     y = 0.15f;
     yStep = 0.05f;
     steps = 0;
+    index = 0;
 
     {
         auto tgl = std::make_shared<Toggle>();
         tgl->text = "Fullscreen";
         tgl->pos = glm::vec2(x, y + yStep * steps++);
         tgl->size = glm::vec2(0.3f, 0.05f);
-        tgl->linkedPage = SettingsPage::Graphics;
+        tgl->shownOnPage = SettingsPage::Graphics;
         tgl->linkedVariable = &SettingsManager::settings.video.fullscreen;
         tgl->trueLabel = "Borderless";
         tgl->falseLabel = "Off";
         tgl->onChange = []()
         { WindowManager::setFullscreenState(); };
+        tgl->index = index++;
         root->AddChild(tgl);
     }
     {
@@ -197,12 +210,13 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         tgl->text = "VSync";
         tgl->pos = glm::vec2(x, y + yStep * steps++);
         tgl->size = glm::vec2(0.3f, 0.05f);
-        tgl->linkedPage = SettingsPage::Graphics;
+        tgl->shownOnPage = SettingsPage::Graphics;
         tgl->linkedVariable = &SettingsManager::settings.video.vSync;
         tgl->trueLabel = "On";
         tgl->falseLabel = "Off";
         tgl->onChange = []()
         { glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0); };
+        tgl->index = index++;
         root->AddChild(tgl);
     }
 
@@ -211,16 +225,18 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
     y = 0.15f;
     yStep = 0.05f;
     steps = 0;
+    index = 0;
 
     {
         auto tgl = std::make_shared<Toggle>();
         tgl->text = "Wireframe";
         tgl->pos = glm::vec2(x, y + yStep * steps++);
         tgl->size = glm::vec2(0.3f, 0.05f);
-        tgl->linkedPage = SettingsPage::Debug;
+        tgl->shownOnPage = SettingsPage::Debug;
         tgl->linkedVariable = &SettingsManager::settings.debug.wireframeMode;
         tgl->trueLabel = "On";
         tgl->falseLabel = "Off";
+        tgl->index = index++;
         root->AddChild(tgl);
     }
     {
@@ -228,17 +244,27 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         slt->text = "Overlay";
         slt->pos = glm::vec2(x, y + yStep * steps++);
         slt->size = glm::vec2(0.3f, 0.05f);
-        slt->linkedPage = SettingsPage::Debug;
+        slt->shownOnPage = SettingsPage::Debug;
         slt->labels = {"Off", "FPS", "Physics"};
         slt->currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay);
         slt->onChange = [slt]()
         { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slt->currentIndex); };
+        slt->index = index++;
         root->AddChild(slt);
     }
 
-    UIManager::options = index;
-
     return root;
+}
+
+void UIManager::countOptions(SettingsPage page)
+{
+    UIManager::options = 0;
+
+    for (auto widget : activeWidgets->children)
+    {
+        if (widget->shownOnPage == page)
+            UIManager::options++;
+    }
 }
 
 void UIManager::load(EngineState state)
@@ -268,6 +294,8 @@ void UIManager::update()
         activeWidgets->Update();
 
     trigger = false;
+    triggerLeft = false;
+    triggerRight = false;
 }
 
 void UIManager::render()
