@@ -195,7 +195,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         auto tgl = std::make_shared<Toggle>();
         tgl->text = "Fullscreen";
         tgl->pos = glm::vec2(x, y + yStep * steps++);
-        tgl->size = glm::vec2(0.3f, 0.05f);
+        tgl->size = glm::vec2(0.0f, 0.05f);
         tgl->shownOnPage = SettingsPage::Graphics;
         tgl->linkedVariable = &SettingsManager::settings.video.fullscreen;
         tgl->trueLabel = "Borderless";
@@ -209,7 +209,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         auto tgl = std::make_shared<Toggle>();
         tgl->text = "VSync";
         tgl->pos = glm::vec2(x, y + yStep * steps++);
-        tgl->size = glm::vec2(0.3f, 0.05f);
+        tgl->size = glm::vec2(0.0f, 0.05f);
         tgl->shownOnPage = SettingsPage::Graphics;
         tgl->linkedVariable = &SettingsManager::settings.video.vSync;
         tgl->trueLabel = "On";
@@ -218,6 +218,20 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         { glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0); };
         tgl->index = index++;
         root->AddChild(tgl);
+    }
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "View Distance";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Graphics;
+        sldr->linkedFloat = &SettingsManager::settings.video.lodDistance;
+        sldr->lowerLim = 10.0f;
+        sldr->upperLim = 100.0f;
+        sldr->stepSize = 10.0f;
+        sldr->onChange = []() {};
+        sldr->index = index++;
+        root->AddChild(sldr);
     }
 
     // Debug Page
@@ -231,7 +245,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         auto tgl = std::make_shared<Toggle>();
         tgl->text = "Wireframe";
         tgl->pos = glm::vec2(x, y + yStep * steps++);
-        tgl->size = glm::vec2(0.3f, 0.05f);
+        tgl->size = glm::vec2(0.0f, 0.05f);
         tgl->shownOnPage = SettingsPage::Debug;
         tgl->linkedVariable = &SettingsManager::settings.debug.wireframeMode;
         tgl->trueLabel = "On";
@@ -240,17 +254,17 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         root->AddChild(tgl);
     }
     {
-        auto slt = std::make_shared<Selector>();
-        slt->text = "Overlay";
-        slt->pos = glm::vec2(x, y + yStep * steps++);
-        slt->size = glm::vec2(0.3f, 0.05f);
-        slt->shownOnPage = SettingsPage::Debug;
-        slt->labels = {"Off", "FPS", "Physics"};
-        slt->currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay);
-        slt->onChange = [slt]()
-        { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slt->currentIndex); };
-        slt->index = index++;
-        root->AddChild(slt);
+        auto slct = std::make_shared<Selector>();
+        slct->text = "Overlay";
+        slct->pos = glm::vec2(x, y + yStep * steps++);
+        slct->size = glm::vec2(0.0f, 0.05f);
+        slct->shownOnPage = SettingsPage::Debug;
+        slct->labels = {"Off", "FPS", "Physics"};
+        slct->currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay);
+        slct->onChange = [slct]()
+        { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slct->currentIndex); };
+        slct->index = index++;
+        root->AddChild(slct);
     }
 
     return root;

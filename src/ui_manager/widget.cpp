@@ -2,6 +2,13 @@
 
 #include "pch.h"
 
+std::string formatFloat(float value, int precision)
+{
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(precision) << value;
+    return out.str();
+}
+
 void Widget::Render()
 {
     for (auto &widget : children)
@@ -104,13 +111,6 @@ void Toggle::Render()
 
 void Toggle::Update()
 {
-    float xminLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset - 0.01f);
-    float xmaxLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset + 0.01f);
-    float xminRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset - 0.01f);
-    float xmaxRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset + 0.01f);
-    float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
-    float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
-
     if (shownOnPage == SceneManager::settingsPage)
         hidden = false;
     else
@@ -118,6 +118,13 @@ void Toggle::Update()
         hidden = true;
         return;
     }
+
+    float xminLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset - 0.01f);
+    float xmaxLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset + 0.01f);
+    float xminRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset - 0.01f);
+    float xmaxRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset + 0.01f);
+    float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
+    float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     switch (InputManager::inputType)
     {
@@ -196,13 +203,6 @@ void Selector::Render()
 
 void Selector::Update()
 {
-    float xminLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset - 0.01f);
-    float xmaxLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset + 0.01f);
-    float xminRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset - 0.01f);
-    float xmaxRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset + 0.01f);
-    float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
-    float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
-
     if (shownOnPage == SceneManager::settingsPage)
         hidden = false;
     else
@@ -210,6 +210,13 @@ void Selector::Update()
         hidden = true;
         return;
     }
+
+    float xminLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset - 0.01f);
+    float xmaxLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset + 0.01f);
+    float xminRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset - 0.01f);
+    float xmaxRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset + 0.01f);
+    float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
+    float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     switch (InputManager::inputType)
     {
@@ -269,4 +276,85 @@ void Selector::Execute(bool toRight)
 
     if (onChange)
         onChange();
+}
+
+void Slider::Render()
+{
+    if (hidden)
+        return;
+
+    Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
+    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
+
+    Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
+
+    Render::renderText("==================", pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("==================", pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
+
+    float sliderPos = leftOffset + 0.01f + ((*linkedFloat - lowerLim) / (upperLim - lowerLim)) * (rightOffset - leftOffset - 0.02f);
+
+    Render::renderText("I", pos.x + sliderPos + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("I", pos.x + sliderPos, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
+
+    Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + valueOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
+    Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + valueOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
+}
+
+void Slider::Update()
+{
+    if (shownOnPage == SceneManager::settingsPage)
+        hidden = false;
+    else
+    {
+        hidden = true;
+        return;
+    }
+
+    float xmin = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset - 0.01f);
+    float xmax = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset + 0.01f);
+    float xminSlider = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset + 0.01f);
+    float xmaxSlider = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset - 0.01f);
+    float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
+    float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
+
+    switch (InputManager::inputType)
+    {
+    case InputType::Mouse:
+    {
+        if (InputManager::mousePosX > xmin && InputManager::mousePosX < xmax && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
+            hover = true;
+        else
+            hover = false;
+
+        break;
+    }
+    case InputType::Keyboard:
+    case InputType::Controller:
+    {
+        if (!hidden && index == UIManager::selected)
+        {
+            hover = true;
+        }
+        else
+        {
+            hover = false;
+        }
+
+        if (hover && UIManager::triggerLeft)
+        {
+            if (*linkedFloat - stepSize >= lowerLim)
+                *linkedFloat -= stepSize;
+        };
+
+        if (hover && UIManager::triggerRight)
+        {
+            if (*linkedFloat + stepSize <= upperLim)
+                *linkedFloat += stepSize;
+        };
+    }
+    break;
+    }
 }

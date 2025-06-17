@@ -61,9 +61,9 @@ public:
     std::string trueLabel;
     std::string falseLabel;
 
-    float leftOffset = 0.2f;
-    float labelOffset = 0.35f;
-    float rightOffset = 0.5f;
+    float leftOffset = 0.25f;
+    float labelOffset = 0.4f;
+    float rightOffset = 0.55f;
 
     void Render() override;
     void Update() override;
@@ -83,9 +83,9 @@ public:
 
     std::function<void()> onChange;
 
-    float leftOffset = 0.2f;
-    float labelOffset = 0.35f;
-    float rightOffset = 0.5f;
+    float leftOffset = 0.25f;
+    float labelOffset = 0.4f;
+    float rightOffset = 0.55f;
 
     void Render() override;
     void Update() override;
@@ -95,4 +95,30 @@ private:
     bool hoverLeft = false;
     bool hoverRight = false;
     bool hidden = true;
+};
+
+class Slider : public Widget
+{
+public:
+    float *linkedFloat;
+    float lowerLim;
+    float upperLim;
+    float stepSize;
+
+    int decimals = 0;
+
+    std::function<void()> onChange;
+
+    float leftOffset = 0.25f;
+    float labelOffset = 0.4f;
+    float rightOffset = 0.55f;
+    float valueOffset = 0.6f;
+
+    void Render() override;
+    void Update() override;
+
+private:
+    bool hidden = true;
+    bool hover = false;
+    bool active = false;
 };

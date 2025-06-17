@@ -19,7 +19,6 @@ unsigned int copyFBO;
 
 // Clipping and culling
 glm::vec4 clipPlane(0, 0, 0, 0);
-float lodDistance = 30.0f;
 
 // Quad for rendering
 unsigned int quadVAO = 0, quadVBO = 0;
@@ -697,7 +696,7 @@ void Render::prepareRender(::RenderBuffer &prepBuffer)
             float distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
 
             cmd.lod = 0;
-            if (distanceFromCamera > lodDistance) cmd.lod = 1;
+            if (distanceFromCamera > SettingsManager::settings.video.lodDistance) cmd.lod = 1;
             if (SceneManager::engineState == EngineState::Title) cmd.lod = 0;
 
             if (cmd.lod >= model.model->lodMeshes.size())
