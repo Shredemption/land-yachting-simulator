@@ -62,8 +62,17 @@ void Toggle::Render()
 
     glm::vec3 currentColor = hover ? hoverColor : color;
 
-    Render::renderText(text + ": " + (*linkedVariable ? trueLabel : falseLabel), pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text + ": " + (*linkedVariable ? trueLabel : falseLabel), pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+    Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
+    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+
+    Render::renderText("<", pos.x + 0.2f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + 0.2f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+
+    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + 0.4f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + 0.4f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+
+    Render::renderText(">", pos.x + 0.6f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + 0.6f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
 }
 
 void Toggle::Update()
@@ -102,8 +111,17 @@ void Selector::Render()
 
     glm::vec3 currentColor = hover ? hoverColor : color;
 
-    Render::renderText(text + ": " + labels[currentIndex], pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text + ": " + labels[currentIndex], pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+    Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
+    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+
+    Render::renderText("<", pos.x + 0.2f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + 0.2f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+
+    Render::renderText(labels[currentIndex], pos.x + 0.4f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(labels[currentIndex], pos.x + 0.4f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+
+    Render::renderText(">", pos.x + 0.6f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + 0.6f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
 }
 
 void Selector::Update()
