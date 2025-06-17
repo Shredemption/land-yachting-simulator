@@ -33,10 +33,10 @@ void Button::Render()
 
 void Button::Update()
 {
-    float xmin = WindowManager::screenWidth * (pos.x);
-    float xmax = WindowManager::screenWidth * (pos.x + size.x);
-    float ymin = WindowManager::screenHeight * (pos.y);
-    float ymax = WindowManager::screenHeight * (pos.y + size.y);
+    float xmin = WindowManager::screenUIScale * 2560.0f * (pos.x);
+    float xmax = WindowManager::screenUIScale * 2560.0f * (pos.x + size.x);
+    float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
+    float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     if (linkedPage == SceneManager::settingsPage && linkedPage != SettingsPage::None)
         active = true;
@@ -65,10 +65,10 @@ void Toggle::Render()
 
 void Toggle::Update()
 {
-    float xmin = WindowManager::screenWidth * (pos.x);
-    float xmax = WindowManager::screenWidth * (pos.x + size.x);
-    float ymin = WindowManager::screenHeight * (pos.y);
-    float ymax = WindowManager::screenHeight * (pos.y + size.y);
+    float xmin = WindowManager::screenUIScale * 2560.0f * (pos.x);
+    float xmax = WindowManager::screenUIScale * 2560.0f * (pos.x + size.x);
+    float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
+    float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     if (linkedPage == SceneManager::settingsPage)
     {

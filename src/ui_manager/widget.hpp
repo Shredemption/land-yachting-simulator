@@ -43,8 +43,8 @@ public:
     void Update() override;
 
 private:
-    bool hover;
-    bool active;
+    bool hover = false;
+    bool active = false;
 
     glm::vec3 activeColor = glm::vec3(0.8f, 0.2f, 0.2f);
 };
@@ -62,6 +62,6 @@ public:
     void Update() override;
 
 private:
-    bool hover;
-    bool hidden;
+    bool hover = false;
+    bool hidden = true;
 };

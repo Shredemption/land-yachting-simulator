@@ -188,6 +188,24 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         root->AddChild(tgl);
     }
 
+    // Debug Page
+    x = 0.3f;
+    y = 0.15f;
+    yStep = 0.05f;
+    steps = 0;
+
+    {
+        auto tgl = std::make_shared<Toggle>();
+        tgl->text = "Wireframe Mode";
+        tgl->pos = glm::vec2(x, y + yStep * steps++);
+        tgl->size = glm::vec2(0.3f, 0.05f);
+        tgl->linkedPage = SettingsPage::Debug;
+        tgl->linkedVariable = &SettingsManager::settings.debug.wireframeMode;
+        tgl->trueLabel = "On";
+        tgl->falseLabel = "Off";
+        root->AddChild(tgl);
+    }
+
     return root;
 }
 
