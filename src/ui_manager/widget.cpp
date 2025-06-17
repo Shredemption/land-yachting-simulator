@@ -68,6 +68,10 @@ void Button::Update()
             hover = true;
         else
             hover = false;
+
+        if (hover && UIManager::trigger)
+            Execute();
+
         break;
     }
     }
