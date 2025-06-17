@@ -65,3 +65,19 @@ private:
     bool hover = false;
     bool hidden = true;
 };
+
+class Selector : public Widget
+{
+public:
+    std::vector<std::string> labels;
+    int currentIndex;
+
+    std::function<void()> onChange;
+
+    void Render() override;
+    void Update() override;
+
+private:
+    bool hover = true;
+    bool hidden = true;
+};
