@@ -64,7 +64,7 @@ void Button::Update()
     }
     case InputType::Keyboard:
     {
-        if (index == UIManager::selected)
+        if (index == UIManager::selected && (SceneManager::settingsPage == SettingsPage::Start || SceneManager::settingsPage == SettingsPage::None))
             hover = true;
         else
             hover = false;

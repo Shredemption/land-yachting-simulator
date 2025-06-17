@@ -19,6 +19,36 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
     {
         switch (key)
         {
+        case GLFW_KEY_ESCAPE:
+            switch (SceneManager::engineState)
+            {
+            case EngineState::Title:
+                SceneManager::switchEngineState(EngineState::None);
+                break;
+            case EngineState::Settings:
+                if (SceneManager::settingsPage != SettingsPage::Start)
+                {
+                    SceneManager::settingsPage = SettingsPage::Start;
+                    UIManager::selected = 0;
+                }
+                else
+                    SceneManager::switchEngineState(EngineState::Pause);
+                break;
+            case EngineState::TitleSettings:
+                if (SceneManager::settingsPage != SettingsPage::Start)
+                {
+                    SceneManager::settingsPage = SettingsPage::Start;
+                    UIManager::selected = 0;
+                }
+                else
+                    SceneManager::switchEngineState(EngineState::Title);
+                break;
+            case EngineState::Pause:
+                SceneManager::switchEngineState(EngineState::Running);
+                break;
+            }
+            break;
+
         case GLFW_KEY_ENTER:
         case GLFW_KEY_SPACE:
             UIManager::trigger = true;
@@ -32,8 +62,6 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
         case GLFW_KEY_S:
         case GLFW_KEY_DOWN:
             UIManager::selected = (UIManager::selected + 1 + UIManager::options) % UIManager::options;
-
-            std::cout << UIManager::selected << "/" << UIManager::options << std::endl;
             break;
         }
     }

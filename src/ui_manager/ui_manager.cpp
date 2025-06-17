@@ -245,7 +245,7 @@ void UIManager::load(EngineState state)
 {
     activeWidgets.reset();
 
-    selected = -1;
+    selected = 0;
 
     switch (state)
     {
