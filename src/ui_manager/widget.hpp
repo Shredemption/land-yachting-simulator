@@ -120,5 +120,4 @@ public:
 private:
     bool hidden = true;
     bool hover = false;
-    bool active = false;
 };
