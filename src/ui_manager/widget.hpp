@@ -21,7 +21,9 @@ public:
     glm::vec3 color = glm::vec3(1.0f);
     glm::vec3 hoverColor = glm::vec3(0.9f, 0.5f, 0.5f);
 
-    SettingsPage linkedPage = SettingsPage::None;
+    SettingsPage activePage = SettingsPage::None;
+    SettingsPage shownOnPage = SettingsPage::None;
+    int index;
 
     virtual ~Widget() = default;
 
@@ -42,8 +44,6 @@ public:
     void Render() override;
     void Update() override;
     void Execute();
-
-    int index;
 
 private:
     bool active;

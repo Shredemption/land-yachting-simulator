@@ -30,6 +30,7 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
                 {
                     SceneManager::settingsPage = SettingsPage::Start;
                     UIManager::selected = 0;
+                    UIManager::countOptions(SettingsPage::Start);
                 }
                 else
                     SceneManager::switchEngineState(EngineState::Pause);
@@ -39,6 +40,7 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
                 {
                     SceneManager::settingsPage = SettingsPage::Start;
                     UIManager::selected = 0;
+                    UIManager::countOptions(SettingsPage::Start);
                 }
                 else
                     SceneManager::switchEngineState(EngineState::Title);
@@ -62,6 +64,16 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
         case GLFW_KEY_S:
         case GLFW_KEY_DOWN:
             UIManager::selected = (UIManager::selected + 1 + UIManager::options) % UIManager::options;
+            break;
+
+        case GLFW_KEY_D:
+        case GLFW_KEY_RIGHT:
+            UIManager::triggerRight = true;
+            break;
+
+        case GLFW_KEY_A:
+        case GLFW_KEY_LEFT:
+            UIManager::triggerLeft = true;
             break;
         }
     }

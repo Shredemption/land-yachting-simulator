@@ -41,7 +41,7 @@ void Button::Update()
     float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
     float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
-    if (linkedPage == SceneManager::settingsPage && linkedPage != SettingsPage::None)
+    if (activePage == SceneManager::settingsPage && activePage != SettingsPage::None)
         active = true;
     else
         active = false;
@@ -110,7 +110,7 @@ void Toggle::Update()
     float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
     float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
-    if (linkedPage == SceneManager::settingsPage)
+    if (shownOnPage == SceneManager::settingsPage)
         hidden = false;
     else
     {
@@ -143,6 +143,26 @@ void Toggle::Update()
 
         break;
     }
+    case InputType::Keyboard:
+    {
+        if (!hidden && index == UIManager::selected)
+        {
+            hoverLeft = true;
+            hoverRight = true;
+        }
+        else
+        {
+            hoverLeft = false;
+            hoverRight = false;
+        }
+
+        if (hoverLeft && UIManager::triggerLeft)
+            Execute(false);
+
+        if (hoverRight && UIManager::triggerRight)
+            Execute(true);
+    }
+    break;
     }
 }
 
@@ -181,7 +201,7 @@ void Selector::Update()
     float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
     float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
-    if (linkedPage == SceneManager::settingsPage)
+    if (shownOnPage == SceneManager::settingsPage)
         hidden = false;
     else
     {
@@ -214,6 +234,26 @@ void Selector::Update()
 
         break;
     }
+    case InputType::Keyboard:
+    {
+        if (!hidden && index == UIManager::selected)
+        {
+            hoverLeft = true;
+            hoverRight = true;
+        }
+        else
+        {
+            hoverLeft = false;
+            hoverRight = false;
+        }
+
+        if (hoverLeft && UIManager::triggerLeft)
+            Execute(false);
+
+        if (hoverRight && UIManager::triggerRight)
+            Execute(true);
+    }
+    break;
     }
 }
 
