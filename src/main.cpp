@@ -141,13 +141,12 @@ int main()
         glfwPollEvents();
     }
 
-    // Close threads
+    SettingsManager::save();
+
     ThreadManager::shutdown();
 
-    // Clear scene data
     SceneManager::unload();
 
-    // Cleanup GLFW
     glfwDestroyWindow(WindowManager::window);
     glfwTerminate();
 
