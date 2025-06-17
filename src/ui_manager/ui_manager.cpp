@@ -115,6 +115,26 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
 
     {
         auto btn = std::make_shared<Button>();
+        btn->text = "Graphics";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->linkedPage = SettingsPage::Graphics;
+        btn->onClick = []()
+        { SceneManager::settingsPage = SettingsPage::Graphics; };
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Debug";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->linkedPage = SettingsPage::Debug;
+        btn->onClick = []()
+        { SceneManager::settingsPage = SettingsPage::Debug; };
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
         btn->text = "Exit";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
