@@ -52,6 +52,12 @@ void Button::Update()
     }
 
     if (hover && InputManager::leftMouseButton.released())
+        Execute();
+}
+
+void Button::Execute()
+{
+    if (onClick)
         onClick();
 }
 
@@ -104,21 +110,20 @@ void Toggle::Update()
 
     if (InputManager::leftMouseButton.released())
     {
-        bool changed = false;
         if (hoverLeft)
-        {
-            *linkedVariable = !(*linkedVariable);
-            changed = true;
-        }
-        if (hoverRight)
-        {
-            *linkedVariable = !(*linkedVariable);
-            changed = true;
-        }
+            Execute(false);
 
-        if (onChange && changed)
-            onChange();
+        if (hoverRight)
+            Execute(true);
     }
+}
+
+void Toggle::Execute(bool toRight)
+{
+    *linkedVariable = !(*linkedVariable);
+
+    if (onChange)
+        onChange();
 }
 
 void Selector::Render()
@@ -172,17 +177,19 @@ void Selector::Update()
     {
         bool changed = false;
         if (hoverLeft)
-        {
-            currentIndex = (currentIndex - 1 + labels.size()) % labels.size();
-            changed = true;
-        }
+            Execute(false);
         if (hoverRight)
-        {
-            currentIndex = (currentIndex + 1 + labels.size()) % labels.size();
-            changed = true;
-        }
-
-        if (onChange && changed)
-            onChange();
+            Execute(true);
     }
+}
+
+void Selector::Execute(bool toRight)
+{
+    if (toRight)
+        currentIndex = (currentIndex + 1 + labels.size()) % labels.size();
+    else
+        currentIndex = (currentIndex - 1 + labels.size()) % labels.size();
+
+    if (onChange)
+        onChange();
 }
