@@ -4,22 +4,56 @@
 
 #include "input_manager/input_manager_defs.h"
 
+void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    if (ControllerManager::controllerConnected)
+        return;
+
+    if (InputManager::inputType != InputType::Keyboard)
+    {
+        InputManager::inputType = InputType::Keyboard;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+
+    if (action == GLFW_PRESS)
+    {
+        switch (key)
+        {
+        case GLFW_KEY_W:
+        case GLFW_KEY_UP:
+            UIManager::selected = (UIManager::selected - 1 + UIManager::options) % UIManager::options;
+            break;
+
+        case GLFW_KEY_S:
+        case GLFW_KEY_DOWN:
+            UIManager::selected = (UIManager::selected + 1 + UIManager::options) % UIManager::options;
+            break;
+        }
+    }
+}
+
 void keyCallbackRunning(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (ControllerManager::controllerConnected)
         return;
 
-    // Pause on ESC
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        SceneManager::switchEngineState(EngineState::Pause);
+    if (action == GLFW_PRESS)
+    {
+        switch (key)
+        {
+        case GLFW_KEY_ESCAPE:
+            SceneManager::switchEngineState(EngineState::Pause);
+            break;
 
-    // Toggle Freecam on C
-    if (key == GLFW_KEY_C && action == GLFW_PRESS)
-        Camera::freeCam = (Camera::freeCam) ? false : true;
+        case GLFW_KEY_C:
+            Camera::freeCam = !Camera::freeCam;
+            break;
 
-    // Switch to next controllable yacht on N
-    if (key == GLFW_KEY_N && action == GLFW_PRESS)
-        PhysicsUtil::switchControlledYacht();
+        case GLFW_KEY_N:
+            PhysicsUtil::switchControlledYacht();
+            break;
+        }
+    }
 }
 
 void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
@@ -31,6 +65,7 @@ void mousePosCallbackMenu(GLFWwindow *window, double xPos, double yPos)
     {
         InputManager::inputType = InputType::Mouse;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        UIManager::selected = -1;
     }
 
     InputManager::mousePosX = xPos;
@@ -134,7 +169,7 @@ void InputManager::setCallbacks()
     switch (SceneManager::engineState)
     {
     case EngineState::Title:
-        glfwSetKeyCallback(window, nullptr);
+        glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;
@@ -148,7 +183,7 @@ void InputManager::setCallbacks()
         break;
 
     case EngineState::Pause:
-        glfwSetKeyCallback(window, nullptr);
+        glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
@@ -156,7 +191,7 @@ void InputManager::setCallbacks()
 
     case EngineState::Settings:
     case EngineState::TitleSettings:
-        glfwSetKeyCallback(window, nullptr);
+        glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
         break;

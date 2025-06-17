@@ -14,6 +14,7 @@ std::shared_ptr<Widget> buildTitle()
     float y = 0.15f;
     float yStep = 0.05f;
     int steps = 0;
+    int index = 0;
 
     {
         auto btn = std::make_shared<Button>();
@@ -22,6 +23,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineStateScene("realistic"); };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -31,6 +33,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineStateScene("cartoon"); };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -40,6 +43,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineStateScene("test"); };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -49,6 +53,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineState(EngineState::TitleSettings); };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -58,8 +63,11 @@ std::shared_ptr<Widget> buildTitle()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineState(EngineState::None); };
+        btn->index = index++;
         root->AddChild(btn);
     }
+
+    UIManager::options = index;
 
     return root;
 }
@@ -72,6 +80,7 @@ std::shared_ptr<Widget> buildPause()
     float y = 0.15f;
     float yStep = 0.05f;
     int steps = 0;
+    int index;
 
     {
         auto btn = std::make_shared<Button>();
@@ -80,6 +89,7 @@ std::shared_ptr<Widget> buildPause()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineState(EngineState::Running); };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -89,6 +99,7 @@ std::shared_ptr<Widget> buildPause()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineState(EngineState::Settings); };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -98,8 +109,11 @@ std::shared_ptr<Widget> buildPause()
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
         { SceneManager::switchEngineState(EngineState::Title); };
+        btn->index = index++;
         root->AddChild(btn);
     }
+
+    UIManager::options = index;
 
     return root;
 }
@@ -112,6 +126,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
     float y = 0.15f;
     float yStep = 0.05f;
     int steps = 0;
+    int index;
 
     {
         auto btn = std::make_shared<Button>();
@@ -121,6 +136,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->linkedPage = SettingsPage::Graphics;
         btn->onClick = []()
         { SceneManager::settingsPage = SettingsPage::Graphics; };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -131,6 +147,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->linkedPage = SettingsPage::Debug;
         btn->onClick = []()
         { SceneManager::settingsPage = SettingsPage::Debug; };
+        btn->index = index++;
         root->AddChild(btn);
     }
     {
@@ -152,6 +169,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
                 SceneManager::switchEngineState(EngineState::Title);
             };
 
+        btn->index = index++;
         root->AddChild(btn);
     }
 
@@ -217,6 +235,8 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slt->currentIndex); };
         root->AddChild(slt);
     }
+
+    UIManager::options = index;
 
     return root;
 }
