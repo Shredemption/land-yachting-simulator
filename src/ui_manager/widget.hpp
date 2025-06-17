@@ -43,9 +43,11 @@ public:
     void Update() override;
     void Execute();
 
+    int index;
+
 private:
-    bool hover = false;
-    bool active = false;
+    bool active;
+    bool hover;
 
     glm::vec3 activeColor = glm::vec3(0.8f, 0.2f, 0.2f);
 };

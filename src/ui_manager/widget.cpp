@@ -62,6 +62,14 @@ void Button::Update()
 
         break;
     }
+    case InputType::Keyboard:
+    {
+        if (index == UIManager::selected)
+            hover = true;
+        else
+            hover = false;
+        break;
+    }
     }
 }
 
