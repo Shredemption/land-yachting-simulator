@@ -288,8 +288,6 @@ void Slider::Render()
 
     Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
     Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
-    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
 
     Render::renderText("==================", pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
     Render::renderText("==================", pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
@@ -298,6 +296,9 @@ void Slider::Render()
 
     Render::renderText("I", pos.x + sliderPos + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
     Render::renderText("I", pos.x + sliderPos, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
+
+    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
 
     Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + valueOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
     Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + valueOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
@@ -329,6 +330,22 @@ void Slider::Update()
         else
             hover = false;
 
+        if (hover && InputManager::leftMouseButton.pressed())
+            while (InputManager::leftMouseButton.held())
+            {
+                float mouseX = std::clamp(static_cast<float>(InputManager::mousePosX), xminSlider, xmaxSlider);
+                float normalized = (mouseX - xminSlider) / (xmaxSlider - xminSlider);
+                float value = lowerLim + normalized * (upperLim - lowerLim);
+                int steps = static_cast<int>((value - lowerLim) / stepSize + 0.5f);
+                float snappedValue = lowerLim + steps * stepSize;
+                snappedValue = std::clamp(snappedValue, lowerLim, upperLim);
+
+                *linkedFloat = snappedValue;
+
+                Render::renderMenu(SceneManager::engineState);
+                glfwPollEvents();
+                glfwSwapBuffers(WindowManager::window);
+            }
         break;
     }
     case InputType::Keyboard:
