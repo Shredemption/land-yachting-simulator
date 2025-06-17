@@ -22,6 +22,7 @@ struct SettingsStruct
         bool fullscreen = true;
         bool vSync = true;
         float lodDistance = 50.0f;
+        float waterFrameRate = 30.0f;
     } video;
 
     struct Input
@@ -115,6 +116,8 @@ namespace jsoncons
                 s.vSync = j["vsync"].template as<bool>();
             if (j.contains("lodDistance"))
                 s.lodDistance = j["lodDistance"].template as<float>();
+            if (j.contains("waterFrameRate"))
+                s.waterFrameRate = j["waterFrameRate"].template as<float>();
             return s;
         }
 
@@ -124,6 +127,7 @@ namespace jsoncons
             j["fullscreen"] = s.fullscreen;
             j["vsync"] = s.vSync;
             j["lodDistance"] = s.lodDistance;
+            j["waterFrameRate"] = s.waterFrameRate;
             return j;
         }
     };

@@ -27,6 +27,7 @@ float quadVertices[] = {0};
 // Water
 bool WaterPass = true;
 float waterHeight = 0.25;
+float waterTimer = 0.0f;
 
 // Debug
 glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
@@ -806,9 +807,12 @@ void Render::executeRender(::RenderBuffer &renderBuffer, bool toScreen)
 
     renderSceneSkyBox();
 
+    waterTimer = ShaderUtil::waterLoaded ? waterTimer += TimeManager::deltaTime : 0.0f;
+
     // If water loaded, render buffers
-    if (ShaderUtil::waterLoaded && (TimeManager::frame % 2 == 0 || !toScreen))
+    if (waterTimer > 1 / SettingsManager::settings.video.waterFrameRate)
     {
+        waterTimer = remainder(waterTimer, 1 / SettingsManager::settings.video.waterFrameRate);
         WaterPass = true;
         renderReflectRefract(renderBuffer.commandBuffer);
         WaterPass = false;
