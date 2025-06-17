@@ -65,23 +65,29 @@ void ControllerManager::buttonsMenu()
             switch (i)
             {
             case GLFW_GAMEPAD_BUTTON_DPAD_UP:
+                UIManager::selected = (UIManager::selected - 1 + UIManager::options) % UIManager::options;
                 break;
 
             case GLFW_GAMEPAD_BUTTON_BACK:
             case GLFW_GAMEPAD_BUTTON_DPAD_DOWN:
+                UIManager::selected = (UIManager::selected + 1 + UIManager::options) % UIManager::options;
                 break;
 
             case GLFW_GAMEPAD_BUTTON_DPAD_LEFT:
+                UIManager::triggerLeft = true;
                 break;
 
             case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT:
+                UIManager::triggerRight = true;
                 break;
 
             case GLFW_GAMEPAD_BUTTON_A:
             case GLFW_GAMEPAD_BUTTON_START:
+                UIManager::trigger = true;
                 break;
 
             case GLFW_GAMEPAD_BUTTON_B:
+                InputManager::MenuBack();
                 break;
             }
         }
@@ -95,15 +101,19 @@ void ControllerManager::sticksMenu()
         switch (state.sticks[0].currentDir)
         {
         case StickDirection::Up:
+            UIManager::selected = (UIManager::selected - 1 + UIManager::options) % UIManager::options;
             break;
 
         case StickDirection::Down:
+            UIManager::selected = (UIManager::selected + 1 + UIManager::options) % UIManager::options;
             break;
 
         case StickDirection::Left:
+            UIManager::triggerLeft = true;
             break;
 
         case StickDirection::Right:
+            UIManager::triggerRight = true;
             break;
         }
     }
