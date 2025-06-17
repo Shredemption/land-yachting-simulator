@@ -12,6 +12,7 @@ void ControllerManager::update()
     {
         InputManager::inputType = InputType::Controller;
         glfwSetInputMode(WindowManager::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        UIManager::selected = 0;
     }
 
     GLFWgamepadstate newState;
@@ -145,20 +146,20 @@ void ControllerManager::buttonsRunning()
 void ControllerManager::sticksRunning()
 {
     float sensitivity = 5.0f;
-    float x = sensitivity / 3 * state.sticks[1].x;
-    float y = sensitivity / 3 * state.sticks[1].y;
+    float x = sensitivity * 25.0f * state.sticks[1].x;
+    float y = sensitivity * 25.0f * state.sticks[1].y;
 
     if (Camera::freeCam)
     {
-        Camera::yawFree += glm::radians(x);
-        Camera::pitchFree += glm::radians(y);
+        Camera::yawFree += glm::radians(x) * TimeManager::deltaTime;
+        Camera::pitchFree += glm::radians(y) * TimeManager::deltaTime;
 
         Camera::pitchFree = std::clamp(Camera::pitchFree, glm::radians(-89.0f), glm::radians(89.0f));
     }
     else
     {
-        Camera::yawOffset += glm::radians(x);
-        Camera::pitchOffset += glm::radians(y);
+        Camera::yawOffset += glm::radians(x) * TimeManager::deltaTime;
+        Camera::pitchOffset += glm::radians(y) * TimeManager::deltaTime;
 
         Camera::yawOffset = std::clamp(Camera::yawOffset, glm::radians(-100.0f), glm::radians(100.0f));
         Camera::pitchOffset = std::clamp(Camera::pitchOffset, glm::radians(-45.0f), glm::radians(60.0f));
