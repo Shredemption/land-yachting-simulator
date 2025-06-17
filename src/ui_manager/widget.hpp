@@ -41,6 +41,7 @@ public:
 
     void Render() override;
     void Update() override;
+    void Execute();
 
 private:
     bool hover = false;
@@ -64,6 +65,7 @@ public:
 
     void Render() override;
     void Update() override;
+    void Execute(bool toRight = true);
 
 private:
     bool hoverLeft = false;
@@ -85,6 +87,7 @@ public:
 
     void Render() override;
     void Update() override;
+    void Execute(bool toRight = true);
 
 private:
     bool hoverLeft = false;
