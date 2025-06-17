@@ -146,6 +146,22 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
     }
     {
         auto btn = std::make_shared<Button>();
+        btn->text = "Input";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.2f, 0.05f);
+        btn->activePage = SettingsPage::Input;
+        btn->shownOnPage = SettingsPage::Start;
+        btn->onClick = []()
+        {
+            SceneManager::settingsPage = SettingsPage::Input;
+            UIManager::selected = 0;
+            UIManager::countOptions(SettingsPage::Input);
+        };
+        btn->index = index++;
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
         btn->text = "Debug";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.2f, 0.05f);
@@ -229,6 +245,44 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         sldr->lowerLim = 10.0f;
         sldr->upperLim = 100.0f;
         sldr->stepSize = 10.0f;
+        sldr->onChange = []() {};
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+
+    // Input Page
+    x = 0.25f;
+    y = 0.15f;
+    yStep = 0.05f;
+    steps = 0;
+    index = 0;
+
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "Mouse Sensitivity";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Input;
+        sldr->linkedFloat = &SettingsManager::settings.input.mouseSensitivity;
+        sldr->lowerLim = 2.0f;
+        sldr->upperLim = 8.0f;
+        sldr->stepSize = 0.1f;
+        sldr->decimals = 2;
+        sldr->onChange = []() {};
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "Stick Sensitivity";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Input;
+        sldr->linkedFloat = &SettingsManager::settings.input.controllerCamSensitivity;
+        sldr->lowerLim = 2.0f;
+        sldr->upperLim = 8.0f;
+        sldr->stepSize = 0.1f;
+        sldr->decimals = 2;
         sldr->onChange = []() {};
         sldr->index = index++;
         root->AddChild(sldr);

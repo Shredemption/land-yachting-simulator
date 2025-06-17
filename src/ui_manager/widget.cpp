@@ -289,8 +289,8 @@ void Slider::Render()
     Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
     Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
 
-    Render::renderText("==================", pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("==================", pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
+    Render::renderText("===============", pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("===============", pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
 
     float sliderPos = leftOffset + 0.01f + ((*linkedFloat - lowerLim) / (upperLim - lowerLim)) * (rightOffset - leftOffset - 0.02f);
 
