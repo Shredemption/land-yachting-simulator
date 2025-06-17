@@ -185,7 +185,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
     UIManager::options = index;
 
     // Graphics Page
-    x = 0.3f;
+    x = 0.25f;
     y = 0.15f;
     yStep = 0.05f;
     steps = 0;
@@ -221,7 +221,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
     }
 
     // Debug Page
-    x = 0.3f;
+    x = 0.25f;
     y = 0.15f;
     yStep = 0.05f;
     steps = 0;
