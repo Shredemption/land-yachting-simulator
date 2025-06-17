@@ -43,16 +43,26 @@ void Button::Update()
 
     if (linkedPage == SceneManager::settingsPage && linkedPage != SettingsPage::None)
         active = true;
-    else if (InputManager::mousePosX > xmin && InputManager::mousePosX < xmax && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
-        hover = true;
     else
-    {
         active = false;
-        hover = false;
-    }
 
-    if (hover && InputManager::leftMouseButton.released())
-        Execute();
+    switch (InputManager::inputType)
+    {
+    case InputType::Mouse:
+    {
+        if (InputManager::mousePosX > xmin && InputManager::mousePosX < xmax && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
+            hover = true;
+        else
+        {
+            hover = false;
+        }
+
+        if (hover && InputManager::leftMouseButton.released())
+            Execute();
+
+        break;
+    }
+    }
 }
 
 void Button::Execute()
@@ -89,8 +99,17 @@ void Toggle::Update()
     float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     if (linkedPage == SceneManager::settingsPage)
-    {
         hidden = false;
+    else
+    {
+        hidden = true;
+        return;
+    }
+
+    switch (InputManager::inputType)
+    {
+    case InputType::Mouse:
+    {
         if (InputManager::mousePosX > xminLeft && InputManager::mousePosX < xmaxLeft && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
             hoverLeft = true;
         else
@@ -100,21 +119,18 @@ void Toggle::Update()
             hoverRight = true;
         else
             hoverRight = false;
-    }
-    else
-    {
-        hidden = true;
-        hoverLeft = false;
-        hoverRight = false;
-    }
 
-    if (InputManager::leftMouseButton.released())
-    {
-        if (hoverLeft)
-            Execute(false);
+        if (InputManager::leftMouseButton.released())
+        {
+            if (hoverLeft)
+                Execute(false);
 
-        if (hoverRight)
-            Execute(true);
+            if (hoverRight)
+                Execute(true);
+        }
+
+        break;
+    }
     }
 }
 
@@ -154,8 +170,17 @@ void Selector::Update()
     float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     if (linkedPage == SceneManager::settingsPage)
-    {
         hidden = false;
+    else
+    {
+        hidden = true;
+        return;
+    }
+
+    switch (InputManager::inputType)
+    {
+    case InputType::Mouse:
+    {
         if (InputManager::mousePosX > xminLeft && InputManager::mousePosX < xmaxLeft && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
             hoverLeft = true;
         else
@@ -165,21 +190,18 @@ void Selector::Update()
             hoverRight = true;
         else
             hoverRight = false;
-    }
-    else
-    {
-        hidden = true;
-        hoverLeft = false;
-        hoverRight = false;
-    }
 
-    if (InputManager::leftMouseButton.released())
-    {
-        bool changed = false;
-        if (hoverLeft)
-            Execute(false);
-        if (hoverRight)
-            Execute(true);
+        if (InputManager::leftMouseButton.released())
+        {
+            bool changed = false;
+            if (hoverLeft)
+                Execute(false);
+            if (hoverRight)
+                Execute(true);
+        }
+
+        break;
+    }
     }
 }
 
