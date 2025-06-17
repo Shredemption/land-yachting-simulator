@@ -205,6 +205,18 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         tgl->falseLabel = "Off";
         root->AddChild(tgl);
     }
+    {
+        auto slt = std::make_shared<Selector>();
+        slt->text = "Overlay";
+        slt->pos = glm::vec2(x, y + yStep * steps++);
+        slt->size = glm::vec2(0.3f, 0.05f);
+        slt->linkedPage = SettingsPage::Debug;
+        slt->labels = {"Off", "FPS", "Physics"};
+        slt->currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay);
+        slt->onChange = [slt]()
+        { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slt->currentIndex); };
+        root->AddChild(slt);
+    }
 
     return root;
 }
