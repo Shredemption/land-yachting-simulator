@@ -196,7 +196,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
 
     {
         auto tgl = std::make_shared<Toggle>();
-        tgl->text = "Wireframe Mode";
+        tgl->text = "Wireframe";
         tgl->pos = glm::vec2(x, y + yStep * steps++);
         tgl->size = glm::vec2(0.3f, 0.05f);
         tgl->linkedPage = SettingsPage::Debug;
