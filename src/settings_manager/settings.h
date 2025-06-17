@@ -23,6 +23,12 @@ struct SettingsStruct
         bool vSync = true;
         float lodDistance = 50.0f;
     } video;
+
+    struct Input
+    {
+        float mouseSensitivity = 5.0f;
+        float controllerCamSensitivity = 5.0f;
+    } input;
 };
 
 namespace jsoncons
@@ -123,6 +129,33 @@ namespace jsoncons
     };
 
     template <>
+    struct json_type_traits<Json, SettingsStruct::Input>
+    {
+        static bool is(const Json &j) noexcept
+        {
+            return j.is_object();
+        }
+
+        static SettingsStruct::Input as(const Json &j)
+        {
+            SettingsStruct::Input s;
+            if (j.contains("mouseSensitiviy"))
+                s.mouseSensitivity = j["mouseSensitiviy"].template as<float>();
+            if (j.contains("controllerCamSensitivity"))
+                s.controllerCamSensitivity = j["controllerCamSensitivity"].template as<float>();
+            return s;
+        }
+
+        static Json to_json(const SettingsStruct::Input &s)
+        {
+            Json j;
+            j["mouseSensitivity"] = s.mouseSensitivity;
+            j["controllerCamSensitivity"] = s.controllerCamSensitivity;
+            return j;
+        }
+    };
+
+    template <>
     struct json_type_traits<Json, SettingsStruct>
     {
         static bool is(const Json &j) noexcept
@@ -137,6 +170,8 @@ namespace jsoncons
                 s.debug = j["debug"].template as<SettingsStruct::Debug>();
             if (j.contains("video"))
                 s.video = j["video"].template as<SettingsStruct::Video>();
+            if (j.contains("input"))
+                s.input = j["input"].template as<SettingsStruct::Input>();
             return s;
         }
 
@@ -145,6 +180,7 @@ namespace jsoncons
             Json j;
             j["debug"] = s.debug;
             j["video"] = s.video;
+            j["input"] = s.input;
             return j;
         }
     };

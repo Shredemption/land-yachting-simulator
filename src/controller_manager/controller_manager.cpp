@@ -145,9 +145,8 @@ void ControllerManager::buttonsRunning()
 
 void ControllerManager::sticksRunning()
 {
-    float sensitivity = 5.0f;
-    float x = sensitivity * 25.0f * state.sticks[1].x;
-    float y = sensitivity * 25.0f * state.sticks[1].y;
+    float x = SettingsManager::settings.input.controllerCamSensitivity * 25.0f * state.sticks[1].x;
+    float y = SettingsManager::settings.input.controllerCamSensitivity * 25.0f * state.sticks[1].y;
 
     if (Camera::freeCam)
     {
