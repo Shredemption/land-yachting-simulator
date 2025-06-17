@@ -12,9 +12,12 @@ void Widget::Render()
 
 void Widget::Update()
 {
-    for (auto &widget : children)
+    auto snapshot = children;
+
+    for (auto &widget : snapshot)
     {
-        widget->Update();
+        if (widget)
+            widget->Update();
     }
 }
 
