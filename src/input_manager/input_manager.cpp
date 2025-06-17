@@ -20,35 +20,7 @@ void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int 
         switch (key)
         {
         case GLFW_KEY_ESCAPE:
-            switch (SceneManager::engineState)
-            {
-            case EngineState::Title:
-                SceneManager::switchEngineState(EngineState::None);
-                break;
-            case EngineState::Settings:
-                if (SceneManager::settingsPage != SettingsPage::Start)
-                {
-                    SceneManager::settingsPage = SettingsPage::Start;
-                    UIManager::selected = 0;
-                    UIManager::countOptions(SettingsPage::Start);
-                }
-                else
-                    SceneManager::switchEngineState(EngineState::Pause);
-                break;
-            case EngineState::TitleSettings:
-                if (SceneManager::settingsPage != SettingsPage::Start)
-                {
-                    SceneManager::settingsPage = SettingsPage::Start;
-                    UIManager::selected = 0;
-                    UIManager::countOptions(SettingsPage::Start);
-                }
-                else
-                    SceneManager::switchEngineState(EngineState::Title);
-                break;
-            case EngineState::Pause:
-                SceneManager::switchEngineState(EngineState::Running);
-                break;
-            }
+            InputManager::MenuBack();
             break;
 
         case GLFW_KEY_ENTER:
@@ -327,5 +299,38 @@ void InputManager::processInputRunning()
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
         PhysicsUtil::keyInputs[4] = true;
+    }
+}
+
+void InputManager::MenuBack()
+{
+    switch (SceneManager::engineState)
+    {
+    case EngineState::Title:
+        SceneManager::switchEngineState(EngineState::None);
+        break;
+    case EngineState::Settings:
+        if (SceneManager::settingsPage != SettingsPage::Start)
+        {
+            SceneManager::settingsPage = SettingsPage::Start;
+            UIManager::selected = 0;
+            UIManager::countOptions(SettingsPage::Start);
+        }
+        else
+            SceneManager::switchEngineState(EngineState::Pause);
+        break;
+    case EngineState::TitleSettings:
+        if (SceneManager::settingsPage != SettingsPage::Start)
+        {
+            SceneManager::settingsPage = SettingsPage::Start;
+            UIManager::selected = 0;
+            UIManager::countOptions(SettingsPage::Start);
+        }
+        else
+            SceneManager::switchEngineState(EngineState::Title);
+        break;
+    case EngineState::Pause:
+        SceneManager::switchEngineState(EngineState::Running);
+        break;
     }
 }

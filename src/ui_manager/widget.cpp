@@ -63,6 +63,7 @@ void Button::Update()
         break;
     }
     case InputType::Keyboard:
+    case InputType::Controller:
     {
         if (index == UIManager::selected && (SceneManager::settingsPage == SettingsPage::Start || SceneManager::settingsPage == SettingsPage::None))
             hover = true;
@@ -144,6 +145,7 @@ void Toggle::Update()
         break;
     }
     case InputType::Keyboard:
+    case InputType::Controller:
     {
         if (!hidden && index == UIManager::selected)
         {
@@ -235,6 +237,7 @@ void Selector::Update()
         break;
     }
     case InputType::Keyboard:
+    case InputType::Controller:
     {
         if (!hidden && index == UIManager::selected)
         {

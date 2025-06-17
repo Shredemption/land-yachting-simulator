@@ -22,4 +22,6 @@ namespace InputManager
     void setCallbacks();
 
     void processInputRunning();
+    
+    void MenuBack();
 };
