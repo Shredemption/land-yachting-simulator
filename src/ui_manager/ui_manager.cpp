@@ -3,8 +3,11 @@
 #include "pch.h"
 
 #include "ui_manager/widget.hpp"
+#include "ui_manager/ui_manager_defs.h"
 
 std::shared_ptr<Widget> activeWidgets;
+
+std::optional<EngineState> queuedState;
 
 std::shared_ptr<Widget> buildTitle()
 {
@@ -52,7 +55,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineState(EngineState::TitleSettings); };
+        { UIManager::queueEngineState(EngineState::TitleSettings); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -62,7 +65,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineState(EngineState::None); };
+        { UIManager::queueEngineState(EngineState::None); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -88,7 +91,7 @@ std::shared_ptr<Widget> buildPause()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineState(EngineState::Running); };
+        { UIManager::queueEngineState(EngineState::Running); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -98,7 +101,7 @@ std::shared_ptr<Widget> buildPause()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineState(EngineState::Settings); };
+        { UIManager::queueEngineState(EngineState::Settings); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -108,7 +111,7 @@ std::shared_ptr<Widget> buildPause()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineState(EngineState::Title); };
+        { UIManager::queueEngineState(EngineState::Title); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -186,13 +189,13 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
             btn->onClick = []()
             {
                 SceneManager::settingsPage = SettingsPage::None;
-                SceneManager::switchEngineState(EngineState::Pause);
+                UIManager::queueEngineState(EngineState::Pause);
             };
         else
             btn->onClick = []()
             {
                 SceneManager::settingsPage = SettingsPage::None;
-                SceneManager::switchEngineState(EngineState::Title);
+                UIManager::queueEngineState(EngineState::Title);
             };
         btn->index = index++;
         root->AddChild(btn);
@@ -368,6 +371,25 @@ void UIManager::load(EngineState state)
 
 void UIManager::update()
 {
+    if (fade <= fadeTime)
+    {
+        if (queuedState.has_value())
+        {
+            fade -= TimeManager::deltaTime;
+            if (fade <= 0.0f)
+            {
+                SceneManager::switchEngineState(queuedState.value());
+                queuedState.reset();
+            }
+        }
+        else
+        {
+            fade += TimeManager::deltaTime;
+        }
+
+        return;
+    }
+
     if (activeWidgets)
         activeWidgets->Update();
 
@@ -380,4 +402,10 @@ void UIManager::render()
 {
     if (activeWidgets)
         activeWidgets->Render();
+}
+
+void UIManager::queueEngineState(EngineState state)
+{
+    fade = fadeTime;
+    queuedState = state;
 }

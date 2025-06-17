@@ -10,9 +10,5 @@ namespace UIManager
     void update();
     void render();
 
-    inline int selected;
-    inline int options;
-    inline bool trigger = false;
-    inline bool triggerLeft = false;
-    inline bool triggerRight = false;
+    void queueEngineState(EngineState state);
 };
