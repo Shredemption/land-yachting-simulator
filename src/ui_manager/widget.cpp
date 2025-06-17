@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include "ui_manager/ui_manager_defs.h"
+
 std::string formatFloat(float value, int precision)
 {
     std::ostringstream out;
@@ -37,8 +39,10 @@ void Button::Render()
 {
     glm::vec3 currentColor = active ? activeColor : (hover ? hoverColor : color);
 
-    Render::renderText(text, pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text, pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+    float alphaFactor = easeInOutQuad(0.0f, 1.0f, std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f));
+
+    Render::renderText(text, pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Left);
+    Render::renderText(text, pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha * alphaFactor, TextAlign::Left);
 }
 
 void Button::Update()

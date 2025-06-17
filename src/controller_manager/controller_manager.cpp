@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include "ui_manager/ui_manager_defs.h"
+
 void ControllerManager::update()
 {
     controllerConnected = glfwJoystickIsGamepad(GLFW_JOYSTICK_1);

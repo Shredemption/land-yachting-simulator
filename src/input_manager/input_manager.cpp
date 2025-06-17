@@ -3,6 +3,7 @@
 #include "pch.h"
 
 #include "input_manager/input_manager_defs.h"
+#include "ui_manager/ui_manager_defs.h"
 
 void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
