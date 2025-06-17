@@ -60,46 +60,63 @@ void Toggle::Render()
     if (hidden)
         return;
 
-    glm::vec3 currentColor = hover ? hoverColor : color;
-
     Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
 
-    Render::renderText("<", pos.x + 0.2f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("<", pos.x + 0.2f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hoverLeft ? hoverColor : color, alpha, TextAlign::Center);
 
-    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + 0.4f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + 0.4f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
 
-    Render::renderText(">", pos.x + 0.6f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(">", pos.x + 0.6f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hoverRight ? hoverColor : color, alpha, TextAlign::Center);
 }
 
 void Toggle::Update()
 {
-    float xmin = WindowManager::screenUIScale * 2560.0f * (pos.x);
-    float xmax = WindowManager::screenUIScale * 2560.0f * (pos.x + size.x);
+    float xminLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset - 0.01f);
+    float xmaxLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset + 0.01f);
+    float xminRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset - 0.01f);
+    float xmaxRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset + 0.01f);
     float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
     float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     if (linkedPage == SceneManager::settingsPage)
     {
         hidden = false;
-        if (InputManager::mousePosX > xmin && InputManager::mousePosX < xmax && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
-            hover = true;
+        if (InputManager::mousePosX > xminLeft && InputManager::mousePosX < xmaxLeft && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
+            hoverLeft = true;
         else
-            hover = false;
+            hoverLeft = false;
+
+        if (InputManager::mousePosX > xminRight && InputManager::mousePosX < xmaxRight && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
+            hoverRight = true;
+        else
+            hoverRight = false;
     }
     else
     {
         hidden = true;
-        hover = false;
+        hoverLeft = false;
+        hoverRight = false;
     }
 
-    if (hover && InputManager::leftMouseButton.released())
+    if (InputManager::leftMouseButton.released())
     {
-        *linkedVariable = !(*linkedVariable);
-        if (onChange)
+        bool changed = false;
+        if (hoverLeft)
+        {
+            *linkedVariable = !(*linkedVariable);
+            changed = true;
+        }
+        if (hoverRight)
+        {
+            *linkedVariable = !(*linkedVariable);
+            changed = true;
+        }
+
+        if (onChange && changed)
             onChange();
     }
 }
@@ -109,45 +126,63 @@ void Selector::Render()
     if (hidden)
         return;
 
-    glm::vec3 currentColor = hover ? hoverColor : color;
-
     Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Left);
+    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
 
-    Render::renderText("<", pos.x + 0.2f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("<", pos.x + 0.2f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hoverLeft ? hoverColor : color, alpha, TextAlign::Center);
 
-    Render::renderText(labels[currentIndex], pos.x + 0.4f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(labels[currentIndex], pos.x + 0.4f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+    Render::renderText(labels[currentIndex], pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(labels[currentIndex], pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
 
-    Render::renderText(">", pos.x + 0.6f + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(">", pos.x + 0.6f, pos.y + 0.01f * scale, scale, currentColor, alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hoverRight ? hoverColor : color, alpha, TextAlign::Center);
 }
 
 void Selector::Update()
 {
-    float xmin = WindowManager::screenUIScale * 2560.0f * (pos.x);
-    float xmax = WindowManager::screenUIScale * 2560.0f * (pos.x + size.x);
+    float xminLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset - 0.01f);
+    float xmaxLeft = WindowManager::screenUIScale * 2560.0f * (pos.x + leftOffset + 0.01f);
+    float xminRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset - 0.01f);
+    float xmaxRight = WindowManager::screenUIScale * 2560.0f * (pos.x + rightOffset + 0.01f);
     float ymin = WindowManager::screenUIScale * 1440.0f * (pos.y);
     float ymax = WindowManager::screenUIScale * 1440.0f * (pos.y + size.y);
 
     if (linkedPage == SceneManager::settingsPage)
     {
         hidden = false;
-        if (InputManager::mousePosX > xmin && InputManager::mousePosX < xmax && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
-            hover = true;
+        if (InputManager::mousePosX > xminLeft && InputManager::mousePosX < xmaxLeft && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
+            hoverLeft = true;
         else
-            hover = false;
+            hoverLeft = false;
+
+        if (InputManager::mousePosX > xminRight && InputManager::mousePosX < xmaxRight && InputManager::mousePosY > ymin && InputManager::mousePosY < ymax)
+            hoverRight = true;
+        else
+            hoverRight = false;
     }
     else
     {
         hidden = true;
-        hover = false;
+        hoverLeft = false;
+        hoverRight = false;
     }
 
-    if (hover && InputManager::leftMouseButton.released())
+    if (InputManager::leftMouseButton.released())
     {
-        currentIndex = (currentIndex + 1) % labels.size();
-        onChange();
+        bool changed = false;
+        if (hoverLeft)
+        {
+            currentIndex = (currentIndex - 1 + labels.size()) % labels.size();
+            changed = true;
+        }
+        if (hoverRight)
+        {
+            currentIndex = (currentIndex + 1 + labels.size()) % labels.size();
+            changed = true;
+        }
+
+        if (onChange && changed)
+            onChange();
     }
 }

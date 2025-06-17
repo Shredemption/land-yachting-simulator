@@ -58,11 +58,16 @@ public:
     std::string trueLabel;
     std::string falseLabel;
 
+    float leftOffset = 0.2f;
+    float labelOffset = 0.4f;
+    float rightOffset = 0.6f;
+
     void Render() override;
     void Update() override;
 
 private:
-    bool hover = false;
+    bool hoverLeft = false;
+    bool hoverRight = false;
     bool hidden = true;
 };
 
@@ -74,10 +79,15 @@ public:
 
     std::function<void()> onChange;
 
+    float leftOffset = 0.2f;
+    float labelOffset = 0.4f;
+    float rightOffset = 0.6f;
+
     void Render() override;
     void Update() override;
 
 private:
-    bool hover = true;
+    bool hoverLeft = false;
+    bool hoverRight = false;
     bool hidden = true;
 };
