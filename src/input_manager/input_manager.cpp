@@ -307,7 +307,7 @@ void InputManager::MenuBack()
     switch (SceneManager::engineState)
     {
     case EngineState::Title:
-        SceneManager::switchEngineState(EngineState::None);
+        UIManager::queueEngineState(EngineState::None);
         break;
     case EngineState::Settings:
         if (SceneManager::settingsPage != SettingsPage::Start)
@@ -317,7 +317,7 @@ void InputManager::MenuBack()
             UIManager::countOptions(SettingsPage::Start);
         }
         else
-            SceneManager::switchEngineState(EngineState::Pause);
+            UIManager::queueEngineState(EngineState::Pause);
         break;
     case EngineState::TitleSettings:
         if (SceneManager::settingsPage != SettingsPage::Start)
@@ -327,10 +327,10 @@ void InputManager::MenuBack()
             UIManager::countOptions(SettingsPage::Start);
         }
         else
-            SceneManager::switchEngineState(EngineState::Title);
+            UIManager::queueEngineState(EngineState::Title);
         break;
     case EngineState::Pause:
-        SceneManager::switchEngineState(EngineState::Running);
+        UIManager::queueEngineState(EngineState::Running);
         break;
     }
 }
