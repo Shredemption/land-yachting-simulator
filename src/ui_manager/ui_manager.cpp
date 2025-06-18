@@ -406,6 +406,16 @@ void UIManager::render()
 
 void UIManager::queueEngineState(EngineState state)
 {
+    shouldFadeBackground = true;
+
+    EngineState current = SceneManager::engineState;
+
+    if ((current == EngineState::Title || current == EngineState::TitleSettings) && (state == EngineState::Title || state == EngineState::TitleSettings))
+        shouldFadeBackground = false;
+
+    if ((current == EngineState::Pause || current == EngineState::Settings) && (state == EngineState::Pause || state == EngineState::Settings))
+        shouldFadeBackground = false;
+
     fade = fadeTime;
     queuedState = state;
 }
