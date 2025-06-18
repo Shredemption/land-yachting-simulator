@@ -2,7 +2,7 @@
 
 namespace UIManager
 {
-    inline float fade = 0.0f;
+    inline float fade = -2.0f;
     inline float fadeTime = 0.1f;
 
     inline int selected;
