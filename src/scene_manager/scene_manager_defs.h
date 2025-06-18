@@ -27,5 +27,6 @@ enum class SettingsPage
     Start,
     Graphics,
     Input,
+    Physics,
     Debug
 };

@@ -152,6 +152,8 @@ void Physics::move(bool &controlled)
     float forwardAcceleration = 0.0f;
     float steeringChange = 0.0f;
 
+    double tickRate = SettingsManager::settings.physics.tickRate;
+
     if (InputManager::inputType == InputType::Controller)
     {
         if (controlled)
@@ -163,7 +165,7 @@ void Physics::move(bool &controlled)
 
             steeringChange = -ControllerManager::state.sticks[0].x;
 
-            sailControlFactor += -ControllerManager::state.sticks[0].y * PhysicsUtil::tickRate;
+            sailControlFactor += -ControllerManager::state.sticks[0].y * tickRate;
         }
 
         steeringAngle = 0.5 * steeringAngle + 0.5 * steeringChange * maxSteeringAngle;
@@ -173,11 +175,11 @@ void Physics::move(bool &controlled)
         {
             if (PhysicsUtil::keyInputs[0])
             {
-                sailControlFactor += 1.f * PhysicsUtil::tickRate;
+                sailControlFactor += 1.f * tickRate;
             }
             if (PhysicsUtil::keyInputs[1])
             {
-                sailControlFactor -= 0.4f * PhysicsUtil::tickRate;
+                sailControlFactor -= 0.4f * tickRate;
             }
             if (PhysicsUtil::keyInputs[2])
             {
@@ -193,7 +195,7 @@ void Physics::move(bool &controlled)
             }
         }
 
-        steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * PhysicsUtil::tickRate;
+        steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * tickRate;
     }
 
     // Clamp sail control
@@ -269,13 +271,13 @@ void Physics::move(bool &controlled)
     forwardAcceleration += netForce / mass;
 
     // Apply accelerations
-    forwardVelocity += forwardAcceleration * PhysicsUtil::tickRate;
+    forwardVelocity += forwardAcceleration * tickRate;
     float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
 
     // Transform with velocities
-    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(effectiveSteeringAngle * forwardVelocity * PhysicsUtil::tickRate)), glm::vec3(0.0f, 0.0f, 1.0f));
-    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * PhysicsUtil::tickRate, 0.0f));
-    wheelAngle += forwardVelocity * PhysicsUtil::tickRate * 100;
+    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(effectiveSteeringAngle * forwardVelocity * tickRate)), glm::vec3(0.0f, 0.0f, 1.0f));
+    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * tickRate, 0.0f));
+    wheelAngle += forwardVelocity * tickRate * 100;
 
     // Send values to debug
     if (controlled)

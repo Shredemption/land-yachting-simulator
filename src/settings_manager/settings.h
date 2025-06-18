@@ -11,12 +11,6 @@ enum class debugOverlay
 
 struct SettingsStruct
 {
-    struct Debug
-    {
-        bool wireframeMode = false;
-        debugOverlay debugOverlay = debugOverlay::None;
-    } debug;
-
     struct Video
     {
         bool fullscreen = true;
@@ -31,6 +25,17 @@ struct SettingsStruct
         float mouseSensitivity = 5.0f;
         float controllerCamSensitivity = 5.0f;
     } input;
+
+    struct Physics
+    {
+        float tickRate = 30.0f;
+    } physics;
+
+    struct Debug
+    {
+        bool wireframeMode = false;
+        debugOverlay debugOverlay = debugOverlay::None;
+    } debug;
 };
 
 namespace jsoncons
@@ -70,33 +75,6 @@ namespace jsoncons
             default:
                 return Json("Unknown");
             }
-        }
-    };
-
-    template <>
-    struct json_type_traits<Json, SettingsStruct::Debug>
-    {
-        static bool is(const Json &j) noexcept
-        {
-            return j.is_object();
-        }
-
-        static SettingsStruct::Debug as(const Json &j)
-        {
-            SettingsStruct::Debug s;
-            if (j.contains("wireframeMode"))
-                s.wireframeMode = j["wireframeMode"].template as<bool>();
-            if (j.contains("debugOverlay"))
-                s.debugOverlay = j["debugOverlay"].template as<debugOverlay>();
-            return s;
-        }
-
-        static Json to_json(const SettingsStruct::Debug &s)
-        {
-            Json j;
-            j["wireframeMode"] = s.wireframeMode;
-            j["debugOverlay"] = s.debugOverlay;
-            return j;
         }
     };
 
@@ -164,6 +142,57 @@ namespace jsoncons
     };
 
     template <>
+    struct json_type_traits<Json, SettingsStruct::Physics>
+    {
+        static bool is(const Json &j) noexcept
+        {
+            return j.is_object();
+        }
+
+        static SettingsStruct::Physics as(const Json &j)
+        {
+            SettingsStruct::Physics s;
+            if (j.contains("tickRate"))
+                s.tickRate = j["tickRate"].template as<float>();
+            return s;
+        }
+
+        static Json to_json(const SettingsStruct::Physics &s)
+        {
+            Json j;
+            j["tickRate"] = s.tickRate;
+            return j;
+        }
+    };
+
+    template <>
+    struct json_type_traits<Json, SettingsStruct::Debug>
+    {
+        static bool is(const Json &j) noexcept
+        {
+            return j.is_object();
+        }
+
+        static SettingsStruct::Debug as(const Json &j)
+        {
+            SettingsStruct::Debug s;
+            if (j.contains("wireframeMode"))
+                s.wireframeMode = j["wireframeMode"].template as<bool>();
+            if (j.contains("debugOverlay"))
+                s.debugOverlay = j["debugOverlay"].template as<debugOverlay>();
+            return s;
+        }
+
+        static Json to_json(const SettingsStruct::Debug &s)
+        {
+            Json j;
+            j["wireframeMode"] = s.wireframeMode;
+            j["debugOverlay"] = s.debugOverlay;
+            return j;
+        }
+    };
+
+    template <>
     struct json_type_traits<Json, SettingsStruct>
     {
         static bool is(const Json &j) noexcept
@@ -174,21 +203,24 @@ namespace jsoncons
         static SettingsStruct as(const Json &j)
         {
             SettingsStruct s;
-            if (j.contains("debug"))
-                s.debug = j["debug"].template as<SettingsStruct::Debug>();
             if (j.contains("video"))
                 s.video = j["video"].template as<SettingsStruct::Video>();
             if (j.contains("input"))
                 s.input = j["input"].template as<SettingsStruct::Input>();
+            if (j.contains("physics"))
+                s.physics = j["physics"].template as<SettingsStruct::Physics>();
+            if (j.contains("debug"))
+                s.debug = j["debug"].template as<SettingsStruct::Debug>();
             return s;
         }
 
         static Json to_json(const SettingsStruct &s)
         {
             Json j;
-            j["debug"] = s.debug;
             j["video"] = s.video;
             j["input"] = s.input;
+            j["physics"] = s.physics;
+            j["debug"] = s.debug;
             return j;
         }
     };

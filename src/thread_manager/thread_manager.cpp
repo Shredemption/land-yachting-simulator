@@ -75,7 +75,7 @@ void ThreadManager::physicsThreadFunction()
                     }
                 }
 
-                PhysicsUtil::accumulator.store(PhysicsUtil::accumulator.load(std::memory_order_acquire) - PhysicsUtil::tickRate);
+                PhysicsUtil::accumulator.store(PhysicsUtil::accumulator.load(std::memory_order_acquire) - SettingsManager::settings.physics.tickRate);
             }
         }
 
