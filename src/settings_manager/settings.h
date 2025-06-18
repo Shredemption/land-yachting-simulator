@@ -23,7 +23,7 @@ struct SettingsStruct
         bool vSync = true;
         float fov = 70.0f;
         float lodDistance = 50.0f;
-        float waterFrameRate = 30.0f;
+        float waterFrameRate = 60.0f;
     } video;
 
     struct Input
