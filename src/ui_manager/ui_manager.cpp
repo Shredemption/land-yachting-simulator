@@ -417,6 +417,7 @@ void UIManager::render()
 void UIManager::queueEngineState(EngineState state)
 {
     shouldFadeBackground = true;
+    fadeToBlack = false;
 
     EngineState current = SceneManager::engineState;
 
@@ -425,6 +426,9 @@ void UIManager::queueEngineState(EngineState state)
 
     if ((current == EngineState::Pause || current == EngineState::Settings) && (state == EngineState::Pause || state == EngineState::Settings))
         shouldFadeBackground = false;
+
+    if ((current == EngineState::Pause || current == EngineState::Title) && (state == EngineState::Pause || state == EngineState::Title))
+        fadeToBlack = true;
 
     fade = fadeTime;
     queuedState = state;
