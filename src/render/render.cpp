@@ -1082,8 +1082,15 @@ void Render::renderMenu(EngineState state)
     case EngineState::Settings:
     {
         float darken = 0.0f;
+        float darkenOffset = 0.0f;
         if (UIManager::shouldFadeBackground)
-            darken = easeInOutQuad(0.0f, 0.5f, alpha);
+            if (UIManager::fadeToBlack)
+            {
+                darken = easeInOutQuad(1.0f, 0.5f, alpha);
+                darkenOffset = easeInOutCirc(1.0f, 0.0f, alpha);
+            }
+            else
+                darken = easeInOutQuad(0.0f, 0.5f, alpha);
         else
             darken = 0.5f;
 
@@ -1096,7 +1103,7 @@ void Render::renderMenu(EngineState state)
         shader->setInt("screenTexture", 0);
         shader->setVec2("texelSize", glm::vec2(1.0 / WindowManager::screenWidth, 1.0 / WindowManager::screenHeight));
         shader->setFloat("darkenAmount", darken);
-        shader->setFloat("darkenPosition", 0.3f);
+        shader->setFloat("darkenPosition", 0.3f + darkenOffset);
 
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
