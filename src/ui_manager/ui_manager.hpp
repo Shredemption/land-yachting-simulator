@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 enum class EngineState;
 enum class SettingsPage;
 
@@ -11,4 +13,5 @@ namespace UIManager
     void render();
 
     void queueEngineState(EngineState state);
+    void queueEngineScene(std::string scene);
 };
