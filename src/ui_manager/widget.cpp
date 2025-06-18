@@ -39,10 +39,12 @@ void Button::Render()
 {
     glm::vec3 currentColor = active ? activeColor : (hover ? hoverColor : color);
 
-    float alphaFactor = easeInOutQuad(0.0f, 1.0f, std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f));
+    float alphaFade = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
+    float alphaFactor = easeInOutQuad(0.0f, 1.0f, alphaFade);
+    float positionOffset = easeInOutQuad(-0.01f, 0.0f, alphaFade);
 
-    Render::renderText(text, pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Left);
-    Render::renderText(text, pos.x, pos.y + 0.01f * scale, scale, currentColor, alpha * alphaFactor, TextAlign::Left);
+    Render::renderText(text, pos.x + positionOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Left);
+    Render::renderText(text, pos.x + positionOffset, pos.y + 0.01f * scale, scale, currentColor, alpha * alphaFactor, TextAlign::Left);
 }
 
 void Button::Update()
