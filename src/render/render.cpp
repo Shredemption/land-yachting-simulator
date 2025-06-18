@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include "ui_manager/ui_manager_defs.h"
+
 // Text
 unsigned int textVAO, textVBO;
 unsigned int textTexture;
@@ -1059,18 +1061,32 @@ void Render::renderMenu(EngineState state)
 {
     glDisable(GL_DEPTH_TEST);
 
+    float alpha = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
+
     switch (state)
     {
     case EngineState::Title:
     case EngineState::TitleSettings:
     {
-        glClearColor(0.5, 0, 0, 1);
+        float color = 0.0f;
+        if (UIManager::shouldFadeBackground)
+            color = easeInOutQuad(0.0f, 0.5f, alpha);
+        else
+            color = 0.5f;
+
+        glClearColor(color, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         break;
     }
     case EngineState::Pause:
     case EngineState::Settings:
     {
+        float darken = 0.0f;
+        if (UIManager::shouldFadeBackground)
+            darken = easeInOutQuad(0.0f, 0.5f, alpha);
+        else
+            darken = 0.5f;
+
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
@@ -1079,7 +1095,7 @@ void Render::renderMenu(EngineState state)
         shader = ShaderUtil::load(shaderID::DarkenBlur);
         shader->setInt("screenTexture", 0);
         shader->setVec2("texelSize", glm::vec2(1.0 / WindowManager::screenWidth, 1.0 / WindowManager::screenHeight));
-        shader->setFloat("darkenAmount", 0.5f);
+        shader->setFloat("darkenAmount", darken);
         shader->setFloat("darkenPosition", 0.3f);
 
         glBindVertexArray(quadVAO);
@@ -1105,15 +1121,15 @@ void Render::renderMenu(EngineState state)
         break;
     }
 
-    renderText(titleText, titleX + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), 1.0f, TextAlign::Left);
-    renderText(titleText, titleX, titleY, 1.0f, glm::vec3(1.0f), 1.0f, TextAlign::Left);
+    renderText(titleText, titleX + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Left);
+    renderText(titleText, titleX, titleY, 1.0f, glm::vec3(1.0f), alpha, TextAlign::Left);
 
     if (state == EngineState::Title)
     {
         glm::vec2 pos = {0.7f, 0.5f};
 
-        renderImage("title-figure-black.png", pos + glm::vec2(0.005f, -0.01f), 835, 1024);
-        renderImage("title-figure.png", pos, 835, 1024);
+        renderImage("title-figure-black.png", pos + glm::vec2(0.005f, -0.01f), 835, 1024, alpha);
+        renderImage("title-figure.png", pos, 835, 1024, alpha);
     }
 
     UIManager::render();
