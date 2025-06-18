@@ -9,9 +9,9 @@ void PhysicsUtil::update()
     int steps = 0;
     double acc = accumulator.load(std::memory_order_acquire);
 
-    while (acc >= tickRate)
+    while (acc >= SettingsManager::settings.physics.tickRate)
     {
-        acc -= tickRate;
+        acc -= SettingsManager::settings.physics.tickRate;
         steps++;
     }
 
@@ -27,10 +27,9 @@ void PhysicsUtil::update()
         ThreadManager::physicsCV.notify_one();
     }
 
-    float alpha = static_cast<float>(acc / tickRate);
+    float alpha = static_cast<float>(acc / SettingsManager::settings.physics.tickRate);
     ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
 }
-
 
 void PhysicsUtil::setup()
 {
@@ -49,8 +48,6 @@ void PhysicsUtil::setup()
         }
     }
 }
-
-
 
 void PhysicsUtil::switchControlledYacht()
 {

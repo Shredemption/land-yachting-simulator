@@ -238,6 +238,30 @@ void buildInputPage(std::shared_ptr<Widget> &root)
     }
 }
 
+void buildPhysicsPage(std::shared_ptr<Widget> &root)
+{
+    float x = 0.25f;
+    float y = 0.15f;
+    float yStep = 0.05f;
+    int steps = 0;
+    int index = 0;
+
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "Tickrate";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Physics;
+        sldr->linkedFloat = &SettingsManager::settings.physics.tickRate;
+        sldr->lowerLim = 20.0f;
+        sldr->upperLim = 60.0f;
+        sldr->stepSize = 1.0f;
+        sldr->decimals = 0;
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+}
+
 void buildDebugPage(std::shared_ptr<Widget> &root)
 {
     // Graphics Page
@@ -318,6 +342,22 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
     }
     {
         auto btn = std::make_shared<Button>();
+        btn->text = "Physics";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.2f, 0.05f);
+        btn->activePage = SettingsPage::Physics;
+        btn->shownOnPage = SettingsPage::Start;
+        btn->onClick = []()
+        {
+            UIManager::queueSettingsPage(SettingsPage::Physics);
+            UIManager::selected = 0;
+            UIManager::countOptions(SettingsPage::Physics);
+        };
+        btn->index = index++;
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
         btn->text = "Debug";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.2f, 0.05f);
@@ -358,6 +398,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
 
     buildGraphicsPage(root);
     buildInputPage(root);
+    buildPhysicsPage(root);
     buildDebugPage(root);
 
     return root;

@@ -21,7 +21,6 @@ namespace PhysicsUtil
 {
     void update();
 
-    inline const double tickRate = 1.0 / 30.0;
     inline std::atomic<double> accumulator = 0.0;
 
     inline std::atomic<bool> isSwapping(false);
