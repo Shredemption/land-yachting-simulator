@@ -161,6 +161,19 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
     }
     {
         auto sldr = std::make_shared<Slider>();
+        sldr->text = "FOV";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Graphics;
+        sldr->linkedFloat = &SettingsManager::settings.video.fov;
+        sldr->lowerLim = 60.0f;
+        sldr->upperLim = 100.0f;
+        sldr->stepSize = 1.0f;
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+    {
+        auto sldr = std::make_shared<Slider>();
         sldr->text = "View Distance";
         sldr->pos = glm::vec2(x, y + yStep * steps++);
         sldr->size = glm::vec2(0.0f, 0.05f);
@@ -259,7 +272,6 @@ void buildDebugPage(std::shared_ptr<Widget> &root)
         slct->index = index++;
         root->AddChild(slct);
     }
-
 }
 
 std::shared_ptr<Widget> buildSettings(EngineState state)
