@@ -29,7 +29,7 @@ void main()
     color += texture(screenTexture, TexCoords + texelSize * vec2(0, 1)).rgb * 0.125;
     color += texture(screenTexture, TexCoords + texelSize * vec2(1, 1)).rgb * 0.0625;
 
-    float darken = map(smoothstep(darkenPosition - 0.1, darkenPosition + 0.1, TexCoords.x), 0, 1, darkenAmount, darkenAmount * 0.9);
+    float darken = map(smoothstep(darkenPosition - 0.1, darkenPosition + 0.1, TexCoords.x), 0, 1, darkenAmount, darkenAmount * 0.5);
 
     color = mix(color, vec3(0.0), darken);
 
