@@ -123,6 +123,145 @@ std::shared_ptr<Widget> buildPause()
     return root;
 }
 
+void buildGraphicsPage(std::shared_ptr<Widget> &root)
+{
+    float x = 0.25f;
+    float y = 0.15f;
+    float yStep = 0.05f;
+    int steps = 0;
+    int index = 0;
+
+    {
+        auto tgl = std::make_shared<Toggle>();
+        tgl->text = "Fullscreen";
+        tgl->pos = glm::vec2(x, y + yStep * steps++);
+        tgl->size = glm::vec2(0.0f, 0.05f);
+        tgl->shownOnPage = SettingsPage::Graphics;
+        tgl->linkedVariable = &SettingsManager::settings.video.fullscreen;
+        tgl->trueLabel = "Borderless";
+        tgl->falseLabel = "Off";
+        tgl->onChange = []()
+        { WindowManager::setFullscreenState(); };
+        tgl->index = index++;
+        root->AddChild(tgl);
+    }
+    {
+        auto tgl = std::make_shared<Toggle>();
+        tgl->text = "VSync";
+        tgl->pos = glm::vec2(x, y + yStep * steps++);
+        tgl->size = glm::vec2(0.0f, 0.05f);
+        tgl->shownOnPage = SettingsPage::Graphics;
+        tgl->linkedVariable = &SettingsManager::settings.video.vSync;
+        tgl->trueLabel = "On";
+        tgl->falseLabel = "Off";
+        tgl->onChange = []()
+        { glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0); };
+        tgl->index = index++;
+        root->AddChild(tgl);
+    }
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "View Distance";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Graphics;
+        sldr->linkedFloat = &SettingsManager::settings.video.lodDistance;
+        sldr->lowerLim = 10.0f;
+        sldr->upperLim = 100.0f;
+        sldr->stepSize = 10.0f;
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "Water Framerate";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Graphics;
+        sldr->linkedFloat = &SettingsManager::settings.video.waterFrameRate;
+        sldr->lowerLim = 10.0f;
+        sldr->upperLim = 120.0f;
+        sldr->stepSize = 1.0f;
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+}
+
+void buildInputPage(std::shared_ptr<Widget> &root)
+{
+    float x = 0.25f;
+    float y = 0.15f;
+    float yStep = 0.05f;
+    int steps = 0;
+    int index = 0;
+
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "Mouse Sensitivity";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Input;
+        sldr->linkedFloat = &SettingsManager::settings.input.mouseSensitivity;
+        sldr->lowerLim = 2.0f;
+        sldr->upperLim = 8.0f;
+        sldr->stepSize = 0.1f;
+        sldr->decimals = 2;
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+    {
+        auto sldr = std::make_shared<Slider>();
+        sldr->text = "Stick Sensitivity";
+        sldr->pos = glm::vec2(x, y + yStep * steps++);
+        sldr->size = glm::vec2(0.0f, 0.05f);
+        sldr->shownOnPage = SettingsPage::Input;
+        sldr->linkedFloat = &SettingsManager::settings.input.controllerCamSensitivity;
+        sldr->lowerLim = 2.0f;
+        sldr->upperLim = 8.0f;
+        sldr->stepSize = 0.1f;
+        sldr->decimals = 2;
+        sldr->index = index++;
+        root->AddChild(sldr);
+    }
+}
+
+void buildDebugPage(std::shared_ptr<Widget> &root)
+{
+    // Graphics Page
+    float x = 0.25f;
+    float y = 0.15f;
+    float yStep = 0.05f;
+    int steps = 0;
+    int index = 0;
+
+    {
+        auto tgl = std::make_shared<Toggle>();
+        tgl->text = "Wireframe";
+        tgl->pos = glm::vec2(x, y + yStep * steps++);
+        tgl->size = glm::vec2(0.0f, 0.05f);
+        tgl->shownOnPage = SettingsPage::Debug;
+        tgl->linkedVariable = &SettingsManager::settings.debug.wireframeMode;
+        tgl->trueLabel = "On";
+        tgl->falseLabel = "Off";
+        tgl->index = index++;
+        root->AddChild(tgl);
+    }
+    {
+        auto slct = std::make_shared<Selector>();
+        slct->text = "Overlay";
+        slct->pos = glm::vec2(x, y + yStep * steps++);
+        slct->size = glm::vec2(0.0f, 0.05f);
+        slct->shownOnPage = SettingsPage::Debug;
+        slct->labels = {"Off", "FPS", "Physics"};
+        slct->currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay);
+        slct->onChange = [slct]()
+        { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slct->currentIndex); };
+        slct->index = index++;
+        root->AddChild(slct);
+    }
+
+}
+
 std::shared_ptr<Widget> buildSettings(EngineState state)
 {
     auto root = std::make_shared<Widget>();
@@ -205,136 +344,9 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
 
     UIManager::options = index;
 
-    // Graphics Page
-    x = 0.25f;
-    y = 0.15f;
-    yStep = 0.05f;
-    steps = 0;
-    index = 0;
-
-    {
-        auto tgl = std::make_shared<Toggle>();
-        tgl->text = "Fullscreen";
-        tgl->pos = glm::vec2(x, y + yStep * steps++);
-        tgl->size = glm::vec2(0.0f, 0.05f);
-        tgl->shownOnPage = SettingsPage::Graphics;
-        tgl->linkedVariable = &SettingsManager::settings.video.fullscreen;
-        tgl->trueLabel = "Borderless";
-        tgl->falseLabel = "Off";
-        tgl->onChange = []()
-        { WindowManager::setFullscreenState(); };
-        tgl->index = index++;
-        root->AddChild(tgl);
-    }
-    {
-        auto tgl = std::make_shared<Toggle>();
-        tgl->text = "VSync";
-        tgl->pos = glm::vec2(x, y + yStep * steps++);
-        tgl->size = glm::vec2(0.0f, 0.05f);
-        tgl->shownOnPage = SettingsPage::Graphics;
-        tgl->linkedVariable = &SettingsManager::settings.video.vSync;
-        tgl->trueLabel = "On";
-        tgl->falseLabel = "Off";
-        tgl->onChange = []()
-        { glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0); };
-        tgl->index = index++;
-        root->AddChild(tgl);
-    }
-    {
-        auto sldr = std::make_shared<Slider>();
-        sldr->text = "View Distance";
-        sldr->pos = glm::vec2(x, y + yStep * steps++);
-        sldr->size = glm::vec2(0.0f, 0.05f);
-        sldr->shownOnPage = SettingsPage::Graphics;
-        sldr->linkedFloat = &SettingsManager::settings.video.lodDistance;
-        sldr->lowerLim = 10.0f;
-        sldr->upperLim = 100.0f;
-        sldr->stepSize = 10.0f;
-        sldr->index = index++;
-        root->AddChild(sldr);
-    }
-    {
-        auto sldr = std::make_shared<Slider>();
-        sldr->text = "Water Framerate";
-        sldr->pos = glm::vec2(x, y + yStep * steps++);
-        sldr->size = glm::vec2(0.0f, 0.05f);
-        sldr->shownOnPage = SettingsPage::Graphics;
-        sldr->linkedFloat = &SettingsManager::settings.video.waterFrameRate;
-        sldr->lowerLim = 10.0f;
-        sldr->upperLim = 120.0f;
-        sldr->stepSize = 1.0f;
-        sldr->index = index++;
-        root->AddChild(sldr);
-    }
-
-    // Input Page
-    x = 0.25f;
-    y = 0.15f;
-    yStep = 0.05f;
-    steps = 0;
-    index = 0;
-
-    {
-        auto sldr = std::make_shared<Slider>();
-        sldr->text = "Mouse Sensitivity";
-        sldr->pos = glm::vec2(x, y + yStep * steps++);
-        sldr->size = glm::vec2(0.0f, 0.05f);
-        sldr->shownOnPage = SettingsPage::Input;
-        sldr->linkedFloat = &SettingsManager::settings.input.mouseSensitivity;
-        sldr->lowerLim = 2.0f;
-        sldr->upperLim = 8.0f;
-        sldr->stepSize = 0.1f;
-        sldr->decimals = 2;
-        sldr->index = index++;
-        root->AddChild(sldr);
-    }
-    {
-        auto sldr = std::make_shared<Slider>();
-        sldr->text = "Stick Sensitivity";
-        sldr->pos = glm::vec2(x, y + yStep * steps++);
-        sldr->size = glm::vec2(0.0f, 0.05f);
-        sldr->shownOnPage = SettingsPage::Input;
-        sldr->linkedFloat = &SettingsManager::settings.input.controllerCamSensitivity;
-        sldr->lowerLim = 2.0f;
-        sldr->upperLim = 8.0f;
-        sldr->stepSize = 0.1f;
-        sldr->decimals = 2;
-        sldr->index = index++;
-        root->AddChild(sldr);
-    }
-
-    // Debug Page
-    x = 0.25f;
-    y = 0.15f;
-    yStep = 0.05f;
-    steps = 0;
-    index = 0;
-
-    {
-        auto tgl = std::make_shared<Toggle>();
-        tgl->text = "Wireframe";
-        tgl->pos = glm::vec2(x, y + yStep * steps++);
-        tgl->size = glm::vec2(0.0f, 0.05f);
-        tgl->shownOnPage = SettingsPage::Debug;
-        tgl->linkedVariable = &SettingsManager::settings.debug.wireframeMode;
-        tgl->trueLabel = "On";
-        tgl->falseLabel = "Off";
-        tgl->index = index++;
-        root->AddChild(tgl);
-    }
-    {
-        auto slct = std::make_shared<Selector>();
-        slct->text = "Overlay";
-        slct->pos = glm::vec2(x, y + yStep * steps++);
-        slct->size = glm::vec2(0.0f, 0.05f);
-        slct->shownOnPage = SettingsPage::Debug;
-        slct->labels = {"Off", "FPS", "Physics"};
-        slct->currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay);
-        slct->onChange = [slct]()
-        { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slct->currentIndex); };
-        slct->index = index++;
-        root->AddChild(slct);
-    }
+    buildGraphicsPage(root);
+    buildInputPage(root);
+    buildDebugPage(root);
 
     return root;
 }
