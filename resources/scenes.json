@@ -1,7 +1,7 @@
 {
-    "scenes": {
-        "cartoon": "resources/scenes/cartoon.json",
-        "realistic": "resources/scenes/realistic.json",
-        "test": "resources/scenes/test.json"
-    }
+  "scenes": {
+    "cartoon": "resources/scenes/cartoon.json",
+    "realistic": "resources/scenes/realistic.json",
+    "test-yacht": "resources/scenes/test/yacht.json"
+  }
 }

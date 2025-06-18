@@ -1,0 +1,13 @@
+{
+  "models": [
+    {
+      "name": "dn-duvel",
+      "scale": [1, 1, 1],
+      "angle": 180,
+      "rotationAxis": [0, 0, 1],
+      "translation": [0, 0, 0],
+      "animated": true,
+      "controlled": true
+    }
+  ]
+}

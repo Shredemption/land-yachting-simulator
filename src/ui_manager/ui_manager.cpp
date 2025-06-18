@@ -47,7 +47,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { UIManager::queueEngineScene("test"); };
+        { UIManager::queueEngineScene("test-yacht"); };
         btn->index = index++;
         root->AddChild(btn);
     }
