@@ -312,7 +312,7 @@ void InputManager::MenuBack()
     case EngineState::Settings:
         if (SceneManager::settingsPage != SettingsPage::Start)
         {
-            SceneManager::settingsPage = SettingsPage::Start;
+            UIManager::queueSettingsPage(SettingsPage::Start);
             UIManager::selected = 0;
             UIManager::countOptions(SettingsPage::Start);
         }
@@ -322,7 +322,7 @@ void InputManager::MenuBack()
     case EngineState::TitleSettings:
         if (SceneManager::settingsPage != SettingsPage::Start)
         {
-            SceneManager::settingsPage = SettingsPage::Start;
+            UIManager::queueSettingsPage(SettingsPage::Start);
             UIManager::selected = 0;
             UIManager::countOptions(SettingsPage::Start);
         }
