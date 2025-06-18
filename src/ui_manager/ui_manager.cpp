@@ -8,6 +8,7 @@
 std::shared_ptr<Widget> activeWidgets;
 
 std::optional<EngineState> queuedState;
+std::optional<std::string> queuedScene;
 
 std::shared_ptr<Widget> buildTitle()
 {
@@ -25,7 +26,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineStateScene("realistic"); };
+        { UIManager::queueEngineScene("realistic"); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -35,7 +36,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineStateScene("cartoon"); };
+        { UIManager::queueEngineScene("cartoon"); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -45,7 +46,7 @@ std::shared_ptr<Widget> buildTitle()
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { SceneManager::switchEngineStateScene("test"); };
+        { UIManager::queueEngineScene("test"); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -382,6 +383,15 @@ void UIManager::update()
                 queuedState.reset();
             }
         }
+        else if (queuedScene.has_value())
+        {
+            fade -= TimeManager::deltaTime;
+            if (fade <= 0.0f)
+            {
+                SceneManager::switchEngineStateScene(queuedScene.value());
+                queuedScene.reset();
+            }
+        }
         else
         {
             fade += TimeManager::deltaTime;
@@ -418,4 +428,11 @@ void UIManager::queueEngineState(EngineState state)
 
     fade = fadeTime;
     queuedState = state;
+}
+
+void UIManager::queueEngineScene(std::string scene)
+{
+    shouldFadeBackground = true;
+    fade = fadeTime;
+    queuedScene = scene;
 }
