@@ -102,17 +102,21 @@ void Toggle::Render()
     if (hidden)
         return;
 
-    Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
+    float alphaFade = std::clamp(std::min(UIManager::fade, UIManager::pageFade) / UIManager::fadeTime, 0.0f, 1.0f);
+    float alphaFactor = easeInOutQuad(0.0f, 1.0f, alphaFade);
+    float positionOffset = easeInOutQuad(-0.01f, 0.0f, alphaFade);
 
-    Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hoverLeft ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText(text + ":", pos.x + positionOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Left);
+    Render::renderText(text + ":", pos.x + positionOffset, pos.y + 0.01f * scale, scale, color, alpha * alphaFactor, TextAlign::Left);
 
-    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + positionOffset + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText("<", pos.x + positionOffset + leftOffset, pos.y + 0.01f * scale, scale, hoverLeft ? hoverColor : color, alpha * alphaFactor, TextAlign::Center);
 
-    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hoverRight ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + positionOffset + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText(*linkedVariable ? trueLabel : falseLabel, pos.x + positionOffset + labelOffset, pos.y + 0.01f * scale, scale, color, alpha * alphaFactor, TextAlign::Center);
+
+    Render::renderText(">", pos.x + positionOffset + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText(">", pos.x + positionOffset + rightOffset, pos.y + 0.01f * scale, scale, hoverRight ? hoverColor : color, alpha * alphaFactor, TextAlign::Center);
 }
 
 void Toggle::Update()
@@ -194,17 +198,21 @@ void Selector::Render()
     if (hidden)
         return;
 
-    Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
+    float alphaFade = std::clamp(std::min(UIManager::fade, UIManager::pageFade) / UIManager::fadeTime, 0.0f, 1.0f);
+    float alphaFactor = easeInOutQuad(0.0f, 1.0f, alphaFade);
+    float positionOffset = easeInOutQuad(-0.01f, 0.0f, alphaFade);
 
-    Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hoverLeft ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText(text + ":", pos.x + positionOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Left);
+    Render::renderText(text + ":", pos.x + positionOffset, pos.y + 0.01f * scale, scale, color, alpha * alphaFactor, TextAlign::Left);
 
-    Render::renderText(labels[currentIndex], pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(labels[currentIndex], pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + positionOffset + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText("<", pos.x + positionOffset + leftOffset, pos.y + 0.01f * scale, scale, hoverLeft ? hoverColor : color, alpha * alphaFactor, TextAlign::Center);
 
-    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hoverRight ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText(labels[currentIndex], pos.x + positionOffset + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText(labels[currentIndex], pos.x + positionOffset + labelOffset, pos.y + 0.01f * scale, scale, color, alpha * alphaFactor, TextAlign::Center);
+
+    Render::renderText(">", pos.x + positionOffset + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText(">", pos.x + positionOffset + rightOffset, pos.y + 0.01f * scale, scale, hoverRight ? hoverColor : color, alpha * alphaFactor, TextAlign::Center);
 }
 
 void Selector::Update()
@@ -289,25 +297,29 @@ void Slider::Render()
     if (hidden)
         return;
 
-    Render::renderText(text + ":", pos.x + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(text + ":", pos.x, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
+    float alphaFade = std::clamp(std::min(UIManager::fade, UIManager::pageFade) / UIManager::fadeTime, 0.0f, 1.0f);
+    float alphaFactor = easeInOutQuad(0.0f, 1.0f, alphaFade);
+    float positionOffset = easeInOutQuad(-0.01f, 0.0f, alphaFade);
 
-    Render::renderText("<", pos.x + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("<", pos.x + leftOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText(text + ":", pos.x + positionOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Left);
+    Render::renderText(text + ":", pos.x + positionOffset, pos.y + 0.01f * scale, scale, color, alpha * alphaFactor, TextAlign::Left);
 
-    Render::renderText("===============", pos.x + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("===============", pos.x + labelOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Center);
+    Render::renderText("<", pos.x + positionOffset + leftOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText("<", pos.x + positionOffset + leftOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha * alphaFactor, TextAlign::Center);
+
+    Render::renderText("===============", pos.x + positionOffset + labelOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText("===============", pos.x + positionOffset + labelOffset, pos.y + 0.01f * scale, scale, color, alpha * alphaFactor, TextAlign::Center);
 
     float sliderPos = leftOffset + 0.01f + ((*linkedFloat - lowerLim) / (upperLim - lowerLim)) * (rightOffset - leftOffset - 0.02f);
 
-    Render::renderText("I", pos.x + sliderPos + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText("I", pos.x + sliderPos, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText("I", pos.x + positionOffset + sliderPos + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText("I", pos.x + positionOffset + sliderPos, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha * alphaFactor, TextAlign::Center);
 
-    Render::renderText(">", pos.x + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Center);
-    Render::renderText(">", pos.x + rightOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha, TextAlign::Center);
+    Render::renderText(">", pos.x + positionOffset + rightOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Center);
+    Render::renderText(">", pos.x + positionOffset + rightOffset, pos.y + 0.01f * scale, scale, hover ? hoverColor : color, alpha * alphaFactor, TextAlign::Center);
 
-    Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + valueOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha, TextAlign::Left);
-    Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + valueOffset, pos.y + 0.01f * scale, scale, color, alpha, TextAlign::Left);
+    Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + positionOffset + valueOffset + 0.003f * scale, pos.y + (0.01f + 0.003f) * scale, scale, glm::vec3(0.0f), alpha * alphaFactor, TextAlign::Left);
+    Render::renderText(formatFloat(*linkedFloat, decimals), pos.x + positionOffset + valueOffset, pos.y + 0.01f * scale, scale, color, alpha * alphaFactor, TextAlign::Left);
 }
 
 void Slider::Update()

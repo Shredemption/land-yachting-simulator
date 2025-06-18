@@ -3,6 +3,7 @@
 namespace UIManager
 {
     inline float fade = 0.0f;
+    inline float pageFade = 0.0f;
     inline float fadeTime = 0.1f;
     inline bool shouldFadeBackground = true;
     inline bool fadeToBlack = false;

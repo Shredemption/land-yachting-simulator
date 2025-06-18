@@ -14,4 +14,5 @@ namespace UIManager
 
     void queueEngineState(EngineState state);
     void queueEngineScene(std::string scene);
+    void queueSettingsPage(SettingsPage page);
 };

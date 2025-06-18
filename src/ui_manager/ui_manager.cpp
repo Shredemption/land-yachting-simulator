@@ -9,6 +9,7 @@ std::shared_ptr<Widget> activeWidgets;
 
 std::optional<EngineState> queuedState;
 std::optional<std::string> queuedScene;
+std::optional<SettingsPage> queuedPage;
 
 std::shared_ptr<Widget> buildTitle()
 {
@@ -141,7 +142,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->shownOnPage = SettingsPage::Start;
         btn->onClick = []()
         {
-            SceneManager::settingsPage = SettingsPage::Graphics;
+            UIManager::queueSettingsPage(SettingsPage::Graphics);
             UIManager::selected = 0;
             UIManager::countOptions(SettingsPage::Graphics);
         };
@@ -157,7 +158,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->shownOnPage = SettingsPage::Start;
         btn->onClick = []()
         {
-            SceneManager::settingsPage = SettingsPage::Input;
+            UIManager::queueSettingsPage(SettingsPage::Input);
             UIManager::selected = 0;
             UIManager::countOptions(SettingsPage::Input);
         };
@@ -173,7 +174,7 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         btn->shownOnPage = SettingsPage::Start;
         btn->onClick = []()
         {
-            SceneManager::settingsPage = SettingsPage::Debug;
+            UIManager::queueSettingsPage(SettingsPage::Debug);
             UIManager::selected = 0;
             UIManager::countOptions(SettingsPage::Debug);
         };
@@ -189,13 +190,13 @@ std::shared_ptr<Widget> buildSettings(EngineState state)
         if (state == EngineState::Settings)
             btn->onClick = []()
             {
-                SceneManager::settingsPage = SettingsPage::None;
+                UIManager::queueSettingsPage(SettingsPage::None);
                 UIManager::queueEngineState(EngineState::Pause);
             };
         else
             btn->onClick = []()
             {
-                SceneManager::settingsPage = SettingsPage::None;
+                UIManager::queueSettingsPage(SettingsPage::None);
                 UIManager::queueEngineState(EngineState::Title);
             };
         btn->index = index++;
@@ -400,6 +401,23 @@ void UIManager::update()
         return;
     }
 
+    if (pageFade <= fadeTime)
+    {
+        if (queuedPage.has_value())
+        {
+            pageFade -= TimeManager::deltaTime;
+            if (pageFade <= 0.0f)
+            {
+                SceneManager::settingsPage = queuedPage.value();
+                queuedPage.reset();
+            }
+        }
+        else
+        {
+            pageFade += TimeManager::deltaTime;
+        }
+    }
+
     if (activeWidgets)
         activeWidgets->Update();
 
@@ -439,4 +457,14 @@ void UIManager::queueEngineScene(std::string scene)
     shouldFadeBackground = true;
     fade = fadeTime;
     queuedScene = scene;
+}
+
+void UIManager::queueSettingsPage(SettingsPage page)
+{
+    if (SceneManager::settingsPage == SettingsPage::Start)
+        pageFade = 0.0f;
+    else
+        pageFade = fadeTime;
+
+    queuedPage = page;
 }
