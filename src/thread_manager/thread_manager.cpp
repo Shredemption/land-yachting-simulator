@@ -54,8 +54,13 @@ void ThreadManager::physicsThreadFunction()
         {
             if (model.physics.has_value())
             {
-                model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
-                model.physics->getWriteBuffer()->savePrevState();
+                switch (model.model->modelType)
+                {
+                case ModelType::Yacht:
+                    model.physics->getWriteAs<PhysicsYacht>()->copyFrom(*model.physics->getReadAs<PhysicsYacht>());
+                    model.physics->getWriteAs<PhysicsYacht>()->savePrevState();
+                    break;
+                }
             }
         }
 
@@ -71,7 +76,12 @@ void ThreadManager::physicsThreadFunction()
                 {
                     if (model.physics.has_value())
                     {
-                        model.physics->getWriteBuffer()->move(model.controlled);
+                        switch (model.model->modelType)
+                        {
+                        case ModelType::Yacht:
+                            model.physics->getWriteAs<PhysicsYacht>()->move(model.controlled);
+                            break;
+                        }
                     }
                 }
 

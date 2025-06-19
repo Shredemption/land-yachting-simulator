@@ -4,16 +4,16 @@
 
 #include <string>
 
-class Physics
+class PhysicsYacht
 {
 public:
     // Constructor
-    Physics(const std::string &name);
+    PhysicsYacht(const std::string &name);
     
     void move(bool &controlled);
     void reset(const glm::mat4 &u_model);
     void savePrevState();
-    void copyFrom(const Physics &other);
+    void copyFrom(const PhysicsYacht &other);
 
     // Velocity and steering variables
     glm::mat4 baseTransform, prevBaseTransform;
