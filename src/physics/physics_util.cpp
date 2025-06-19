@@ -8,10 +8,11 @@ void PhysicsUtil::update()
 
     int steps = 0;
     double acc = accumulator.load(std::memory_order_acquire);
+    double tickTime = 1 / SettingsManager::settings.physics.tickRate;
 
-    while (acc >= SettingsManager::settings.physics.tickRate)
+    while (acc >= tickTime)
     {
-        acc -= SettingsManager::settings.physics.tickRate;
+        acc -= tickTime;
         steps++;
     }
 
@@ -27,7 +28,7 @@ void PhysicsUtil::update()
         ThreadManager::physicsCV.notify_one();
     }
 
-    float alpha = static_cast<float>(acc / SettingsManager::settings.physics.tickRate);
+    float alpha = static_cast<float>(acc / tickTime);
     ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
 }
 
