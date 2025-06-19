@@ -44,7 +44,8 @@ shaderID ShaderUtil::ShaderFromName(const std::string shaderName)
     static const std::unordered_map<std::string, shaderID> typeMap = {
         {"default", shaderID::Default},
         {"gui", shaderID::Gui},
-        {"simple", shaderID::Simple},
+        {"flat", shaderID::Flat},
+        {"single-color", shaderID::SingleColor},
         {"text", shaderID::Text},
         {"image", shaderID::Image},
         {"water", shaderID::Water},
@@ -65,7 +66,8 @@ std::string ShaderUtil::NameFromShader(const shaderID shader)
     static const std::unordered_map<shaderID, std::string> typeMap = {
         {shaderID::Default, "default"},
         {shaderID::Gui, "gui"},
-        {shaderID::Simple, "simple"},
+        {shaderID::Flat, "flat"},
+        {shaderID::SingleColor, "single-color"},
         {shaderID::Text, "text"},
         {shaderID::Image, "image"},
         {shaderID::Water, "water"},

@@ -188,6 +188,21 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &sha
         return Mesh<VertexAnimated>(vertices, indices, shader);
     }
 
+    else if (shader == shaderID::SingleColor)
+    {
+        std::vector<VertexSimple> vertices(mesh->mNumVertices);
+
+        // Pull vertex data
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        {
+            VertexSimple &vertex = vertices[i];
+            vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+            vertex.Color = glm::vec3((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f);
+        }
+
+        return Mesh<VertexSimple>(vertices, indices, shader);
+    }
+
     else
     {
         std::vector<VertexTextured> vertices(mesh->mNumVertices);

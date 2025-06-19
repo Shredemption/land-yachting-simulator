@@ -191,7 +191,7 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     loadUnitPlane.shader = ShaderUtil::ShaderFromName(unitPlane.shader);
 
     // Generate mesh from color and shader
-    if (loadUnitPlane.shader == shaderID::Simple)
+    if (loadUnitPlane.shader == shaderID::Flat)
         loadUnitPlane.unitPlane = MeshUtil::genUnitPlane<VertexSimple>(loadUnitPlane.color, loadUnitPlane.shader);
     else
         loadUnitPlane.unitPlane = MeshUtil::genUnitPlane<VertexTextured>(loadUnitPlane.color, loadUnitPlane.shader);

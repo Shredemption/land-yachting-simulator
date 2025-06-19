@@ -32,7 +32,7 @@ struct JSONUnitPlane
     float angle = 0;
     std::vector<float> rotationAxis = {0, 1, 0};
     std::vector<float> translation = {0, 0, 0};
-    std::string shader = "simple";
+    std::string shader = "flat";
 };
 
 struct JSONGrid
