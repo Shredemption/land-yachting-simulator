@@ -4,7 +4,7 @@
 #include <thread>
 #include <variant>
 
-#include "physics/physics.hpp"
+#include "physics/yacht.hpp"
 #include "physics/physics_util.hpp"
 
 using Physics = std::variant<PhysicsYacht>;
