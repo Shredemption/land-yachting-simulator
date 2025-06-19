@@ -3,7 +3,7 @@
 #include "pch.h"
 
 // Json mappings
-JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, animated, controlled);
+JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, color, animated, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, scale, lod, color, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
@@ -168,6 +168,7 @@ void Scene::loadModelToScene(JSONModel model)
 
     // Model shader
     loadModel.shader = ShaderUtil::ShaderFromName(model.shader);
+    loadModel.color = glm::vec3(model.color[0], model.color[1], model.color[2]);
 
     // Model animation data
     loadModel.animated = model.animated;

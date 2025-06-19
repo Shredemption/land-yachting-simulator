@@ -71,6 +71,8 @@ void renderModel(const RenderCommand &cmd)
 
     shader->setBool("animated", cmd.animated);
 
+    shader->setVec3("bodyColor", cmd.color);
+
     if (cmd.animated)
     {
         shader->setMat4Array("u_boneTransforms", cmd.boneTransforms);
@@ -682,6 +684,7 @@ void Render::prepareRender(::RenderBuffer &prepBuffer)
             cmd.type = RenderType::Model;
 
             cmd.shader = model.shader; 
+            cmd.color = model.color;
             
             cmd.modelMatrix = model.u_model;
             cmd.normalMatrix = model.u_normal;

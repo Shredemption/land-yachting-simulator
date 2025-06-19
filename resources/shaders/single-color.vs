@@ -1,22 +1,19 @@
 #version 410 core
 
-// Input vertex attributes
-layout(location = 0) in vec3 position;  // Vertex position in local space (model space)
-layout(location = 1) in vec3 color;     // Vertex color
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec3 color;
 
-// Output to fragment shader
-out vec3 vertexColor; 
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_projection;
 
-// Uniforms for transformation matrices
-uniform mat4 u_model;           // Model Matrix: transforms from local to world space
-uniform mat4 u_view;            // View Matrix: transforms from world space to camera/view space
-uniform mat4 u_projection;      // Projection matrix: transforms from camera space to clip space
+out vec3 FragPos;
+out vec3 Normal;
 
 void main()
 {
-    // Apply the transformations to the vertex position
+    FragPos = vec3(u_model * vec4(position, 1.0));
+    Normal = mat3(transpose(inverse(u_model))) * normal;
     gl_Position = u_projection * u_view * u_model * vec4(position, 1.0);
-
-    // Pass the vertex color to the fragment shader
-    vertexColor = color;
 }

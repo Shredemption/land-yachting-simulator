@@ -197,6 +197,7 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &sha
         {
             VertexSimple &vertex = vertices[i];
             vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+            vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
             vertex.Color = glm::vec3((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f);
         }
 
