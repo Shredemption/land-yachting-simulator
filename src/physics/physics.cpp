@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-Physics::Physics(const std::string &name)
+PhysicsYacht::PhysicsYacht(const std::string &name)
 {
     // Set base transform to 1
     baseTransform = glm::mat4(1.0f);
@@ -134,7 +134,7 @@ Physics::Physics(const std::string &name)
     }
 }
 
-void Physics::reset(const glm::mat4 &u_model)
+void PhysicsYacht::reset(const glm::mat4 &u_model)
 {
     baseTransform = u_model;
     sailControlFactor = 1.0f;
@@ -146,7 +146,7 @@ void Physics::reset(const glm::mat4 &u_model)
     wheelAngle = 0.0f;
 }
 
-void Physics::move(bool &controlled)
+void PhysicsYacht::move(bool &controlled)
 {
     // Acceleration from keys
     float forwardAcceleration = 0.0f;
@@ -296,7 +296,7 @@ void Physics::move(bool &controlled)
     }
 }
 
-void Physics::savePrevState()
+void PhysicsYacht::savePrevState()
 {
     // Save previous state
     prevBaseTransform = baseTransform;
@@ -307,7 +307,7 @@ void Physics::savePrevState()
     prevSailAngle = SailAngle;
 }
 
-void Physics::copyFrom(const Physics &other)
+void PhysicsYacht::copyFrom(const PhysicsYacht &other)
 {
     *this = other;
 }
