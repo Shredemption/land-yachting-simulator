@@ -1,0 +1,26 @@
+{
+  "models": [
+    {
+      "name": "cube",
+      "translation": [0, 10, 0],
+      "animated": false,
+      "color": [1, 0, 0],
+      "shader": "simple"
+    },
+    {
+      "name": "icosphere",
+      "translation": [1, 10, 0],
+      "animated": false,
+      "color": [0, 1, 0],
+      "shader": "simple"
+    },
+    {
+      "name": "cylinder",
+      "translation": [-1, 10, 0],
+      "animated": false,
+      "color": [0, 0, 1],
+      "shader": "simple"
+    }
+  ],
+  "bgColor": [1, 1, 1]
+}
