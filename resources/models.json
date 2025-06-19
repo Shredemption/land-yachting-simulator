@@ -40,16 +40,14 @@
       "mainPath": "resources/models/yachts/sietske/sietske.dae",
       "lodPaths": ["resources/models/yachts/sietske/sietske-lod1.dae"]
     },
+
     "cube": {
-      "type": "yacht",
       "mainPath": "resources/models/test/cube.dae"
     },
     "icosphere": {
-      "type": "yacht",
       "mainPath": "resources/models/test/icosphere.dae"
     },
     "cylinder": {
-      "type": "yacht",
       "mainPath": "resources/models/test/cylinder.dae"
     }
   }
