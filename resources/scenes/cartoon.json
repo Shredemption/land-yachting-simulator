@@ -96,5 +96,7 @@
       "shader": "toon-terrain"
     }
   ],
-  "bgColor": [0.545, 0.929, 0.984]
+  "bgColor": [0.545, 0.929, 0.984],
+  "cameraPos": [-0.5, -12, 4],
+  "cameraDir": [-40, 0, 0]
 }

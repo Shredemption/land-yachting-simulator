@@ -85,6 +85,8 @@ struct JSONScene
     std::vector<JSONText> texts = {};
     std::vector<JSONImage> images = {};
     std::vector<float> bgColor = {0, 0, 0};
+    std::vector<float> cameraPos = {0, 0, 0};
+    std::vector<float> cameraDir = {0, 0 ,0};
 };
 
 struct ModelData

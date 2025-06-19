@@ -92,5 +92,7 @@
       "front": "resources/skybox/Daylight Box_Front.bmp",
       "back": "resources/skybox/Daylight Box_Back.bmp"
     }
-  ]
+  ],
+  "cameraPos": [-0.5, -12, 3],
+  "cameraDir": [-40, 0, 0]
 }
