@@ -2,25 +2,26 @@
   "models": [
     {
       "name": "cube",
-      "translation": [0, 0, 0],
+      "translation": [0, 0, 1],
       "animated": false,
       "color": [1, 0, 0],
       "shader": "single-color"
     },
     {
       "name": "icosphere",
-      "translation": [3, 0, 0],
+      "translation": [3, 0, 1],
       "animated": false,
       "color": [0, 1, 0],
       "shader": "single-color"
     },
     {
       "name": "cylinder",
-      "translation": [-3, 0, 0],
+      "translation": [-3, 0, 1],
       "animated": false,
       "color": [0, 0, 1],
       "shader": "single-color"
     }
   ],
-  "bgColor": [1, 1, 1]
+  "bgColor": [1, 1, 1],
+  "cameraPos": [0, -10, 1]
 }

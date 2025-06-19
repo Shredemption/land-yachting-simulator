@@ -15,7 +15,26 @@ void Camera::update()
 // Reset cam to starting position/orientation
 void Camera::reset()
 {
-    if (SceneManager::engineState == EngineState::Title)
+    if (SceneManager::currentScene)
+    {
+        cameraPositionFree = SceneManager::currentScene->cameraPos;
+        cameraPosition = glm::vec3(0.f, 0.f, 0.f);
+
+        yawFree = glm::radians(SceneManager::currentScene->cameraDir[0]);
+        pitchFree = glm::radians(SceneManager::currentScene->cameraDir[1]);
+        rollFree = glm::radians(SceneManager::currentScene->cameraDir[2]);
+
+        yaw = 0, pitch = 0, roll = 0;
+        yawOffset = 0, pitchOffset = 0, rollOffset = 0;
+
+        cameraMoved = true;
+        freeCam = true;
+
+        setCamDirection(getRotation());
+        genViewMatrix(getPosition());
+    }
+
+    else
     {
         cameraPosition = glm::vec3(0.f, 0.f, 0.f);
         yaw = 0, pitch = 0, roll = 0;
@@ -23,21 +42,6 @@ void Camera::reset()
 
         cameraMoved = true;
         freeCam = false;
-
-        setCamDirection(getRotation());
-        genViewMatrix(getPosition());
-    }
-    else
-    {
-        cameraPositionFree = glm::vec3(-0.5f, -12.f, 3.f);
-        cameraPosition = glm::vec3(0.f, 0.f, 0.f);
-
-        yawFree = glm::radians(-40.0f), pitchFree = 0, rollFree = 0;
-        yaw = 0, pitch = 0, roll = 0;
-        yawOffset = 0, pitchOffset = 0, rollOffset = 0;
-
-        cameraMoved = true;
-        freeCam = true;
 
         setCamDirection(getRotation());
         genViewMatrix(getPosition());

@@ -28,6 +28,8 @@ public:
     std::vector<TextData> texts;
     std::vector<ImageData> images;
     glm::vec3 bgColor;
+    glm::vec3 cameraPos;
+    glm::vec3 cameraDir;
 
     // Global Light properties
     glm::vec3 lightPos = {1000.0f, -1000.0f, 2000.0f};

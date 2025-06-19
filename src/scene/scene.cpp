@@ -9,7 +9,7 @@ JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, scale, lod, color, angle, rotati
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
 JSONCONS_N_MEMBER_TRAITS(JSONText, 1, text, color, position, scale);
 JSONCONS_N_MEMBER_TRAITS(JSONImage, 2, file, size, position, alpha, scale, rotation, mirrored);
-JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, grids, skyBox, texts, images, bgColor);
+JSONCONS_N_MEMBER_TRAITS(JSONScene, 0, models, unitPlanes, grids, skyBox, texts, images, bgColor, cameraPos, cameraDir);
 
 Scene::Scene(std::string jsonPath, std::string sceneName)
 {
@@ -36,6 +36,8 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
 
     // Set background color from scene
     bgColor = glm::vec3(jsonScene.bgColor[0], jsonScene.bgColor[1], jsonScene.bgColor[2]);
+    cameraPos = glm::vec3(jsonScene.cameraPos[0], jsonScene.cameraPos[1], jsonScene.cameraPos[2]);
+    cameraDir = glm::vec3(jsonScene.cameraDir[0], jsonScene.cameraDir[1], jsonScene.cameraDir[2]);
 
     SceneManager::loadingState++;
     SceneManager::loadingProgress.first = 0;
