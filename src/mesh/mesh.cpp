@@ -90,8 +90,11 @@ void Mesh<VertexSimple>::setupVertexAttributes()
     glEnableVertexAttribArray(0); // Position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void *)offsetof(VertexSimple, Position));
 
-    glEnableVertexAttribArray(1); // Color
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void *)offsetof(VertexSimple, Color));
+    glEnableVertexAttribArray(1); // Normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void *)offsetof(VertexSimple, Normal));
+
+    glEnableVertexAttribArray(2); // Color
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void *)offsetof(VertexSimple, Color));
 }
 
 template class Mesh<VertexAnimated>;

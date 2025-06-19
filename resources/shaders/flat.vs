@@ -2,7 +2,8 @@
 
 // Input vertex attributes
 layout(location = 0) in vec3 position;  // Vertex position in local space (model space)
-layout(location = 1) in vec3 color;     // Vertex color
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec3 color;     // Vertex color
 
 // Output to fragment shader
 out vec3 vertexColor; 

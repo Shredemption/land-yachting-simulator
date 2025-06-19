@@ -10,6 +10,7 @@ struct RenderCommand
     RenderType type;
 
     shaderID shader;
+    glm::vec3 color;
     std::shared_ptr<std::vector<MeshVariant>> meshes;
 
     unsigned int textureUnit;

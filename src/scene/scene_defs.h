@@ -21,6 +21,7 @@ struct JSONModel
     std::vector<float> rotationAxis = {0, 1, 0};
     std::vector<float> translation = {0, 0, 0};
     std::string shader = "default";
+    std::vector<float> color = {1, 0, 0};
     bool animated = false;
     bool controlled = false;
 };
@@ -86,7 +87,7 @@ struct JSONScene
     std::vector<JSONImage> images = {};
     std::vector<float> bgColor = {0, 0, 0};
     std::vector<float> cameraPos = {0, 0, 0};
-    std::vector<float> cameraDir = {0, 0 ,0};
+    std::vector<float> cameraDir = {0, 0, 0};
 };
 
 struct ModelData
@@ -95,6 +96,7 @@ struct ModelData
     glm::mat4 u_model;
     glm::mat3 u_normal;
     shaderID shader;
+    glm::vec3 color;
     bool animated;
     bool controlled;
     std::optional<PhysicsBuffer> physics;
