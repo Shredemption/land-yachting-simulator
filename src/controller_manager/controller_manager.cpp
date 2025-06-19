@@ -29,6 +29,7 @@ void ControllerManager::update()
     case EngineState::Settings:
     case EngineState::Pause:
     case EngineState::TitleSettings:
+    case EngineState::TestMenu:
         sticksMenu();
         buttonsMenu();
         break;

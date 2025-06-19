@@ -210,6 +210,7 @@ void InputManager::setCallbacks()
 
     case EngineState::Settings:
     case EngineState::TitleSettings:
+    case EngineState::TestMenu:
         glfwSetKeyCallback(window, keyCallbackMenu);
         glfwSetCursorPosCallback(window, mousePosCallbackMenu);
         glfwSetMouseButtonCallback(window, mouseButtonCallbackMenu);
@@ -331,6 +332,10 @@ void InputManager::MenuBack()
         break;
     case EngineState::Pause:
         UIManager::queueEngineState(EngineState::Running);
+        break;
+
+    case EngineState::TestMenu:
+        UIManager::queueEngineState(EngineState::Title);
         break;
     }
 }

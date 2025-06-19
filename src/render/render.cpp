@@ -1067,6 +1067,7 @@ void Render::renderMenu(EngineState state)
     {
     case EngineState::Title:
     case EngineState::TitleSettings:
+    case EngineState::TestMenu:
     {
         float color = 0.0f;
         if (UIManager::shouldFadeBackground)
@@ -1121,6 +1122,9 @@ void Render::renderMenu(EngineState state)
         break;
     case EngineState::Pause:
         titleText = "Paused";
+        break;
+    case EngineState::TestMenu:
+        titleText = "Tests";
         break;
     case EngineState::Settings:
     case EngineState::TitleSettings:
