@@ -43,11 +43,11 @@ std::shared_ptr<Widget> buildTitle()
     }
     {
         auto btn = std::make_shared<Button>();
-        btn->text = "Load Test Scene";
+        btn->text = "Test Menu";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { UIManager::queueEngineScene("test-yacht"); };
+        { UIManager::queueEngineState(EngineState::TestMenu); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -110,6 +110,52 @@ std::shared_ptr<Widget> buildPause()
     {
         auto btn = std::make_shared<Button>();
         btn->text = "Exit";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
+        { UIManager::queueEngineState(EngineState::Title); };
+        btn->index = index++;
+        root->AddChild(btn);
+    }
+
+    UIManager::options = index;
+
+    return root;
+}
+
+std::shared_ptr<Widget> buildTestMenu()
+{
+    auto root = std::make_shared<Widget>();
+
+    float x = 0.025f;
+    float y = 0.15f;
+    float yStep = 0.05f;
+    int steps = 0;
+    int index = 0;
+
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Load Yacht Test";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
+        { UIManager::queueEngineScene("test-yacht"); };
+        btn->index = index++;
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Load Rigid Body Test";
+        btn->pos = glm::vec2(x, y + yStep * steps++);
+        btn->size = glm::vec2(0.3f, 0.05f);
+        btn->onClick = []()
+        { UIManager::queueEngineScene("test-rigid"); };
+        btn->index = index++;
+        root->AddChild(btn);
+    }
+    {
+        auto btn = std::make_shared<Button>();
+        btn->text = "Back";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
@@ -432,6 +478,9 @@ void UIManager::load(EngineState state)
     case EngineState::Settings:
     case EngineState::TitleSettings:
         activeWidgets = buildSettings(state);
+        break;
+    case EngineState::TestMenu:
+        activeWidgets = buildTestMenu();
         break;
     }
 }

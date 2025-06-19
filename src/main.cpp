@@ -124,6 +124,7 @@ int main()
         case EngineState::Pause:
         case EngineState::Settings:
         case EngineState::TitleSettings:
+        case EngineState::TestMenu:
             UIManager::update();
             Render::renderMenu(SceneManager::engineState);
             break;

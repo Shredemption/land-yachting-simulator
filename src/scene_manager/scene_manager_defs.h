@@ -18,6 +18,7 @@ enum class EngineState
     Pause,
     Settings,
     TitleSettings,
+    TestMenu,
     Running
 };
 
