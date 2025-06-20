@@ -4,7 +4,7 @@
 #include <thread>
 #include <variant>
 
-#include "physics/yacht.hpp"
+#include "physics/physics.hpp"
 #include "physics/physics_util.hpp"
 
 struct PhysicsBuffer
