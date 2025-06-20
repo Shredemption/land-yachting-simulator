@@ -8,21 +8,26 @@ void Animation::updateYachtBones(ModelData &ModelData, const float &alpha, std::
 {
     // Abreviations
     Model *model = ModelData.model;
-    PhysicsYacht *physics = ModelData.physics->getReadAs<PhysicsYacht>();
+    Physics *physics = ModelData.physics->getReadBuffer();
+
+    BodyVariables *body = nullptr;
+    SailVariables *sail = nullptr;
+    DrivingVariables *driving = nullptr;
+    physics->getVariablePointers(body, sail, driving);
 
     // Interpolate between physics ticks
-    float steeringAngle = glm::mix(physics->prevSteeringAngle, physics->steeringAngle, alpha);
-    float wheelAngle = glm::mix(physics->prevWheelAngle, physics->wheelAngle, alpha);
-    float mastAngle = glm::mix(physics->prevMastAngle, physics->MastAngle, alpha);
-    float boomAngle = glm::mix(physics->prevBoomAngle, physics->BoomAngle, alpha);
-    float sailAngle = glm::mix(physics->prevSailAngle, physics->SailAngle, alpha);
+    float steeringAngle = glm::mix(driving->prevSteeringAngle, driving->steeringAngle, alpha);
+    float wheelAngle = glm::mix(driving->prevWheelAngle, driving->wheelAngle, alpha);
+    float mastAngle = glm::mix(sail->prevMastAngle, sail->MastAngle, alpha);
+    float boomAngle = glm::mix(sail->prevBoomAngle, sail->BoomAngle, alpha);
+    float sailAngle = glm::mix(sail->prevSailAngle, sail->SailAngle, alpha);
 
     // Decompose transforms
-    glm::vec3 prevPos = glm::vec3(physics->prevBaseTransform[3]);
-    glm::vec3 currPos = glm::vec3(physics->baseTransform[3]);
+    glm::vec3 prevPos = physics->base.prevPos;
+    glm::vec3 currPos = physics->base.pos;
 
-    glm::quat prevRot = glm::quat_cast(physics->prevBaseTransform);
-    glm::quat currRot = glm::quat_cast(physics->baseTransform);
+    glm::quat prevRot = physics->base.prevRot;
+    glm::quat currRot = physics->base.rot;
 
     // Interpolate
     glm::vec3 interpPos = glm::mix(prevPos, currPos, alpha);
