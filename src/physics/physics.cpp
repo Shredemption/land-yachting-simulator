@@ -2,16 +2,30 @@
 
 #include "pch.h"
 
-Physics::Physics(const std::string &name)
+Physics::Physics(const ModelData &model)
 {
-    bodyVariables.emplace();
-    sailVariables.emplace();
-    drivingVariables.emplace();
+    for (auto type : model.physicsTypes)
+    {
+        switch (type)
+        {
+        case PhysicsType::Body:
+            bodyVariables.emplace();
+            break;
+        case PhysicsType::Driving:
+            drivingVariables.emplace();
+            break;
+        case PhysicsType::Sail:
+            sailVariables.emplace();
+            break;
+        }
+    }
 
     BodyVariables *body = nullptr;
     SailVariables *sail = nullptr;
     DrivingVariables *driving = nullptr;
     getVariablePointers(body, sail, driving);
+
+    std::string name = model.model->name;
 
     if (name == "dn-duvel")
     {

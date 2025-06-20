@@ -57,8 +57,16 @@ struct DrivingVariables
     float rollScaling;
 };
 
-struct DebugForce {
+struct DebugForce
+{
     glm::vec3 position;
     glm::vec3 force;
     std::string label;
+};
+
+enum class PhysicsType
+{
+    Body,
+    Driving,
+    Sail
 };

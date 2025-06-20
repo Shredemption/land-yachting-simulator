@@ -23,6 +23,7 @@ struct JSONModel
     std::string shader = "default";
     std::vector<float> color = {1, 0, 0};
     bool animated = false;
+    std::vector<std::string> physics;
     bool controlled = false;
 };
 
@@ -100,6 +101,7 @@ struct ModelData
     bool animated;
     bool controlled;
     std::optional<PhysicsBuffer> physics;
+    std::vector<PhysicsType> physicsTypes;
 };
 
 struct UnitPlaneData
