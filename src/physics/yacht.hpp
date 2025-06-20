@@ -3,45 +3,39 @@
 #include <glm/glm.hpp>
 
 #include <string>
+#include <optional>
+#include <vector>
 
-class PhysicsYacht
+#include "physics/physics_defs.h"
+
+class Physics
 {
 public:
     // Constructor
-    PhysicsYacht(const std::string &name);
-    
-    void move(bool &controlled);
+    Physics(const std::string &name);
+
+    void update(bool &controlled);
     void reset(const glm::mat4 &u_model);
     void savePrevState();
-    void copyFrom(const PhysicsYacht &other);
+    void copyFrom(const Physics &other);
 
-    // Velocity and steering variables
-    glm::mat4 baseTransform, prevBaseTransform;
-    float steeringAngle = 0.0f, prevSteeringAngle;
-    float steeringSmoothness;
-    float maxSteeringAngle;
-    float steeringAttenuation;
-    float forwardVelocity = 0.0f;
-    float wheelAngle = 0.0f, prevWheelAngle;
+    BaseVariables base;
+    std::optional<BodyVariables> bodyVariables;
+    std::optional<SailVariables> sailVariables;
+    std::optional<DrivingVariables> drivingVariables;
 
-    // Mast/sail/boom angles
-    float maxMastAngle;
-    float maxBoomAngle;
-    float MastAngle = 0.0f, prevMastAngle;
-    float BoomAngle = 0.0f, prevBoomAngle;
-    float sailControlFactor = 1.0f;
-    float optimalAngle;
-    float SailAngle = 0.0f, prevSailAngle;
+    std::vector<DebugForce> debugForces;
 
-    // Friction/drag coefficients
-    float maxLiftCoefficient;
-    float minDragCoefficient;
-    float rollCoefficient;
-    float rollScaling;
+    void getVariablePointers(BodyVariables *&body, SailVariables *&sails, DrivingVariables *&driving)
+    {
+        body = bodyVariables ? &bodyVariables.value() : nullptr;
+        sails = sailVariables ? &sailVariables.value() : nullptr;
+        driving = drivingVariables ? &drivingVariables.value() : nullptr;
+    }
 
-    // Body size properties
-    float sailArea;
-    float mass;
-    float bodyDragCoefficient;
-    float bodyArea;
+private:
+    void updateInputs(bool controlled);
+    void updateSail(bool controlled);
+    void updateBody(bool controlled);
+    void updateDriving(bool controlled);
 };

@@ -57,8 +57,8 @@ void ThreadManager::physicsThreadFunction()
                 switch (model.model->modelType)
                 {
                 case ModelType::Yacht:
-                    model.physics->getWriteAs<PhysicsYacht>()->copyFrom(*model.physics->getReadAs<PhysicsYacht>());
-                    model.physics->getWriteAs<PhysicsYacht>()->savePrevState();
+                    model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
+                    model.physics->getWriteBuffer()->savePrevState();
                     break;
                 }
             }
@@ -79,7 +79,7 @@ void ThreadManager::physicsThreadFunction()
                         switch (model.model->modelType)
                         {
                         case ModelType::Yacht:
-                            model.physics->getWriteAs<PhysicsYacht>()->move(model.controlled);
+                            model.physics->getWriteBuffer()->update(model.controlled);
                             break;
                         }
                     }

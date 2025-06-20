@@ -2,292 +2,297 @@
 
 #include "pch.h"
 
-PhysicsYacht::PhysicsYacht(const std::string &name)
+Physics::Physics(const std::string &name)
 {
-    // Set base transform to 1
-    baseTransform = glm::mat4(1.0f);
+    bodyVariables.emplace();
+    sailVariables.emplace();
+    drivingVariables.emplace();
 
-    // Check which yacht, and apply correct properties
+    BodyVariables *body = nullptr;
+    SailVariables *sail = nullptr;
+    DrivingVariables *driving = nullptr;
+    getVariablePointers(body, sail, driving);
+
     if (name == "dn-duvel")
     {
         // Max control angles
-        maxMastAngle = glm::radians(60.0f);
-        maxBoomAngle = glm::radians(90.0f);
+        sail->maxMastAngle = glm::radians(60.0f);
+        sail->maxBoomAngle = glm::radians(90.0f);
 
         // Sail physics properties
-        maxLiftCoefficient = 1.5f;
-        optimalAngle = glm::radians(20.0f);
-        minDragCoefficient = 0.1f;
-        sailArea = 6.0f;
+        sail->maxLiftCoefficient = 1.5f;
+        sail->optimalAngle = glm::radians(20.0f);
+        sail->minDragCoefficient = 0.1f;
+        sail->area = 6.0f;
 
         // Body properties
-        rollCoefficient = 0.005f;
-        rollScaling = 15.0f;
-        mass = 250.0f;
-        bodyDragCoefficient = 0.4f;
-        bodyArea = 1.2f;
+        driving->rollCoefficient = 0.01f;
+        driving->rollScaling = 15.0f;
+        base.mass = 250.0f;
+        body->dragCoefficient = 0.4f;
+        body->area = 1.2f;
 
         // Steering properties
-        steeringSmoothness = 3.0f;
-        maxSteeringAngle = 25.0f;
-        steeringAttenuation = 0.5f;
+        driving->steeringSmoothness = 3.0f;
+        driving->maxSteeringAngle = 25.0f;
+        driving->steeringAttenuation = 0.5f;
     }
 
     else if (name == "red-piper")
     {
         // Max control angles
-        maxMastAngle = glm::radians(60.0f);
-        maxBoomAngle = glm::radians(90.0f);
+        sail->maxMastAngle = glm::radians(60.0f);
+        sail->maxBoomAngle = glm::radians(90.0f);
 
         // Sail physics properties
-        maxLiftCoefficient = 1.3f;
-        optimalAngle = glm::radians(20.0f);
-        minDragCoefficient = 0.1f;
-        sailArea = 6.8f;
+        sail->maxLiftCoefficient = 1.3f;
+        sail->optimalAngle = glm::radians(20.0f);
+        sail->minDragCoefficient = 0.1f;
+        sail->area = 6.8f;
 
         // Body properties
-        rollCoefficient = 0.005f;
-        rollScaling = 15.0f;
-        mass = 180.0f;
-        bodyDragCoefficient = 0.35f;
-        bodyArea = 1.0f;
+        driving->rollCoefficient = 0.01f;
+        driving->rollScaling = 15.0f;
+        base.mass = 180.0f;
+        body->dragCoefficient = 0.35f;
+        body->area = 1.0f;
 
         // Steering properties
-        steeringSmoothness = 3.0f;
-        maxSteeringAngle = 25.0f;
-        steeringAttenuation = 0.45f;
+        driving->steeringSmoothness = 3.0f;
+        driving->maxSteeringAngle = 25.0f;
+        driving->steeringAttenuation = 0.45f;
     }
 
     else if (name == "blue-piper")
     {
         // Max control angles
-        maxMastAngle = glm::radians(60.0f);
-        maxBoomAngle = glm::radians(90.0f);
+        sail->maxMastAngle = glm::radians(60.0f);
+        sail->maxBoomAngle = glm::radians(90.0f);
 
         // Sail physics properties
-        maxLiftCoefficient = 1.4f;
-        optimalAngle = glm::radians(20.0f);
-        minDragCoefficient = 0.1f;
-        sailArea = 6.4f;
+        sail->maxLiftCoefficient = 1.4f;
+        sail->optimalAngle = glm::radians(20.0f);
+        sail->minDragCoefficient = 0.1f;
+        sail->area = 6.4f;
 
         // Body properties
-        rollCoefficient = 0.005f;
-        rollScaling = 15.0f;
-        mass = 180.0f;
-        bodyDragCoefficient = 0.35f;
-        bodyArea = 1.0f;
+        driving->rollCoefficient = 0.01f;
+        driving->rollScaling = 15.0f;
+        base.mass = 180.0f;
+        body->dragCoefficient = 0.35f;
+        body->area = 1.0f;
 
         // Steering properties
-        steeringSmoothness = 1.5f;
-        maxSteeringAngle = 25.0f;
-        steeringAttenuation = 1.55f;
+        driving->steeringSmoothness = 1.5f;
+        driving->maxSteeringAngle = 25.0f;
+        driving->steeringAttenuation = 1.55f;
     }
 
     else if (name == "sietske")
     {
         // Max control angles
-        maxMastAngle = glm::radians(60.0f);
-        maxBoomAngle = glm::radians(90.0f);
+        sail->maxMastAngle = glm::radians(60.0f);
+        sail->maxBoomAngle = glm::radians(90.0f);
 
         // Sail physics properties
-        maxLiftCoefficient = 1.5f;
-        optimalAngle = glm::radians(20.0f);
-        minDragCoefficient = 0.1f;
-        sailArea = 5.7f;
+        sail->maxLiftCoefficient = 1.5f;
+        sail->optimalAngle = glm::radians(20.0f);
+        sail->minDragCoefficient = 0.1f;
+        sail->area = 5.7f;
 
         // Body properties
-        rollCoefficient = 0.004f;
-        rollScaling = 20.0f;
-        mass = 200.0f;
-        bodyDragCoefficient = 0.2f;
-        bodyArea = 1.0f;
+        driving->rollCoefficient = 0.008f;
+        driving->rollScaling = 20.0f;
+        base.mass = 200.0f;
+        body->dragCoefficient = 0.2f;
+        body->area = 1.0f;
 
         // Steering properties
-        steeringSmoothness = 2.0f;
-        maxSteeringAngle = 22.22f;
-        steeringAttenuation = 1.f;
+        driving->steeringSmoothness = 2.0f;
+        driving->maxSteeringAngle = 22.22f;
+        driving->steeringAttenuation = 1.f;
     }
 
     else
     {
         // Max control angles
-        maxMastAngle = glm::radians(40.0f);
-        maxBoomAngle = glm::radians(80.0f);
+        sail->maxMastAngle = glm::radians(40.0f);
+        sail->maxBoomAngle = glm::radians(80.0f);
 
         // Sail physics properties
-        maxLiftCoefficient = 1.0f;
-        optimalAngle = glm::radians(20.0f);
-        minDragCoefficient = 0.1f;
-        sailArea = 5.0f;
+        sail->maxLiftCoefficient = 1.0f;
+        sail->optimalAngle = glm::radians(20.0f);
+        sail->minDragCoefficient = 0.1f;
+        sail->area = 5.0f;
 
         // Body properties
-        rollCoefficient = 0.005f;
-        rollScaling = 20.0f;
-        mass = 100.0f;
-        bodyDragCoefficient = 0.1f;
-        bodyArea = 1.0f;
+        driving->rollCoefficient = 0.01f;
+        driving->rollScaling = 20.0f;
+        base.mass = 100.0f;
+        body->dragCoefficient = 0.1f;
+        body->area = 1.0f;
 
         // Steering properties
-        steeringSmoothness = 1.0f;
-        maxSteeringAngle = 30.0f;
-        steeringAttenuation = 1.0f;
+        driving->steeringSmoothness = 1.0f;
+        driving->maxSteeringAngle = 30.0f;
+        driving->steeringAttenuation = 1.0f;
     }
 }
 
-void PhysicsYacht::reset(const glm::mat4 &u_model)
+void Physics::reset(const glm::mat4 &u_model)
 {
-    baseTransform = u_model;
-    sailControlFactor = 1.0f;
-    MastAngle = 0.0f;
-    BoomAngle = 0.0f;
-    SailAngle = 0.0f;
-    steeringAngle = 0.0f;
-    forwardVelocity = 0.0f;
-    wheelAngle = 0.0f;
+    BodyVariables *body = nullptr;
+    SailVariables *sail = nullptr;
+    DrivingVariables *driving = nullptr;
+    getVariablePointers(body, sail, driving);
+
+    base.pos = glm::vec3(u_model[3]);
+    base.vel = glm::vec3(0.0f);
+
+    base.rot = glm::quat_cast(glm::mat3(u_model));
+
+    sail->controlFactor = 1.0f;
+    sail->MastAngle = 0.0f;
+    sail->BoomAngle = 0.0f;
+    sail->SailAngle = 0.0f;
+
+    driving->steeringAngle = 0.0f;
+    driving->wheelAngle = 0.0f;
 }
 
-void PhysicsYacht::move(bool &controlled)
+void Physics::savePrevState()
 {
-    // Acceleration from keys
-    float forwardAcceleration = 0.0f;
-    float steeringChange = 0.0f;
+    if (bodyVariables)
+    {
+        base.prevPos = base.pos;
+        base.prevRot = base.rot;
+    }
 
-    double tickTime = 1 / SettingsManager::settings.physics.tickRate;
+    if (sailVariables)
+    {
+        SailVariables *sail = &sailVariables.value();
+        sail->prevMastAngle = sail->MastAngle;
+        sail->prevBoomAngle = sail->BoomAngle;
+        sail->prevSailAngle = sail->SailAngle;
+    }
+
+    if (drivingVariables)
+    {
+        DrivingVariables *driving = &drivingVariables.value();
+        driving->prevSteeringAngle = driving->steeringAngle;
+        driving->prevWheelAngle = driving->wheelAngle;
+    }
+}
+
+void Physics::copyFrom(const Physics &other)
+{
+    *this = other;
+}
+
+void Physics::updateInputs(bool controlled)
+{
+    BodyVariables *body = nullptr;
+    SailVariables *sail = nullptr;
+    DrivingVariables *driving = nullptr;
+    getVariablePointers(body, sail, driving);
+
+    float tickTime = (1 / SettingsManager::settings.physics.tickRate);
 
     if (InputManager::inputType == InputType::Controller)
     {
-        if (controlled)
+        if (ControllerManager::state.buttons[GLFW_GAMEPAD_BUTTON_A].held())
         {
-            if (ControllerManager::state.buttons[GLFW_GAMEPAD_BUTTON_A].held())
-            {
-                forwardAcceleration += 1.f;
-            }
-
-            steeringChange = -ControllerManager::state.sticks[0].x;
-
-            sailControlFactor += -ControllerManager::state.sticks[0].y * tickTime;
+            base.acc += base.rot * glm::vec3(0, 1, 0);
         }
 
-        steeringAngle = 0.5 * steeringAngle + 0.5 * steeringChange * maxSteeringAngle;
+        driving->steeringChange = -ControllerManager::state.sticks[0].x;
+
+        sail->controlFactor += -ControllerManager::state.sticks[0].y * tickTime;
     }
-    else if (controlled)
+    else
     {
         {
             if (PhysicsUtil::keyInputs[0])
             {
-                sailControlFactor += 1.f * tickTime;
+                sail->controlFactor += 1.f * tickTime;
             }
             if (PhysicsUtil::keyInputs[1])
             {
-                sailControlFactor -= 0.4f * tickTime;
+                sail->controlFactor -= 0.4f * tickTime;
             }
             if (PhysicsUtil::keyInputs[2])
             {
-                steeringChange += steeringSmoothness * maxSteeringAngle;
+                driving->steeringChange += driving->steeringSmoothness * driving->maxSteeringAngle;
             }
             if (PhysicsUtil::keyInputs[3])
             {
-                steeringChange -= steeringSmoothness * maxSteeringAngle;
+                driving->steeringChange -= driving->steeringSmoothness * driving->maxSteeringAngle;
             }
             if (PhysicsUtil::keyInputs[4])
             {
-                forwardAcceleration += 1.f;
+                base.acc += base.rot * glm::vec3(0, 1, 0);
             }
         }
-
-        steeringAngle += (steeringChange - steeringAngle * steeringSmoothness) * tickTime;
     }
 
-    // Clamp sail control
-    sailControlFactor = std::clamp(sailControlFactor, 0.2f, 1.0f);
+    sail->controlFactor = std::clamp(sail->controlFactor, 0.2f, 1.0f);
+}
+
+void Physics::updateSail(bool controlled)
+{
+    SailVariables *sail = &sailVariables.value();
 
     // Find new angles for sail
-    glm::vec3 direction = glm::normalize(glm::vec3(baseTransform[1]));
+    glm::vec3 direction = base.rot * glm::vec3(0, 1, 0);
     float angleToWind = glm::orientedAngle(direction, PhysicsUtil::windSourceDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Apply angles to sail setup
-    float targetMastAngle = (0.5f + sailControlFactor) / 1.5f * std::clamp(angleToWind, -maxMastAngle, maxMastAngle);
-    float targetBoomAngle = sailControlFactor * std::clamp(angleToWind, -maxBoomAngle, maxBoomAngle);
+    float targetMastAngle = (0.5f + sail->controlFactor) / 1.5f * std::clamp(angleToWind, -sail->maxMastAngle, sail->maxMastAngle);
+    float targetBoomAngle = sail->controlFactor * std::clamp(angleToWind, -sail->maxBoomAngle, sail->maxBoomAngle);
 
     // Smooth angle transitions
     float smoothingFactor = 0.05f;
-    MastAngle += smoothingFactor * (targetMastAngle - MastAngle);
-    BoomAngle += smoothingFactor * (targetBoomAngle - BoomAngle);
-    SailAngle = BoomAngle * (1 + 0.1 * fabs(sin(angleToWind / 2)));
+    sail->MastAngle += smoothingFactor * (targetMastAngle - sail->MastAngle);
+    sail->BoomAngle += smoothingFactor * (targetBoomAngle - sail->BoomAngle);
+    sail->SailAngle = sail->BoomAngle * (1 + 0.1 * fabs(sin(angleToWind / 2)));
 
     // Apparent wind direction
-    glm::vec3 apparentWind = -PhysicsUtil::windSourceDirection * PhysicsUtil::windStrength - direction * forwardVelocity;
+    glm::vec3 apparentWind = -PhysicsUtil::windSourceDirection * PhysicsUtil::windStrength - direction * glm::length(base.vel);
     float apparentWindSpeed = glm::length(apparentWind);
     glm::vec3 apparentWindDirection = glm::normalize(apparentWind);
 
     // Relative sail angle
     float angleToApparentWind = glm::orientedAngle(direction, -apparentWindDirection, glm::vec3(0.0f, 0.0f, 1.0f));
-    float relativeSailAngle = angleToApparentWind - SailAngle;
+    float relativeSailAngle = angleToApparentWind - sail->SailAngle;
     float absAngle = fabs(relativeSailAngle);
 
     // Lift and Drag coefficients
-    float effectiveCL = (absAngle <= optimalAngle ? maxLiftCoefficient * (relativeSailAngle / optimalAngle) * sin(2.0f * absAngle) / sin(2.0f * optimalAngle) : maxLiftCoefficient * (optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
-    float effectiveCD = minDragCoefficient + sin(absAngle) * sin(absAngle);
+    float effectiveCL = (absAngle <= sail->optimalAngle ? sail->maxLiftCoefficient * (relativeSailAngle / sail->optimalAngle) * sin(2.0f * absAngle) / sin(2.0f * sail->optimalAngle) : sail->maxLiftCoefficient * (sail->optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
+    float effectiveCD = sail->minDragCoefficient + sin(absAngle) * sin(absAngle);
 
     // Lift and Drag forces
     float dynamicPressure = 0.5f * PhysicsUtil::airDensity * apparentWindSpeed * apparentWindSpeed;
-    float localLift = dynamicPressure * sailArea * effectiveCL;
-    float localDrag = dynamicPressure * sailArea * effectiveCD;
+    float liftMagnitude = dynamicPressure * sail->area * effectiveCL;
+    float dragMagnitude = dynamicPressure * sail->area * effectiveCD;
 
-    float sailLiftForce = localLift * sin(angleToApparentWind);
-    float sailDragForce = localDrag * cos(angleToApparentWind);
-
-    float bodyDragForce = 0.5f * PhysicsUtil::airDensity * bodyDragCoefficient * bodyArea * forwardVelocity * forwardVelocity;
-
-    // Rolling Resistance
-    float effectiveCr = rollCoefficient * (1 + (forwardVelocity * forwardVelocity) / (rollScaling * rollScaling));
-    float rollResistance = effectiveCr * mass * PhysicsUtil::g;
-
-    // Stationary force/acceleration
-    const float standstillVelocity = 0.02f;
-    float netForce;
-
-    // if stationary
-    if (forwardVelocity < standstillVelocity)
-    {
-        // if propulsion less than rollresistance
-        if (sailLiftForce - sailDragForce - bodyDragForce < rollResistance)
-        {
-            netForce = 0.0f;
-            forwardVelocity *= 0.75f;
-        }
-        // if propulsion greater than rollresistance
-        else
-        {
-            netForce = sailLiftForce - sailDragForce - bodyDragForce - rollResistance;
-        }
-    }
-    // if already moving
+    glm::vec3 dragDir = -apparentWindDirection;
+    glm::vec3 liftDir = glm::cross(dragDir, glm::vec3(0, 0, 1));
+    if (glm::length(liftDir) > 0.0f)
+        liftDir = glm::normalize(liftDir);
     else
-    {
-        netForce = sailLiftForce - sailDragForce - bodyDragForce - rollResistance;
-    }
+        liftDir = glm::vec3(0);
 
-    forwardAcceleration += netForce / mass;
+    glm::vec3 sailLiftForce = liftMagnitude * liftDir;
+    glm::vec3 sailDragForce = dragMagnitude * dragDir;
 
-    // Apply accelerations
-    forwardVelocity += forwardAcceleration * tickTime;
-    float effectiveSteeringAngle = steeringAngle / (1 + steeringAttenuation * forwardVelocity);
+    base.netForce += sailLiftForce + sailDragForce;
 
-    // Transform with velocities
-    baseTransform *= glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(effectiveSteeringAngle * forwardVelocity * tickTime)), glm::vec3(0.0f, 0.0f, 1.0f));
-    baseTransform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, forwardVelocity * tickTime, 0.0f));
-    wheelAngle += forwardVelocity * tickTime * 100;
+    debugForces.push_back({base.pos, sailLiftForce, "Lift"});
+    debugForces.push_back({base.pos, sailDragForce, "Drag"});
 
-    // Send values to debug
     if (controlled)
     {
-        Render::debugPhysicsData.clear();
-        Render::debugPhysicsData.push_back(std::pair("velocity", forwardVelocity));
-        Render::debugPhysicsData.push_back(std::pair("acceleration", forwardAcceleration));
         Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
-        Render::debugPhysicsData.push_back(std::pair("steeringAngle", steeringAngle));
-        Render::debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
         Render::debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
         Render::debugPhysicsData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
         Render::debugPhysicsData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
@@ -296,18 +301,118 @@ void PhysicsYacht::move(bool &controlled)
     }
 }
 
-void PhysicsYacht::savePrevState()
+void Physics::updateDriving(bool controlled)
 {
-    // Save previous state
-    prevBaseTransform = baseTransform;
-    prevSteeringAngle = steeringAngle;
-    prevWheelAngle = wheelAngle;
-    prevMastAngle = MastAngle;
-    prevBoomAngle = BoomAngle;
-    prevSailAngle = SailAngle;
+    DrivingVariables *driving = &drivingVariables.value();
+
+    float tickTime = (1 / SettingsManager::settings.physics.tickRate);
+
+    // Rolling Resistance
+    if (glm::length(base.vel) > 1e-4f)
+    {
+        glm::vec3 rollDir = -glm::normalize(base.vel);
+        float effectiveCr = driving->rollCoefficient * (1 + glm::dot(base.vel, base.vel) / (driving->rollScaling * driving->rollScaling));
+        float rollResistance = effectiveCr * base.mass * PhysicsUtil::g;
+        base.netForce += rollResistance * rollDir;
+    }
+
+    driving->wheelAngle += glm::length(base.vel) * 100 / SettingsManager::settings.physics.tickRate;
+
+    float effectiveSteeringAngle = driving->steeringAngle / (1 + driving->steeringAttenuation * glm::length(base.vel));
+
+    glm::quat deltaRot = glm::angleAxis(glm::radians(effectiveSteeringAngle * glm::length(base.vel) * tickTime), glm::vec3(0, 0, 1));
+
+    base.rot = normalize(deltaRot * base.rot);
+
+    if (controlled)
+    {
+        Render::debugPhysicsData.push_back(std::pair("steeringAngle", driving->steeringAngle));
+        Render::debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
+    }
 }
 
-void PhysicsYacht::copyFrom(const PhysicsYacht &other)
+void Physics::updateBody(bool controlled)
 {
-    *this = other;
+    BodyVariables *body = &bodyVariables.value();
+
+    if (glm::length(base.vel) > 1e-4f)
+    {
+        glm::vec3 dragDir = -glm::normalize(base.vel);
+        float bodyDragForce = 0.5f * PhysicsUtil::airDensity * body->dragCoefficient * body->area * glm::dot(base.vel, base.vel);
+        base.netForce += bodyDragForce * dragDir;
+    }
+}
+
+void Physics::update(bool &controlled)
+{
+    debugForces.clear();
+
+    BodyVariables *body = nullptr;
+    SailVariables *sail = nullptr;
+    DrivingVariables *driving = nullptr;
+    getVariablePointers(body, sail, driving);
+
+    float tickTime = (1 / SettingsManager::settings.physics.tickRate);
+
+    // Reset temp variables
+    base.acc = glm::vec3(0.0f);
+    base.netForce = glm::vec3(0.0f);
+
+    if (drivingVariables)
+        driving->steeringChange = 0.0f;
+
+    if (controlled)
+    {
+        Render::debugPhysicsData.clear();
+        updateInputs(controlled);
+    }
+
+    if (InputManager::inputType == InputType::Controller)
+        driving->steeringAngle = 0.5 * driving->steeringAngle + 0.5 * driving->steeringChange * driving->maxSteeringAngle;
+    else
+        driving->steeringAngle += (driving->steeringChange - driving->steeringAngle * driving->steeringSmoothness) * tickTime;
+
+    if (sailVariables)
+        updateSail(controlled);
+
+    if (drivingVariables)
+        updateDriving(controlled);
+
+    if (bodyVariables)
+        updateBody(controlled);
+
+    // Stationary force/acceleration
+    const float standstillVelocity = 0.02f;
+
+    // if stationary
+    if ((glm::length(base.vel) < standstillVelocity) && (glm::dot(base.netForce, base.vel) <= 0.0f))
+    {
+        base.netForce = glm::vec3(0.0f);
+        base.vel *= 0.2f;
+    }
+
+    if (drivingVariables)
+    {
+        glm::vec3 forward = base.rot * glm::vec3(0, 1, 0);
+
+        glm::vec3 forwardForce = glm::dot(base.netForce, forward) * forward;
+        base.acc += forwardForce / base.mass;
+        base.vel += base.acc * tickTime;
+        glm::vec3 lateral = base.vel - glm::dot(base.vel, forward) * forward;
+        base.vel -= lateral * 0.9f;
+
+        base.pos += base.vel * tickTime;
+    }
+    else
+    {
+        base.acc += base.netForce / base.mass;
+        base.vel += base.acc * tickTime;
+        base.pos += base.vel * tickTime;
+    }
+
+    if (controlled)
+    {
+        Render::debugPhysicsData.push_back(std::pair("velocity", glm::length(base.vel)));
+        Render::debugPhysicsData.push_back(std::pair("acceleration", glm::length(base.acc)));
+    }
 }

@@ -73,9 +73,9 @@ void SceneManager::runOneFrame()
     {
         if (model.physics.has_value())
         {
-            model.physics->getWriteAs<PhysicsYacht>()->copyFrom(*model.physics->getReadAs<PhysicsYacht>());
-            model.physics->getWriteAs<PhysicsYacht>()->savePrevState();
-            model.physics->getWriteAs<PhysicsYacht>()->move(model.controlled);
+            model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
+            model.physics->getWriteBuffer()->savePrevState();
+            model.physics->getWriteBuffer()->update(model.controlled);
             model.physics->swapBuffers();
         }
     }

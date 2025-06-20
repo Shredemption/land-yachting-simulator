@@ -7,8 +7,6 @@
 #include "physics/yacht.hpp"
 #include "physics/physics_util.hpp"
 
-using Physics = std::variant<PhysicsYacht>;
-
 struct PhysicsBuffer
 {
     std::unique_ptr<Physics> buffers[2];
@@ -26,18 +24,4 @@ struct PhysicsBuffer
     Physics *getWriteBuffer() { return buffers[(readIndex + 1) % 2].get(); }
 
     void swapBuffers() { readIndex = (readIndex + 1) % 2; }
-
-    template <typename T>
-    T *getReadAs()
-    {
-        Physics *buf = getReadBuffer();
-        return std::get_if<T>(buf);
-    }
-
-    template <typename T>
-    T *getWriteAs()
-    {
-        Physics *buf = getWriteBuffer();
-        return std::get_if<T>(buf);
-    }
 };

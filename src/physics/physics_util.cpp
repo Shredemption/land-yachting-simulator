@@ -41,11 +41,11 @@ void PhysicsUtil::setup()
         {
             model.physics.emplace();
 
-            model.physics->buffers[0] = std::make_unique<Physics>(PhysicsYacht(model.model->name));
-            model.physics->buffers[1] = std::make_unique<Physics>(PhysicsYacht(model.model->name));
+            model.physics->buffers[0] = std::make_unique<Physics>(model.model->name);
+            model.physics->buffers[1] = std::make_unique<Physics>(model.model->name);
 
-            model.physics->getReadAs<PhysicsYacht>()->reset(model.u_model);
-            model.physics->getWriteAs<PhysicsYacht>()->reset(model.u_model);
+            model.physics->buffers[0]->reset(model.u_model);
+            model.physics->buffers[1]->reset(model.u_model);
         }
     }
 }
