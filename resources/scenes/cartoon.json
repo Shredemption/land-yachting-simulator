@@ -8,6 +8,7 @@
       "translation": [0, 0, 2],
       "shader": "toon",
       "animated": true,
+      "physics": ["body", "driving", "sail"],
       "controlled": true
     },
     {
@@ -17,6 +18,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [-6, -1, 2],
       "shader": "toon",
+      "physics": ["body", "driving", "sail"],
       "animated": true
     },
     {
@@ -26,6 +28,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [-12, -2, 2],
       "shader": "toon",
+      "physics": ["body", "driving", "sail"],
       "animated": true
     },
     {
@@ -35,6 +38,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [-18, -3, 2],
       "shader": "toon",
+      "physics": ["body", "driving", "sail"],
       "animated": true
     },
     {
@@ -44,6 +48,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [-24, -4, 2],
       "shader": "toon",
+      "physics": ["body", "driving", "sail"],
       "animated": true
     },
     {
@@ -53,6 +58,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [-30, -5, 2],
       "shader": "toon",
+      "physics": ["body", "driving", "sail"],
       "animated": true
     },
     {
@@ -62,6 +68,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [-36, -6, 2],
       "shader": "toon",
+      "physics": ["body", "driving", "sail"],
       "animated": true
     },
     {
@@ -71,6 +78,7 @@
       "rotationAxis": [0, 0, 1],
       "translation": [-42, -7, 2],
       "shader": "toon",
+      "physics": ["body", "driving", "sail"],
       "animated": true
     }
   ],

@@ -8,11 +8,13 @@
 
 #include "physics/physics_defs.h"
 
+struct ModelData;
+
 class Physics
 {
 public:
     // Constructor
-    Physics(const std::string &name);
+    Physics(const ModelData &model);
 
     void update(bool &controlled);
     void reset(const glm::mat4 &u_model);

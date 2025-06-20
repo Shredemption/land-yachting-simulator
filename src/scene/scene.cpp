@@ -3,7 +3,7 @@
 #include "pch.h"
 
 // Json mappings
-JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, color, animated, controlled);
+JSONCONS_N_MEMBER_TRAITS(JSONModel, 1, name, scale, angle, rotationAxis, translation, shader, color, animated, physics, controlled);
 JSONCONS_N_MEMBER_TRAITS(JSONUnitPlane, 0, color, scale, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONGrid, 0, gridSize, scale, lod, color, angle, rotationAxis, translation, shader);
 JSONCONS_N_MEMBER_TRAITS(JSONSkybox, 6, up, down, left, right, front, back);
@@ -173,6 +173,15 @@ void Scene::loadModelToScene(JSONModel model)
     // Model animation data
     loadModel.animated = model.animated;
     loadModel.controlled = model.controlled;
+    for (auto type : model.physics)
+    {
+        if (type == "body")
+            loadModel.physicsTypes.push_back(PhysicsType::Body);
+        if (type == "driving")
+            loadModel.physicsTypes.push_back(PhysicsType::Driving);
+        if (type == "sail")
+            loadModel.physicsTypes.push_back(PhysicsType::Sail);
+    }
 
     // Save model
     this->structModels.emplace_back(std::move(loadModel));

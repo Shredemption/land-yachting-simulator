@@ -37,12 +37,12 @@ void PhysicsUtil::setup()
     // Setup all animated models
     for (ModelData &model : SceneManager::currentScene.get()->structModels)
     {
-        if (model.animated && model.model->modelType == ModelType::Yacht)
+        if (model.physicsTypes.size() > 0)
         {
             model.physics.emplace();
 
-            model.physics->buffers[0] = std::make_unique<Physics>(model.model->name);
-            model.physics->buffers[1] = std::make_unique<Physics>(model.model->name);
+            model.physics->buffers[0] = std::make_unique<Physics>(model);
+            model.physics->buffers[1] = std::make_unique<Physics>(model);
 
             model.physics->buffers[0]->reset(model.u_model);
             model.physics->buffers[1]->reset(model.u_model);
