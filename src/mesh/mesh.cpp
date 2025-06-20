@@ -100,3 +100,25 @@ void Mesh<VertexSimple>::setupVertexAttributes()
 template class Mesh<VertexAnimated>;
 template class Mesh<VertexTextured>;
 template class Mesh<VertexSimple>;
+
+template <typename VertexType>
+glm::vec3 Mesh<VertexType>::support(glm::vec3 direction)
+{
+    float maxDot = -std::numeric_limits<float>::infinity();
+    glm::vec3 supportPoint;
+
+    for (const auto &vertex : vertices)
+    {
+        glm::vec3 pos = std::visit([](auto &&v) -> glm::vec3
+                                   { return v.position; }, vertex);
+
+        float dot = glm::dot(pos, direction)
+        if (dot > maxDot)
+        {
+            maxDot = dot;
+            supportPoint = pos;
+        }
+    }
+
+    return supportPoint;
+}
