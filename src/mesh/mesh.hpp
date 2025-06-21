@@ -22,5 +22,5 @@ public:
     void draw();
     void setupVertexAttributes();
     void uploadToGPU();
-    glm::vec3 support(glm::vec3 direction);
+    glm::vec3 furthestInDirection(glm::vec3 direction);
 };
