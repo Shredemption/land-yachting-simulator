@@ -31,3 +31,8 @@ struct VertexSkybox
 {
     glm::vec3 Position;
 };
+
+struct VertexHitbox
+{
+    glm::vec3 Position;
+};
