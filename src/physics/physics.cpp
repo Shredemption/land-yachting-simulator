@@ -373,11 +373,32 @@ void Physics::updateBody(bool debug)
     }
 }
 
-void Physics::checkCollisions(bool debug)
+void Physics::updateGravity(bool debug)
 {
+    std::cout << base.acc.z << ", " << base.vel.z << ", " << base.pos.z << std::endl;
+
+    if (!onGround)
+        base.acc += glm::vec3(0, 0, -PhysicsUtil::g);
 }
 
-void Physics::update(bool &controlled)
+void Physics::checkCollisions(ModelData &modelData)
+{
+    for (auto &meshes : modelData.model->hitboxMeshes.value())
+    {
+        std::visit([&](auto &&mesh)
+            { 
+                glm::vec3 furthest = mesh.furthestInDirection(glm::vec3(0, 0, -1));
+
+                std::cout << furthest.z << std::endl;
+
+                if (furthest.z < 0.0f)
+                    base.vel.z = 0.0f;
+                    onGround = true; },
+            meshes);
+    }
+}
+
+void Physics::update(ModelData &modelData)
 {
     debugForces.clear();
 
@@ -395,10 +416,10 @@ void Physics::update(bool &controlled)
     if (drivingVariables)
         driving->steeringChange = 0.0f;
 
-    if (controlled)
+    if (modelData.controlled)
     {
         Render::debugPhysicsData.clear();
-        updateInputs(controlled);
+        updateInputs(modelData.controlled);
     }
 
     if (drivingVariables)
@@ -410,19 +431,19 @@ void Physics::update(bool &controlled)
     }
 
     if (sailVariables)
-        updateSail(controlled);
+        updateSail(modelData.controlled);
 
     if (drivingVariables)
-        updateDriving(controlled);
+        updateDriving(modelData.controlled);
 
     if (bodyVariables)
-        updateBody(controlled);
-
-    if (applyGravity)
-        base.acc += glm::vec3(0, 0, -PhysicsUtil::g);
+        updateBody(modelData.controlled);
 
     if (collisionVariables)
-        checkCollisions(controlled);
+        checkCollisions(modelData);
+
+    if (applyGravity)
+        updateGravity(modelData.controlled);
 
     // Stationary force/acceleration
     const float standstillVelocity = 0.02f;
@@ -453,7 +474,7 @@ void Physics::update(bool &controlled)
         base.pos += base.vel * tickTime;
     }
 
-    if (controlled)
+    if (modelData.controlled)
     {
         Render::debugPhysicsData.push_back(std::pair("velocity", glm::length(base.vel)));
         Render::debugPhysicsData.push_back(std::pair("acceleration", glm::length(base.acc)));

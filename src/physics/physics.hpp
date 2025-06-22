@@ -14,9 +14,9 @@ class Physics
 {
 public:
     // Constructor
-    Physics(const ModelData &model);
+    Physics(const ModelData &modelData);
 
-    void update(bool &controlled);
+    void update(ModelData &modelData);
     void reset(const glm::mat4 &u_model);
     void savePrevState();
     void copyFrom(const Physics &other);
@@ -28,6 +28,7 @@ public:
     std::optional<CollisionVariables> collisionVariables;
 
     bool applyGravity = false;
+    bool onGround = false;
 
     std::vector<DebugForce> debugForces;
 
@@ -43,5 +44,6 @@ private:
     void updateSail(bool debug);
     void updateBody(bool debug);
     void updateDriving(bool debug);
-    void checkCollisions(bool debug);
+    void updateGravity(bool debug);
+    void checkCollisions(ModelData &modelData);
 };

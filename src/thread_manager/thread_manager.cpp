@@ -71,7 +71,7 @@ void ThreadManager::physicsThreadFunction()
                 {
                     if (model.physics.has_value())
                     {
-                        model.physics->getWriteBuffer()->update(model.controlled);
+                        model.physics->getWriteBuffer()->update(model);
                     }
                 }
 
