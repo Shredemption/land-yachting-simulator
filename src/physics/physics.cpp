@@ -17,6 +17,12 @@ Physics::Physics(const ModelData &model)
         case PhysicsType::Sail:
             sailVariables.emplace();
             break;
+        case PhysicsType::Gravity:
+            applyGravity = true;
+            break;
+        case PhysicsType::Collision:
+            collisionVariables.emplace();
+            break;
         }
     }
 
@@ -265,7 +271,7 @@ void Physics::updateInputs(bool controlled)
     sail->controlFactor = std::clamp(sail->controlFactor, 0.2f, 1.0f);
 }
 
-void Physics::updateSail(bool controlled)
+void Physics::updateSail(bool debug)
 {
     SailVariables *sail = &sailVariables.value();
 
@@ -317,7 +323,7 @@ void Physics::updateSail(bool controlled)
     debugForces.push_back({base.pos, sailLiftForce, "Lift"});
     debugForces.push_back({base.pos, sailDragForce, "Drag"});
 
-    if (controlled)
+    if (debug)
     {
         Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
         Render::debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
@@ -328,7 +334,7 @@ void Physics::updateSail(bool controlled)
     }
 }
 
-void Physics::updateDriving(bool controlled)
+void Physics::updateDriving(bool debug)
 {
     DrivingVariables *driving = &drivingVariables.value();
 
@@ -351,14 +357,14 @@ void Physics::updateDriving(bool controlled)
 
     base.rot = normalize(deltaRot * base.rot);
 
-    if (controlled)
+    if (debug)
     {
         Render::debugPhysicsData.push_back(std::pair("steeringAngle", driving->steeringAngle));
         Render::debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
     }
 }
 
-void Physics::updateBody(bool controlled)
+void Physics::updateBody(bool debug)
 {
     BodyVariables *body = &bodyVariables.value();
 
@@ -368,6 +374,10 @@ void Physics::updateBody(bool controlled)
         float bodyDragForce = 0.5f * PhysicsUtil::airDensity * body->dragCoefficient * body->area * glm::dot(base.vel, base.vel);
         base.netForce += bodyDragForce * dragDir;
     }
+}
+
+void Physics::checkCollisions(bool debug)
+{
 }
 
 void Physics::update(bool &controlled)
@@ -410,6 +420,12 @@ void Physics::update(bool &controlled)
 
     if (bodyVariables)
         updateBody(controlled);
+
+    if (applyGravity)
+        base.acc += glm::vec3(0, 0, -PhysicsUtil::g);
+
+    if (collisionVariables)
+        checkCollisions(controlled);
 
     // Stationary force/acceleration
     const float standstillVelocity = 0.02f;

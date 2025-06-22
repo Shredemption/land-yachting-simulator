@@ -6,7 +6,7 @@
       "animated": false,
       "color": [0.8, 0, 0],
       "shader": "single-color",
-      "physics": ["body"]
+      "physics": ["gravity", "collision"]
     },
     {
       "name": "icosphere",
