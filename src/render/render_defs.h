@@ -23,6 +23,7 @@ enum class BufferState
 enum class RenderType
 {
     Model,
+    Hitbox,
     OpaquePlane,
     TransparentPlane,
     Grid

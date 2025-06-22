@@ -54,6 +54,7 @@ shaderID ShaderUtil::ShaderFromName(const std::string shaderName)
         {"toon-terrain", shaderID::ToonTerrain},
         {"toon-water", shaderID::ToonWater},
         {"darken-blur", shaderID::DarkenBlur},
+        {"hitbox", shaderID::Hitbox},
         {"post", shaderID::Post},
     };
 
@@ -76,6 +77,7 @@ std::string ShaderUtil::NameFromShader(const shaderID shader)
         {shaderID::ToonTerrain, "toon-terrain"},
         {shaderID::ToonWater, "toon-water"},
         {shaderID::DarkenBlur, "darken-blur"},
+        {shaderID::Hitbox, "hitbox"},
         {shaderID::Post, "post"},
     };
 
