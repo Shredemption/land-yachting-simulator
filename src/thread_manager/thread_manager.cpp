@@ -54,13 +54,8 @@ void ThreadManager::physicsThreadFunction()
         {
             if (model.physics.has_value())
             {
-                switch (model.model->modelType)
-                {
-                case ModelType::Yacht:
-                    model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
-                    model.physics->getWriteBuffer()->savePrevState();
-                    break;
-                }
+                model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
+                model.physics->getWriteBuffer()->savePrevState();
             }
         }
 
@@ -76,12 +71,7 @@ void ThreadManager::physicsThreadFunction()
                 {
                     if (model.physics.has_value())
                     {
-                        switch (model.model->modelType)
-                        {
-                        case ModelType::Yacht:
-                            model.physics->getWriteBuffer()->update(model.controlled);
-                            break;
-                        }
+                        model.physics->getWriteBuffer()->update(model.controlled);
                     }
                 }
 
@@ -130,8 +120,12 @@ void ThreadManager::animationThreadFunction()
                 if (model.animated)
                 {
                     auto &writeBones = model.model->getWriteBuffer();
-                    Animation::updateYachtBones(model, alpha, writeBones);
+                    Animation::update(model, alpha, writeBones);
                     didAnimate = true;
+                }
+                else if (model.physics.has_value())
+                {
+                    Animation::update(model, alpha);
                 }
             }
         }

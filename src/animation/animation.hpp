@@ -11,5 +11,9 @@ struct ModelData;
 
 namespace Animation
 {
+    void update(ModelData &ModelData, const float &alpha);
+    void update(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones);
+
+    void updateGeneric(ModelData &ModelData, const float &alpha);
     void updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones);
 };

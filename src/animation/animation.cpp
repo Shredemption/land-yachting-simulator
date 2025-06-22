@@ -4,6 +4,53 @@
 
 #include "model/bone.h"
 
+void Animation::update(ModelData &ModelData, const float &alpha)
+{
+    switch (ModelData.model->modelType)
+    {
+    default:
+        updateGeneric(ModelData, alpha);
+        break;
+    }
+}
+
+void Animation::update(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones)
+{
+    switch (ModelData.model->modelType)
+    {
+    case ModelType::Yacht:
+        updateYachtBones(ModelData, alpha, targetBones);
+        break;
+    default:
+        updateGeneric(ModelData, alpha);
+        break;
+    }
+}
+
+void Animation::updateGeneric(ModelData &ModelData, const float &alpha)
+{
+    // Abreviations
+    Model *model = ModelData.model;
+    Physics *physics = ModelData.physics->getReadBuffer();
+
+    // Decompose transforms
+    glm::vec3 prevPos = physics->base.prevPos;
+    glm::vec3 currPos = physics->base.pos;
+
+    glm::quat prevRot = physics->base.prevRot;
+    glm::quat currRot = physics->base.rot;
+
+    // Interpolate
+    glm::vec3 interpPos = glm::mix(prevPos, currPos, alpha);
+    glm::quat interpRot = glm::slerp(prevRot, currRot, alpha);
+
+    // Reconstruct matrix
+    glm::mat4 transform = glm::translate(glm::mat4(1.0f), interpPos) * glm::toMat4(interpRot);
+
+    // Body Transform
+    ModelData.u_model = transform;
+}
+
 void Animation::updateYachtBones(ModelData &ModelData, const float &alpha, std::vector<glm::mat4> &targetBones)
 {
     // Abreviations
