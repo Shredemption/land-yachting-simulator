@@ -455,33 +455,32 @@ void Physics::update(ModelData &modelData)
     // Stationary force/acceleration
     const float standstillVelocity = 0.02f;
 
+    glm::vec3 up = Camera::worldUp;
+    glm::vec3 velHoriz = base.vel - glm::dot(base.vel, up) * up;
+
     // if stationary
-    if ((glm::length(base.vel) < standstillVelocity) && (glm::dot(base.netForce, base.vel) <= 0.0f))
+    if ((glm::length(velHoriz) < standstillVelocity) && (glm::dot(base.netForce, velHoriz) <= 0.0f))
     {
         base.netForce = glm::vec3(0.0f);
-        base.vel *= 0.2f;
+        base.vel.x *= 0.2f;
+        base.vel.y *= 0.2f;
     }
+
+    base.acc += base.netForce / base.mass;
+    base.vel += base.acc * tickTime;
 
     if (drivingVariables)
     {
         glm::vec3 forward = base.rot * glm::vec3(0, 1, 0);
-
-        glm::vec3 forwardForce = glm::dot(base.netForce, forward) * forward;
-        base.acc += forwardForce / base.mass;
-        base.vel += base.acc * tickTime;
-        glm::vec3 lateral = base.vel - glm::dot(base.vel, forward) * forward;
+        glm::vec3 forwardHoriz = glm::normalize(forward - glm::dot(forward, up) * up);
+        glm::vec3 lateral = velHoriz - glm::dot(velHoriz, forwardHoriz) * forwardHoriz;
         base.vel -= lateral * 0.9f;
-
-        base.pos += base.vel * tickTime;
-    }
-    else
-    {
-        base.acc += base.netForce / base.mass;
-        base.vel += base.acc * tickTime;
-        base.pos += base.vel * tickTime;
     }
 
-    checkCollisions(modelData);
+    base.pos += base.vel * tickTime;
+
+    if (collisionVariables)
+        checkCollisions(modelData);
 
     if (modelData.controlled)
     {
