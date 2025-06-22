@@ -147,7 +147,8 @@ void Scene::loadModelToScene(JSONModel model)
             loadModelData.hitboxPath.emplace(modelEntry.hitboxPath);
         loadModelData.shader = ShaderUtil::ShaderFromName(model.shader);
         loadModelData.type = modelType;
-        
+        loadModelData.hasPhysics = !model.physics.empty();
+
         // Load model with path and shader name
         loadedModels.emplace(modelEntry.mainPath, loadModelData);
     }
