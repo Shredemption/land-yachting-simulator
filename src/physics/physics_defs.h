@@ -4,6 +4,69 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <string>
+#include <unordered_map>
+
+struct YachtPhysicsPreset
+{
+    struct SailPreset
+    {
+        float maxMastAngle, maxBoomAngle, maxLiftCoefficient, minDragCoefficient, optimalAngle, sailArea;
+    } sail;
+    struct DrivingPreset
+    {
+        float rollCoefficient, rollScaling, steeringSmoothness, maxSteeringAngle, steeringAttenuation;
+
+    } driving;
+    struct BodyPreset
+    {
+        float mass, dragCoefficient, bodyArea;
+    } body;
+};
+
+static const std::unordered_map<std::string, YachtPhysicsPreset> yachtPresets = {
+    {"dn-duvel", {
+                     {60, 90, 1.5, 0.1, 20, 6.0},
+                     {0.01, 15, 3, 25, 0.5},
+                     {250, 0.4, 1.2},
+                 }},
+    {"red-piper", {
+                      {60, 90, 1.3, 0.1, 20, 6.8},
+                      {0.01, 15, 3, 25, 0.45},
+                      {180, 0.35, 1.0},
+                  }},
+    {"blue-piper", {
+                       {60, 90, 1.4, 0.1, 20, 6.4},
+                       {0.01, 15, 2, 25, 0.55},
+                       {180, 0.35, 1.0},
+                   }},
+    {"sietske", {
+                    {60, 90, 1.5, 0.1, 20, 5.7},
+                    {0.008, 20, 2, 22.22, 1.0},
+                    {200, 0.2, 1.0},
+                }},
+    {"bobbie", {
+                   {40, 80, 1.0, 0.1, 20, 5.0},
+                   {0.015, 20, 1, 30, 1.0},
+                   {100, 0.1, 1.0},
+               }},
+    {"buizerd", {
+                    {40, 80, 1.0, 0.1, 20, 5.0},
+                    {0.015, 20, 1, 30, 1.0},
+                    {100, 0.1, 1.0},
+                }},
+    {"beware", {
+                   {40, 80, 1.0, 0.1, 20, 5.0},
+                   {0.015, 20, 1, 30, 1.0},
+                   {100, 0.1, 1.0},
+               }},
+    {"vampier", {
+                    {40, 80, 1.0, 0.1, 20, 5.0},
+                    {0.015, 20, 1, 30, 1.0},
+                    {100, 0.1, 1.0},
+                }},
+};
+
 struct BaseVariables
 {
     glm::vec3 pos;
