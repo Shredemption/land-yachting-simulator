@@ -342,6 +342,18 @@ void buildDebugPage(std::shared_ptr<Widget> &root)
         slct->index = index++;
         root->AddChild(slct);
     }
+    {
+        auto tgl = std::make_shared<Toggle>();
+        tgl->text = "Hitboxes";
+        tgl->pos = glm::vec2(x, y + yStep * steps++);
+        tgl->size = glm::vec2(0.0f, 0.05f);
+        tgl->shownOnPage = SettingsPage::Debug;
+        tgl->linkedVariable = &SettingsManager::settings.debug.showHitboxes;
+        tgl->trueLabel = "Shown";
+        tgl->falseLabel = "Hidden";
+        tgl->index = index++;
+        root->AddChild(tgl);
+    }
 }
 
 std::shared_ptr<Widget> buildSettings(EngineState state)

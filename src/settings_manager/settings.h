@@ -35,6 +35,7 @@ struct SettingsStruct
     {
         bool wireframeMode = false;
         debugOverlay debugOverlay = debugOverlay::None;
+        bool showHitboxes = false;
     } debug;
 };
 
@@ -180,6 +181,8 @@ namespace jsoncons
                 s.wireframeMode = j["wireframeMode"].template as<bool>();
             if (j.contains("debugOverlay"))
                 s.debugOverlay = j["debugOverlay"].template as<debugOverlay>();
+            if (j.contains("showHitboxes"))
+                s.showHitboxes = j["showHitboxes"].template as<bool>();
             return s;
         }
 
@@ -188,6 +191,7 @@ namespace jsoncons
             Json j;
             j["wireframeMode"] = s.wireframeMode;
             j["debugOverlay"] = s.debugOverlay;
+            j["showHitboxes"] = s.showHitboxes;
             return j;
         }
     };
