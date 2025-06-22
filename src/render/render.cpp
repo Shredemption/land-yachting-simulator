@@ -27,7 +27,7 @@ unsigned int quadVAO = 0, quadVBO = 0;
 float quadVertices[] = {0};
 
 // Water
-bool WaterPass = true;
+bool WaterPass = false;
 float waterHeight = 0.25;
 float waterTimer = 0.0f;
 
