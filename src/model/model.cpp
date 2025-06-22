@@ -249,7 +249,7 @@ void Model::loadHitbox(std::optional<std::string> hitboxPath)
 
         directory = path.substr(0, path.find_last_of('/'));
 
-        std::vector<Mesh<VertexHitbox>> loadMeshes;
+        std::vector<MeshVariant> loadMeshes;
 
         processHitboxNode(scene->mRootNode, scene, loadMeshes);
 
@@ -270,14 +270,14 @@ void Model::loadHitbox(std::optional<std::string> hitboxPath)
                         hitboxIndices = mesh.indices; },
                        meshVariant);
 
-            std::vector<Mesh<VertexHitbox>> fallbackHitboxMesh;
-            fallbackHitboxMesh.emplace_back(hitboxVertices, hitboxIndices, shaderID::None);
+            std::vector<MeshVariant> fallbackHitboxMesh;
+            fallbackHitboxMesh.emplace_back(Mesh<VertexHitbox>(hitboxVertices, hitboxIndices, shaderID::None));
             hitboxMeshes = std::move(fallbackHitboxMesh);
         }
     }
 }
 
-void Model::processHitboxNode(aiNode *node, const aiScene *scene, std::vector<Mesh<VertexHitbox>> &hitboxMeshes)
+void Model::processHitboxNode(aiNode *node, const aiScene *scene, std::vector<MeshVariant> &hitboxMeshes)
 {
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
@@ -300,7 +300,7 @@ void Model::processHitboxNode(aiNode *node, const aiScene *scene, std::vector<Me
                 indices.push_back(face.mIndices[j]);
             }
         }
-        hitboxMeshes.emplace_back(vertices, indices, shaderID::None);
+        hitboxMeshes.emplace_back(Mesh<VertexHitbox>(vertices, indices, shaderID::None));
     }
     // Recursively process children
     for (unsigned int i = 0; i < node->mNumChildren; ++i)
@@ -454,6 +454,14 @@ void Model::uploadToGPU()
                        meshVariant);
         }
     }
+
+    if (hitboxMeshes.has_value())
+        for (auto &meshVariant : hitboxMeshes.value())
+        {
+            std::visit([](auto &mesh)
+                       { mesh.uploadToGPU(); },
+                       meshVariant);
+        }
 }
 
 void Model::draw(int lodIndex)

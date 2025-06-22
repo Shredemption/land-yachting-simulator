@@ -88,6 +88,49 @@ void renderModel(const RenderCommand &cmd)
     }
 }
 
+void renderHitbox(const RenderCommand &cmd)
+{
+    if (WaterPass)
+        return;
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDisable(GL_CULL_FACE);
+
+    // Send general shader data
+    if (shader != lastShader)
+    {
+        // Apply view and projection to whole scene
+        shader->setMat4("u_view", Camera::u_view);
+        shader->setMat4("u_projection", Camera::u_projection);
+
+        // Set clipping plane
+        shader->setVec4("location_plane", clipPlane);
+
+        lastShader = shader;
+    }
+
+    // Send model specific data
+    shader->setMat4("u_model", cmd.modelMatrix);
+
+    shader->setBool("animated", cmd.animated);
+
+    shader->setVec3("bodyColor", cmd.color);
+
+    // Draw meshes
+    for (auto &mesh : *cmd.meshes)
+    {
+        std::visit([](auto &actualMesh)
+                   { actualMesh.draw(); },
+                   mesh);
+    }
+
+    if (!SettingsManager::settings.debug.wireframeMode)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable(GL_CULL_FACE);
+    }
+}
+
 void renderOpaquePlane(const RenderCommand &cmd)
 {
     if (shader != lastShader)
@@ -251,6 +294,10 @@ void renderObjects(std::vector<RenderCommand> &renderBuffer)
         {
         case RenderType::Model:
             renderModel(cmd);
+            break;
+
+        case RenderType::Hitbox:
+            renderHitbox(cmd);
             break;
 
         case RenderType::OpaquePlane:
@@ -711,6 +758,36 @@ void Render::prepareRender(::RenderBuffer &prepBuffer)
             cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->lodMeshes[cmd.lod], [](std::vector<MeshVariant>*) {});
 
             return cmd; }));
+
+        // Hitboxes
+        if (SettingsManager::settings.debug.showHitboxes)
+        {
+            if (model.model->hitboxMeshes.has_value() && !model.model->hitboxMeshes->empty())
+            {
+                futures.push_back(std::async(std::launch::async, [&model]()
+                                             {
+                    RenderCommand cmd;
+                    
+                    cmd.type = RenderType::Hitbox;
+
+                    cmd.shader = shaderID::Hitbox; 
+                    cmd.color = glm::vec3(1,0,0);
+                    
+                    cmd.modelMatrix = model.u_model;
+
+                    cmd.animated = model.animated;
+
+                    if (cmd.animated)
+                    {
+                        cmd.boneTransforms = model.model->getReadBuffer();
+                        cmd.boneInverseOffsets = model.model->boneInverseOffsets;
+                    }
+
+                    cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->hitboxMeshes.value(), [](std::vector<MeshVariant>*) {});
+
+                    return cmd; }));
+            }
+        }
 
         if (model.controlled)
         {

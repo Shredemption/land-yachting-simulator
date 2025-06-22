@@ -39,7 +39,7 @@ public:
     std::string textureArrayName;
 
     std::vector<std::vector<MeshVariant>> lodMeshes;
-    std::optional<std::vector<Mesh<VertexHitbox>>> hitboxMeshes;
+    std::optional<std::vector<MeshVariant>> hitboxMeshes;
     std::string directory;
 
     // Generate and update bones
@@ -56,7 +56,7 @@ private:
     void processNode(aiNode *node, const aiScene *scene, shaderID &shader, std::vector<MeshVariant> &targetMeshList, Bone *parentBone = nullptr);
     MeshVariant processMesh(aiMesh *mesh, const aiScene *scene, shaderID &shader, std::map<std::string, Bone *> &boneHierarchy);
     void loadHitbox(std::optional<std::string> hitboxPath);
-    void processHitboxNode(aiNode *node, const aiScene *scene, std::vector<Mesh<VertexHitbox>> &hitboxMeshes);
+    void processHitboxNode(aiNode *node, const aiScene *scene, std::vector<MeshVariant> &hitboxMeshes);
 
     template <typename VertexType>
     Mesh<VertexType> combineMeshes(const std::vector<Mesh<VertexType>> &meshes);

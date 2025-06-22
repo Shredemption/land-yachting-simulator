@@ -8,4 +8,5 @@
 using MeshVariant = std::variant<
     Mesh<VertexAnimated>,
     Mesh<VertexSimple>,
-    Mesh<VertexTextured>>;
+    Mesh<VertexTextured>,
+    Mesh<VertexHitbox>>;
