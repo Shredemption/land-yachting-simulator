@@ -568,6 +568,9 @@ void UIManager::queueEngineState(EngineState state)
     if ((current == EngineState::Title || current == EngineState::TitleSettings) && (state == EngineState::Title || state == EngineState::TitleSettings))
         shouldFadeBackground = false;
 
+    if ((current == EngineState::Title || current == EngineState::TestMenu) && (state == EngineState::Title || state == EngineState::TestMenu))
+        shouldFadeBackground = false;
+
     if ((current == EngineState::Pause || current == EngineState::Settings) && (state == EngineState::Pause || state == EngineState::Settings))
         shouldFadeBackground = false;
 
