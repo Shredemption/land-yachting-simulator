@@ -25,6 +25,9 @@ public:
     std::optional<BodyVariables> bodyVariables;
     std::optional<SailVariables> sailVariables;
     std::optional<DrivingVariables> drivingVariables;
+    std::optional<CollisionVariables> collisionVariables;
+
+    bool applyGravity = false;
 
     std::vector<DebugForce> debugForces;
 
@@ -36,8 +39,9 @@ public:
     }
 
 private:
-    void updateInputs(bool controlled);
-    void updateSail(bool controlled);
-    void updateBody(bool controlled);
-    void updateDriving(bool controlled);
+    void updateInputs(bool debug);
+    void updateSail(bool debug);
+    void updateBody(bool debug);
+    void updateDriving(bool debug);
+    void checkCollisions(bool debug);
 };

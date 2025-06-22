@@ -185,6 +185,10 @@ void Scene::loadModelToScene(JSONModel model)
             loadModel.physicsTypes.push_back(PhysicsType::Driving);
         if (type == "sail")
             loadModel.physicsTypes.push_back(PhysicsType::Sail);
+        if (type == "gravity")
+            loadModel.physicsTypes.push_back(PhysicsType::Gravity);
+        if (type == "collision")
+            loadModel.physicsTypes.push_back(PhysicsType::Collision);
     }
 
     // Save model

@@ -57,6 +57,12 @@ struct DrivingVariables
     float rollScaling;
 };
 
+struct CollisionVariables
+{
+    bool ground = false;
+    int collisions;
+};
+
 struct DebugForce
 {
     glm::vec3 position;
@@ -68,5 +74,7 @@ enum class PhysicsType
 {
     Body,
     Driving,
-    Sail
+    Sail,
+    Gravity,
+    Collision
 };
