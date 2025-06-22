@@ -75,7 +75,7 @@ void SceneManager::runOneFrame()
         {
             model.physics->getWriteBuffer()->copyFrom(*model.physics->getReadBuffer());
             model.physics->getWriteBuffer()->savePrevState();
-            model.physics->getWriteBuffer()->update(model.controlled);
+            model.physics->getWriteBuffer()->update(model);
             model.physics->swapBuffers();
         }
     }
