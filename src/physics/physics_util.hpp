@@ -34,7 +34,6 @@ namespace PhysicsUtil
     // Functions
     void setup();
     void stepPhysics(ModelData &model);
-    void snap(ModelData &model, glm::vec3 pos, glm::vec3 vel, glm::vec3 acc);
     void switchControlledYacht();
 
     // Boolmap for tracking inputs

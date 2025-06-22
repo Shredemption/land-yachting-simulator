@@ -46,21 +46,6 @@ void PhysicsUtil::stepPhysics(ModelData &model)
     }
 }
 
-void PhysicsUtil::snap(ModelData &model, glm::vec3 pos, glm::vec3 vel, glm::vec3 acc)
-{
-    auto *read = model.physics->getReadBuffer();
-    auto *write = model.physics->getWriteBuffer();
-
-    write->base.pos = pos;
-    write->base.prevPos = pos;
-    write->base.vel = vel;
-    write->base.acc = acc;
-    read->base.pos = pos;
-    read->base.prevPos = pos;
-    read->base.vel = vel;
-    read->base.acc = acc;
-}
-
 void PhysicsUtil::setup()
 {
     // Setup all animated models
