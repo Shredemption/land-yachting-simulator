@@ -23,6 +23,15 @@
       "color": [0, 0, 0.8],
       "shader": "single-color",
       "physics": ["gravity", "collision"]
+    },
+    {
+      "name": "dn-duvel",
+      "translation": [0, 10, 30],
+      "angle": 180,
+      "rotationAxis": [0, 0, 1],
+      "animated": true,
+      "controlled": true,
+      "physics": ["body", "driving", "sail", "gravity", "collision"]
     }
   ],
   "unitPlanes": [
