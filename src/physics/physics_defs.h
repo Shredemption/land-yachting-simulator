@@ -12,7 +12,7 @@ struct BaseVariables
     glm::vec3 vel = glm::vec3(0.0f);
     glm::vec3 acc = glm::vec3(0.0f);
 
-    float mass;
+    float mass = 1.0f;
 
     glm::vec3 netForce;
 

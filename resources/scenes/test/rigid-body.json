@@ -5,16 +5,14 @@
       "translation": [0, 0, 1],
       "animated": false,
       "color": [0.8, 0, 0],
-      "shader": "single-color",
-      "physics": ["gravity", "collision"]
+      "shader": "single-color"
     },
     {
       "name": "icosphere",
       "translation": [3, 0, 1],
       "animated": false,
       "color": [0, 0.8, 0],
-      "shader": "single-color",
-      "physics": ["sail"]
+      "shader": "single-color"
     },
     {
       "name": "cylinder",
@@ -22,7 +20,7 @@
       "animated": false,
       "color": [0, 0, 0.8],
       "shader": "single-color",
-      "physics": ["driving"]
+      "physics": ["gravity"]
     }
   ],
   "bgColor": [1, 1, 1],

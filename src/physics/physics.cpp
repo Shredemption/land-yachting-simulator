@@ -195,11 +195,8 @@ void Physics::reset(const glm::mat4 &u_model)
 
 void Physics::savePrevState()
 {
-    if (bodyVariables)
-    {
-        base.prevPos = base.pos;
-        base.prevRot = base.rot;
-    }
+    base.prevPos = base.pos;
+    base.prevRot = base.rot;
 
     if (sailVariables)
     {
