@@ -14,6 +14,7 @@ struct JSONModelMapEntry
 {
     std::string mainPath;
     std::vector<std::string> lodPaths = {};
+    std::string hitboxPath = "";
     std::string type = "model";
 };
 

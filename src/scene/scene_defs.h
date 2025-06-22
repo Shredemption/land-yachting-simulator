@@ -170,6 +170,7 @@ struct LoadModelData
     std::string name;
     std::string mainPath;
     std::optional<std::vector<std::string>> lodPaths;
+    std::optional<std::string> hitboxPath;
     shaderID shader;
     ModelType type;
 };

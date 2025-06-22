@@ -20,7 +20,7 @@ Model::Model(LoadModelData &loadModelData)
     this->name = loadModelData.name;
     this->modelType = loadModelData.type;
 
-    loadModel(loadModelData.mainPath, loadModelData.lodPaths, loadModelData.shader);
+    loadModel(loadModelData.mainPath, loadModelData.lodPaths, loadModelData.hitboxPath, loadModelData.shader);
 }
 
 // Model Destructor
@@ -43,7 +43,7 @@ Model::~Model()
     lodMeshes.clear();
 }
 
-void Model::loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, shaderID &shader)
+void Model::loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, std::optional<std::string> hitboxPath, shaderID &shader)
 {
     Assimp::Importer importer;
 
@@ -76,6 +76,8 @@ void Model::loadModel(std::string mainPath, std::optional<std::vector<std::strin
     }
 
     TextureManager::loadTexturesForShader(shader, directory, modelType, texturePaths, textureArrayName);
+
+    loadHitbox(hitboxPath);
 
     generateBoneTransforms();
 }
@@ -227,6 +229,83 @@ MeshVariant Model::processMesh(aiMesh *mesh, const aiScene *scene, shaderID &sha
         }
 
         return Mesh<VertexTextured>(vertices, indices, shader);
+    }
+}
+
+void Model::loadHitbox(std::optional<std::string> hitboxPath)
+{
+    if (hitboxPath.has_value())
+    {
+        std::string path = hitboxPath.value();
+
+        Assimp::Importer importer;
+
+        const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+        {
+            std::cout << "Assimp Error (" << path << "): " << importer.GetErrorString() << std::endl;
+        }
+
+        directory = path.substr(0, path.find_last_of('/'));
+
+        std::vector<Mesh<VertexHitbox>> loadMeshes;
+
+        processHitboxNode(scene->mRootNode, scene, loadMeshes);
+
+        hitboxMeshes = std::move(loadMeshes);
+    }
+    else
+    {
+        if (!lodMeshes.empty() && !lodMeshes.back().empty())
+        {
+            const MeshVariant &meshVariant = lodMeshes.back().front();
+
+            std::vector<VertexHitbox> hitboxVertices;
+            std::vector<unsigned int> hitboxIndices;
+
+            std::visit([&](auto &&mesh)
+                       { for (const auto &v : mesh.vertices) 
+                            hitboxVertices.push_back(VertexHitbox{v.Position});
+                        hitboxIndices = mesh.indices; },
+                       meshVariant);
+
+            std::vector<Mesh<VertexHitbox>> fallbackHitboxMesh;
+            fallbackHitboxMesh.emplace_back(hitboxVertices, hitboxIndices, shaderID::None);
+            hitboxMeshes = std::move(fallbackHitboxMesh);
+        }
+    }
+}
+
+void Model::processHitboxNode(aiNode *node, const aiScene *scene, std::vector<Mesh<VertexHitbox>> &hitboxMeshes)
+{
+    for (unsigned int i = 0; i < node->mNumMeshes; i++)
+    {
+        aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+        std::vector<VertexHitbox> vertices;
+        std::vector<unsigned int> indices;
+
+        // Extract positions
+        for (unsigned int v = 0; v < mesh->mNumVertices; v++)
+        {
+            glm::vec3 pos(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+            vertices.push_back(VertexHitbox{pos});
+        }
+        // Extract indices
+        for (unsigned int f = 0; f < mesh->mNumFaces; f++)
+        {
+            aiFace face = mesh->mFaces[f];
+            for (unsigned int j = 0; j < face.mNumIndices; j++)
+            {
+                indices.push_back(face.mIndices[j]);
+            }
+        }
+        hitboxMeshes.emplace_back(vertices, indices, shaderID::None);
+    }
+    // Recursively process children
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
+    {
+        processHitboxNode(node->mChildren[i], scene, hitboxMeshes);
     }
 }
 
