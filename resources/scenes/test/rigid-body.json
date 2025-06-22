@@ -2,21 +2,23 @@
   "models": [
     {
       "name": "cube",
-      "translation": [0, 0, 1],
+      "translation": [0, 0, 5],
       "animated": false,
       "color": [0.8, 0, 0],
-      "shader": "single-color"
+      "shader": "single-color",
+      "physics": ["gravity", "collision"]
     },
     {
       "name": "icosphere",
-      "translation": [3, 0, 1],
+      "translation": [3, 0, 10],
       "animated": false,
       "color": [0, 0.8, 0],
-      "shader": "single-color"
+      "shader": "single-color",
+      "physics": ["gravity", "collision"]
     },
     {
       "name": "cylinder",
-      "translation": [-3, 0, 10],
+      "translation": [-3, 0, 15],
       "animated": false,
       "color": [0, 0, 0.8],
       "shader": "single-color",
@@ -27,6 +29,11 @@
     {
       "color": [0.7, 0.7, 0.7],
       "scale": [2000, 2000, 1],
+      "translation": [0, 0, 0]
+    },
+    {
+      "color": [0.7, 0.7, 0.7],
+      "scale": [2000, -2000, 1],
       "translation": [0, 0, 0]
     }
   ],
