@@ -13,14 +13,16 @@
       "translation": [3, 0, 1],
       "animated": false,
       "color": [0, 0.8, 0],
-      "shader": "single-color"
+      "shader": "single-color",
+      "physics": ["sail"]
     },
     {
       "name": "cylinder",
       "translation": [-3, 0, 1],
       "animated": false,
       "color": [0, 0, 0.8],
-      "shader": "single-color"
+      "shader": "single-color",
+      "physics": ["driving"]
     }
   ],
   "bgColor": [1, 1, 1],
