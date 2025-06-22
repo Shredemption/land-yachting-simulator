@@ -17,7 +17,7 @@ public:
     shaderID shader;
     unsigned int VAO, VBO, EBO;
 
-    Mesh(std::vector<VertexType> &vertices, std::vector<unsigned int> &indices, shaderID &shader);
+    Mesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices, shaderID shader);
 
     void draw();
     void setupVertexAttributes();

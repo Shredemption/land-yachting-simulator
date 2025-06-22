@@ -39,6 +39,7 @@ public:
     std::string textureArrayName;
 
     std::vector<std::vector<MeshVariant>> lodMeshes;
+    std::optional<std::vector<Mesh<VertexHitbox>>> hitboxMeshes;
     std::string directory;
 
     // Generate and update bones
@@ -51,9 +52,11 @@ public:
     void draw(int lodIndex);
 
 private:
-    void loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, shaderID &shader);
+    void loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, std::optional<std::string> hitboxPath, shaderID &shader);
     void processNode(aiNode *node, const aiScene *scene, shaderID &shader, std::vector<MeshVariant> &targetMeshList, Bone *parentBone = nullptr);
     MeshVariant processMesh(aiMesh *mesh, const aiScene *scene, shaderID &shader, std::map<std::string, Bone *> &boneHierarchy);
+    void loadHitbox(std::optional<std::string> hitboxPath);
+    void processHitboxNode(aiNode *node, const aiScene *scene, std::vector<Mesh<VertexHitbox>> &hitboxMeshes);
 
     template <typename VertexType>
     Mesh<VertexType> combineMeshes(const std::vector<Mesh<VertexType>> &meshes);

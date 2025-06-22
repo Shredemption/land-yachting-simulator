@@ -143,6 +143,8 @@ void Scene::loadModelToScene(JSONModel model)
         loadModelData.mainPath = modelEntry.mainPath;
         if (modelEntry.lodPaths.size() > 0)
             loadModelData.lodPaths.emplace(modelEntry.lodPaths);
+        if (modelEntry.hitboxPath != "")
+            loadModelData.hitboxPath.emplace(modelEntry.hitboxPath);
         loadModelData.shader = ShaderUtil::ShaderFromName(model.shader);
         loadModelData.type = modelType;
         

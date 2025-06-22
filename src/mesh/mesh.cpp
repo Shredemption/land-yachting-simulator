@@ -4,12 +4,8 @@
 
 // Constructor to store input data
 template <typename VertexType>
-Mesh<VertexType>::Mesh(std::vector<VertexType> &vertices, std::vector<unsigned int> &indices, shaderID &shader)
-{
-    this->vertices = vertices;
-    this->indices = indices;
-    this->shader = shader;
-}
+Mesh<VertexType>::Mesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices, shaderID shader)
+    : vertices(std::move(vertices)), indices(std::move(indices)), shader(shader) {}
 
 template <typename VertexType>
 void Mesh<VertexType>::uploadToGPU()
@@ -97,9 +93,17 @@ void Mesh<VertexSimple>::setupVertexAttributes()
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void *)offsetof(VertexSimple, Color));
 }
 
+template <>
+void Mesh<VertexHitbox>::setupVertexAttributes()
+{
+    glEnableVertexAttribArray(0); // Position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexHitbox), (void *)offsetof(VertexHitbox, Position));
+}
+
 template class Mesh<VertexAnimated>;
 template class Mesh<VertexTextured>;
 template class Mesh<VertexSimple>;
+template class Mesh<VertexHitbox>;
 
 glm::vec3 Mesh<VertexHitbox>::furthestInDirection(glm::vec3 direction)
 {
@@ -118,4 +122,10 @@ glm::vec3 Mesh<VertexHitbox>::furthestInDirection(glm::vec3 direction)
     }
 
     return maxPostion;
+}
+
+template <typename VertexType>
+glm::vec3 Mesh<VertexType>::furthestInDirection(glm::vec3)
+{
+    return glm::vec3(0.0f);
 }
