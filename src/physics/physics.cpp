@@ -375,26 +375,54 @@ void Physics::updateBody(bool debug)
 
 void Physics::updateGravity(bool debug)
 {
-    std::cout << base.acc.z << ", " << base.vel.z << ", " << base.pos.z << std::endl;
-
     if (!onGround)
         base.acc += glm::vec3(0, 0, -PhysicsUtil::g);
 }
 
 void Physics::checkCollisions(ModelData &modelData)
 {
-    for (auto &meshes : modelData.model->hitboxMeshes.value())
+    float tickTime = (1 / SettingsManager::settings.physics.tickRate);
+    float preColZ = 0.0f;
+    float postColZ = 0.0f;
+
+    for (auto &meshVariant : modelData.model->hitboxMeshes.value())
     {
-        std::visit([&](auto &&mesh)
-            { 
-                glm::vec3 furthest = mesh.furthestInDirection(glm::vec3(0, 0, -1));
+        auto *mesh = std::get_if<Mesh<VertexHitbox>>(&meshVariant);
+        if (!mesh)
+            continue;
+        glm::vec3 furthest = mesh->furthestInDirection(glm::vec3(0, 0, -1), modelData.u_model);
+        preColZ = furthest.z;
+        break;
+    }
 
-                std::cout << furthest.z << std::endl;
+    base.acc += base.netForce / base.mass;
+    base.vel += base.acc * tickTime;
+    glm::vec3 nextPos = base.pos + base.vel * tickTime;
 
-                if (furthest.z < 0.0f)
-                    base.vel.z = 0.0f;
-                    onGround = true; },
-            meshes);
+    glm::mat4 nextModel = modelData.u_model;
+    nextModel[3] = glm::vec4(nextPos, 1.0f);
+    
+    for (auto &meshVariant : modelData.model->hitboxMeshes.value())
+    {
+        auto *mesh = std::get_if<Mesh<VertexHitbox>>(&meshVariant);
+        if (!mesh) continue;
+        glm::vec3 furthest = mesh->furthestInDirection(glm::vec3(0, 0, -1), nextModel);
+        postColZ = furthest.z;
+        break;
+    }
+
+    if (preColZ > 0.0f && postColZ < 0.0f)
+    {
+        float t = preColZ / (preColZ - postColZ);
+        base.pos = base.pos + t * (nextPos - base.pos);
+        base.vel.z = 0.0f;
+        base.acc.z = 0.0f;
+        PhysicsUtil::snap(modelData, base.pos, base.vel, base.acc);
+        onGround = true;
+    }
+    else
+    {
+        base.pos = nextPos;
     }
 }
 
@@ -439,9 +467,6 @@ void Physics::update(ModelData &modelData)
     if (bodyVariables)
         updateBody(modelData.controlled);
 
-    if (collisionVariables)
-        checkCollisions(modelData);
-
     if (applyGravity)
         updateGravity(modelData.controlled);
 
@@ -466,6 +491,10 @@ void Physics::update(ModelData &modelData)
         base.vel -= lateral * 0.9f;
 
         base.pos += base.vel * tickTime;
+    }
+    else if (collisionVariables)
+    {
+        checkCollisions(modelData);
     }
     else
     {

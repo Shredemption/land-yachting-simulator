@@ -59,8 +59,6 @@ struct DrivingVariables
 
 struct CollisionVariables
 {
-    bool ground = false;
-    int collisions;
 };
 
 struct DebugForce
