@@ -31,136 +31,40 @@ Physics::Physics(const ModelData &model)
     DrivingVariables *driving = nullptr;
     getVariablePointers(body, sail, driving);
 
-    std::string name = model.model->name;
-
     switch (model.model->modelType)
     {
     case ModelType::Yacht:
     {
-        if (name == "dn-duvel")
+        auto it = yachtPresets.find(model.model->name);
+        if (it != yachtPresets.end())
         {
-            // Max control angles
-            sail->maxMastAngle = glm::radians(60.0f);
-            sail->maxBoomAngle = glm::radians(90.0f);
-
-            // Sail physics properties
-            sail->maxLiftCoefficient = 1.5f;
-            sail->optimalAngle = glm::radians(20.0f);
-            sail->minDragCoefficient = 0.1f;
-            sail->area = 6.0f;
-
-            // Body properties
-            driving->rollCoefficient = 0.01f;
-            driving->rollScaling = 15.0f;
-            base.mass = 250.0f;
-            body->dragCoefficient = 0.4f;
-            body->area = 1.2f;
-
-            // Steering properties
-            driving->steeringSmoothness = 3.0f;
-            driving->maxSteeringAngle = 25.0f;
-            driving->steeringAttenuation = 0.5f;
+            const auto &preset = it->second;
+            if (sail)
+            {
+                sail->maxMastAngle = glm::radians(preset.sail.maxMastAngle);
+                sail->maxBoomAngle = glm::radians(preset.sail.maxBoomAngle);
+                sail->maxLiftCoefficient = preset.sail.maxLiftCoefficient;
+                sail->optimalAngle = glm::radians(preset.sail.optimalAngle);
+                sail->minDragCoefficient = preset.sail.minDragCoefficient;
+                sail->area = preset.sail.sailArea;
+            }
+            if (driving)
+            {
+                driving->rollCoefficient = preset.driving.rollCoefficient;
+                driving->rollScaling = preset.driving.rollScaling;
+                driving->steeringSmoothness = preset.driving.steeringSmoothness;
+                driving->maxSteeringAngle = preset.driving.maxSteeringAngle;
+                driving->steeringAttenuation = preset.driving.steeringAttenuation;
+            }
+            if (body)
+            {
+                body->dragCoefficient = preset.body.dragCoefficient;
+                body->area = preset.body.bodyArea;
+            }
+            base.mass = preset.body.mass;
         }
-
-        else if (name == "red-piper")
-        {
-            // Max control angles
-            sail->maxMastAngle = glm::radians(60.0f);
-            sail->maxBoomAngle = glm::radians(90.0f);
-
-            // Sail physics properties
-            sail->maxLiftCoefficient = 1.3f;
-            sail->optimalAngle = glm::radians(20.0f);
-            sail->minDragCoefficient = 0.1f;
-            sail->area = 6.8f;
-
-            // Body properties
-            driving->rollCoefficient = 0.01f;
-            driving->rollScaling = 15.0f;
-            base.mass = 180.0f;
-            body->dragCoefficient = 0.35f;
-            body->area = 1.0f;
-
-            // Steering properties
-            driving->steeringSmoothness = 3.0f;
-            driving->maxSteeringAngle = 25.0f;
-            driving->steeringAttenuation = 0.45f;
-        }
-
-        else if (name == "blue-piper")
-        {
-            // Max control angles
-            sail->maxMastAngle = glm::radians(60.0f);
-            sail->maxBoomAngle = glm::radians(90.0f);
-
-            // Sail physics properties
-            sail->maxLiftCoefficient = 1.4f;
-            sail->optimalAngle = glm::radians(20.0f);
-            sail->minDragCoefficient = 0.1f;
-            sail->area = 6.4f;
-
-            // Body properties
-            driving->rollCoefficient = 0.01f;
-            driving->rollScaling = 15.0f;
-            base.mass = 180.0f;
-            body->dragCoefficient = 0.35f;
-            body->area = 1.0f;
-
-            // Steering properties
-            driving->steeringSmoothness = 1.5f;
-            driving->maxSteeringAngle = 25.0f;
-            driving->steeringAttenuation = 1.55f;
-        }
-
-        else if (name == "sietske")
-        {
-            // Max control angles
-            sail->maxMastAngle = glm::radians(60.0f);
-            sail->maxBoomAngle = glm::radians(90.0f);
-
-            // Sail physics properties
-            sail->maxLiftCoefficient = 1.5f;
-            sail->optimalAngle = glm::radians(20.0f);
-            sail->minDragCoefficient = 0.1f;
-            sail->area = 5.7f;
-
-            // Body properties
-            driving->rollCoefficient = 0.008f;
-            driving->rollScaling = 20.0f;
-            base.mass = 200.0f;
-            body->dragCoefficient = 0.2f;
-            body->area = 1.0f;
-
-            // Steering properties
-            driving->steeringSmoothness = 2.0f;
-            driving->maxSteeringAngle = 22.22f;
-            driving->steeringAttenuation = 1.f;
-        }
-
         else
-        {
-            // Max control angles
-            sail->maxMastAngle = glm::radians(40.0f);
-            sail->maxBoomAngle = glm::radians(80.0f);
-
-            // Sail physics properties
-            sail->maxLiftCoefficient = 1.0f;
-            sail->optimalAngle = glm::radians(20.0f);
-            sail->minDragCoefficient = 0.1f;
-            sail->area = 5.0f;
-
-            // Body properties
-            driving->rollCoefficient = 0.01f;
-            driving->rollScaling = 20.0f;
-            base.mass = 100.0f;
-            body->dragCoefficient = 0.1f;
-            body->area = 1.0f;
-
-            // Steering properties
-            driving->steeringSmoothness = 1.0f;
-            driving->maxSteeringAngle = 30.0f;
-            driving->steeringAttenuation = 1.0f;
-        }
+            std::cerr << "Yacht physics properties not found for: " << model.model->name << std::endl;
         break;
     }
     }
