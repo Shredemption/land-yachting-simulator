@@ -32,6 +32,35 @@ void PhysicsUtil::update()
     ThreadManager::animationAlpha.store(alpha, std::memory_order_release);
 }
 
+void PhysicsUtil::stepPhysics(ModelData &model)
+{
+    auto *read = model.physics->getReadBuffer();
+    auto *write = model.physics->getWriteBuffer();
+
+    write->update(model);
+
+    if (write->onGround)
+    {
+        read->base.pos = write->base.pos;
+        read->base.vel = write->base.vel;
+    }
+}
+
+void PhysicsUtil::snap(ModelData &model, glm::vec3 pos, glm::vec3 vel, glm::vec3 acc)
+{
+    auto *read = model.physics->getReadBuffer();
+    auto *write = model.physics->getWriteBuffer();
+
+    write->base.pos = pos;
+    write->base.prevPos = pos;
+    write->base.vel = vel;
+    write->base.acc = acc;
+    read->base.pos = pos;
+    read->base.prevPos = pos;
+    read->base.vel = vel;
+    read->base.acc = acc;
+}
+
 void PhysicsUtil::setup()
 {
     // Setup all animated models

@@ -105,27 +105,31 @@ template class Mesh<VertexTextured>;
 template class Mesh<VertexSimple>;
 template class Mesh<VertexHitbox>;
 
-glm::vec3 Mesh<VertexHitbox>::furthestInDirection(glm::vec3 direction)
+glm::vec3 Mesh<VertexHitbox>::furthestInDirection(glm::vec3 worldDirection, const glm::mat4 u_model)
 {
     float maxDot = -std::numeric_limits<float>::infinity();
-    glm::vec3 maxPostion;
+    glm::vec3 maxPosition;
+
+    glm::vec3 modelDirection = glm::transpose(glm::mat3(u_model)) * worldDirection;
 
     for (const auto &vertex : vertices)
     {
-        float dot = glm::dot(vertex.Position, direction);
+        float dot = glm::dot(vertex.Position, modelDirection);
 
         if (dot > maxDot)
         {
             maxDot = dot;
-            maxPostion = vertex.Position;
+            maxPosition = vertex.Position;
         }
     }
 
-    return maxPostion;
+    glm::vec4 worldPosition = u_model * glm::vec4(maxPosition, 1.0f);
+
+    return glm::vec3(worldPosition);
 }
 
 template <typename VertexType>
-glm::vec3 Mesh<VertexType>::furthestInDirection(glm::vec3)
+glm::vec3 Mesh<VertexType>::furthestInDirection(glm::vec3, const glm::mat4)
 {
     return glm::vec3(0.0f);
 }
