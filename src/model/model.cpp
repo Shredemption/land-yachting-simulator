@@ -20,7 +20,7 @@ Model::Model(LoadModelData &loadModelData)
     this->name = loadModelData.name;
     this->modelType = loadModelData.type;
 
-    loadModel(loadModelData.mainPath, loadModelData.lodPaths, loadModelData.hitboxPath, loadModelData.shader);
+    loadModel(loadModelData.mainPath, loadModelData.lodPaths, loadModelData.hitboxPath, loadModelData.hasPhysics, loadModelData.shader);
 }
 
 // Model Destructor
@@ -43,7 +43,7 @@ Model::~Model()
     lodMeshes.clear();
 }
 
-void Model::loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, std::optional<std::string> hitboxPath, shaderID &shader)
+void Model::loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, std::optional<std::string> hitboxPath, bool hasPhysics, shaderID &shader)
 {
     Assimp::Importer importer;
 
@@ -77,7 +77,8 @@ void Model::loadModel(std::string mainPath, std::optional<std::vector<std::strin
 
     TextureManager::loadTexturesForShader(shader, directory, modelType, texturePaths, textureArrayName);
 
-    loadHitbox(hitboxPath);
+    if (hasPhysics)
+        loadHitbox(hitboxPath);
 
     generateBoneTransforms();
 }

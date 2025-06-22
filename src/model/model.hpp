@@ -52,7 +52,7 @@ public:
     void draw(int lodIndex);
 
 private:
-    void loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, std::optional<std::string> hitboxPath, shaderID &shader);
+    void loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, std::optional<std::string> hitboxPath, bool hasPhysics, shaderID &shader);
     void processNode(aiNode *node, const aiScene *scene, shaderID &shader, std::vector<MeshVariant> &targetMeshList, Bone *parentBone = nullptr);
     MeshVariant processMesh(aiMesh *mesh, const aiScene *scene, shaderID &shader, std::map<std::string, Bone *> &boneHierarchy);
     void loadHitbox(std::optional<std::string> hitboxPath);

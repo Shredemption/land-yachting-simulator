@@ -173,4 +173,5 @@ struct LoadModelData
     std::optional<std::string> hitboxPath;
     shaderID shader;
     ModelType type;
+    bool hasPhysics;
 };
