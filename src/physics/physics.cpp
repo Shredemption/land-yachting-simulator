@@ -27,129 +27,136 @@ Physics::Physics(const ModelData &model)
 
     std::string name = model.model->name;
 
-    if (name == "dn-duvel")
+    switch (model.model->modelType)
     {
-        // Max control angles
-        sail->maxMastAngle = glm::radians(60.0f);
-        sail->maxBoomAngle = glm::radians(90.0f);
+    case ModelType::Yacht:
+    {
+        if (name == "dn-duvel")
+        {
+            // Max control angles
+            sail->maxMastAngle = glm::radians(60.0f);
+            sail->maxBoomAngle = glm::radians(90.0f);
 
-        // Sail physics properties
-        sail->maxLiftCoefficient = 1.5f;
-        sail->optimalAngle = glm::radians(20.0f);
-        sail->minDragCoefficient = 0.1f;
-        sail->area = 6.0f;
+            // Sail physics properties
+            sail->maxLiftCoefficient = 1.5f;
+            sail->optimalAngle = glm::radians(20.0f);
+            sail->minDragCoefficient = 0.1f;
+            sail->area = 6.0f;
 
-        // Body properties
-        driving->rollCoefficient = 0.01f;
-        driving->rollScaling = 15.0f;
-        base.mass = 250.0f;
-        body->dragCoefficient = 0.4f;
-        body->area = 1.2f;
+            // Body properties
+            driving->rollCoefficient = 0.01f;
+            driving->rollScaling = 15.0f;
+            base.mass = 250.0f;
+            body->dragCoefficient = 0.4f;
+            body->area = 1.2f;
 
-        // Steering properties
-        driving->steeringSmoothness = 3.0f;
-        driving->maxSteeringAngle = 25.0f;
-        driving->steeringAttenuation = 0.5f;
+            // Steering properties
+            driving->steeringSmoothness = 3.0f;
+            driving->maxSteeringAngle = 25.0f;
+            driving->steeringAttenuation = 0.5f;
+        }
+
+        else if (name == "red-piper")
+        {
+            // Max control angles
+            sail->maxMastAngle = glm::radians(60.0f);
+            sail->maxBoomAngle = glm::radians(90.0f);
+
+            // Sail physics properties
+            sail->maxLiftCoefficient = 1.3f;
+            sail->optimalAngle = glm::radians(20.0f);
+            sail->minDragCoefficient = 0.1f;
+            sail->area = 6.8f;
+
+            // Body properties
+            driving->rollCoefficient = 0.01f;
+            driving->rollScaling = 15.0f;
+            base.mass = 180.0f;
+            body->dragCoefficient = 0.35f;
+            body->area = 1.0f;
+
+            // Steering properties
+            driving->steeringSmoothness = 3.0f;
+            driving->maxSteeringAngle = 25.0f;
+            driving->steeringAttenuation = 0.45f;
+        }
+
+        else if (name == "blue-piper")
+        {
+            // Max control angles
+            sail->maxMastAngle = glm::radians(60.0f);
+            sail->maxBoomAngle = glm::radians(90.0f);
+
+            // Sail physics properties
+            sail->maxLiftCoefficient = 1.4f;
+            sail->optimalAngle = glm::radians(20.0f);
+            sail->minDragCoefficient = 0.1f;
+            sail->area = 6.4f;
+
+            // Body properties
+            driving->rollCoefficient = 0.01f;
+            driving->rollScaling = 15.0f;
+            base.mass = 180.0f;
+            body->dragCoefficient = 0.35f;
+            body->area = 1.0f;
+
+            // Steering properties
+            driving->steeringSmoothness = 1.5f;
+            driving->maxSteeringAngle = 25.0f;
+            driving->steeringAttenuation = 1.55f;
+        }
+
+        else if (name == "sietske")
+        {
+            // Max control angles
+            sail->maxMastAngle = glm::radians(60.0f);
+            sail->maxBoomAngle = glm::radians(90.0f);
+
+            // Sail physics properties
+            sail->maxLiftCoefficient = 1.5f;
+            sail->optimalAngle = glm::radians(20.0f);
+            sail->minDragCoefficient = 0.1f;
+            sail->area = 5.7f;
+
+            // Body properties
+            driving->rollCoefficient = 0.008f;
+            driving->rollScaling = 20.0f;
+            base.mass = 200.0f;
+            body->dragCoefficient = 0.2f;
+            body->area = 1.0f;
+
+            // Steering properties
+            driving->steeringSmoothness = 2.0f;
+            driving->maxSteeringAngle = 22.22f;
+            driving->steeringAttenuation = 1.f;
+        }
+
+        else
+        {
+            // Max control angles
+            sail->maxMastAngle = glm::radians(40.0f);
+            sail->maxBoomAngle = glm::radians(80.0f);
+
+            // Sail physics properties
+            sail->maxLiftCoefficient = 1.0f;
+            sail->optimalAngle = glm::radians(20.0f);
+            sail->minDragCoefficient = 0.1f;
+            sail->area = 5.0f;
+
+            // Body properties
+            driving->rollCoefficient = 0.01f;
+            driving->rollScaling = 20.0f;
+            base.mass = 100.0f;
+            body->dragCoefficient = 0.1f;
+            body->area = 1.0f;
+
+            // Steering properties
+            driving->steeringSmoothness = 1.0f;
+            driving->maxSteeringAngle = 30.0f;
+            driving->steeringAttenuation = 1.0f;
+        }
+        break;
     }
-
-    else if (name == "red-piper")
-    {
-        // Max control angles
-        sail->maxMastAngle = glm::radians(60.0f);
-        sail->maxBoomAngle = glm::radians(90.0f);
-
-        // Sail physics properties
-        sail->maxLiftCoefficient = 1.3f;
-        sail->optimalAngle = glm::radians(20.0f);
-        sail->minDragCoefficient = 0.1f;
-        sail->area = 6.8f;
-
-        // Body properties
-        driving->rollCoefficient = 0.01f;
-        driving->rollScaling = 15.0f;
-        base.mass = 180.0f;
-        body->dragCoefficient = 0.35f;
-        body->area = 1.0f;
-
-        // Steering properties
-        driving->steeringSmoothness = 3.0f;
-        driving->maxSteeringAngle = 25.0f;
-        driving->steeringAttenuation = 0.45f;
-    }
-
-    else if (name == "blue-piper")
-    {
-        // Max control angles
-        sail->maxMastAngle = glm::radians(60.0f);
-        sail->maxBoomAngle = glm::radians(90.0f);
-
-        // Sail physics properties
-        sail->maxLiftCoefficient = 1.4f;
-        sail->optimalAngle = glm::radians(20.0f);
-        sail->minDragCoefficient = 0.1f;
-        sail->area = 6.4f;
-
-        // Body properties
-        driving->rollCoefficient = 0.01f;
-        driving->rollScaling = 15.0f;
-        base.mass = 180.0f;
-        body->dragCoefficient = 0.35f;
-        body->area = 1.0f;
-
-        // Steering properties
-        driving->steeringSmoothness = 1.5f;
-        driving->maxSteeringAngle = 25.0f;
-        driving->steeringAttenuation = 1.55f;
-    }
-
-    else if (name == "sietske")
-    {
-        // Max control angles
-        sail->maxMastAngle = glm::radians(60.0f);
-        sail->maxBoomAngle = glm::radians(90.0f);
-
-        // Sail physics properties
-        sail->maxLiftCoefficient = 1.5f;
-        sail->optimalAngle = glm::radians(20.0f);
-        sail->minDragCoefficient = 0.1f;
-        sail->area = 5.7f;
-
-        // Body properties
-        driving->rollCoefficient = 0.008f;
-        driving->rollScaling = 20.0f;
-        base.mass = 200.0f;
-        body->dragCoefficient = 0.2f;
-        body->area = 1.0f;
-
-        // Steering properties
-        driving->steeringSmoothness = 2.0f;
-        driving->maxSteeringAngle = 22.22f;
-        driving->steeringAttenuation = 1.f;
-    }
-
-    else
-    {
-        // Max control angles
-        sail->maxMastAngle = glm::radians(40.0f);
-        sail->maxBoomAngle = glm::radians(80.0f);
-
-        // Sail physics properties
-        sail->maxLiftCoefficient = 1.0f;
-        sail->optimalAngle = glm::radians(20.0f);
-        sail->minDragCoefficient = 0.1f;
-        sail->area = 5.0f;
-
-        // Body properties
-        driving->rollCoefficient = 0.01f;
-        driving->rollScaling = 20.0f;
-        base.mass = 100.0f;
-        body->dragCoefficient = 0.1f;
-        body->area = 1.0f;
-
-        // Steering properties
-        driving->steeringSmoothness = 1.0f;
-        driving->maxSteeringAngle = 30.0f;
-        driving->steeringAttenuation = 1.0f;
     }
 }
 
@@ -165,13 +172,19 @@ void Physics::reset(const glm::mat4 &u_model)
 
     base.rot = glm::quat_cast(glm::mat3(u_model));
 
-    sail->controlFactor = 1.0f;
-    sail->MastAngle = 0.0f;
-    sail->BoomAngle = 0.0f;
-    sail->SailAngle = 0.0f;
+    if (sailVariables)
+    {
+        sail->controlFactor = 1.0f;
+        sail->MastAngle = 0.0f;
+        sail->BoomAngle = 0.0f;
+        sail->SailAngle = 0.0f;
+    }
 
-    driving->steeringAngle = 0.0f;
-    driving->wheelAngle = 0.0f;
+    if (drivingVariables)
+    {
+        driving->steeringAngle = 0.0f;
+        driving->wheelAngle = 0.0f;
+    }
 }
 
 void Physics::savePrevState()
@@ -381,10 +394,13 @@ void Physics::update(bool &controlled)
         updateInputs(controlled);
     }
 
-    if (InputManager::inputType == InputType::Controller)
-        driving->steeringAngle = 0.5 * driving->steeringAngle + 0.5 * driving->steeringChange * driving->maxSteeringAngle;
-    else
-        driving->steeringAngle += (driving->steeringChange - driving->steeringAngle * driving->steeringSmoothness) * tickTime;
+    if (drivingVariables)
+    {
+        if (InputManager::inputType == InputType::Controller)
+            driving->steeringAngle = 0.5 * driving->steeringAngle + 0.5 * driving->steeringChange * driving->maxSteeringAngle;
+        else
+            driving->steeringAngle += (driving->steeringChange - driving->steeringAngle * driving->steeringSmoothness) * tickTime;
+    }
 
     if (sailVariables)
         updateSail(controlled);
