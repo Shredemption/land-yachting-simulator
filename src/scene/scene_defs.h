@@ -8,6 +8,7 @@
 
 #include "mesh/mesh_util.hpp"
 #include "mesh/meshvariant.h"
+#include "model/model_defs.h"
 #include "physics/physicsbuffer.h"
 #include "shader/shaderID.h"
 
@@ -162,4 +163,13 @@ struct ImageData
     float rotation;
     bool mirrored;
     unsigned int textureID;
+};
+
+struct LoadModelData
+{
+    std::string name;
+    std::string mainPath;
+    std::optional<std::vector<std::string>> lodPaths;
+    shaderID shader;
+    ModelType type;
 };

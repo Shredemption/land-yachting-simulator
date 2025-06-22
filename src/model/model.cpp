@@ -15,13 +15,12 @@ struct ExtractVertexType<Mesh<VertexType>>
 };
 
 // Model Constructor
-Model::Model(std::tuple<std::string, std::vector<std::string>, shaderID, ModelType> name_paths_shader_type)
+Model::Model(LoadModelData &loadModelData)
 {
-    this->name = std::get<0>(name_paths_shader_type);
-    this->paths = std::get<1>(name_paths_shader_type);
-    this->modelType = std::get<3>(name_paths_shader_type);
+    this->name = loadModelData.name;
+    this->modelType = loadModelData.type;
 
-    loadModel(paths, std::get<2>(name_paths_shader_type));
+    loadModel(loadModelData.mainPath, loadModelData.lodPaths, loadModelData.shader);
 }
 
 // Model Destructor
@@ -44,23 +43,29 @@ Model::~Model()
     lodMeshes.clear();
 }
 
-void Model::loadModel(const std::vector<std::string> &lodPaths, shaderID &shader)
+void Model::loadModel(std::string mainPath, std::optional<std::vector<std::string>> lodPaths, shaderID &shader)
 {
-    for (size_t i = 0; i < lodPaths.size(); i++)
-    {
-        // Define importer and open file
-        Assimp::Importer importer;
-        const aiScene *scene = importer.ReadFile(lodPaths[i], aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+    Assimp::Importer importer;
 
-        // If scene null, scene flagged as incomplete, or root node null
+    int lodCount = 1 + (lodPaths.has_value() ? lodPaths.value().size() : 0);
+
+    for (size_t i = 0; i < lodCount; i++)
+    {
+        std::string path;
+        if (i == 0)
+            path = mainPath;
+        else
+            path = lodPaths.value()[i - 1];
+
+        const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
         {
-            std::cout << "Assimp Error (" << lodPaths[i] << "): " << importer.GetErrorString() << std::endl;
+            std::cout << "Assimp Error (" << path << "): " << importer.GetErrorString() << std::endl;
             continue;
         }
 
-        // Open full node recursion
-        directory = lodPaths[i].substr(0, lodPaths[i].find_last_of('/'));
+        directory = path.substr(0, path.find_last_of('/'));
 
         std::vector<MeshVariant> lodLevelMeshes;
 
@@ -72,7 +77,6 @@ void Model::loadModel(const std::vector<std::string> &lodPaths, shaderID &shader
 
     TextureManager::loadTexturesForShader(shader, directory, modelType, texturePaths, textureArrayName);
 
-    // Generate initial bone positions
     generateBoneTransforms();
 }
 

@@ -135,18 +135,19 @@ void Scene::loadModelToScene(JSONModel model)
         modelType = ModelType::Yacht;
     }
 
-    std::vector<std::string> paths = {FileManager::getPath(modelEntry.mainPath)};
-
-    for (auto lodPath : modelEntry.lodPaths)
-    {
-        paths.push_back(FileManager::getPath(lodPath));
-    }
-
     // If model not yet loaded
     if (loadedModels.find(modelEntry.mainPath) == loadedModels.end())
     {
+        LoadModelData loadModelData;
+        loadModelData.name = model.name;
+        loadModelData.mainPath = modelEntry.mainPath;
+        if (modelEntry.lodPaths.size() > 0)
+            loadModelData.lodPaths.emplace(modelEntry.lodPaths);
+        loadModelData.shader = ShaderUtil::ShaderFromName(model.shader);
+        loadModelData.type = modelType;
+        
         // Load model with path and shader name
-        loadedModels.emplace(modelEntry.mainPath, std::make_tuple(model.name, paths, ShaderUtil::ShaderFromName(model.shader), modelType));
+        loadedModels.emplace(modelEntry.mainPath, loadModelData);
     }
 
     // Push loaded path to model
