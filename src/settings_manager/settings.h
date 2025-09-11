@@ -39,6 +39,35 @@ struct SettingsStruct
     } debug;
 };
 
+template <typename T>
+struct Limit
+{
+    T min;
+    T max;
+    T stepSize;
+};
+
+struct LimitsStruct
+{
+    struct Video
+    {
+        Limit<float> fov = {80.0f, 120.0f, 1.0f};
+        Limit<float> lodDistance = {10.0f, 100.0f, 10.0f};
+        Limit<float> waterFrameRate = {10.0f, 120.0f, 1.0f};
+    } video;
+
+    struct Input
+    {
+        Limit<float> mouseSensitivity = {2.0f, 8.0f, 0.1f};
+        Limit<float> controllerCamSensitivity = {2.0f, 8.0f, 0.1f};
+    } input;
+
+    struct Physics
+    {
+        Limit<float> tickRate = {20.0f, 60.0f, 1.0f};
+    } physics;
+};
+
 namespace jsoncons
 {
     using Json = jsoncons::json;

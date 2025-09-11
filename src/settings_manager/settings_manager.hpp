@@ -7,6 +7,7 @@
 namespace SettingsManager
 {
     inline SettingsStruct settings;
+    inline LimitsStruct limits;
     inline std::string settingsFile = "settings.json";
 
     void load();
