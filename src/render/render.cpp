@@ -362,7 +362,7 @@ void renderSceneTexts()
     }
 }
 
-void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f, const glm::vec2 scale = {1.0, 1.0f}, const float rotation = 0.0f, const bool mirrored = false)
+void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f, const glm::vec2 scale = {1.0, 1.0f}, const bool uniformScaling = false, const float rotation = 0.0f, const bool mirrored = false)
 {
     shader = ShaderUtil::load(shaderID::Image);
     lastShader = shader;
@@ -382,10 +382,20 @@ void renderImage(const std::string &fileName, const glm::vec2 &position, const f
 
     float scaleX = WindowManager::screenWidth / 2560.0f;
     float scaleY = WindowManager::screenHeight / 1440.0f;
-    glm::vec2 scaleFactors(scaleX, scaleY);
 
-    glm::vec2 scaledScreenSize = glm::vec2(2560.0f, 1440.0f) * scaleFactors;
-    glm::vec2 imageSizePx = glm::vec2(width, height) * scale * scaleFactors;
+    glm::vec2 userScale = scale;
+    if (uniformScaling)
+    {
+        float uniform = std::min(scaleX, scaleY);
+        // This scale, when multiplied by (scaleX, scaleY) in the shader, gives (uniform, uniform)
+        userScale = glm::vec2(uniform / scaleX, uniform / scaleY) * scale;
+    }
+
+    glm::vec2 scaleFactors = uniformScaling ? glm::vec2(std::min(scaleX, scaleY)) : glm::vec2(scaleX, scaleY);
+    glm::vec2 finalScale = userScale * glm::vec2(scaleX, scaleY); // This is (uniform, uniform) or (scaleX, scaleY)
+    glm::vec2 imageSizePx = glm::vec2(width, height) * finalScale;
+
+    glm::vec2 scaledScreenSize = glm::vec2(2560.0f, 1440.0f) * glm::vec2(scaleX, scaleY);
 
     glm::vec2 positionPx;
     positionPx.x = posFactor.x * (scaledScreenSize.x - imageSizePx.x);
@@ -394,7 +404,7 @@ void renderImage(const std::string &fileName, const glm::vec2 &position, const f
     shader->setVec2("uPosition", positionPx);
 
     shader->setVec2("uImageSize", glm::vec2(width, height));
-    shader->setVec2("uScale", scale);
+    shader->setVec2("uScale", userScale);
     shader->setFloat("uAlpha", alpha);
     shader->setFloat("uRotation", glm::radians(rotation));
     shader->setBool("uMirrored", mirrored);
@@ -1221,8 +1231,8 @@ void Render::renderMenu(EngineState state)
     {
         glm::vec2 pos = {0.7f + positionOffset, 0.5f};
 
-        renderImage("title-figure-black.png", pos + glm::vec2(0.005f, -0.01f), 835, 1024, alpha);
-        renderImage("title-figure.png", pos, 835, 1024, alpha);
+        renderImage("title-figure-black.png", pos + glm::vec2(0.005f, -0.01f), 835, 1024, alpha, glm::vec2(1.0f, 1.0f), true);
+        renderImage("title-figure.png", pos, 835, 1024, alpha, glm::vec2(1.0f, 1.0f), true);
     }
 
     UIManager::render();
