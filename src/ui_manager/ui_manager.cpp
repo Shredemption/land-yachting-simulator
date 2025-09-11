@@ -184,8 +184,8 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         tgl->size = glm::vec2(0.0f, 0.05f);
         tgl->shownOnPage = SettingsPage::Graphics;
         tgl->linkedVariable = &SettingsManager::settings.video.fullscreen;
-        tgl->trueLabel = "Borderless";
-        tgl->falseLabel = "Off";
+        tgl->trueLabel = SettingsManager::settingsMeta.video.fullscreen.trueLabel;
+        tgl->falseLabel = SettingsManager::settingsMeta.video.fullscreen.falseLabel;
         tgl->onChange = []()
         { WindowManager::setFullscreenState(); };
         tgl->index = index++;
@@ -198,8 +198,8 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         tgl->size = glm::vec2(0.0f, 0.05f);
         tgl->shownOnPage = SettingsPage::Graphics;
         tgl->linkedVariable = &SettingsManager::settings.video.vSync;
-        tgl->trueLabel = "On";
-        tgl->falseLabel = "Off";
+        tgl->trueLabel = SettingsManager::settingsMeta.video.vSync.trueLabel;
+        tgl->falseLabel = SettingsManager::settingsMeta.video.vSync.falseLabel;
         tgl->onChange = []()
         { glfwSwapInterval(SettingsManager::settings.video.vSync ? 1 : 0); };
         tgl->index = index++;
@@ -212,9 +212,9 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         sldr->size = glm::vec2(0.0f, 0.05f);
         sldr->shownOnPage = SettingsPage::Graphics;
         sldr->linkedFloat = &SettingsManager::settings.video.fov;
-        sldr->lowerLim = SettingsManager::limits.video.fov.min;
-        sldr->upperLim = SettingsManager::limits.video.fov.max;
-        sldr->stepSize = SettingsManager::limits.video.fov.stepSize;
+        sldr->lowerLim = SettingsManager::settingsMeta.video.fov.min;
+        sldr->upperLim = SettingsManager::settingsMeta.video.fov.max;
+        sldr->stepSize = SettingsManager::settingsMeta.video.fov.stepSize;
         sldr->index = index++;
         root->AddChild(sldr);
     }
@@ -225,9 +225,9 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         sldr->size = glm::vec2(0.0f, 0.05f);
         sldr->shownOnPage = SettingsPage::Graphics;
         sldr->linkedFloat = &SettingsManager::settings.video.lodDistance;
-        sldr->lowerLim = SettingsManager::limits.video.lodDistance.min;
-        sldr->upperLim = SettingsManager::limits.video.lodDistance.max;
-        sldr->stepSize = SettingsManager::limits.video.lodDistance.stepSize;
+        sldr->lowerLim = SettingsManager::settingsMeta.video.lodDistance.min;
+        sldr->upperLim = SettingsManager::settingsMeta.video.lodDistance.max;
+        sldr->stepSize = SettingsManager::settingsMeta.video.lodDistance.stepSize;
         sldr->index = index++;
         root->AddChild(sldr);
     }
@@ -238,9 +238,9 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         sldr->size = glm::vec2(0.0f, 0.05f);
         sldr->shownOnPage = SettingsPage::Graphics;
         sldr->linkedFloat = &SettingsManager::settings.video.waterFrameRate;
-        sldr->lowerLim = SettingsManager::limits.video.waterFrameRate.min;
-        sldr->upperLim = SettingsManager::limits.video.waterFrameRate.max;
-        sldr->stepSize = SettingsManager::limits.video.waterFrameRate.stepSize;
+        sldr->lowerLim = SettingsManager::settingsMeta.video.waterFrameRate.min;
+        sldr->upperLim = SettingsManager::settingsMeta.video.waterFrameRate.max;
+        sldr->stepSize = SettingsManager::settingsMeta.video.waterFrameRate.stepSize;
         sldr->index = index++;
         root->AddChild(sldr);
     }
@@ -261,9 +261,9 @@ void buildInputPage(std::shared_ptr<Widget> &root)
         sldr->size = glm::vec2(0.0f, 0.05f);
         sldr->shownOnPage = SettingsPage::Input;
         sldr->linkedFloat = &SettingsManager::settings.input.mouseSensitivity;
-        sldr->lowerLim = SettingsManager::limits.input.mouseSensitivity.min;
-        sldr->upperLim = SettingsManager::limits.input.mouseSensitivity.max;
-        sldr->stepSize = SettingsManager::limits.input.mouseSensitivity.stepSize;
+        sldr->lowerLim = SettingsManager::settingsMeta.input.mouseSensitivity.min;
+        sldr->upperLim = SettingsManager::settingsMeta.input.mouseSensitivity.max;
+        sldr->stepSize = SettingsManager::settingsMeta.input.mouseSensitivity.stepSize;
         sldr->decimals = 2;
         sldr->index = index++;
         root->AddChild(sldr);
@@ -275,9 +275,9 @@ void buildInputPage(std::shared_ptr<Widget> &root)
         sldr->size = glm::vec2(0.0f, 0.05f);
         sldr->shownOnPage = SettingsPage::Input;
         sldr->linkedFloat = &SettingsManager::settings.input.controllerCamSensitivity;
-        sldr->lowerLim = SettingsManager::limits.input.controllerCamSensitivity.min;
-        sldr->upperLim = SettingsManager::limits.input.controllerCamSensitivity.max;
-        sldr->stepSize = SettingsManager::limits.input.controllerCamSensitivity.stepSize;
+        sldr->lowerLim = SettingsManager::settingsMeta.input.controllerCamSensitivity.min;
+        sldr->upperLim = SettingsManager::settingsMeta.input.controllerCamSensitivity.max;
+        sldr->stepSize = SettingsManager::settingsMeta.input.controllerCamSensitivity.stepSize;
         sldr->decimals = 2;
         sldr->index = index++;
         root->AddChild(sldr);
@@ -299,9 +299,9 @@ void buildPhysicsPage(std::shared_ptr<Widget> &root)
         sldr->size = glm::vec2(0.0f, 0.05f);
         sldr->shownOnPage = SettingsPage::Physics;
         sldr->linkedFloat = &SettingsManager::settings.physics.tickRate;
-        sldr->lowerLim = SettingsManager::limits.physics.tickRate.min;
-        sldr->upperLim = SettingsManager::limits.physics.tickRate.max;
-        sldr->stepSize = SettingsManager::limits.physics.tickRate.stepSize;
+        sldr->lowerLim = SettingsManager::settingsMeta.physics.tickRate.min;
+        sldr->upperLim = SettingsManager::settingsMeta.physics.tickRate.max;
+        sldr->stepSize = SettingsManager::settingsMeta.physics.tickRate.stepSize;
         sldr->index = index++;
         root->AddChild(sldr);
     }
@@ -309,7 +309,6 @@ void buildPhysicsPage(std::shared_ptr<Widget> &root)
 
 void buildDebugPage(std::shared_ptr<Widget> &root)
 {
-    // Graphics Page
     float x = 0.25f;
     float y = 0.15f;
     float yStep = 0.05f;
@@ -323,8 +322,8 @@ void buildDebugPage(std::shared_ptr<Widget> &root)
         tgl->size = glm::vec2(0.0f, 0.05f);
         tgl->shownOnPage = SettingsPage::Debug;
         tgl->linkedVariable = &SettingsManager::settings.debug.wireframeMode;
-        tgl->trueLabel = "On";
-        tgl->falseLabel = "Off";
+        tgl->trueLabel = SettingsManager::settingsMeta.debug.wireframeMode.trueLabel;
+        tgl->falseLabel = SettingsManager::settingsMeta.debug.wireframeMode.falseLabel;
         tgl->index = index++;
         root->AddChild(tgl);
     }
@@ -334,7 +333,7 @@ void buildDebugPage(std::shared_ptr<Widget> &root)
         slct->pos = glm::vec2(x, y + yStep * steps++);
         slct->size = glm::vec2(0.0f, 0.05f);
         slct->shownOnPage = SettingsPage::Debug;
-        slct->labels = {"Off", "FPS", "Physics"};
+        slct->labels = SettingsManager::settingsMeta.debug.debugOverlay.labels;
         slct->currentIndex = static_cast<int>(SettingsManager::settings.debug.debugOverlay);
         slct->onChange = [slct]()
         { SettingsManager::settings.debug.debugOverlay = static_cast<debugOverlay>(slct->currentIndex); };
@@ -348,8 +347,8 @@ void buildDebugPage(std::shared_ptr<Widget> &root)
         tgl->size = glm::vec2(0.0f, 0.05f);
         tgl->shownOnPage = SettingsPage::Debug;
         tgl->linkedVariable = &SettingsManager::settings.debug.showHitboxes;
-        tgl->trueLabel = "Shown";
-        tgl->falseLabel = "Hidden";
+        tgl->trueLabel = SettingsManager::settingsMeta.debug.showHitboxes.trueLabel;
+        tgl->falseLabel = SettingsManager::settingsMeta.debug.showHitboxes.falseLabel;
         tgl->index = index++;
         root->AddChild(tgl);
     }

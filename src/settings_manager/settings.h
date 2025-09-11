@@ -39,6 +39,17 @@ struct SettingsStruct
     } debug;
 };
 
+struct ToggleLabels
+{
+    std::string trueLabel;
+    std::string falseLabel;
+};
+
+struct SelectorLabels
+{
+    std::vector<std::string> labels;
+};
+
 template <typename T>
 struct Limit
 {
@@ -47,10 +58,12 @@ struct Limit
     T stepSize;
 };
 
-struct LimitsStruct
+struct SettingsMetaStruct
 {
     struct Video
     {
+        ToggleLabels fullscreen = {"Borderless", "Off"};
+        ToggleLabels vSync = {"On", "Off"};
         Limit<float> fov = {80.0f, 120.0f, 1.0f};
         Limit<float> lodDistance = {10.0f, 100.0f, 10.0f};
         Limit<float> waterFrameRate = {10.0f, 120.0f, 1.0f};
@@ -66,6 +79,13 @@ struct LimitsStruct
     {
         Limit<float> tickRate = {20.0f, 60.0f, 1.0f};
     } physics;
+
+    struct Debug
+    {
+        ToggleLabels wireframeMode = {"On", "Off"};
+        SelectorLabels debugOverlay = {{"Off", "FPS", "Physics"}};
+        ToggleLabels showHitboxes = {"Shown", "Hidden"};
+    } debug;
 };
 
 namespace jsoncons
