@@ -212,8 +212,8 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         sldr->size = glm::vec2(0.0f, 0.05f);
         sldr->shownOnPage = SettingsPage::Graphics;
         sldr->linkedFloat = &SettingsManager::settings.video.fov;
-        sldr->lowerLim = 60.0f;
-        sldr->upperLim = 100.0f;
+        sldr->lowerLim = 80.0f;
+        sldr->upperLim = 120.0f;
         sldr->stepSize = 1.0f;
         sldr->index = index++;
         root->AddChild(sldr);
