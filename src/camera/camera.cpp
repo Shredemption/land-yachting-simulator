@@ -63,7 +63,13 @@ void Camera::setCamDirection(glm::vec3 rotation)
 // Projection Matrix
 void Camera::genProjectionMatrix()
 {
-    u_projection = glm::perspective(glm::radians(SettingsManager::settings.video.fov),
+    float aspect = (float)WindowManager::screenWidth / (float)WindowManager::screenHeight;
+
+    float hFov = glm::radians(SettingsManager::settings.video.fov);
+
+    float vFov = 2.0f * atan(tan(hFov / 2.0f) / aspect);
+
+    u_projection = glm::perspective(vFov,
                                     (float)WindowManager::screenWidth / (float)WindowManager::screenHeight,
                                     0.1f,
                                     1000.0f);
