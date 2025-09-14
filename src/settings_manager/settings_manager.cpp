@@ -2,6 +2,24 @@
 
 #include "pch.h"
 
+template<typename T>
+void validateLimit(T& value, const Limit<T>& limit)
+{
+    value = std::clamp(value, limit.min, limit.max);
+}
+
+void validate(SettingsStruct& s, const SettingsMetaStruct& m)
+{
+    validateLimit(s.video.fov, m.video.fov);
+    validateLimit(s.video.lodDistance, m.video.lodDistance);
+    validateLimit(s.video.waterFrameRate, m.video.waterFrameRate);
+
+    validateLimit(s.input.mouseSensitivity, m.input.mouseSensitivity);
+    validateLimit(s.input.controllerCamSensitivity, m.input.controllerCamSensitivity);
+
+    validateLimit(s.physics.tickRate, m.physics.tickRate);
+}
+
 void SettingsManager::load()
 {
     std::ifstream file(settingsFile);
@@ -19,6 +37,8 @@ void SettingsManager::load()
     {
         std::cerr << "Error loading settings: " << e.what() << "\n";
     }
+
+    validate(settings,settingsMeta);
 }
 
 void SettingsManager::save()
