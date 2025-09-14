@@ -23,21 +23,11 @@ std::shared_ptr<Widget> buildTitle()
 
     {
         auto btn = std::make_shared<Button>();
-        btn->text = "Load Realistic Scene";
+        btn->text = "Start";
         btn->pos = glm::vec2(x, y + yStep * steps++);
         btn->size = glm::vec2(0.3f, 0.05f);
         btn->onClick = []()
-        { UIManager::queueEngineScene("realistic"); };
-        btn->index = index++;
-        root->AddChild(btn);
-    }
-    {
-        auto btn = std::make_shared<Button>();
-        btn->text = "Load Cartoon Scene";
-        btn->pos = glm::vec2(x, y + yStep * steps++);
-        btn->size = glm::vec2(0.3f, 0.05f);
-        btn->onClick = []()
-        { UIManager::queueEngineScene("cartoon"); };
+        { UIManager::queueEngineScene(SettingsManager::settings.video.graphicsType == graphicsType::Realistic ? "realistic" : "cartoon"); };
         btn->index = index++;
         root->AddChild(btn);
     }
@@ -177,6 +167,19 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
     int steps = 0;
     int index = 0;
 
+    {
+        auto slct = std::make_shared<Selector>();
+        slct->text = "Graphics Type";
+        slct->pos = glm::vec2(x, y + yStep * steps++);
+        slct->size = glm::vec2(0.0f, 0.05f);
+        slct->shownOnPage = SettingsPage::Graphics;
+        slct->labels = SettingsManager::settingsMeta.video.graphicsType.labels;
+        slct->currentIndex = static_cast<int>(SettingsManager::settings.video.graphicsType);
+        slct->onChange = [slct]()
+        { SettingsManager::settings.video.graphicsType = static_cast<graphicsType>(slct->currentIndex); };
+        slct->index = index++;
+        root->AddChild(slct);
+    }
     {
         auto tgl = std::make_shared<Toggle>();
         tgl->text = "Fullscreen";

@@ -9,10 +9,17 @@ enum class debugOverlay
     Physics
 };
 
+enum class graphicsType
+{
+    Realistic,
+    Cartoon
+};
+
 struct SettingsStruct
 {
     struct Video
     {
+        graphicsType graphicsType = graphicsType::Cartoon;
         bool fullscreen = true;
         bool vSync = true;
         float fov = 100.0f;
@@ -62,6 +69,7 @@ struct SettingsMetaStruct
 {
     struct Video
     {
+        SelectorLabels graphicsType = {{"Realistic", "Cartoon"}};
         ToggleLabels fullscreen = {"Borderless", "Off"};
         ToggleLabels vSync = {"On", "Off"};
         Limit<float> fov = {80.0f, 120.0f, 1.0f};
@@ -129,6 +137,38 @@ namespace jsoncons
     };
 
     template <>
+    struct json_type_traits<Json, graphicsType>
+    {
+        static bool is(const Json &j) noexcept
+        {
+            return j.is_string();
+        }
+
+        static graphicsType as(const Json &j)
+        {
+            const std::string &s = j.template as<std::string>();
+            if (s == "Realistic")
+                return graphicsType::Realistic;
+            if (s == "Cartoon")
+                return graphicsType::Cartoon;
+            throw std::runtime_error("Invalid graphicsType enum value: " + s);
+        }
+
+        static Json to_json(const graphicsType &val)
+        {
+            switch (val)
+            {
+            case graphicsType::Realistic:
+                return Json("Realistic");
+            case graphicsType::Cartoon:
+                return Json("Cartoon");
+            default:
+                return Json("Unknown");
+            }
+        }
+    };
+
+    template <>
     struct json_type_traits<Json, SettingsStruct::Video>
     {
         static bool is(const Json &j) noexcept
@@ -139,6 +179,8 @@ namespace jsoncons
         static SettingsStruct::Video as(const Json &j)
         {
             SettingsStruct::Video s;
+            if (j.contains("graphicsType"))
+                s.graphicsType = j["graphicsType"].template as<graphicsType>();
             if (j.contains("fullscreen"))
                 s.fullscreen = j["fullscreen"].template as<bool>();
             if (j.contains("vsync"))
@@ -155,6 +197,7 @@ namespace jsoncons
         static Json to_json(const SettingsStruct::Video &s)
         {
             Json j;
+            j["graphicsType"] = s.graphicsType;
             j["fullscreen"] = s.fullscreen;
             j["vsync"] = s.vSync;
             j["fov"] = s.fov;
