@@ -1201,7 +1201,7 @@ void Render::renderMenu(EngineState state)
     }
     }
 
-    float titleX = 0.02, titleY = 0.04;
+    float titleX = 0.02f, titleY = 0.04f;
     float shadowDistance = 0.003f;
     std::string titleText;
 
@@ -1236,6 +1236,12 @@ void Render::renderMenu(EngineState state)
     }
 
     UIManager::render();
+
+    if (UIManager::needsReload)
+    {
+        renderText("Will reload to apply changes", 0.98f + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Right);
+        renderText("Will reload to apply changes", 0.98f, titleY, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), alpha, TextAlign::Right);
+    }
 
     glEnable(GL_DEPTH_TEST);
 }
