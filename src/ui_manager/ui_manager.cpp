@@ -176,7 +176,10 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         slct->labels = SettingsManager::settingsMeta.video.graphicsType.labels;
         slct->currentIndex = static_cast<int>(SettingsManager::settings.video.graphicsType);
         slct->onChange = [slct]()
-        { SettingsManager::settings.video.graphicsType = static_cast<graphicsType>(slct->currentIndex); };
+        {
+            SettingsManager::settings.video.graphicsType = static_cast<graphicsType>(slct->currentIndex);
+            UIManager::needsReload = true;
+        };
         slct->index = index++;
         root->AddChild(slct);
     }
@@ -561,6 +564,13 @@ void UIManager::render()
 
 void UIManager::queueEngineState(EngineState state)
 {
+    if (needsReload)
+    {
+        needsReload = false;
+        queueEngineState(EngineState::Title);
+        return;
+    }
+
     shouldFadeBackground = true;
     fadeToBlack = false;
 
