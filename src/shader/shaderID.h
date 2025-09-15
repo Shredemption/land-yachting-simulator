@@ -9,6 +9,7 @@ enum class shaderID
     SingleColor,
     Text,
     Image,
+    Terrain,
     Water,
     Skybox,
     Toon,

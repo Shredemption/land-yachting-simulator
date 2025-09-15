@@ -5,7 +5,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, 0],
+      "translation": [0, 0, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"],
       "controlled": true
@@ -15,7 +15,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-6, -1, 0],
+      "translation": [-6, -1, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"]
     },
@@ -24,7 +24,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-12, -2, 0],
+      "translation": [-12, -2, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"]
     },
@@ -33,7 +33,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-18, -3, 0],
+      "translation": [-18, -3, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"]
     },
@@ -42,7 +42,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-24, -4, 0],
+      "translation": [-24, -4, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"]
     },
@@ -51,7 +51,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-30, -5, 0],
+      "translation": [-30, -5, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"]
     },
@@ -60,7 +60,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-36, -6, 0],
+      "translation": [-36, -6, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"]
     },
@@ -69,7 +69,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-42, -7, 0],
+      "translation": [-42, -7, 1],
       "animated": true,
       "physics": ["body", "driving", "sail"]
     }
@@ -82,13 +82,18 @@
       "rotationAxis": [0, 0, 1],
       "translation": [0, 0, 0.25],
       "shader": "water"
-    },
+    }
+  ],
+  "grids": [
     {
-      "color": [0.78, 0.67, 0.13],
-      "scale": [500, 500, 1],
-      "angle": 0,
+      "color": [0.39, 0.84, 0.21],
+      "gridSize": [100, 100],
+      "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, -4]
+      "translation": [0, 0, 0],
+      "scale": 0.5,
+      "lod": 5,
+      "shader": "terrain"
     }
   ],
   "skyBox": [

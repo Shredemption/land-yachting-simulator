@@ -5,7 +5,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, 2],
+      "translation": [0, 0, 1],
       "shader": "toon",
       "animated": true,
       "physics": ["body", "driving", "sail"],
@@ -16,7 +16,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-6, -1, 2],
+      "translation": [-6, -1, 1],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -26,7 +26,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-12, -2, 2],
+      "translation": [-12, -2, 1],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -36,7 +36,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-18, -3, 2],
+      "translation": [-18, -3, 1],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -46,7 +46,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-24, -4, 2],
+      "translation": [-24, -4, 1],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -56,7 +56,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-30, -5, 2],
+      "translation": [-30, -5, 1],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -66,7 +66,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-36, -6, 2],
+      "translation": [-36, -6, 1],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -76,7 +76,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-42, -7, 2],
+      "translation": [-42, -7, 1],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -105,6 +105,6 @@
     }
   ],
   "bgColor": [0.545, 0.929, 0.984],
-  "cameraPos": [-0.5, -12, 4],
+  "cameraPos": [-0.5, -12, 3],
   "cameraDir": [-40, 0, 0]
 }

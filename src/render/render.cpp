@@ -246,6 +246,11 @@ void renderGrid(const RenderCommand &cmd)
         // Clipping Plane
         shader->setVec4("location_plane", clipPlane);
 
+        int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
+        shader->setInt("heightmap", heightmap);
+
+        shader->setMat4("u_camXY", Camera::u_camXY);
+
         lastShader = shader;
     }
 
@@ -254,14 +259,6 @@ void renderGrid(const RenderCommand &cmd)
     shader->setMat4("u_normal", cmd.normalMatrix);
 
     shader->setFloat("lod", cmd.lod);
-
-    if (cmd.shader == shaderID::ToonTerrain)
-    {
-        int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
-        shader->setInt("heightmap", heightmap);
-
-        shader->setMat4("u_camXY", Camera::u_camXY);
-    }
 
     // Draw meshes
     for (auto &mesh : *cmd.meshes)
