@@ -292,9 +292,16 @@ void Scene::loadGridToScene(JSONGrid grid)
     // Push loaded grid to scene
     this->grids.push_back(loadGrid);
 
-    if (loadGrid.shader == shaderID::ToonTerrain || loadGrid.shader == shaderID::Terrain)
+    if (loadGrid.shader == shaderID::ToonTerrain)
     {
         TextureManager::queueStandaloneTexture("heightmap.jpg");
+    }
+    else if (loadGrid.shader == shaderID::Terrain)
+    {
+        TextureManager::queueStandaloneTexture("heightmap.jpg");
+        TextureManager::queueTextureToArrayByFilename("sand_diffuse.jpg", "sandTextureArray");
+        TextureManager::queueTextureToArrayByFilename("sand_displacement.png", "sandTextureArray");
+        TextureManager::queueTextureToArrayByFilename("sand_normal.png", "sandTextureArray");
     }
 }
 

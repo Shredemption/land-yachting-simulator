@@ -249,6 +249,9 @@ void renderGrid(const RenderCommand &cmd)
         int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
         shader->setInt("heightmap", heightmap);
 
+        unsigned int sandTexArrayID = TextureManager::getTextureArrayUnit("sandTextureArray");
+        shader->setInt("sandTextureArray", sandTexArrayID);
+
         shader->setMat4("u_camXY", Camera::u_camXY);
 
         lastShader = shader;
