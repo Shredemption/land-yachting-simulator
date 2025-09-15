@@ -1,1 +1,1 @@
-# Marama
+# Land Yachting Simulator
