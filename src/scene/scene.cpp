@@ -247,6 +247,7 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     {
         TextureManager::queueTextureToArrayByFilename("waterDUDV.png", "waterTextureArray");
         TextureManager::queueTextureToArrayByFilename("waterNormal.png", "waterTextureArray");
+        TextureManager::queueStandaloneTexture("heightmap.jpg");
     }
 
     if (loadUnitPlane.shader == shaderID::ToonWater)
@@ -291,7 +292,7 @@ void Scene::loadGridToScene(JSONGrid grid)
     // Push loaded grid to scene
     this->grids.push_back(loadGrid);
 
-    if (loadGrid.shader == shaderID::ToonTerrain)
+    if (loadGrid.shader == shaderID::ToonTerrain || loadGrid.shader == shaderID::Terrain)
     {
         TextureManager::queueStandaloneTexture("heightmap.jpg");
     }
