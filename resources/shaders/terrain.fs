@@ -4,18 +4,24 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 
-const vec4 baseColor = vec4(1, 0.85, 0.51, 1.0);
-const vec4 darkColor = vec4(0.81, 0.53, 0.09, 1.0);
-const vec4 foamColor = vec4(0.937, 1, 1, 1);
+uniform sampler2DArray sandTextureArray;
 
-uniform sampler2D heightmap;
+uniform vec3 lightPos;
+uniform vec3 lightCol;
+
+const float texScale = 20;
 
 void main()
 {
-    float height = texture(heightmap, TexCoord).r;
-    float invDarkFactor = clamp(height * 5, 0, 1);
-    float foamFactor = smoothstep(0.10, 0.11, height);
+    vec4 color = texture(sandTextureArray, vec3(TexCoord * texScale, 0));
+    float roughness = texture(sandTextureArray, vec3(TexCoord * texScale, 1)).r;
+    vec3 normal = texture(sandTextureArray, vec3(TexCoord * texScale, 2)).rgb * 2.0 - 1.0;
 
-    FragColor = mix(darkColor, baseColor, invDarkFactor);
-    FragColor = mix(foamColor, FragColor, foamFactor);
+    normal = normalize(normal);
+
+    float intensity = max(dot(normal, normalize(lightPos)), 0.0) * 0.1 + 0.9;
+
+    vec3 diffuse = color.rgb * lightCol * intensity;
+
+    FragColor = vec4(diffuse, 1.0);
 }

@@ -243,6 +243,9 @@ void renderGrid(const RenderCommand &cmd)
         shader->setMat4("u_view", Camera::u_view);
         shader->setMat4("u_projection", Camera::u_projection);
 
+        shader->setVec3("lightPos", SceneManager::currentScene.get()->lightPos);
+        shader->setVec3("lightCol", SceneManager::currentScene.get()->lightCol);
+
         // Clipping Plane
         shader->setVec4("location_plane", clipPlane);
 
