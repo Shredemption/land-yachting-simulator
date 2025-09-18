@@ -176,41 +176,58 @@ void Physics::updateSail(bool debug)
 {
     SailVariables *sail = &sailVariables.value();
 
-    // Find new angles for sail
-    glm::vec3 direction = base.rot * glm::vec3(0, 1, 0);
-    float angleToWind = glm::orientedAngle(direction, PhysicsUtil::windSourceDirection, glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::vec3 heading = base.rot * glm::vec3(0, 1, 0);
+    float angleToWind = glm::orientedAngle(heading, -PhysicsUtil::windDirection, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    // Apply angles to sail setup
     float targetMastAngle = (0.5f + sail->controlFactor) / 1.5f * std::clamp(angleToWind, -sail->maxMastAngle, sail->maxMastAngle);
     float targetBoomAngle = sail->controlFactor * std::clamp(angleToWind, -sail->maxBoomAngle, sail->maxBoomAngle);
 
-    // Smooth angle transitions
     float smoothingFactor = 0.05f;
     sail->MastAngle += smoothingFactor * (targetMastAngle - sail->MastAngle);
     sail->BoomAngle += smoothingFactor * (targetBoomAngle - sail->BoomAngle);
     sail->SailAngle = sail->BoomAngle * (1 + 0.1 * fabs(sin(angleToWind / 2)));
 
-    // Apparent wind direction
-    glm::vec3 apparentWind = -PhysicsUtil::windSourceDirection * PhysicsUtil::windStrength - direction * glm::length(base.vel);
-    float apparentWindSpeed = glm::length(apparentWind);
+    glm::vec3 apparentWind = PhysicsUtil::windDirection * PhysicsUtil::windStrength - base.vel;
     glm::vec3 apparentWindDirection = glm::normalize(apparentWind);
+    float apparentWindSpeed = glm::length(apparentWind);
 
-    // Relative sail angle
-    float angleToApparentWind = glm::orientedAngle(direction, -apparentWindDirection, glm::vec3(0.0f, 0.0f, 1.0f));
-    float relativeSailAngle = angleToApparentWind - sail->SailAngle;
-    float absAngle = fabs(relativeSailAngle);
+    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), sail->SailAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::vec3 sailDir = glm::vec3(rot * glm::vec4(heading, 0.0f));
+
+    float angleAttack = glm::orientedAngle(-apparentWindDirection, sailDir, glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Lift and Drag coefficients
-    float effectiveCL = (absAngle <= sail->optimalAngle ? sail->maxLiftCoefficient * (relativeSailAngle / sail->optimalAngle) * sin(2.0f * absAngle) / sin(2.0f * sail->optimalAngle) : sail->maxLiftCoefficient * (sail->optimalAngle / absAngle) * (relativeSailAngle < 0 ? -1.0f : 1.0f));
-    float effectiveCD = sail->minDragCoefficient + sin(absAngle) * sin(absAngle);
+    float CL;
+    if (fabs(angleAttack) <= sail->optimalAngle)
+    {
+        CL = sail->maxLiftCoefficient * (angleAttack / sail->optimalAngle);
+    }
+    else if (fabs(angleAttack) < glm::half_pi<float>())
+    {
+        CL = sail->maxLiftCoefficient * (sail->optimalAngle / fabs(angleAttack)) * (angleAttack > 0 ? 1.0f : -1.0f);
+    }
+    else
+    {
+        CL = 0.0f;
+    }
+
+    float CD = sail->minDragCoefficient + pow(sin(angleAttack), 2);
 
     // Lift and Drag forces
     float dynamicPressure = 0.5f * PhysicsUtil::airDensity * apparentWindSpeed * apparentWindSpeed;
-    float liftMagnitude = dynamicPressure * sail->area * effectiveCL;
-    float dragMagnitude = dynamicPressure * sail->area * effectiveCD;
+    float liftMagnitude = dynamicPressure * sail->area * CL;
+    float dragMagnitude = dynamicPressure * sail->area * CD;
 
-    glm::vec3 dragDir = -apparentWindDirection;
-    glm::vec3 liftDir = glm::cross(dragDir, glm::vec3(0, 0, 1));
+    glm::vec3 dragDir = apparentWindDirection;
+    glm::vec3 perp = glm::cross(sailDir, apparentWindDirection);
+    glm::vec3 liftDir = glm::cross(apparentWindDirection, perp);
+    liftDir = glm::normalize(liftDir);
+
+    if (glm::dot(liftDir, heading) < 0.0f)
+    {
+        liftDir = -liftDir;
+    }
+
     if (glm::length(liftDir) > 0.0f)
         liftDir = glm::normalize(liftDir);
     else
@@ -221,17 +238,16 @@ void Physics::updateSail(bool debug)
 
     base.netForce += sailLiftForce + sailDragForce;
 
-    debugForces.push_back({base.pos, sailLiftForce, "Lift"});
-    debugForces.push_back({base.pos, sailDragForce, "Drag"});
+    // debugForces.push_back({base.pos, sailLiftForce, "Lift"});
+    // debugForces.push_back({base.pos, sailDragForce, "Drag"});
 
     if (debug)
     {
         Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
         Render::debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
-        Render::debugPhysicsData.push_back(std::pair("angleToApparentWind", glm::degrees(angleToApparentWind)));
-        Render::debugPhysicsData.push_back(std::pair("relativeAngle", glm::degrees(relativeSailAngle)));
-        Render::debugPhysicsData.push_back(std::pair("effectiveCL", effectiveCL));
-        Render::debugPhysicsData.push_back(std::pair("effectiveCD", effectiveCD));
+        Render::debugPhysicsData.push_back(std::pair("angleAttack", glm::degrees(angleAttack)));
+        Render::debugPhysicsData.push_back(std::pair("CL", CL));
+        Render::debugPhysicsData.push_back(std::pair("CD", CD));
     }
 }
 
