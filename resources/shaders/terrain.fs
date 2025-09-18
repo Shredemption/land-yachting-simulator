@@ -9,7 +9,7 @@ uniform sampler2DArray sandTextureArray;
 uniform vec3 lightPos;
 uniform vec3 lightCol;
 
-const float texScale = 20;
+const float texScale = 100;
 
 void main()
 {
