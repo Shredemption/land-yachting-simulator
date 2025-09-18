@@ -219,14 +219,9 @@ void Physics::updateSail(bool debug)
     float dragMagnitude = dynamicPressure * sail->area * CD;
 
     glm::vec3 dragDir = apparentWindDirection;
-    glm::vec3 perp = glm::cross(sailDir, apparentWindDirection);
-    glm::vec3 liftDir = glm::cross(apparentWindDirection, perp);
+    glm::vec3 dragHorizontal = glm::normalize(glm::vec3(dragDir.x, dragDir.y, 0.0f));
+    glm::vec3 liftDir = glm::vec3(dragHorizontal.y, -dragHorizontal.x, 0.0f);
     liftDir = glm::normalize(liftDir);
-
-    if (glm::dot(liftDir, heading) < 0.0f)
-    {
-        liftDir = -liftDir;
-    }
 
     if (glm::length(liftDir) > 0.0f)
         liftDir = glm::normalize(liftDir);
