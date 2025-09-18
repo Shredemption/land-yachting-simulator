@@ -26,7 +26,7 @@ namespace PhysicsUtil
     inline std::atomic<bool> isSwapping(false);
 
     // World variables
-    inline glm::vec3 windSourceDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+    inline glm::vec3 windDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     inline float windStrength = 10.0f;
     inline float airDensity = 1.225f;
     inline float g = 9.80665f;
