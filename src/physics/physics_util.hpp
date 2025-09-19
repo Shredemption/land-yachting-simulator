@@ -37,6 +37,6 @@ namespace PhysicsUtil
     void switchControlledYacht();
 
     // Boolmap for tracking inputs
-    inline bool keyInputs[5];
+    inline bool keyInputs[6];
 
 };
