@@ -104,7 +104,16 @@
       "shader": "toon-terrain"
     }
   ],
-  "bgColor": [0.545, 0.929, 0.984],
+  "skyBox": [
+    {
+      "up": "resources/skybox/toon_top.png",
+      "down": "resources/skybox/toon_bottom.png",
+      "left": "resources/skybox/toon_left.png",
+      "right": "resources/skybox/toon_right.png",
+      "front": "resources/skybox/toon_front.png",
+      "back": "resources/skybox/toon_back.png"
+    }
+  ],
   "cameraPos": [-0.5, -12, 3],
   "cameraDir": [-40, 0, 0]
 }
