@@ -232,11 +232,6 @@ void Physics::updateSail(bool debug)
     glm::vec3 liftDir = glm::vec3(dragHorizontal.y, -dragHorizontal.x, 0.0f);
     liftDir = glm::normalize(liftDir);
 
-    if (glm::length(liftDir) > 0.0f)
-        liftDir = glm::normalize(liftDir);
-    else
-        liftDir = glm::vec3(0);
-
     glm::vec3 sailLiftForce = liftMagnitude * liftDir;
     glm::vec3 sailDragForce = dragMagnitude * dragDir;
 
