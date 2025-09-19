@@ -373,12 +373,16 @@ void Physics::update(ModelData &modelData)
 
     // Stationary force/acceleration
     const float standstillVelocity = 0.02f;
+    const float staticFrictionCoeff = 0.3f;
 
     glm::vec3 up = Camera::worldUp;
     glm::vec3 velHoriz = base.vel - glm::dot(base.vel, up) * up;
+    float normalForce = base.mass * PhysicsUtil::g;
+    float maxStaticFriction = staticFrictionCoeff * normalForce;
+    float netForceHoriz = glm::length(base.netForce - glm::dot(base.netForce, up) * up);
 
     // if stationary
-    if ((glm::length(velHoriz) < standstillVelocity) && (glm::dot(base.netForce, velHoriz) <= 0.0f))
+    if ((glm::length(velHoriz) < standstillVelocity) && (netForceHoriz < maxStaticFriction))
     {
         base.netForce = glm::vec3(0.0f);
         base.vel.x *= 0.2f;
