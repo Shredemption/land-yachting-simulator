@@ -139,6 +139,11 @@ void Physics::updateInputs(bool controlled)
             base.acc += base.rot * glm::vec3(0, 1, 0);
         }
 
+        if (ControllerManager::state.buttons[GLFW_GAMEPAD_BUTTON_B].held())
+        {
+            sail->controlFactor = 1.0f;
+        }
+
         driving->steeringChange = -ControllerManager::state.sticks[0].x;
 
         sail->controlFactor += -ControllerManager::state.sticks[0].y * tickTime;
@@ -165,6 +170,10 @@ void Physics::updateInputs(bool controlled)
             if (PhysicsUtil::keyInputs[4])
             {
                 base.acc += base.rot * glm::vec3(0, 1, 0);
+            }
+            if (PhysicsUtil::keyInputs[5])
+            {
+                sail->controlFactor = 1.0f;
             }
         }
     }
