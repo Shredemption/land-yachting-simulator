@@ -5,6 +5,14 @@
 #include "input_manager/input_manager_defs.h"
 #include "ui_manager/ui_manager_defs.h"
 
+void updatePhysicsKey(GLFWwindow *window, int key, int index)
+{
+    if (glfwGetKey(window, key) == GLFW_PRESS)
+    {
+        PhysicsUtil::keyInputs[index] = true;
+    }
+}
+
 void keyCallbackMenu(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (ControllerManager::controllerConnected)
@@ -281,26 +289,12 @@ void InputManager::processInputRunning()
         key = false;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        PhysicsUtil::keyInputs[0] = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        PhysicsUtil::keyInputs[1] = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    {
-        PhysicsUtil::keyInputs[2] = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    {
-        PhysicsUtil::keyInputs[3] = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    {
-        PhysicsUtil::keyInputs[4] = true;
-    }
+    updatePhysicsKey(window, GLFW_KEY_UP, 0);
+    updatePhysicsKey(window, GLFW_KEY_DOWN, 1);
+    updatePhysicsKey(window, GLFW_KEY_LEFT, 2);
+    updatePhysicsKey(window, GLFW_KEY_RIGHT, 3);
+    updatePhysicsKey(window, GLFW_KEY_P, 4);
+    updatePhysicsKey(window, GLFW_KEY_O, 5);
 }
 
 void InputManager::MenuBack()
