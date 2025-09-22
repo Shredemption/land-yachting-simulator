@@ -5,7 +5,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [0, 0, 1],
+      "translation": [0, 0, 0.6],
       "shader": "toon",
       "animated": true,
       "physics": ["body", "driving", "sail"],
@@ -16,7 +16,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-6, -1, 1],
+      "translation": [-6, -1, 0.6],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -26,7 +26,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-12, -2, 1],
+      "translation": [-12, -2, 0.6],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -36,7 +36,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-18, -3, 1],
+      "translation": [-18, -3, 0.6],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -46,7 +46,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-24, -4, 1],
+      "translation": [-24, -4, 0.6],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -56,7 +56,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-30, -5, 1],
+      "translation": [-30, -5, 0.6],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -66,7 +66,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-36, -6, 1],
+      "translation": [-36, -6, 0.6],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
@@ -76,7 +76,7 @@
       "scale": [1, 1, 1],
       "angle": 180,
       "rotationAxis": [0, 0, 1],
-      "translation": [-42, -7, 1],
+      "translation": [-42, -7, 0.6],
       "shader": "toon",
       "physics": ["body", "driving", "sail"],
       "animated": true
