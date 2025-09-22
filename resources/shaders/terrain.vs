@@ -20,6 +20,6 @@ void main()
     vec4 worldPos = u_camXY * u_model * vec4(aPosition, 1.0);
     TexCoord = worldPos.xy / (scale) + vec2(0.5);
     float height = texture(heightmap, TexCoord).r;
-    worldPos.z = 3 * height - lod / 24;
+    worldPos.z = 0.1 + 1.5 * height - lod / 250;
     gl_Position = u_projection * u_view * worldPos;
 }
