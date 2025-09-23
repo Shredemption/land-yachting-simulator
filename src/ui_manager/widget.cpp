@@ -393,3 +393,12 @@ void Slider::Update()
     break;
     }
 }
+
+void AngleMeter::Render()
+{
+}
+
+void AngleMeter::Update()
+{
+    angle += 1.0f;
+}

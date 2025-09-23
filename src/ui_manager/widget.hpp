@@ -144,3 +144,19 @@ private:
     bool hidden = true;
     bool hover = false;
 };
+
+class AngleMeter : public Widget
+{
+public:
+    float angle = 0.0f;
+
+    std::string background;
+    std::string indicator;
+
+    void Render() override;
+    void Update() override;
+
+private:
+    bool hidden = true;
+    bool hover = false;
+};

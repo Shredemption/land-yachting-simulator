@@ -11,6 +11,18 @@ std::optional<EngineState> queuedState;
 std::optional<std::string> queuedScene;
 std::optional<SettingsPage> queuedPage;
 
+std::shared_ptr<Widget> buildRunning()
+{
+    auto root = std::make_shared<Widget>();
+
+    {
+        auto angm = std::make_shared<AngleMeter>();
+        root->AddChild(angm);
+    }
+
+    return root;
+}
+
 std::shared_ptr<Widget> buildTitle()
 {
     auto root = std::make_shared<Widget>();
@@ -576,8 +588,10 @@ void UIManager::update()
 
 void UIManager::render()
 {
+    glDisable(GL_DEPTH_TEST);
     if (activeWidgets)
         activeWidgets->Render();
+    glEnable(GL_DEPTH_TEST);
 }
 
 void UIManager::queueEngineState(EngineState state)

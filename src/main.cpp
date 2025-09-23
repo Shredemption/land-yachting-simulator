@@ -127,12 +127,14 @@ int main()
         case EngineState::TestMenu:
             UIManager::update();
             Render::renderMenu(SceneManager::engineState);
+            UIManager::render();
             break;
 
         case EngineState::Running:
             InputManager::processInputRunning();
             PhysicsUtil::update();
             Render::render();
+            UIManager::render();
             break;
         }
 
