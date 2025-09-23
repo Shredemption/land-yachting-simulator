@@ -472,8 +472,26 @@ void UIManager::countOptions(SettingsPage page)
 
     for (auto widget : activeWidgets->children)
     {
-        if (widget->shownOnPage == page)
-            UIManager::options++;
+        if (auto btn = dynamic_cast<Button *>(widget.get()))
+        {
+            if (btn->shownOnPage == page)
+                UIManager::options++;
+        }
+        else if (auto tgl = dynamic_cast<Toggle *>(widget.get()))
+        {
+            if (tgl->shownOnPage == page)
+                UIManager::options++;
+        }
+        else if (auto slct = dynamic_cast<Selector *>(widget.get()))
+        {
+            if (slct->shownOnPage == page)
+                UIManager::options++;
+        }
+        else if (auto sldr = dynamic_cast<Slider *>(widget.get()))
+        {
+            if (sldr->shownOnPage == page)
+                UIManager::options++;
+        }
     }
 }
 

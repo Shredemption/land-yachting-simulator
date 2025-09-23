@@ -15,14 +15,9 @@ public:
     glm::vec2 pos = {0, 0};
     glm::vec2 size = {0, 0};
 
-    std::string text;
     float scale = 0.6f;
     float alpha = 1.0f;
-    glm::vec3 color = glm::vec3(1.0f);
-    glm::vec3 hoverColor = glm::vec3(0.9f, 0.5f, 0.5f);
 
-    SettingsPage activePage = SettingsPage::None;
-    SettingsPage shownOnPage = SettingsPage::None;
     int index;
 
     virtual ~Widget() = default;
@@ -41,6 +36,13 @@ class Button : public Widget
 public:
     std::function<void()> onClick;
 
+    SettingsPage activePage = SettingsPage::None;
+    SettingsPage shownOnPage = SettingsPage::None;
+
+    std::string text;
+    glm::vec3 color = glm::vec3(1.0f);
+    glm::vec3 hoverColor = glm::vec3(0.9f, 0.5f, 0.5f);
+
     void Render() override;
     void Update() override;
     void Execute();
@@ -57,6 +59,13 @@ class Toggle : public Widget
 public:
     bool *linkedVariable;
     std::function<void()> onChange;
+
+    SettingsPage activePage = SettingsPage::None;
+    SettingsPage shownOnPage = SettingsPage::None;
+
+    std::string text;
+    glm::vec3 color = glm::vec3(1.0f);
+    glm::vec3 hoverColor = glm::vec3(0.9f, 0.5f, 0.5f);
 
     std::string trueLabel;
     std::string falseLabel;
@@ -80,6 +89,13 @@ class Selector : public Widget
 public:
     std::vector<std::string> labels;
     int currentIndex;
+
+    SettingsPage activePage = SettingsPage::None;
+    SettingsPage shownOnPage = SettingsPage::None;
+
+    std::string text;
+    glm::vec3 color = glm::vec3(1.0f);
+    glm::vec3 hoverColor = glm::vec3(0.9f, 0.5f, 0.5f);
 
     std::function<void()> onChange;
 
@@ -108,6 +124,13 @@ public:
     int decimals = 0;
 
     std::function<void()> onChange;
+
+    SettingsPage activePage = SettingsPage::None;
+    SettingsPage shownOnPage = SettingsPage::None;
+
+    std::string text;
+    glm::vec3 color = glm::vec3(1.0f);
+    glm::vec3 hoverColor = glm::vec3(0.9f, 0.5f, 0.5f);
 
     float leftOffset = 0.3f;
     float labelOffset = 0.425f;
