@@ -12,7 +12,6 @@ namespace ModelUtil
     void swapBoneBuffers();
 
     // Model map and load function
-    inline std::map<std::string, JSONModelMapEntry> modelMap;
-    inline std::string modelMapPath = "resources/models.json";
-    void loadModelMap();
+    inline std::map<std::string, ModelMapEntry> modelMap;
+    void initModelMap();
 };

@@ -73,7 +73,7 @@ int main()
 #endif
 
     // Import JSON file model registry
-    ModelUtil::loadModelMap();
+    ModelUtil::initModelMap();
     SceneManager::loadSceneMap();
 
     Render::setup();

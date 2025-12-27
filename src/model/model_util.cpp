@@ -2,39 +2,86 @@
 
 #include "pch.h"
 
-#include <jsoncons/json.hpp>
-
-// Json setups
-JSONCONS_N_MEMBER_TRAITS(JSONModelMapEntry, 1, mainPath, lodPaths, type);
-JSONCONS_N_MEMBER_TRAITS(JSONModelMap, 0, models, yachts);
-
-void ModelUtil::loadModelMap()
+ModelMapEntry makeModel(
+    std::string mainPath,
+    std::vector<std::string> lodPaths = {},
+    std::string hitboxPath = "",
+    std::string type = "model")
 {
-    // Check if the file exists
-    if (!std::filesystem::exists(modelMapPath))
-    {
-        throw std::runtime_error("File not found: " + modelMapPath);
-    }
+    return ModelMapEntry{
+        std::move(mainPath),
+        std::move(lodPaths),
+        std::move(hitboxPath),
+        std::move(type)};
+}
 
-    // Open the file
-    std::ifstream file(modelMapPath);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("Could not open file: " + modelMapPath);
-    }
+void ModelUtil::initModelMap()
+{
+    modelMap = {
 
-    JSONModelMap jsonModelMap = jsoncons::decode_json<JSONModelMap>(file);
+        // -- yachts -- 
+        
+        {"dn-duvel",
+         makeModel(
+             "resources/models/yachts/dn-duvel/dn-duvel.dae",
+             {"resources/models/yachts/dn-duvel/dn-duvel-lod1.dae"},
+             "",
+             "yacht")},
+        {"bobbie",
+         makeModel(
+             "resources/models/yachts/bobbie/bobbie.dae",
+             {"resources/models/yachts/bobbie/bobbie-lod1.dae"},
+             "",
+             "yacht")},
+        {"vampier",
+         makeModel(
+             "resources/models/yachts/vampier/vampier.dae",
+             {"resources/models/yachts/vampier/vampier-lod1.dae"},
+             "",
+             "yacht")},
+        {"beware",
+         makeModel(
+             "resources/models/yachts/beware/beware.dae",
+             {"resources/models/yachts/beware/beware-lod1.dae"},
+             "",
+             "yacht")},
+        {"buizerd",
+         makeModel(
+             "resources/models/yachts/buizerd/buizerd.dae",
+             {"resources/models/yachts/buizerd/buizerd-lod1.dae"},
+             "",
+             "yacht")},
+        {"red-piper",
+         makeModel(
+             "resources/models/yachts/red-piper/red-piper.dae",
+             {"resources/models/yachts/red-piper/red-piper-lod1.dae"},
+             "",
+             "yacht")},
+        {"blue-piper",
+         makeModel(
+             "resources/models/yachts/blue-piper/blue-piper.dae",
+             {"resources/models/yachts/blue-piper/blue-piper-lod1.dae"},
+             "",
+             "yacht")},
+        {"sietske",
+         makeModel(
+             "resources/models/yachts/sietske/sietske.dae",
+             {"resources/models/yachts/sietske/sietske-lod1.dae"},
+             "",
+             "yacht")},
 
-    // If model classified as yacht
-    for (const auto &[name, data] : jsonModelMap.yachts)
-    {
-        modelMap[name] = data;
-    }
-    // If geneneric model
-    for (const auto &[name, data] : jsonModelMap.models)
-    {
-        modelMap[name] = data;
-    }
+        // ---- generic / test models ----
+
+        {
+            "cube",
+            makeModel(
+                "resources/models/test/cube.dae")},
+        {"icosphere",
+         makeModel(
+             "resources/models/test/icosphere.dae")},
+        {"cylinder",
+         makeModel(
+             "resources/models/test/cylinder.dae")}};
 }
 
 void ModelUtil::swapBoneBuffers()

@@ -10,16 +10,10 @@ enum class ModelType
     Yacht
 };
 
-struct JSONModelMapEntry
+struct ModelMapEntry
 {
     std::string mainPath;
     std::vector<std::string> lodPaths = {};
     std::string hitboxPath = "";
     std::string type = "model";
-};
-
-struct JSONModelMap
-{
-    std::map<std::string, JSONModelMapEntry> yachts;
-    std::map<std::string, JSONModelMapEntry> models;
 };
