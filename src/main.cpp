@@ -74,7 +74,7 @@ int main()
 
     // Import JSON file model registry
     ModelUtil::initModelMap();
-    SceneManager::loadSceneMap();
+    SceneManager::initSceneMap();
 
     Render::setup();
 

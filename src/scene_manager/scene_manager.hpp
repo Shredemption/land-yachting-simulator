@@ -5,10 +5,8 @@
 #include <GLFW/glfw3.h>
 #endif
 
-#include <memory>
 #include <future>
 #include <map>
-#include <optional>
 
 #include "scene_manager/scene_manager_defs.h"
 
@@ -22,8 +20,7 @@ namespace SceneManager
 
     // Scenemap and paths
     inline std::map<std::string, std::string> sceneMap;
-    inline std::string sceneMapPath = "resources/scenes.json";
-    void loadSceneMap();
+    void initSceneMap();
 
     // Global loading variables
     inline std::atomic<bool> updateCallbacks = true;
