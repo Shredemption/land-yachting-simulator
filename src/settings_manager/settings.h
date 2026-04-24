@@ -15,10 +15,17 @@ enum class graphicsType
     Cartoon
 };
 
+enum class renderEngine
+{
+    OpenGL,
+    Vulkan
+};
+
 struct SettingsStruct
 {
     struct Video
     {
+        renderEngine renderEngine = renderEngine::Vulkan;
         graphicsType graphicsType = graphicsType::Cartoon;
         bool fullscreen = true;
         bool vSync = true;
@@ -69,6 +76,7 @@ struct SettingsMetaStruct
 {
     struct Video
     {
+        SelectorLabels renderEngine = {{"OpenGL", "Vulkan"}};
         SelectorLabels graphicsType = {{"Realistic", "Cartoon"}};
         ToggleLabels fullscreen = {"Borderless", "Off"};
         ToggleLabels vSync = {"On", "Off"};
@@ -137,6 +145,38 @@ namespace jsoncons
     };
 
     template <>
+    struct json_type_traits<Json, renderEngine>
+    {
+        static bool is(const Json &j) noexcept
+        {
+            return j.is_string();
+        }
+
+        static renderEngine as(const Json &j)
+        {
+            const std::string &s = j.template as<std::string>();
+            if (s == "OpenGL")
+                return renderEngine::OpenGL;
+            if (s == "Vulkan")
+                return renderEngine::Vulkan;
+            throw std::runtime_error("Invalid graphicsType enum value: " + s);
+        }
+
+        static Json to_json(const renderEngine &val)
+        {
+            switch (val)
+            {
+            case renderEngine::OpenGL:
+                return Json("OpenGL");
+            case renderEngine::Vulkan:
+                return Json("Vulkan");
+            default:
+                return Json("Unknown");
+            }
+        }
+    };
+
+    template <>
     struct json_type_traits<Json, graphicsType>
     {
         static bool is(const Json &j) noexcept
@@ -179,6 +219,8 @@ namespace jsoncons
         static SettingsStruct::Video as(const Json &j)
         {
             SettingsStruct::Video s;
+            if (j.contains("renderEngine"))
+                s.renderEngine = j["renderEngine"].template as<renderEngine>();
             if (j.contains("graphicsType"))
                 s.graphicsType = j["graphicsType"].template as<graphicsType>();
             if (j.contains("fullscreen"))
@@ -197,6 +239,7 @@ namespace jsoncons
         static Json to_json(const SettingsStruct::Video &s)
         {
             Json j;
+            j["renderEngine"] = s.renderEngine;
             j["graphicsType"] = s.graphicsType;
             j["fullscreen"] = s.fullscreen;
             j["vsync"] = s.vSync;

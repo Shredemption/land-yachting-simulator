@@ -181,6 +181,22 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
 
     {
         auto slct = std::make_shared<Selector>();
+        slct->text = "Render Engine";
+        slct->pos = glm::vec2(x, y + yStep * steps++);
+        slct->size = glm::vec2(0.0f, 0.05f);
+        slct->shownOnPage = SettingsPage::Graphics;
+        slct->labels = SettingsManager::settingsMeta.video.renderEngine.labels;
+        slct->currentIndex = static_cast<int>(SettingsManager::settings.video.renderEngine);
+        slct->onChange = [slct]()
+        {
+            SettingsManager::settings.video.renderEngine = static_cast<renderEngine>(slct->currentIndex);
+            UIManager::needsReload = true;
+        };
+        slct->index = index++;
+        root->AddChild(slct);
+    }
+    {
+        auto slct = std::make_shared<Selector>();
         slct->text = "Graphics Type";
         slct->pos = glm::vec2(x, y + yStep * steps++);
         slct->size = glm::vec2(0.0f, 0.05f);
