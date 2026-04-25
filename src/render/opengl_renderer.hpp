@@ -18,25 +18,20 @@
 
 #include "render/renderbuffer.h"
 #include "render/render_defs.h"
+#include "render/i_renderer.hpp"
 
 enum class EngineState;
 
 class OpenGLRenderer : public IRenderer
 {
 public:
-    std::array<::RenderBuffer, 3> renderBuffers;
-    std::atomic<int> prepIndex = 0, renderIndex = 1, standbyIndex = 2;
-
-    unsigned int sceneFBO = 0;
-
-    std::vector<std::pair<std::string, float>> debugPhysicsData;
-
     void renderBlankScreen() override;
     void renderLoadingScreen() override;
     void savePauseBackground() override;
     void renderMenu(EngineState state) override;
 
     void setup() override;
+    void cleanup() override;
     void resize(int width, int height) override;
 
     void render() override;
@@ -44,6 +39,7 @@ public:
     void executeRender(::RenderBuffer &renderBuffer, bool toScreen = true) override;
 
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left) override;
+    renderEngine getType() const override;
 
 private:
     void createSceneFBO(int width, int height);

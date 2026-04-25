@@ -151,7 +151,7 @@ void ThreadManager::renderBufferThreadFunction()
                             { return renderBufferShouldExit ||
                                      (sceneReadyForRender.load(std::memory_order_acquire) &&
                                       SceneManager::currentScene &&
-                                      std::any_of(std::begin(Render::renderBuffers), std::end(Render::renderBuffers),
+                                      std::any_of(std::begin(g_renderer->renderBuffers), std::end(g_renderer->renderBuffers),
                                                   [](const auto &b)
                                                   {
                                                       return b.state.load(std::memory_order_acquire) == BufferState::Free;
@@ -164,15 +164,15 @@ void ThreadManager::renderBufferThreadFunction()
         int nextPrep = -1;
         for (int i = 0; i < 3; ++i)
         {
-            if (Render::renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Free)
+            if (g_renderer->renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Free)
             {
-                Render::renderBuffers[i].state.store(BufferState::Prepping, std::memory_order_release);
+                g_renderer->renderBuffers[i].state.store(BufferState::Prepping, std::memory_order_release);
                 nextPrep = i;
                 break;
             }
         }
 
-        Render::prepIndex.store(nextPrep, std::memory_order_release);
+        g_renderer->prepIndex.store(nextPrep, std::memory_order_release);
         lock.unlock();
 
         std::unique_lock<std::mutex> animationLock(animationMutex);
@@ -185,10 +185,10 @@ void ThreadManager::renderBufferThreadFunction()
         animationLock.unlock();
 
         // Fill command buffer for rendering
-        Render::prepareRender(Render::renderBuffers[nextPrep]);
+        g_renderer->prepareRender(g_renderer->renderBuffers[nextPrep]);
 
         // Mark as ready
-        Render::renderBuffers[nextPrep].state.store(BufferState::Ready, std::memory_order_release);
+        g_renderer->renderBuffers[nextPrep].state.store(BufferState::Ready, std::memory_order_release);
 
         animationLock.lock();
         renderDoneReading = true;

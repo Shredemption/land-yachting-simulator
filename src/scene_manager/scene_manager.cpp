@@ -35,7 +35,7 @@ void SceneManager::checkLoading()
         currentScene = pendingScene.get();
 
         // Render final loading screen frame
-        Render::renderLoadingScreen();
+        g_renderer->renderLoadingScreen();
 
         glfwSwapBuffers(WindowManager::window);
 
@@ -93,8 +93,8 @@ void SceneManager::runOneFrame()
     ModelUtil::swapBoneBuffers();
 
     // Render one frame to buffer
-    Render::prepareRender(Render::renderBuffers[0]);
-    Render::executeRender(Render::renderBuffers[0], false);
+    g_renderer->prepareRender(g_renderer->renderBuffers[0]);
+    g_renderer->executeRender(g_renderer->renderBuffers[0], false);
 }
 
 void SceneManager::unload()
@@ -105,7 +105,7 @@ void SceneManager::unload()
     ThreadManager::sceneReadyForRender.store(false, std::memory_order_release);
 
     // Clear render buffers
-    for (auto &buffer : Render::renderBuffers)
+    for (auto &buffer : g_renderer->renderBuffers)
     {
         buffer.commandBuffer.clear();
         buffer.state.store(BufferState::Free);
@@ -152,7 +152,7 @@ void SceneManager::switchEngineState(const EngineState &to)
     }
     case EngineState::Pause:
     {
-        Render::savePauseBackground();
+        g_renderer->savePauseBackground();
         break;
     }
     case EngineState::Settings:

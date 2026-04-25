@@ -14,7 +14,7 @@ void FramebufferUtil::bindFrameBuffer(Framebuffer FBO)
 
 void FramebufferUtil::unbindCurrentFrameBuffer()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, Render::sceneFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, g_renderer->sceneFBO);
     glViewport(0, 0, WindowManager::screenWidth, WindowManager::screenHeight);
 }
 

@@ -1246,3 +1246,12 @@ void OpenGLRenderer::renderMenu(EngineState state)
 
     glEnable(GL_DEPTH_TEST);
 }
+
+void OpenGLRenderer::cleanup()
+{
+}
+
+renderEngine OpenGLRenderer::getType() const
+{
+    return renderEngine::OpenGL;
+}

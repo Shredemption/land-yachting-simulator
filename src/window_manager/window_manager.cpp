@@ -107,7 +107,7 @@ void WindowManager::framebufferSizeCallback(GLFWwindow *window, int width, int h
     // Track window size change for mouse movement
     windowSizeChanged = true;
 
-    Render::resize(width, height);
+    g_renderer->resize(width, height);
 }
 
 void WindowManager::errorCallback(int error, const char *description)

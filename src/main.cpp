@@ -115,13 +115,13 @@ int main()
         switch (SceneManager::engineState)
         {
         case EngineState::None:
-            Render::renderBlankScreen();
+            g_renderer->renderBlankScreen();
             glfwSetWindowShouldClose(WindowManager::window, GLFW_TRUE);
             break;
 
         case EngineState::Loading:
             SceneManager::checkLoading();
-            Render::renderLoadingScreen();
+            g_renderer->renderLoadingScreen();
             break;
 
         case EngineState::Title:
@@ -130,14 +130,14 @@ int main()
         case EngineState::TitleSettings:
         case EngineState::TestMenu:
             UIManager::update();
-            Render::renderMenu(SceneManager::engineState);
+            g_renderer->renderMenu(SceneManager::engineState);
             UIManager::render();
             break;
 
         case EngineState::Running:
             InputManager::processInputRunning();
             PhysicsUtil::update();
-            Render::render();
+            g_renderer->render();
             UIManager::render();
             break;
         }

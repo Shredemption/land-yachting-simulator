@@ -4,24 +4,26 @@
 #include <memory>
 #include <cstdint>
 #include <string>
+#include <array>
 
-struct RenderBuffer;
 enum class EngineState;
 enum class TextAlign;
 enum class renderEngine;
 
 #include "render/render_defs.h"
-
-class Engine
-{
-public:
-    std::unique_ptr<IRenderer> renderer;
-};
+#include "render/renderbuffer.h"
 
 class IRenderer
 {
 public:
     virtual ~IRenderer() = default;
+
+    std::array<::RenderBuffer, 3> renderBuffers;
+    std::atomic<int> prepIndex = 0, renderIndex = 1, standbyIndex = 2;
+
+    unsigned int sceneFBO = 0;
+
+    std::vector<std::pair<std::string, float>> debugPhysicsData;
 
     virtual void setup() = 0;
     virtual void cleanup() = 0;
@@ -36,6 +38,12 @@ public:
     virtual void renderText(std::string text, float x, float y, float scale,
                             glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left) = 0;
     virtual renderEngine getType() const = 0;
+};
+
+class Engine
+{
+public:
+    std::unique_ptr<IRenderer> renderer;
 };
 
 namespace VulkanUtils

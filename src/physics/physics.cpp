@@ -242,11 +242,11 @@ void Physics::updateSail(bool debug)
 
     if (debug)
     {
-        Render::debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
-        Render::debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
-        Render::debugPhysicsData.push_back(std::pair("angleAttack", glm::degrees(angleAttack)));
-        Render::debugPhysicsData.push_back(std::pair("CL", CL));
-        Render::debugPhysicsData.push_back(std::pair("CD", CD));
+        g_renderer->debugPhysicsData.push_back(std::pair("apparantWind", apparentWindSpeed));
+        g_renderer->debugPhysicsData.push_back(std::pair("angleToWind", glm::degrees(angleToWind)));
+        g_renderer->debugPhysicsData.push_back(std::pair("angleAttack", glm::degrees(angleAttack)));
+        g_renderer->debugPhysicsData.push_back(std::pair("CL", CL));
+        g_renderer->debugPhysicsData.push_back(std::pair("CD", CD));
     }
 }
 
@@ -275,8 +275,8 @@ void Physics::updateDriving(bool debug)
 
     if (debug)
     {
-        Render::debugPhysicsData.push_back(std::pair("steeringAngle", driving->steeringAngle));
-        Render::debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
+        g_renderer->debugPhysicsData.push_back(std::pair("steeringAngle", driving->steeringAngle));
+        g_renderer->debugPhysicsData.push_back(std::pair("effectiveSteeringAngle", effectiveSteeringAngle));
     }
 }
 
@@ -347,7 +347,7 @@ void Physics::update(ModelData &modelData)
 
     if (modelData.controlled)
     {
-        Render::debugPhysicsData.clear();
+        g_renderer->debugPhysicsData.clear();
         updateInputs(modelData.controlled);
     }
 
@@ -407,7 +407,7 @@ void Physics::update(ModelData &modelData)
 
     if (modelData.controlled)
     {
-        Render::debugPhysicsData.push_back(std::pair("velocity", glm::length(base.vel)));
-        Render::debugPhysicsData.push_back(std::pair("acceleration", glm::length(base.acc)));
+        g_renderer->debugPhysicsData.push_back(std::pair("velocity", glm::length(base.vel)));
+        g_renderer->debugPhysicsData.push_back(std::pair("acceleration", glm::length(base.acc)));
     }
 }
