@@ -42,7 +42,7 @@
 #include "model/model.hpp"
 #include "model/model_util.hpp"
 #include "physics/physics_util.hpp"
-#include "render/render.hpp"
+#include "render/renderer_global.hpp"
 #include "scene/scene.hpp"
 #include "scene_manager/scene_manager.hpp"
 #include "settings_manager/settings_manager.hpp"

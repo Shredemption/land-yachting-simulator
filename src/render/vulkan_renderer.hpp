@@ -1,7 +1,6 @@
 #pragma once
 
 #include "render/i_renderer.hpp"
-#include "render/render.hpp"
 
 class VulkanRenderer : public IRenderer
 {
@@ -9,8 +8,8 @@ public:
     void setup() override;
     void cleanup() override;
     void render() override;
-    void prepareRender(RenderBuffer& prepBuffer) override;
-    void executeRender(RenderBuffer& renderBuffer, bool toScreen = true) override;
+    void prepareRender(RenderBuffer &prepBuffer) override;
+    void executeRender(RenderBuffer &renderBuffer, bool toScreen = true) override;
     void resize(int width, int height) override;
     void renderBlankScreen() override;
     void renderLoadingScreen() override;

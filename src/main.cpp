@@ -1,5 +1,8 @@
 #include "pch.h"
 
+#include "render/opengl_renderer.hpp"
+#include "render/vulkan_renderer.hpp"
+
 #ifdef _WIN32
 #include <windows.h>
 #include <iostream>
@@ -76,7 +79,8 @@ int main()
     ModelUtil::initModelMap();
     SceneManager::initSceneMap();
 
-    Render::setup();
+    g_renderer = std::make_unique<OpenGLRenderer>();
+    g_renderer->setup();
 
     // Set window to fullscreen by default
     WindowManager::setFullscreenState();

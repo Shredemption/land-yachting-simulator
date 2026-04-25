@@ -12,6 +12,12 @@ enum class renderEngine;
 
 #include "render/render_defs.h"
 
+class Engine
+{
+public:
+    std::unique_ptr<IRenderer> renderer;
+};
+
 class IRenderer
 {
 public:

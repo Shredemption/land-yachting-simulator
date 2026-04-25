@@ -1,4 +1,4 @@
-#include "render/render.hpp"
+#include "render/opengl_renderer.hpp"
 
 #include "pch.h"
 
@@ -361,7 +361,7 @@ void renderSceneTexts()
 {
     for (auto text : SceneManager::currentScene.get()->texts)
     {
-        Render::renderText(text.text, text.position.x, text.position.y, text.scale, text.color);
+        g_renderer->renderText(text.text, text.position.x, text.position.y, text.scale, text.color);
     }
 }
 
@@ -605,7 +605,7 @@ void initFreeType()
     glEnableVertexAttribArray(0);
 }
 
-void createSceneFBO(int width, int height)
+void OpenGLRenderer::createSceneFBO(int width, int height)
 {
     // Pause Buffer
     glGenTextures(1, &pauseTexture);
@@ -617,8 +617,8 @@ void createSceneFBO(int width, int height)
     glGenFramebuffers(1, &copyFBO);
 
     // Scene Buffer
-    glGenFramebuffers(1, &Render::sceneFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, Render::sceneFBO);
+    glGenFramebuffers(1, &sceneFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
 
     // Color texture
     glGenTextures(1, &sceneTexture);
@@ -664,7 +664,7 @@ float calculateTextWidth(const std::string &text, float scale)
     return width;
 }
 
-void Render::setup()
+void OpenGLRenderer::setup()
 {
     initQuad();
     initFreeType();
@@ -680,7 +680,7 @@ void Render::setup()
     glDepthFunc(GL_LESS);
 }
 
-void Render::resize(int width, int height)
+void OpenGLRenderer::resize(int width, int height)
 {
     // Delete old FBO attachments
     glDeleteFramebuffers(1, &sceneFBO);
@@ -693,7 +693,7 @@ void Render::resize(int width, int height)
     createSceneFBO(width, height);
 }
 
-void Render::render()
+void OpenGLRenderer::render()
 {
     int currentIndex = renderIndex.load(std::memory_order_acquire);
     auto &buffer = renderBuffers[currentIndex];
@@ -703,7 +703,7 @@ void Render::render()
     if (buffer.state.compare_exchange_strong(expected, BufferState::Rendering))
     {
         // Perform actual rendering
-        Render::executeRender(buffer);
+        OpenGLRenderer::executeRender(buffer);
 
         // After rendering is done, mark buffer free
         buffer.state.store(BufferState::Free, std::memory_order_release);
@@ -722,7 +722,7 @@ void Render::render()
     }
 }
 
-void Render::prepareRender(::RenderBuffer &prepBuffer)
+void OpenGLRenderer::prepareRender(::RenderBuffer &prepBuffer)
 {
     // Clear and reserve size for buffer
     prepBuffer.commandBuffer.clear();
@@ -885,7 +885,7 @@ void Render::prepareRender(::RenderBuffer &prepBuffer)
     }
 }
 
-void Render::executeRender(::RenderBuffer &renderBuffer, bool toScreen)
+void OpenGLRenderer::executeRender(::RenderBuffer &renderBuffer, bool toScreen)
 {
     // Set camera from buffer
     Camera::cameraPosition = renderBuffer.camPos;
@@ -974,7 +974,7 @@ void Render::executeRender(::RenderBuffer &renderBuffer, bool toScreen)
     lastShader = nullptr;
 }
 
-void Render::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha, TextAlign textAlign)
+void OpenGLRenderer::renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha, TextAlign textAlign)
 {
     x *= WindowManager::screenUIScale * 2560.0f;
     y *= WindowManager::screenUIScale * 1440.0f;
@@ -1064,13 +1064,13 @@ void Render::renderText(std::string text, float x, float y, float scale, glm::ve
     glDisable(GL_BLEND);
 }
 
-void Render::renderBlankScreen()
+void OpenGLRenderer::renderBlankScreen()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Render::renderLoadingScreen()
+void OpenGLRenderer::renderLoadingScreen()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1127,10 +1127,10 @@ void Render::renderLoadingScreen()
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Render::savePauseBackground()
+void OpenGLRenderer::savePauseBackground()
 {
     // Bind FBOs
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, Render::sceneFBO);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, OpenGLRenderer::sceneFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFBO);
 
     // Attach target texture to copy FBO
@@ -1150,7 +1150,7 @@ void Render::savePauseBackground()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Render::renderMenu(EngineState state)
+void OpenGLRenderer::renderMenu(EngineState state)
 {
     glDisable(GL_DEPTH_TEST);
 
