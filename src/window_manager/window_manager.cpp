@@ -2,8 +2,9 @@
 
 #include "pch.h"
 
-void WindowManager::setup()
+void WindowManager::setup(renderEngine engine)
 {
+    currentEngine = engine;
     // Initialize GLFW
     if (!glfwInit())
     {
@@ -14,11 +15,20 @@ void WindowManager::setup()
     // Set GLFW error callback
     glfwSetErrorCallback(errorCallback);
 
-    // Set OpenGL version and profile
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // OpenGL 4.1
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1); // OpenGL 4.1
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    if (engine == renderEngine::Vulkan)
+    {
+        // No OpenGL context for Vulkan
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    }
+    else
+    {
+        // OpenGL setup (current code)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    }
+
     glfwWindowHint(GLFW_FOCUS_ON_SHOW, GL_TRUE);
     glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
@@ -32,17 +42,15 @@ void WindowManager::setup()
         return;
     }
 
-    // Make OpenGL context current
-    glfwMakeContextCurrent(window);
-
-    // Set swap interval
-    glfwSwapInterval(1);
-
-    // GLAD loads all OpenGL pointers
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if (engine == renderEngine::OpenGL)
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return;
+        glfwMakeContextCurrent(window);
+        glfwSwapInterval(1);
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        {
+            std::cout << "Failed to initialize GLAD" << std::endl;
+            return;
+        }
     }
 
     // Get screen dimensions
@@ -98,7 +106,16 @@ void WindowManager::setFullscreenState()
 
 void WindowManager::framebufferSizeCallback(GLFWwindow *window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+    if (WindowManager::currentEngine == renderEngine::OpenGL)
+    {
+        glViewport(0, 0, width, height);
+    }
+    else
+    {
+        width = 1600;
+        height = 900;
+    }
+
     screenWidth = width;
     screenHeight = height;
 
@@ -113,4 +130,12 @@ void WindowManager::framebufferSizeCallback(GLFWwindow *window, int width, int h
 void WindowManager::errorCallback(int error, const char *description)
 {
     std::cerr << "GLFW Error" << error << ": " << description << std::endl;
+}
+
+void WindowManager::swapBuffers()
+{
+    if (currentEngine == renderEngine::OpenGL)
+    {
+        glfwSwapBuffers(window);
+    }
 }

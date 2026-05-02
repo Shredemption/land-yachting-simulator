@@ -362,7 +362,7 @@ void Slider::Update()
 
                 g_renderer->renderMenu(SceneManager::engineState);
                 glfwPollEvents();
-                glfwSwapBuffers(WindowManager::window);
+                WindowManager::swapBuffers();
             }
         break;
     }

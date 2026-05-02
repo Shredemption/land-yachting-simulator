@@ -1,7 +1,6 @@
 #include "pch.h"
 
-#include "render/opengl_renderer.hpp"
-#include "render/vulkan_renderer.hpp"
+#include "render/render_factory.hpp"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -67,9 +66,20 @@ int main()
     AttachConsoleIfNeeded();
 #endif
 
-    SettingsManager::load();
+    std::cout << "[Main] Starting application\n";
+    std::cout.flush();
 
-    WindowManager::setup();
+    SettingsManager::load();
+    std::cout << "[Main] Settings loaded\n";
+    std::cout.flush();
+
+    RendererFactory::checkVulkanSupport();
+    std::cout << "[Main] Vulkan support checked\n";
+    std::cout.flush();
+
+    WindowManager::setup(SettingsManager::settings.video.renderEngine);
+    std::cout << "[Main] Window setup complete\n";
+    std::cout.flush();
 
 #ifdef _WIN32
     SetWindowIconFromResource(WindowManager::window);
@@ -79,7 +89,7 @@ int main()
     ModelUtil::initModelMap();
     SceneManager::initSceneMap();
 
-    g_renderer = std::make_unique<OpenGLRenderer>();
+    g_renderer = RendererFactory::create();
     g_renderer->setup();
 
     // Set window to fullscreen by default
@@ -95,7 +105,7 @@ int main()
     InputManager::setCallbacks();
 
     glfwPollEvents();
-    glfwSwapBuffers(WindowManager::window);
+    WindowManager::swapBuffers();
 
     // Main Loop
     while (!glfwWindowShouldClose(WindowManager::window))
@@ -142,7 +152,7 @@ int main()
             break;
         }
 
-        glfwSwapBuffers(WindowManager::window);
+        WindowManager::swapBuffers();
         InputManager::update();
         ControllerManager::update();
         glfwPollEvents();

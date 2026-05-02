@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 #endif
 
+#include "settings_manager/settings.h"
+
 namespace WindowManager
 {
     // Global screen variables
@@ -14,9 +16,11 @@ namespace WindowManager
     inline GLFWmonitor *monitor;
     inline GLFWwindow *window;
     inline int windowXpos, windowYpos, windowWidth, windowHeight;
+    inline renderEngine currentEngine = renderEngine::OpenGL;
 
-    void setup();
+    void setup(renderEngine engine = renderEngine::OpenGL);
     void errorCallback(int error, const char *description);
     void framebufferSizeCallback(GLFWwindow *window, int width, int height);
     void setFullscreenState();
+    void swapBuffers();
 };

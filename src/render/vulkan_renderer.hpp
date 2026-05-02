@@ -1,8 +1,8 @@
 #pragma once
 
-#include "render/i_renderer.hpp"
+#include "render/base_renderer.hpp"
 
-class VulkanRenderer : public IRenderer
+class VulkanRenderer : public BaseRenderer
 {
 public:
     void setup() override;

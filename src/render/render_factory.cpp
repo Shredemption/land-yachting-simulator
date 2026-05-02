@@ -8,23 +8,15 @@
 
 std::unique_ptr<IRenderer> RendererFactory::create()
 {
-    renderEngine preferred = SettingsManager::settings.video.renderEngine;
+    renderEngine engine = SettingsManager::settings.video.renderEngine;
 
-    if (preferred == renderEngine::Vulkan)
+    if (engine == renderEngine::Vulkan)
     {
-        if (!VulkanUtils::isVulkanSupported())
-        {
-            std::cout << "[Renderer] Vulkan unavailable: " << VulkanUtils::getVulkanError() << "\n";
-            std::cout << "[Renderer] Falling back to OpenGL\n";
-            SettingsManager::settings.video.renderEngine = renderEngine::OpenGL;
-            SettingsManager::save();
-            return std::make_unique<OpenGLRenderer>();
-        }
-        std::cout << "[Renderer] Vulkan: " << VulkanUtils::getVulkanError() << "\n";
+        std::cout << "[Renderer] Creating VulkanRenderer\n";
         return std::make_unique<VulkanRenderer>();
     }
 
-    std::cout << "[Renderer] Using OpenGL\n";
+    std::cout << "[Renderer] Creating OpenGLRenderer\n";
     return std::make_unique<OpenGLRenderer>();
 }
 
@@ -35,4 +27,22 @@ bool RendererFactory::isAvailable(renderEngine engine)
     if (engine == renderEngine::Vulkan)
         return VulkanUtils::isVulkanSupported();
     return false;
+}
+
+void RendererFactory::checkVulkanSupport()
+{
+    if (SettingsManager::settings.video.renderEngine == renderEngine::Vulkan)
+    {
+        if (!VulkanUtils::isVulkanSupported())
+        {
+            std::cout << "[Vulkan] Not supported: " << VulkanUtils::getVulkanError() << "\n";
+            std::cout << "[RendererFactory] Falling back to OpenGL\n";
+            SettingsManager::settings.video.renderEngine = renderEngine::OpenGL;
+            SettingsManager::save();
+        }
+        else
+        {
+            std::cout << "[Vulkan] Supported\n";
+        }
+    }
 }

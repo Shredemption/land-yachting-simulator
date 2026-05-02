@@ -84,6 +84,7 @@ find_package(assimp REQUIRED)
 find_package(stb REQUIRED)
 find_package(jsoncons REQUIRED)
 find_package(freetype REQUIRED)
+find_package(Vulkan REQUIRED)
 
 # Link libraries to the target
 target_link_libraries(${PROJECT_NAME}
@@ -94,6 +95,7 @@ target_link_libraries(${PROJECT_NAME}
     assimp::assimp
     jsoncons
     Freetype::Freetype
+    Vulkan::Vulkan
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

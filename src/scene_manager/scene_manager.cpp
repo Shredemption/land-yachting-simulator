@@ -37,7 +37,7 @@ void SceneManager::checkLoading()
         // Render final loading screen frame
         g_renderer->renderLoadingScreen();
 
-        glfwSwapBuffers(WindowManager::window);
+        WindowManager::swapBuffers();
 
         // Now upload scene data to OpenGL
         currentScene->uploadToGPU();

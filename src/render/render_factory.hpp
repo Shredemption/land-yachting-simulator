@@ -9,4 +9,5 @@ class RendererFactory
 public:
     static std::unique_ptr<IRenderer> create();
     static bool isAvailable(renderEngine engine);
+    static void checkVulkanSupport();
 };

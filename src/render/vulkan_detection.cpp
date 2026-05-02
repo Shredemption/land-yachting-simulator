@@ -1,13 +1,8 @@
 #include "i_renderer.hpp"
 
-#include <iostream>
+#include <vulkan/vulkan.h>
 #include <sstream>
-
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <dlfcn.h>
-#endif
+#include <vector>
 
 namespace VulkanUtils
 {
@@ -15,47 +10,67 @@ namespace VulkanUtils
 
     bool isVulkanSupported()
     {
-#ifdef _WIN32
-        HMODULE vulkanLib = LoadLibraryA("vulkan-1.dll");
-        if (!vulkanLib)
+        // 1. Create Vulkan instance
+        VkApplicationInfo appInfo{};
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.pApplicationName = "VulkanCheck";
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName = "NoEngine";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_0;
+
+        VkInstanceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo = &appInfo;
+
+        VkInstance instance;
+        VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
+
+        if (result != VK_SUCCESS)
         {
-            vulkanErrorMessage = "Vulkan library not found (vulkan-1.dll)";
+            vulkanErrorMessage = "Failed to create Vulkan instance (no driver?)";
             return false;
         }
 
-        // Try to get vkEnumerateInstanceVersion (Vulkan 1.1+)
-        // Define our own function pointer type to avoid Vulkan headers
-        typedef uint32_t(*PFN_vkEnumerateInstanceVersion)();
-        PFN_vkEnumerateInstanceVersion fn = (PFN_vkEnumerateInstanceVersion)GetProcAddress(vulkanLib, "vkEnumerateInstanceVersion");
-        FreeLibrary(vulkanLib);
+        // 2. Check for physical devices (GPUs)
+        uint32_t deviceCount = 0;
+        result = vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+        if (result != VK_SUCCESS || deviceCount == 0)
+        {
+            vkDestroyInstance(instance, nullptr);
+            vulkanErrorMessage = "No Vulkan-compatible GPU found";
+            return false;
+        }
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+        // 3. Get Vulkan version (if supported)
+        uint32_t version = VK_API_VERSION_1_0;
+
+        auto fn = (PFN_vkEnumerateInstanceVersion)
+            vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
 
         if (fn)
         {
-            uint32_t version = fn();
-            uint32_t major = (version >> 22) & 0x3FF;
-            uint32_t minor = (version >> 12) & 0x3FF;
-            std::ostringstream oss;
-            oss << "Vulkan " << major << "." << minor;
-            vulkanErrorMessage = oss.str();
-            return true;
+            fn(&version);
         }
 
-        vulkanErrorMessage = "Vulkan 1.0+ available";
+        uint32_t major = VK_VERSION_MAJOR(version);
+        uint32_t minor = VK_VERSION_MINOR(version);
+
+        std::ostringstream oss;
+        oss << "Vulkan " << major << "." << minor
+            << " (" << deviceCount << " device(s))";
+
+        vulkanErrorMessage = oss.str();
+
+        vkDestroyInstance(instance, nullptr);
         return true;
-#else
-        void* vulkanLib = dlopen("libvulkan.so.1", RTLD_NOW);
-        if (!vulkanLib)
-        {
-            vulkanErrorMessage = "Vulkan library not found";
-            return false;
-        }
-        dlclose(vulkanLib);
-        vulkanErrorMessage = "Vulkan available";
-        return true;
-#endif
     }
 
-    const char* getVulkanError()
+    const char *getVulkanError()
     {
         return vulkanErrorMessage.c_str();
     }

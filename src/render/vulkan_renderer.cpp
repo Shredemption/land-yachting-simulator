@@ -31,13 +31,13 @@ void VulkanRenderer::render()
     // TODO: Implement render loop
 }
 
-void VulkanRenderer::prepareRender(RenderBuffer& prepBuffer)
+void VulkanRenderer::prepareRender(RenderBuffer &prepBuffer)
 {
     (void)prepBuffer;
     // TODO: Prepare render data for Vulkan
 }
 
-void VulkanRenderer::executeRender(RenderBuffer& renderBuffer, bool toScreen)
+void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
 {
     (void)renderBuffer;
     (void)toScreen;
@@ -73,7 +73,7 @@ void VulkanRenderer::renderMenu(EngineState state)
 }
 
 void VulkanRenderer::renderText(std::string text, float x, float y, float scale,
-                               glm::vec3 color, float alpha, TextAlign textAlign)
+                                glm::vec3 color, float alpha, TextAlign textAlign)
 {
     (void)text;
     (void)x;
