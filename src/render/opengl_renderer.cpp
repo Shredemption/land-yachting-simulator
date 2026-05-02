@@ -4,42 +4,7 @@
 
 #include "ui_manager/ui_manager_defs.h"
 
-// Text
-unsigned int textVAO, textVBO;
-unsigned int textTexture;
-std::map<GLchar, Character> Characters;
-std::string fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
-float textTextureSize = 128;
-
-FT_Library ft;
-FT_Face face;
-
-// Framebuffer
-unsigned int sceneTexture = 0, sceneDepthRBO = 0;
-unsigned int pauseTexture;
-unsigned int copyFBO;
-
-// Clipping and culling
-glm::vec4 clipPlane(0, 0, 0, 0);
-
-// Quad for rendering
-unsigned int quadVAO = 0, quadVBO = 0;
-float quadVertices[] = {0};
-
-// Water
-bool WaterPass = false;
-float waterHeight = 0.25;
-float waterTimer = 0.0f;
-
-// Debug
-glm::vec3 debugColor(1.0f, 0.1f, 0.1f);
-float FPS = 0.0f;
-
-// Track current and last used shader
-Shader *shader;
-Shader *lastShader = nullptr;
-
-void renderModel(const RenderCommand &cmd)
+void OpenGLRenderer::renderModel(const RenderCommand &cmd)
 {
     // Send general shader data
     if (shader != lastShader)
@@ -88,7 +53,7 @@ void renderModel(const RenderCommand &cmd)
     }
 }
 
-void renderHitbox(const RenderCommand &cmd)
+void OpenGLRenderer::renderHitbox(const RenderCommand &cmd)
 {
     if (WaterPass)
         return;
@@ -131,7 +96,7 @@ void renderHitbox(const RenderCommand &cmd)
     }
 }
 
-void renderOpaquePlane(const RenderCommand &cmd)
+void OpenGLRenderer::renderOpaquePlane(const RenderCommand &cmd)
 {
     if (shader != lastShader)
     {
@@ -172,7 +137,7 @@ void renderOpaquePlane(const RenderCommand &cmd)
     }
 }
 
-void renderTransparentPlane(const RenderCommand &cmd)
+void OpenGLRenderer::renderTransparentPlane(const RenderCommand &cmd)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -235,7 +200,7 @@ void renderTransparentPlane(const RenderCommand &cmd)
     glDisable(GL_BLEND);
 }
 
-void renderGrid(const RenderCommand &cmd)
+void OpenGLRenderer::renderGrid(const RenderCommand &cmd)
 {
     if (shader != lastShader)
     {
@@ -275,7 +240,7 @@ void renderGrid(const RenderCommand &cmd)
     }
 }
 
-void renderObjects(std::vector<RenderCommand> &renderBuffer)
+void OpenGLRenderer::renderObjects(std::vector<RenderCommand> &renderBuffer)
 {
 
     if (SettingsManager::settings.debug.wireframeMode)
@@ -321,7 +286,7 @@ void renderObjects(std::vector<RenderCommand> &renderBuffer)
     glEnable(GL_CULL_FACE);
 }
 
-void renderSceneSkyBox()
+void OpenGLRenderer::renderSceneSkyBox()
 {
     if (SceneManager::currentScene.get()->hasSkyBox)
     {
@@ -365,7 +330,7 @@ void renderSceneTexts()
     }
 }
 
-void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f, const glm::vec2 scale = {1.0, 1.0f}, const bool uniformScaling = false, const float rotation = 0.0f, const bool mirrored = false)
+void OpenGLRenderer::renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha, const glm::vec2 scale, const bool uniformScaling, const float rotation, const bool mirrored)
 {
     shader = ShaderUtil::load(shaderID::Image);
     lastShader = shader;
@@ -419,7 +384,7 @@ void renderImage(const std::string &fileName, const glm::vec2 &position, const f
     glBindVertexArray(0);
 }
 
-void renderSceneImages()
+void OpenGLRenderer::renderSceneImages()
 {
     for (ImageData image : SceneManager::currentScene.get()->images)
     {
@@ -427,7 +392,7 @@ void renderSceneImages()
     }
 }
 
-void renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
+void OpenGLRenderer::renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
 {
     // ===== REFLECTOIN =====
     // Bind reflection buffer
@@ -466,7 +431,7 @@ void renderReflectRefract(std::vector<RenderCommand> &renderBuffer)
     FramebufferUtil::unbindCurrentFrameBuffer();
 }
 
-void renderTestQuad(unsigned int texture, int x, int y)
+void OpenGLRenderer::renderTestQuad(unsigned int texture, int x, int y)
 {
     glViewport(x, y, WindowManager::screenWidth / 3, WindowManager::screenHeight / 3);
 
@@ -486,20 +451,10 @@ void renderTestQuad(unsigned int texture, int x, int y)
     glViewport(0, 0, WindowManager::screenWidth, WindowManager::screenHeight);
 }
 
-void initQuad()
+void OpenGLRenderer::initQuad()
 {
     if (quadVAO == 0)
     {
-        float quadVertices[] = {
-            // positions   // texture coords
-            -1.0f, 1.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, 1.0f, 0.0f,
-
-            -1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, -1.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f};
-
         glGenVertexArrays(1, &quadVAO);
         glGenBuffers(1, &quadVBO);
         glBindVertexArray(quadVAO);
@@ -513,7 +468,7 @@ void initQuad()
     }
 }
 
-void initFreeType()
+void OpenGLRenderer::initFreeType()
 {
     // Initialize FreeType
     if (FT_Init_FreeType(&ft))
@@ -640,7 +595,7 @@ void OpenGLRenderer::createSceneFBO(int width, int height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-float calculateTextWidth(const std::string &text, float scale)
+float OpenGLRenderer::calculateTextWidth(const std::string &text, float scale)
 {
     float width = 0.0f;
     float lineWidth = 0.0f;
