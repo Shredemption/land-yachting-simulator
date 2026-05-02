@@ -17,12 +17,12 @@
 #include <map>
 
 #include "render/render_defs.h"
-#include "render/i_renderer.hpp"
+#include "render/base_renderer.hpp"
 
 enum class EngineState;
 class Shader;
 
-class OpenGLRenderer : public IRenderer
+class OpenGLRenderer : public BaseRenderer
 {
 public:
     void renderBlankScreen() override;
@@ -58,21 +58,14 @@ private:
     void renderTestQuad(unsigned int texture, int x, int y);
 
     // Text
-    void initFreeType();
-    float calculateTextWidth(const std::string &text, float scale);
-    unsigned int textVAO, textVBO;
-    unsigned int textTexture;
-    std::map<GLchar, Character> Characters;
-    std::string fontpath = "resources/fonts/MusticaPro-SemiBold.otf";
-    float textTextureSize = 128;
-
-    FT_Library ft;
-    FT_Face face;
+    void initTextResources();
+    unsigned int textVAO = 0, textVBO = 0;
+    unsigned int textTexture = 0;
 
     // Framebuffer
     unsigned int sceneTexture = 0, sceneDepthRBO = 0;
-    unsigned int pauseTexture;
-    unsigned int copyFBO;
+    unsigned int pauseTexture = 0;
+    unsigned int copyFBO = 0;
 
     // Clipping and culling
     glm::vec4 clipPlane{0, 0, 0, 0};
@@ -80,15 +73,6 @@ private:
     // Quad for rendering
     void initQuad();
     unsigned int quadVAO = 0, quadVBO = 0;
-    float quadVertices[24] = {
-        // positions   // texture coords
-        -1.0f, 1.0f, 0.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, 1.0f, 0.0f,
-
-        -1.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, 0.0f,
-        1.0f, 1.0f, 1.0f, 1.0f};
 
     // Water
     bool WaterPass = false;
