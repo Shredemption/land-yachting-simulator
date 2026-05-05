@@ -66,20 +66,9 @@ int main()
     AttachConsoleIfNeeded();
 #endif
 
-    std::cout << "[Main] Starting application\n";
-    std::cout.flush();
-
     SettingsManager::load();
-    std::cout << "[Main] Settings loaded\n";
-    std::cout.flush();
-
     RendererFactory::checkVulkanSupport();
-    std::cout << "[Main] Vulkan support checked\n";
-    std::cout.flush();
-
     WindowManager::setup(SettingsManager::settings.video.renderEngine);
-    std::cout << "[Main] Window setup complete\n";
-    std::cout.flush();
 
 #ifdef _WIN32
     SetWindowIconFromResource(WindowManager::window);

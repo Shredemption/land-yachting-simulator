@@ -29,7 +29,7 @@ conan install .. ^
     --build=missing ^
     --settings=build_type=%BUILD_TYPE% ^
     --settings=compiler=msvc ^
-    --settings=compiler.runtime=dynamic ^
+    --settings=compiler.runtime=static ^
     --settings=compiler.cppstd=20
 
 cmake .. ^

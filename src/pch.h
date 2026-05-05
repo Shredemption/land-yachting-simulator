@@ -26,6 +26,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 // OpenGL & GLFW
+#include <vulkan/vulkan.h>
 #ifndef __glad_h_
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
