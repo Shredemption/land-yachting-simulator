@@ -78,6 +78,12 @@ int main()
     ModelUtil::initModelMap();
     SceneManager::initSceneMap();
 
+    glfwShowWindow(WindowManager::window);
+    glfwFocusWindow(WindowManager::window);
+
+    // Set window to fullscreen by default
+    WindowManager::setFullscreenState();
+
     g_renderer = RendererFactory::create();
     try
     {
@@ -89,11 +95,6 @@ int main()
         glfwTerminate();
         return -1;
     }
-
-    // Set window to fullscreen by default
-    WindowManager::setFullscreenState();
-
-    glfwShowWindow(WindowManager::window);
 
     // Launch threads
     ThreadManager::startup();

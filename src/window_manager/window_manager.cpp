@@ -118,11 +118,6 @@ void WindowManager::framebufferSizeCallback(GLFWwindow *window, int width, int h
     {
         glViewport(0, 0, width, height);
     }
-    else
-    {
-        width = 1600;
-        height = 900;
-    }
 
     screenWidth = width;
     screenHeight = height;
@@ -132,7 +127,10 @@ void WindowManager::framebufferSizeCallback(GLFWwindow *window, int width, int h
     // Track window size change for mouse movement
     windowSizeChanged = true;
 
-    g_renderer->resize(width, height);
+    if (g_renderer)
+    {
+        g_renderer->resize(width, height);
+    }
 }
 
 void WindowManager::errorCallback(int error, const char *description)

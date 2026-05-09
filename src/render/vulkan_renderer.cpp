@@ -609,6 +609,12 @@ void VulkanRenderer::cleanup()
 
 void VulkanRenderer::render()
 {
+    if (framebufferResized)
+    {
+        recreateSwapChain();
+        framebufferResized = false;
+    }
+
     int currentIndex = renderIndex.load(std::memory_order_acquire);
     auto &buffer = renderBuffers[currentIndex];
 
@@ -836,19 +842,24 @@ void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 
 void VulkanRenderer::resize(int width, int height)
 {
-    (void)width;
-    (void)height;
-    // TODO: Handle window resize
+    std::cout << "[Vulkan] Resize requested: " << width << "x" << height << std::endl;
+
+    if (width == 0 || height == 0)
+        return;
+
+    framebufferResized = true;
 }
 
 void VulkanRenderer::renderBlankScreen()
 {
     // TODO: Render blank screen
+    render();
 }
 
 void VulkanRenderer::renderLoadingScreen()
 {
     // TODO: Render loading screen
+    render();
 }
 
 void VulkanRenderer::savePauseBackground()
@@ -860,6 +871,7 @@ void VulkanRenderer::renderMenu(EngineState state)
 {
     (void)state;
     // TODO: Render menu
+    render();
 }
 
 void VulkanRenderer::renderText(std::string text, float x, float y, float scale,
