@@ -13,6 +13,7 @@ struct LoadingStep
 enum class EngineState
 {
     None,
+    Boot,
     Loading,
     Title,
     Pause,

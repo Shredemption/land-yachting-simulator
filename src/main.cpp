@@ -99,8 +99,6 @@ int main()
     // Launch threads
     ThreadManager::startup();
 
-    SceneManager::switchEngineState(EngineState::Title);
-
     InputManager::setCallbacks();
 
     glfwPollEvents();
@@ -132,6 +130,10 @@ int main()
 
         switch (SceneManager::engineState)
         {
+        case EngineState::Boot:
+            SceneManager::switchEngineState(EngineState::Title);
+            break;
+
         case EngineState::None:
             g_renderer->renderBlankScreen();
             glfwSetWindowShouldClose(WindowManager::window, GLFW_TRUE);

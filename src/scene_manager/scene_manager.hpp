@@ -32,7 +32,7 @@ namespace SceneManager
     void unload();
 
     // Transition variables
-    inline EngineState engineState = EngineState::None;
+    inline EngineState engineState = EngineState::Boot;
     inline SettingsPage settingsPage = SettingsPage::None;
 
     void switchEngineState(const EngineState &to);
