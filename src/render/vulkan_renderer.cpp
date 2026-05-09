@@ -180,18 +180,28 @@ VkExtent2D VulkanRenderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capa
 
 void VulkanRenderer::setup()
 {
-    createInstance();
-    createSurface();
-    pickPhysicalDevice();
-    createLogicalDevice();
-    createSwapChain();
-    createImageViews();
-    createRenderPass();
-    createGraphicsPipeline();
-    createFramebuffers();
-    createCommandPool();
-    createCommandBuffers();
-    createSyncObjects();
+    std::cout << "[Vulkan] Setup started" << std::endl;
+    try
+    {
+        createInstance();
+        createSurface();
+        pickPhysicalDevice();
+        createLogicalDevice();
+        createSwapChain();
+        createImageViews();
+        createRenderPass();
+        createGraphicsPipeline();
+        createFramebuffers();
+        createCommandPool();
+        createCommandBuffers();
+        createSyncObjects();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "[Vulkan] Setup failed: " << e.what() << std::endl;
+        throw;
+    }
+    std::cout << "[Vulkan] Setup completed" << std::endl;
 }
 
 void VulkanRenderer::createInstance()
@@ -212,22 +222,32 @@ void VulkanRenderer::createInstance()
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
+    std::cout << "[Vulkan] Creating Vulkan instance with " << extensions.size() << " extensions" << std::endl;
+    for (const char *ext : extensions)
+    {
+        std::cout << "[Vulkan]   extension: " << ext << std::endl;
+    }
+
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create Vulkan instance");
     }
+    std::cout << "[Vulkan] Vulkan instance created" << std::endl;
 }
 
 void VulkanRenderer::createSurface()
 {
+    std::cout << "[Vulkan] Creating window surface" << std::endl;
     if (glfwCreateWindowSurface(instance, WindowManager::window, nullptr, &surface) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create Vulkan surface");
     }
+    std::cout << "[Vulkan] Vulkan surface created" << std::endl;
 }
 
 void VulkanRenderer::pickPhysicalDevice()
 {
+    std::cout << "[Vulkan] Picking physical device" << std::endl;
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -236,14 +256,23 @@ void VulkanRenderer::pickPhysicalDevice()
         throw std::runtime_error("Failed to find GPUs with Vulkan support!");
     }
 
+    std::cout << "[Vulkan] " << deviceCount << " Vulkan-capable physical device(s) found" << std::endl;
+
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
     for (const auto &device : devices)
     {
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+        std::cout << "[Vulkan] Checking device: " << deviceProperties.deviceName << " (apiVersion="
+                  << VK_VERSION_MAJOR(deviceProperties.apiVersion) << "." << VK_VERSION_MINOR(deviceProperties.apiVersion)
+                  << ")" << std::endl;
+
         if (isDeviceSuitable(device))
         {
             physicalDevice = device;
+            std::cout << "[Vulkan] Selected physical device: " << deviceProperties.deviceName << std::endl;
             break;
         }
     }
@@ -256,6 +285,7 @@ void VulkanRenderer::pickPhysicalDevice()
 
 void VulkanRenderer::createLogicalDevice()
 {
+    std::cout << "[Vulkan] Creating logical device" << std::endl;
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -334,10 +364,15 @@ void VulkanRenderer::createSwapChain()
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
 
+    std::cout << "[Vulkan] Swap chain settings: format=" << surfaceFormat.format << ", colorSpace=" << surfaceFormat.colorSpace
+              << ", presentMode=" << presentMode << ", extent=" << extent.width << "x" << extent.height << std::endl;
+
     if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create swap chain!");
     }
+
+    std::cout << "[Vulkan] Swap chain created" << std::endl;
 
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
@@ -373,10 +408,12 @@ void VulkanRenderer::createImageViews()
             throw std::runtime_error("Failed to create image views!");
         }
     }
+    std::cout << "[Vulkan] Created " << swapChainImageViews.size() << " image view(s)" << std::endl;
 }
 
 void VulkanRenderer::createRenderPass()
 {
+    std::cout << "[Vulkan] Creating render pass" << std::endl;
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -407,10 +444,12 @@ void VulkanRenderer::createRenderPass()
     {
         throw std::runtime_error("Failed to create render pass!");
     }
+    std::cout << "[Vulkan] Render pass created" << std::endl;
 }
 
 void VulkanRenderer::createGraphicsPipeline()
 {
+    std::cout << "[Vulkan] Creating pipeline layout" << std::endl;
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 0;
@@ -420,6 +459,7 @@ void VulkanRenderer::createGraphicsPipeline()
     {
         throw std::runtime_error("Failed to create pipeline layout!");
     }
+    std::cout << "[Vulkan] Pipeline layout created" << std::endl;
 
     // TODO: Implement full graphics pipeline creation with shaders
     graphicsPipeline = VK_NULL_HANDLE; // Placeholder
@@ -427,6 +467,7 @@ void VulkanRenderer::createGraphicsPipeline()
 
 void VulkanRenderer::createFramebuffers()
 {
+    std::cout << "[Vulkan] Creating framebuffers" << std::endl;
     swapChainFramebuffers.resize(swapChainImageViews.size());
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++)
@@ -463,10 +504,12 @@ void VulkanRenderer::createCommandPool()
     {
         throw std::runtime_error("Failed to create command pool!");
     }
+    std::cout << "[Vulkan] Command pool created" << std::endl;
 }
 
 void VulkanRenderer::createCommandBuffers()
 {
+    std::cout << "[Vulkan] Allocating command buffers" << std::endl;
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
@@ -479,10 +522,12 @@ void VulkanRenderer::createCommandBuffers()
     {
         throw std::runtime_error("Failed to allocate command buffers!");
     }
+    std::cout << "[Vulkan] Allocated " << commandBuffers.size() << " command buffer(s)" << std::endl;
 }
 
 void VulkanRenderer::createSyncObjects()
 {
+    std::cout << "[Vulkan] Creating sync objects" << std::endl;
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -503,6 +548,7 @@ void VulkanRenderer::createSyncObjects()
             throw std::runtime_error("Failed to create synchronization objects for a frame!");
         }
     }
+    std::cout << "[Vulkan] Sync objects created" << std::endl;
 }
 
 void VulkanRenderer::cleanup()

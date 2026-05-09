@@ -79,7 +79,16 @@ int main()
     SceneManager::initSceneMap();
 
     g_renderer = RendererFactory::create();
-    g_renderer->setup();
+    try
+    {
+        g_renderer->setup();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "[Main] Renderer setup failed: " << e.what() << std::endl;
+        glfwTerminate();
+        return -1;
+    }
 
     // Set window to fullscreen by default
     WindowManager::setFullscreenState();
