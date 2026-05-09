@@ -48,7 +48,10 @@ void PhysicsUtil::stepPhysics(ModelData &model)
 
 void PhysicsUtil::setup()
 {
+    std::cout << "[PhysicsUtil] Setting up physics" << std::endl;
+
     // Setup all animated models
+    int physicsCount = 0;
     for (ModelData &model : SceneManager::currentScene.get()->structModels)
     {
         if (model.physicsTypes.size() > 0)
@@ -60,8 +63,11 @@ void PhysicsUtil::setup()
 
             model.physics->buffers[0]->reset(model.u_model);
             model.physics->buffers[1]->reset(model.u_model);
+            physicsCount++;
         }
     }
+
+    std::cout << "[PhysicsUtil] Physics setup complete (" << physicsCount << " physics objects)" << std::endl;
 }
 
 void PhysicsUtil::switchControlledYacht()

@@ -22,6 +22,8 @@ void validate(SettingsStruct& s, const SettingsMetaStruct& m)
 
 void SettingsManager::load()
 {
+    std::cout << "[SettingsManager] Loading settings" << std::endl;
+
     std::ifstream file(settingsFile);
     if (!file.is_open())
     {
@@ -35,10 +37,11 @@ void SettingsManager::load()
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Error loading settings: " << e.what() << "\n";
+        std::cerr << "[SettingsManager] Error loading settings: " << e.what() << std::endl;
     }
 
     validate(settings,settingsMeta);
+    std::cout << "[SettingsManager] Settings loaded" << std::endl;
 }
 
 void SettingsManager::save()

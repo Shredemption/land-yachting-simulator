@@ -5,12 +5,16 @@
 void WindowManager::setup(renderEngine engine)
 {
     currentEngine = engine;
+    std::cout << "[WindowManager] Setting up window (engine: " << (engine == renderEngine::Vulkan ? "Vulkan" : "OpenGL") << ")" << std::endl;
+
     // Initialize GLFW
     if (!glfwInit())
     {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
+        std::cerr << "[WindowManager] ERROR: Failed to initialize GLFW" << std::endl;
         return;
     }
+
+    std::cout << "[WindowManager]   GLFW initialized" << std::endl;
 
     // Set GLFW error callback
     glfwSetErrorCallback(errorCallback);
@@ -37,10 +41,12 @@ void WindowManager::setup(renderEngine engine)
     window = glfwCreateWindow(800, 600, "Marama", nullptr, nullptr);
     if (!window)
     {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        std::cerr << "[WindowManager] ERROR: Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return;
     }
+
+    std::cout << "[WindowManager]   Window created (800x600)" << std::endl;
 
     if (engine == renderEngine::OpenGL)
     {
@@ -48,9 +54,10 @@ void WindowManager::setup(renderEngine engine)
         glfwSwapInterval(1);
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-            std::cout << "Failed to initialize GLAD" << std::endl;
+            std::cerr << "[WindowManager] ERROR: Failed to initialize GLAD" << std::endl;
             return;
         }
+        std::cout << "[WindowManager]   GLAD loaded" << std::endl;
     }
 
     // Get screen dimensions
@@ -59,6 +66,7 @@ void WindowManager::setup(renderEngine engine)
     glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    std::cout << "[WindowManager] Window setup completed" << std::endl;
 }
 
 void WindowManager::setFullscreenState()

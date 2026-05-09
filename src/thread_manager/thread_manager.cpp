@@ -4,6 +4,8 @@
 
 void ThreadManager::startup()
 {
+    std::cout << "[ThreadManager] Starting worker threads" << std::endl;
+
     physicsThread = std::thread(physicsThreadFunction);
     animationThread = std::thread(animationThreadFunction);
     renderBufferThread = std::thread(renderBufferThreadFunction);
@@ -13,10 +15,14 @@ void ThreadManager::startup()
         animationCanWriteCV.notify_one();
         renderCanReadCV.notify_one();
     }
+
+    std::cout << "[ThreadManager] Worker threads started" << std::endl;
 }
 
 void ThreadManager::shutdown()
 {
+    std::cout << "[ThreadManager] Shutting down worker threads" << std::endl;
+
     // Tell threads to stop
     physicsShouldExit = true;
     animationShouldExit = true;
@@ -35,6 +41,8 @@ void ThreadManager::shutdown()
         animationThread.join();
     if (renderBufferThread.joinable())
         renderBufferThread.join();
+
+    std::cout << "[ThreadManager] Worker threads shut down" << std::endl;
 }
 
 void ThreadManager::physicsThreadFunction()

@@ -17,6 +17,8 @@ ModelMapEntry makeModel(
 
 void ModelUtil::initModelMap()
 {
+    std::cout << "[ModelUtil] Initializing model registry" << std::endl;
+
     modelMap = {
 
         // -- yachts -- 
@@ -82,6 +84,8 @@ void ModelUtil::initModelMap()
         {"cylinder",
          makeModel(
              "resources/models/test/cylinder.dae")}};
+
+    std::cout << "[ModelUtil] Model registry initialized (" << modelMap.size() << " models)" << std::endl;
 }
 
 void ModelUtil::swapBoneBuffers()

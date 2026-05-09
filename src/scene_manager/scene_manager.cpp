@@ -120,12 +120,16 @@ void SceneManager::unload()
 
 void SceneManager::initSceneMap()
 {
+    std::cout << "[SceneManager] Initializing scene registry" << std::endl;
+
     sceneMap = {
         { "cartoon",     "resources/scenes/cartoon.json" },
         { "realistic",   "resources/scenes/realistic.json" },
         { "test-yacht",  "resources/scenes/test/yacht.json" },
         { "test-rigid",  "resources/scenes/test/rigid-body.json" }
     };
+
+    std::cout << "[SceneManager] Scene registry initialized (" << sceneMap.size() << " scenes)" << std::endl;
 }
 
 void SceneManager::switchEngineState(const EngineState &to)
