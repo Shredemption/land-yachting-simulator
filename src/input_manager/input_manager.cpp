@@ -191,9 +191,6 @@ void InputManager::update()
 
 void InputManager::setCallbacks()
 {
-
-    std::cout << "[InputManager] Setting window callbacks" << std::endl;
-
     GLFWwindow *window = WindowManager::window;
 
     switch (SceneManager::engineState)

@@ -555,9 +555,10 @@ void TextureManager::clearTextures()
 {
     if (g_renderer->getType() == renderEngine::Vulkan)
     {
-        clearStandaloneCache();
-        clearTextureArrays();
+        return;
     }
+    clearStandaloneCache();
+    clearTextureArrays();
     nextFreeUnit = 5;
 }
 

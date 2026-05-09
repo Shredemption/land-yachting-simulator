@@ -1011,8 +1011,6 @@ void OpenGLRenderer::savePauseBackground()
 
 void OpenGLRenderer::renderMenu(EngineState state)
 {
-    std::cout << "[OpenGL] Rendering menu" << std::endl;
-
     glDisable(GL_DEPTH_TEST);
 
     float alpha = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
