@@ -19,26 +19,29 @@ SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurface
 {
     SwapChainSupportDetails details;
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+    VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to query surface capabilities");
+    }
 
     uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-
+    result = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
     if (formatCount != 0)
     {
         details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
     }
 
     uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
-
+    result = vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
     if (presentModeCount != 0)
     {
         details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
     }
 
+    std::cout << "[Vulkan]   Swapchain support: " << details.formats.size() << " formats, " << details.presentModes.size() << " present modes" << std::endl;
     return details;
 }
 
@@ -59,7 +62,6 @@ bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device)
     QueueFamilyIndices indices = findQueueFamilies(device);
 
     bool extensionsSupported = checkDeviceExtensionSupport(device);
-
     bool swapChainAdequate = false;
     if (extensionsSupported)
     {
@@ -67,7 +69,10 @@ bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device)
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    bool suitable = indices.isComplete() && extensionsSupported && swapChainAdequate;
+    std::cout << "[Vulkan]   Device suitable=" << suitable << " (graphics=" << indices.graphicsFamily.value_or(UINT32_MAX)
+              << " present=" << indices.presentFamily.value_or(UINT32_MAX) << ")" << std::endl;
+    return suitable;
 }
 
 QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device)
@@ -80,9 +85,9 @@ QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device)
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-    int i = 0;
-    for (const auto &queueFamily : queueFamilies)
+    for (uint32_t i = 0; i < queueFamilies.size(); ++i)
     {
+        const auto &queueFamily = queueFamilies[i];
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             indices.graphicsFamily = i;
@@ -90,7 +95,6 @@ QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device)
 
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
         if (presentSupport)
         {
             indices.presentFamily = i;
@@ -100,29 +104,44 @@ QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device)
         {
             break;
         }
-
-        i++;
     }
 
+    std::cout << "[Vulkan]   Queue families: graphics=" << indices.graphicsFamily.value_or(UINT32_MAX)
+              << " present=" << indices.presentFamily.value_or(UINT32_MAX) << std::endl;
     return indices;
 }
 
 bool VulkanRenderer::checkDeviceExtensionSupport(VkPhysicalDevice device)
 {
     uint32_t extensionCount;
-    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-    std::set<std::string> requiredExtensions(getDeviceExtensions().begin(), getDeviceExtensions().end());
-
-    for (const auto &extension : availableExtensions)
+    VkResult result = vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+    if (result != VK_SUCCESS)
     {
-        requiredExtensions.erase(extension.extensionName);
+        std::cerr << "[Vulkan]   Failed to query device extension count" << std::endl;
+        return false;
     }
 
-    return requiredExtensions.empty();
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    result = vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+    if (result != VK_SUCCESS)
+    {
+        std::cerr << "[Vulkan]   Failed to query device extension list" << std::endl;
+        return false;
+    }
+
+    const char *requiredExtension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+    bool foundRequiredExtension = false;
+    for (uint32_t index = 0; index < extensionCount; ++index)
+    {
+        if (strcmp(availableExtensions[index].extensionName, requiredExtension) == 0)
+        {
+            foundRequiredExtension = true;
+            break;
+        }
+    }
+
+    std::cout << "[Vulkan]   Device extension support: " << (foundRequiredExtension ? "OK" : "MISSING swapchain") << std::endl;
+    return foundRequiredExtension;
 }
 
 std::vector<const char *> VulkanRenderer::getDeviceExtensions()
@@ -223,11 +242,6 @@ void VulkanRenderer::createInstance()
     createInfo.ppEnabledExtensionNames = extensions.data();
 
     std::cout << "[Vulkan] Creating Vulkan instance with " << extensions.size() << " extensions" << std::endl;
-    for (const char *ext : extensions)
-    {
-        std::cout << "[Vulkan]   extension: " << ext << std::endl;
-    }
-
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create Vulkan instance");
@@ -269,7 +283,10 @@ void VulkanRenderer::pickPhysicalDevice()
                   << VK_VERSION_MAJOR(deviceProperties.apiVersion) << "." << VK_VERSION_MINOR(deviceProperties.apiVersion)
                   << ")" << std::endl;
 
-        if (isDeviceSuitable(device))
+        bool suitable = isDeviceSuitable(device);
+        std::cout << "[Vulkan]   isDeviceSuitable returned " << suitable << std::endl;
+
+        if (suitable)
         {
             physicalDevice = device;
             std::cout << "[Vulkan] Selected physical device: " << deviceProperties.deviceName << std::endl;
