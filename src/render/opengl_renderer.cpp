@@ -468,6 +468,8 @@ void OpenGLRenderer::initQuad()
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
         glBindVertexArray(0);
+
+        std::cout << "[OpenGL]   Quad VAO/VBO created" << std::endl;
     }
 }
 
@@ -514,6 +516,8 @@ void OpenGLRenderer::initTextResources()
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void *>(0));
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+
+    std::cout << "[OpenGL]   Text resources initialized" << std::endl;
 }
 
 void OpenGLRenderer::createSceneFBO(int width, int height)
@@ -546,13 +550,17 @@ void OpenGLRenderer::createSceneFBO(int width, int height)
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRBO);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cerr << "Scene FBO is not complete!" << std::endl;
+        std::cerr << "[OpenGL]   ERROR: Scene FBO is not complete!" << std::endl;
+    else
+        std::cout << "[OpenGL]   Scene FBO created (" << width << "x" << height << ")" << std::endl;
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void OpenGLRenderer::setup()
 {
+    std::cout << "[OpenGL] Setting up renderer" << std::endl;
+
     initQuad();
     initTextResources();
     createSceneFBO(WindowManager::windowWidth, WindowManager::windowHeight);
@@ -565,10 +573,14 @@ void OpenGLRenderer::setup()
     // Enable Depth buffer (Z-buffer)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    std::cout << "[OpenGL] Setup completed" << std::endl;
 }
 
 void OpenGLRenderer::resize(int width, int height)
 {
+    std::cout << "[OpenGL] Resizing to " << width << "x" << height << std::endl;
+
     // Delete old FBO attachments
     glDeleteFramebuffers(1, &sceneFBO);
     glDeleteTextures(1, &sceneTexture);
@@ -999,6 +1011,8 @@ void OpenGLRenderer::savePauseBackground()
 
 void OpenGLRenderer::renderMenu(EngineState state)
 {
+    std::cout << "[OpenGL] Rendering menu" << std::endl;
+
     glDisable(GL_DEPTH_TEST);
 
     float alpha = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
