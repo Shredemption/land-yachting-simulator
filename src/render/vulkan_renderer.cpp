@@ -295,20 +295,20 @@ void VulkanRenderer::pickPhysicalDevice()
             int score = 0;
             switch (deviceProperties.deviceType)
             {
-                case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                    score = 4;
-                    break;
-                case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                    score = 3;
-                    break;
-                case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-                    score = 2;
-                    break;
-                case VK_PHYSICAL_DEVICE_TYPE_CPU:
-                    score = 1;
-                    break;
-                default:
-                    score = 0;
+            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+                score = 4;
+                break;
+            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+                score = 3;
+                break;
+            case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+                score = 2;
+                break;
+            case VK_PHYSICAL_DEVICE_TYPE_CPU:
+                score = 1;
+                break;
+            default:
+                score = 0;
             }
 
             std::cout << "[Vulkan]   Device type: " << deviceProperties.deviceType << " (score: " << score << ")" << std::endl;
@@ -609,8 +609,37 @@ void VulkanRenderer::cleanup()
 
 void VulkanRenderer::render()
 {
-    std::cout << "[Vulkan] Render - STUB" << std::endl;
-    // TODO: Implement render loop
+    int currentIndex = renderIndex.load(std::memory_order_acquire);
+    auto &buffer = renderBuffers[currentIndex];
+
+    BufferState expected = BufferState::Ready;
+
+    if (buffer.state.compare_exchange_strong(expected, BufferState::Rendering))
+    {
+        try
+        {
+            executeRender(buffer, true);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "[Vulkan] Render failed: " << e.what() << std::endl;
+        }
+
+        buffer.state.store(BufferState::Free, std::memory_order_release);
+
+        // Rotate to next ready buffer
+        for (int i = 0; i < 3; ++i)
+        {
+            if (renderBuffers[i].state.load(std::memory_order_acquire) ==
+                BufferState::Ready)
+            {
+                renderIndex.store(i, std::memory_order_release);
+                break;
+            }
+        }
+
+        ThreadManager::renderBufferCV.notify_all();
+    }
 }
 
 void VulkanRenderer::prepareRender(RenderBuffer &prepBuffer)
@@ -624,6 +653,63 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     (void)renderBuffer;
     (void)toScreen;
     // TODO: Execute render commands
+}
+
+void VulkanRenderer::cleanupSwapChain()
+{
+    std::cout << "[Vulkan] Cleaning up swap chain" << std::endl;
+
+    for (auto framebuffer : swapChainFramebuffers)
+    {
+        if (framebuffer != VK_NULL_HANDLE)
+        {
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
+        }
+    }
+
+    swapChainFramebuffers.clear();
+
+    for (auto imageView : swapChainImageViews)
+    {
+        if (imageView != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(device, imageView, nullptr);
+        }
+    }
+
+    swapChainImageViews.clear();
+
+    if (swapChain != VK_NULL_HANDLE)
+    {
+        vkDestroySwapchainKHR(device, swapChain, nullptr);
+        swapChain = VK_NULL_HANDLE;
+    }
+}
+
+void VulkanRenderer::recreateSwapChain()
+{
+    std::cout << "[Vulkan] Recreating swap chain" << std::endl;
+
+    int width = 0;
+    int height = 0;
+
+    glfwGetFramebufferSize(WindowManager::window, &width, &height);
+
+    while (width == 0 || height == 0)
+    {
+        glfwGetFramebufferSize(WindowManager::window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(device);
+
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createFramebuffers();
+
+    std::cout << "[Vulkan] Swap chain recreated" << std::endl;
 }
 
 void VulkanRenderer::resize(int width, int height)
