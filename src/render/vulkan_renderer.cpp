@@ -761,30 +761,259 @@ VkShaderModule VulkanRenderer::createShaderModule(const std::vector<char> &code)
 
 void VulkanRenderer::render()
 {
-
-    std::cout << "[Vulkan] render()" << std::endl;
-
     if (framebufferResized)
     {
         recreateSwapChain();
         framebufferResized = false;
     }
 
-    try
+    int currentIndex = renderIndex.load(std::memory_order_acquire);
+    auto &buffer = renderBuffers[currentIndex];
+
+    BufferState expected = BufferState::Ready;
+
+    bool rendered = false;
+
+    if (buffer.state.compare_exchange_strong(
+            expected, BufferState::Rendering))
     {
-        executeRender(renderBuffers[0], true);
+        try
+        {
+            executeRender(buffer, true);
+
+            buffer.state.store(BufferState::Free,
+                               std::memory_order_release);
+
+            ThreadManager::renderBufferCV.notify_all();
+
+            rendered = true;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "[Vulkan] Render failed: " << e.what() << std::endl;
+
+            buffer.state.store(BufferState::Free,
+                               std::memory_order_release);
+
+            ThreadManager::renderBufferCV.notify_all();
+
+            rendered = true;
+        }
+
+        for (int i = 0; i < 3; ++i)
+        {
+            if (renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Ready)
+            {
+                renderIndex.store(i, std::memory_order_release);
+                break;
+            }
+        }
     }
-    catch (const std::exception &e)
+
+    if (!rendered)
     {
-        std::cerr << "[Vulkan] Render failed: "
-                  << e.what() << std::endl;
+        // If no ready buffer, prepare one inline
+        for (int i = 0; i < 3; ++i)
+        {
+            if (renderBuffers[i].state.load(std::memory_order_acquire) == BufferState::Free)
+            {
+                renderBuffers[i].state.store(BufferState::Prepping, std::memory_order_release);
+                prepareRender(renderBuffers[i]);
+                renderBuffers[i].state.store(BufferState::Ready, std::memory_order_release);
+
+                BufferState expected2 = BufferState::Ready;
+                if (renderBuffers[i].state.compare_exchange_strong(expected2, BufferState::Rendering))
+                {
+                    try
+                    {
+                        executeRender(renderBuffers[i], true);
+
+                        renderBuffers[i].state.store(BufferState::Free, std::memory_order_release);
+
+                        ThreadManager::renderBufferCV.notify_all();
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cerr << "[Vulkan] Render failed: " << e.what() << std::endl;
+
+                        renderBuffers[i].state.store(BufferState::Free, std::memory_order_release);
+
+                        ThreadManager::renderBufferCV.notify_all();
+                    }
+                }
+
+                renderIndex.store(i, std::memory_order_release);
+                break;
+            }
+        }
     }
 }
 
-void VulkanRenderer::prepareRender(RenderBuffer &prepBuffer)
+void VulkanRenderer::prepareRender(::RenderBuffer &prepBuffer)
 {
-    (void)prepBuffer;
-    // TODO: Prepare render data for Vulkan
+    // Clear and reserve size for buffer
+    prepBuffer.commandBuffer.clear();
+
+    if (!SceneManager::currentScene)
+        return;
+
+    prepBuffer.commandBuffer.reserve(
+        SceneManager::currentScene->structModels.size() +
+        SceneManager::currentScene->opaqueUnitPlanes.size() +
+        SceneManager::currentScene->transparentUnitPlanes.size() +
+        SceneManager::currentScene->grids.size());
+
+    std::vector<std::future<RenderCommand>> futures;
+
+    // Load Models
+    for (auto &model : SceneManager::currentScene->structModels)
+    {
+        futures.push_back(std::async(std::launch::async, [&model]()
+                                     {
+            RenderCommand cmd;
+            
+            cmd.type = RenderType::Model;
+
+            cmd.shader = model.shader; 
+            cmd.color = model.color;
+            
+            cmd.modelMatrix = model.u_model;
+            cmd.normalMatrix = model.u_normal;
+
+            TextureManager::getTextureData(*model.model, cmd.textureUnit, cmd.textureArrayID, cmd.textureLayers);
+
+            cmd.animated = model.animated;
+
+            if (cmd.animated)
+            {
+                cmd.boneTransforms = model.model->getReadBuffer();
+                cmd.boneInverseOffsets = model.model->boneInverseOffsets;
+            }
+
+            float distanceFromCamera = glm::distance(glm::vec3(model.u_model[3]), Camera::getPosition());
+
+            cmd.lod = 0;
+            if (distanceFromCamera > SettingsManager::settings.video.lodDistance) cmd.lod = 1;
+            if (SceneManager::engineState == EngineState::Title) cmd.lod = 0;
+
+            if (cmd.lod >= model.model->lodMeshes.size())
+                cmd.lod = static_cast<int>(std::round(model.model->lodMeshes.size())) - 1;
+
+            cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->lodMeshes[cmd.lod], [](std::vector<MeshVariant>*) {});
+
+            return cmd; }));
+
+        // Hitboxes
+        if (SettingsManager::settings.debug.showHitboxes)
+        {
+            if (model.model->hitboxMeshes.has_value() && !model.model->hitboxMeshes->empty())
+            {
+                futures.push_back(std::async(std::launch::async, [&model]()
+                                             {
+                    RenderCommand cmd;
+                    
+                    cmd.type = RenderType::Hitbox;
+
+                    cmd.shader = shaderID::Hitbox; 
+                    cmd.color = glm::vec3(1,0,0);
+                    
+                    cmd.modelMatrix = model.u_model;
+
+                    cmd.animated = model.animated;
+
+                    if (cmd.animated)
+                    {
+                        cmd.boneTransforms = model.model->getReadBuffer();
+                        cmd.boneInverseOffsets = model.model->boneInverseOffsets;
+                    }
+
+                    cmd.meshes = std::shared_ptr<std::vector<MeshVariant>>(&model.model->hitboxMeshes.value(), [](std::vector<MeshVariant>*) {});
+
+                    return cmd; }));
+            }
+        }
+
+        if (model.controlled)
+        {
+            prepBuffer.camPos = (model.u_model * model.model->getReadBuffer()[model.model->boneHierarchy["Armature_Cam"]->index]) * glm::vec4(0, 0, 0, 1);
+            prepBuffer.camYaw = -atan2(model.u_model[0][1], model.u_model[1][1]);
+        }
+    }
+
+    // Load opaque UnitPlanes
+    for (auto &opaquePlane : SceneManager::currentScene->opaqueUnitPlanes)
+    {
+        futures.push_back(std::async(std::launch::async, [opaquePlane]()
+                                     {
+            RenderCommand cmd;
+            
+            cmd.type = RenderType::OpaquePlane;
+
+            cmd.shader = opaquePlane.shader;
+
+            cmd.modelMatrix = opaquePlane.u_model;
+            cmd.normalMatrix = opaquePlane.u_normal;
+
+            auto meshList = std::make_shared<std::vector<MeshVariant>>(std::initializer_list<MeshVariant>{opaquePlane.unitPlane});
+            cmd.meshes = meshList;
+
+            return cmd; }));
+    }
+
+    // Sort transparent planes back to front based on distance from the camera
+    std::sort(SceneManager::currentScene->transparentUnitPlanes.begin(), SceneManager::currentScene->transparentUnitPlanes.end(), [&](const UnitPlaneData &a, const UnitPlaneData &b)
+              {
+                  float distA = glm::distance(Camera::getPosition(), a.position);
+                  float distB = glm::distance(Camera::getPosition(), b.position);
+                  return distA > distB; // Sort by distance: farthest first, closest last
+              });
+
+    // Load transparent UnitPlanes
+    for (auto &transparentPlane : SceneManager::currentScene->transparentUnitPlanes)
+    {
+        futures.push_back(std::async(std::launch::async, [transparentPlane]()
+                                     {
+            RenderCommand cmd;
+            
+            cmd.type = RenderType::TransparentPlane;
+
+            cmd.shader = transparentPlane.shader;
+
+            cmd.modelMatrix = transparentPlane.u_model;
+            cmd.normalMatrix = transparentPlane.u_normal;
+
+            auto meshList = std::make_shared<std::vector<MeshVariant>>(std::initializer_list<MeshVariant>{transparentPlane.unitPlane});
+            cmd.meshes = meshList;
+
+            return cmd; }));
+    }
+
+    // Load grids
+    for (auto &grid : SceneManager::currentScene->grids)
+    {
+        futures.push_back(std::async(std::launch::async, [grid]()
+                                     {
+            RenderCommand cmd;
+            
+            cmd.type = RenderType::Grid;
+
+            cmd.shader = grid.shader;
+
+            cmd.modelMatrix = grid.u_model;
+            cmd.normalMatrix = grid.u_normal;
+
+            cmd.lod = grid.lod;
+
+            auto meshList = std::make_shared<std::vector<MeshVariant>>(std::initializer_list<MeshVariant>{grid.grid});
+            cmd.meshes = meshList;
+
+            return cmd; }));
+    }
+
+    for (auto &f : futures)
+    {
+        prepBuffer.commandBuffer.push_back(f.get());
+    }
 }
 
 void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
@@ -795,9 +1024,13 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
 
     uint32_t imageIndex;
 
-    VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-
-    std::cout << "Acquire result: " << result << std::endl;
+    VkResult result = vkAcquireNextImageKHR(
+        device,
+        swapChain,
+        UINT64_MAX,
+        imageAvailableSemaphores[currentFrame],
+        VK_NULL_HANDLE,
+        &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
@@ -811,12 +1044,22 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     }
 
     vkResetFences(device, 1, &inFlightFences[currentFrame]);
-    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-    recordCommandBuffer(commandBuffers[currentFrame], imageIndex, renderBuffer);
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+
+    recordCommandBuffer(
+        commandBuffers[currentFrame],
+        imageIndex,
+        renderBuffer);
+
+    VkSemaphore waitSemaphores[] = {
+        imageAvailableSemaphores[currentFrame]};
+
+    VkPipelineStageFlags waitStages[] = {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+    VkSemaphore signalSemaphores[] = {
+        renderFinishedSemaphores[currentFrame]};
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -829,7 +1072,8 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
+    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo,
+                      inFlightFences[currentFrame]) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to submit draw command buffer!");
     }
@@ -838,6 +1082,7 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
+
     VkSwapchainKHR swapChains[] = {swapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
@@ -845,11 +1090,9 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
 
     result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-    std::cout << "Present result: " << result << std::endl;
-
-    vkQueueWaitIdle(presentQueue);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
+        result == VK_SUBOPTIMAL_KHR ||
+        framebufferResized)
     {
         framebufferResized = false;
         recreateSwapChain();
