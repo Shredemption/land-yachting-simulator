@@ -17,6 +17,9 @@ namespace WindowManager
     inline GLFWwindow *window;
     inline int windowXpos, windowYpos, windowWidth, windowHeight;
     inline renderEngine currentEngine = renderEngine::OpenGL;
+    inline int pendingResizeWidth = 0;
+    inline int pendingResizeHeight = 0;
+    inline bool resizePending = false;
 
     void setup(renderEngine engine = renderEngine::OpenGL);
     void errorCallback(int error, const char *description);

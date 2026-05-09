@@ -111,6 +111,15 @@ int main()
     {
         TimeManager::timing(SceneManager::engineState);
 
+        if (WindowManager::resizePending)
+        {
+            g_renderer->resize(
+                WindowManager::pendingResizeWidth,
+                WindowManager::pendingResizeHeight);
+
+            WindowManager::resizePending = false;
+        }
+
         if (SceneManager::updateCallbacks)
             InputManager::setCallbacks();
 
