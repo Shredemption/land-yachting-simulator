@@ -275,6 +275,9 @@ void VulkanRenderer::pickPhysicalDevice()
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
+    int bestScore = -1;
+    VkPhysicalDevice bestDevice = VK_NULL_HANDLE;
+
     for (const auto &device : devices)
     {
         VkPhysicalDeviceProperties deviceProperties;
@@ -288,16 +291,46 @@ void VulkanRenderer::pickPhysicalDevice()
 
         if (suitable)
         {
-            physicalDevice = device;
-            std::cout << "[Vulkan] Selected physical device: " << deviceProperties.deviceName << std::endl;
-            break;
+            // Score the device based on its type (discrete GPU preferred)
+            int score = 0;
+            switch (deviceProperties.deviceType)
+            {
+                case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+                    score = 4;
+                    break;
+                case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+                    score = 3;
+                    break;
+                case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+                    score = 2;
+                    break;
+                case VK_PHYSICAL_DEVICE_TYPE_CPU:
+                    score = 1;
+                    break;
+                default:
+                    score = 0;
+            }
+
+            std::cout << "[Vulkan]   Device type: " << deviceProperties.deviceType << " (score: " << score << ")" << std::endl;
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestDevice = device;
+                std::cout << "[Vulkan]   New best device!" << std::endl;
+            }
         }
     }
 
-    if (physicalDevice == VK_NULL_HANDLE)
+    if (bestDevice == VK_NULL_HANDLE)
     {
         throw std::runtime_error("Failed to find a suitable GPU!");
     }
+
+    physicalDevice = bestDevice;
+    VkPhysicalDeviceProperties bestProps;
+    vkGetPhysicalDeviceProperties(physicalDevice, &bestProps);
+    std::cout << "[Vulkan] Selected physical device: " << bestProps.deviceName << " (type: " << bestProps.deviceType << ")" << std::endl;
 }
 
 void VulkanRenderer::createLogicalDevice()
