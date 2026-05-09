@@ -604,6 +604,11 @@ void UIManager::update()
 
 void UIManager::render()
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        return;
+    }
+
     glDisable(GL_DEPTH_TEST);
     if (activeWidgets)
         activeWidgets->Render();

@@ -90,6 +90,10 @@ void TextureManager::loadTexturesForShader(const shaderID &shader, const std::st
 
 unsigned int TextureManager::loadStandaloneTexture(const std::string &filepath)
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        return 0; // Placeholder for Vulkan
+    }
     {
         // Check cache first
         std::lock_guard<std::mutex> lock(standaloneCacheMutex);
@@ -240,6 +244,10 @@ void TextureManager::queueTextureToArrayByFilename(const std::string &fileName, 
 
 unsigned int TextureManager::loadSkyboxTexture(const SkyBoxData &skybox)
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        return 0; // Placeholder for Vulkan
+    }
     unsigned int textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -369,6 +377,16 @@ void TextureManager::loadQueuedPixelData()
 
 void uploadStandalones()
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        // Clear queue without uploading
+        std::lock_guard<std::mutex> lock(TextureManager::textureQueueMutex);
+        while (!TextureManager::textureQueue.empty())
+        {
+            TextureManager::textureQueue.pop();
+        }
+        return;
+    }
     std::lock_guard<std::mutex> lock(TextureManager::textureQueueMutex);
 
     while (!TextureManager::textureQueue.empty())
@@ -433,6 +451,15 @@ void uploadStandalones()
 
 void uploadTextureArrays()
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        // Clear pending without uploading
+        for (auto &[arrayName, arr] : TextureManager::textureArrays)
+        {
+            arr.pendingTextures.clear();
+        }
+        return;
+    }
     std::lock_guard<std::mutex> lock(TextureManager::openglMutex);
 
     for (auto &[arrayName, arr] : TextureManager::textureArrays)
@@ -475,12 +502,22 @@ void uploadTextureArrays()
 
 void TextureManager::uploadToGPU()
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        // Skip OpenGL upload for Vulkan
+        return;
+    }
     uploadStandalones();
     uploadTextureArrays();
 }
 
 void clearStandaloneCache()
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        TextureManager::standaloneTextureCache.clear();
+        return;
+    }
     std::lock_guard<std::mutex> lock(TextureManager::standaloneCacheMutex);
     for (auto &pair : TextureManager::standaloneTextureCache)
     {
@@ -491,6 +528,16 @@ void clearStandaloneCache()
 
 void clearTextureArrays()
 {
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        for (auto &[name, texArray] : TextureManager::textureArrays)
+        {
+            texArray.textureLayerMap.clear();
+            texArray.pendingTextures.clear();
+        }
+        TextureManager::textureArrays.clear();
+        return;
+    }
     for (auto &[name, texArray] : TextureManager::textureArrays)
     {
         if (texArray.textureArrayID != 0)
@@ -506,8 +553,11 @@ void clearTextureArrays()
 
 void TextureManager::clearTextures()
 {
-    clearStandaloneCache();
-    clearTextureArrays();
+    if (g_renderer->getType() == renderEngine::Vulkan)
+    {
+        clearStandaloneCache();
+        clearTextureArrays();
+    }
     nextFreeUnit = 5;
 }
 
