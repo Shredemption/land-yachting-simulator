@@ -79,4 +79,8 @@ private:
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     std::vector<const char *> getDeviceExtensions();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
+        std::vector<char> readFile(const std::string &filename);
+    VkShaderModule createShaderModule(const std::vector<char> &code);
+    void drawTestTriangle(VkCommandBuffer commandBuffer);
 };
