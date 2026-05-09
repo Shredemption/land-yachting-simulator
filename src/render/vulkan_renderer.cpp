@@ -712,6 +712,64 @@ void VulkanRenderer::recreateSwapChain()
     std::cout << "[Vulkan] Swap chain recreated" << std::endl;
 }
 
+void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, RenderBuffer &renderBuffer)
+{
+    (void)renderBuffer;
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    beginInfo.flags = 0;
+    beginInfo.pInheritanceInfo = nullptr;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+
+    renderPassInfo.renderPass = renderPass;
+    renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = swapChainExtent;
+
+    VkClearValue clearColor{};
+
+    if (SceneManager::currentScene)
+    {
+        clearColor.color = {{
+            SceneManager::currentScene->bgColor.r,
+            SceneManager::currentScene->bgColor.g,
+            SceneManager::currentScene->bgColor.b,
+            1.0f,
+        }};
+    }
+    else
+    {
+        clearColor.color =
+            {{
+                0.1f,
+                0.1f,
+                0.1f,
+                1.0f,
+            }};
+    }
+
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdEndRenderPass(commandBuffer);
+
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to record command buffer!");
+    }
+}
+
 void VulkanRenderer::resize(int width, int height)
 {
     (void)width;
