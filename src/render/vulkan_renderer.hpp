@@ -1,8 +1,10 @@
 #pragma once
 
+#include <optional>
 #include <vulkan/vulkan.h>
 
 #include "render/base_renderer.hpp"
+#include "settings_manager/settings.h"
 
 struct QueueFamilyIndices
 {
@@ -13,6 +15,12 @@ struct QueueFamilyIndices
     {
         return graphicsFamily.has_value() && presentFamily.has_value();
     }
+};
+
+struct RenderPrepResult
+{
+    uint32_t imageIndex;
+    VkResult result;
 };
 
 class VulkanRenderer : public BaseRenderer
@@ -80,7 +88,8 @@ private:
     std::vector<const char *> getDeviceExtensions();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
-        std::vector<char> readFile(const std::string &filename);
+    std::vector<char> readFile(const std::string &filename);
     VkShaderModule createShaderModule(const std::vector<char> &code);
-    void drawTestTriangle(VkCommandBuffer commandBuffer);
+    std::optional<RenderPrepResult> executeRenderInit();
+    void executeRenderFinal(uint32_t imageIndex, VkResult result);
 };

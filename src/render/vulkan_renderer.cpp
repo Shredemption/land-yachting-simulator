@@ -1,3 +1,5 @@
+#include "vulkan_renderer.hpp"
+
 #include "pch.h"
 
 #include <iostream>
@@ -6,7 +8,7 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
-#include "vulkan_renderer.hpp"
+#include "ui_manager/ui_manager_defs.h"
 
 struct SwapChainSupportDetails
 {
@@ -1016,10 +1018,8 @@ void VulkanRenderer::prepareRender(RenderBuffer &prepBuffer)
     }
 }
 
-void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
+std::optional<RenderPrepResult> VulkanRenderer::executeRenderInit()
 {
-    (void)toScreen;
-
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
@@ -1035,7 +1035,7 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         recreateSwapChain();
-        return;
+        return std::nullopt;
     }
 
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -1047,11 +1047,11 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
 
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
 
-    recordCommandBuffer(
-        commandBuffers[currentFrame],
-        imageIndex,
-        renderBuffer);
+    return RenderPrepResult{imageIndex, result};
+}
 
+void VulkanRenderer::executeRenderFinal(uint32_t imageIndex, VkResult result)
+{
     VkSemaphore waitSemaphores[] = {
         imageAvailableSemaphores[currentFrame]};
 
@@ -1101,6 +1101,27 @@ void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
     {
         throw std::runtime_error("Failed to present swap chain image!");
     }
+}
+
+void VulkanRenderer::executeRender(RenderBuffer &renderBuffer, bool toScreen)
+{
+    (void)toScreen;
+
+    auto prep = executeRenderInit();
+
+    if (!prep.has_value())
+    {
+        return;
+    }
+
+    auto [imageIndex, result] = *prep;
+
+    recordCommandBuffer(
+        commandBuffers[currentFrame],
+        imageIndex,
+        renderBuffer);
+
+    executeRenderFinal(imageIndex, result);
 
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
@@ -1203,13 +1224,7 @@ void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
     }
     else
     {
-        clearColor.color =
-            {{
-                0.1f,
-                0.1f,
-                0.1f,
-                1.0f,
-            }};
+        clearColor.color = {0.1, 0.1, 0.1};
     }
 
     renderPassInfo.clearValueCount = 1;
@@ -1299,20 +1314,100 @@ void VulkanRenderer::savePauseBackground()
 void VulkanRenderer::renderMenu(EngineState state)
 {
     (void)state;
-    RenderBuffer dummyBuffer;
+
     if (framebufferResized)
     {
         recreateSwapChain();
         framebufferResized = false;
     }
-    try
+
+    auto prep = executeRenderInit();
+
+    if (!prep.has_value())
     {
-        executeRender(dummyBuffer, true);
+        return;
     }
-    catch (const std::exception &e)
+
+    auto [imageIndex, result] = *prep;
+
+    RenderBuffer menuBuffer;
+    VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    beginInfo.flags = 0;
+    beginInfo.pInheritanceInfo = nullptr;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
     {
-        std::cerr << "[Vulkan] renderMenu failed: " << e.what() << std::endl;
+        throw std::runtime_error("Failed to begin recording command buffer!");
     }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+
+    renderPassInfo.renderPass = renderPass;
+    renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = swapChainExtent;
+
+    VkClearValue clearColor{};
+
+    switch (SceneManager::engineState)
+    {
+    case EngineState::Title:
+    case EngineState::TitleSettings:
+    case EngineState::TestMenu:
+    {
+        float alpha = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
+        float color = 0.0f;
+
+        if (UIManager::shouldFadeBackground)
+            color = easeInOutQuad(0.0f, 0.5f, alpha);
+        else
+            color = 0.5f;
+
+        clearColor.color = {color, 0, 0};
+        break;
+    }
+    default:
+        clearColor.color = {0.1, 0.1, 0.1};
+    }
+
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)swapChainExtent.width;
+    viewport.height = (float)swapChainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = swapChainExtent;
+
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+    vkCmdEndRenderPass(commandBuffer);
+
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to record command buffer!");
+    }
+
+    executeRenderFinal(imageIndex, result);
 }
 
 void VulkanRenderer::renderText(std::string text, float x, float y, float scale,
