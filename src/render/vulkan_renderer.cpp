@@ -849,7 +849,7 @@ void VulkanRenderer::render()
     }
 }
 
-void VulkanRenderer::prepareRender(::RenderBuffer &prepBuffer)
+void VulkanRenderer::prepareRender(RenderBuffer &prepBuffer)
 {
     // Clear and reserve size for buffer
     prepBuffer.commandBuffer.clear();
@@ -1257,26 +1257,62 @@ void VulkanRenderer::resize(int width, int height)
 
 void VulkanRenderer::renderBlankScreen()
 {
-    // TODO: Render blank screen
-    render();
+    RenderBuffer dummyBuffer;
+    if (framebufferResized)
+    {
+        recreateSwapChain();
+        framebufferResized = false;
+    }
+    try
+    {
+        executeRender(dummyBuffer, true);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "[Vulkan] renderBlankScreen failed: " << e.what() << std::endl;
+    }
 }
 
 void VulkanRenderer::renderLoadingScreen()
 {
-    // TODO: Render loading screen
-    render();
+    RenderBuffer dummyBuffer;
+    if (framebufferResized)
+    {
+        recreateSwapChain();
+        framebufferResized = false;
+    }
+    try
+    {
+        executeRender(dummyBuffer, true);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "[Vulkan] renderLoadingScreen failed: " << e.what() << std::endl;
+    }
 }
 
 void VulkanRenderer::savePauseBackground()
 {
-    // TODO: Save pause background
+    // TODO: Save pause background with Vulkan resources
 }
 
 void VulkanRenderer::renderMenu(EngineState state)
 {
     (void)state;
-    // TODO: Render menu
-    render();
+    RenderBuffer dummyBuffer;
+    if (framebufferResized)
+    {
+        recreateSwapChain();
+        framebufferResized = false;
+    }
+    try
+    {
+        executeRender(dummyBuffer, true);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "[Vulkan] renderMenu failed: " << e.what() << std::endl;
+    }
 }
 
 void VulkanRenderer::renderText(std::string text, float x, float y, float scale,
