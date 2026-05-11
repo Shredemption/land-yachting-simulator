@@ -1097,7 +1097,12 @@ void OpenGLRenderer::renderMenu(EngineState state)
         renderImage("title-figure.png", pos, 835, 1024, alpha, glm::vec2(1.0f, 1.0f), true);
     }
 
-    if (UIManager::needsReload)
+    if (UIManager::needsRestart)
+    {
+        renderText("Will restart to apply changes", 0.98f + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Right);
+        renderText("Will restart to apply changes", 0.98f, titleY, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), alpha, TextAlign::Right);
+    }
+    else if (UIManager::needsReload)
     {
         renderText("Will reload to apply changes", 0.98f + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Right);
         renderText("Will reload to apply changes", 0.98f, titleY, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), alpha, TextAlign::Right);

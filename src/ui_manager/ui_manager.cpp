@@ -190,7 +190,7 @@ void buildGraphicsPage(std::shared_ptr<Widget> &root)
         slct->onChange = [slct]()
         {
             SettingsManager::settings.video.renderEngine = static_cast<renderEngine>(slct->currentIndex);
-            UIManager::needsReload = true;
+            UIManager::needsRestart = true;
         };
         slct->index = index++;
         root->AddChild(slct);
@@ -621,6 +621,13 @@ void UIManager::queueEngineState(EngineState state)
     {
         needsReload = false;
         queueEngineState(EngineState::Title);
+        return;
+    }
+
+    if (needsRestart)
+    {
+        needsRestart = false;
+        queueEngineState(EngineState::None);
         return;
     }
 

@@ -8,6 +8,7 @@ enum class SettingsPage;
 namespace UIManager
 {
     inline bool needsReload = false;
+    inline bool needsRestart = false;
     
     void countOptions(SettingsPage page);
     void load(EngineState state);
