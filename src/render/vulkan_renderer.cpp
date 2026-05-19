@@ -1740,7 +1740,7 @@ void VulkanRenderer::renderPendingText(VkCommandBuffer commandBuffer)
     {
         TextVertex vertex{};
         vertex.position[0] = (px / static_cast<float>(swapChainExtent.width)) * 2.0f - 1.0f;
-        vertex.position[1] = 1.0f - (py / static_cast<float>(swapChainExtent.height)) * 2.0f;
+        vertex.position[1] = (py / static_cast<float>(swapChainExtent.height)) * 2.0f - 1.0f;
         return vertex;
     };
 
@@ -1767,11 +1767,12 @@ void VulkanRenderer::renderPendingText(VkCommandBuffer commandBuffer)
             }
 
             vertices.push_back(v0);
-            vertices.push_back(v1);
             vertices.push_back(v2);
-            vertices.push_back(v0);
-            vertices.push_back(v3);
             vertices.push_back(v1);
+
+            vertices.push_back(v0);
+            vertices.push_back(v1);
+            vertices.push_back(v3);
         }
     }
 
