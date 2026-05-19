@@ -88,6 +88,33 @@ private:
     std::vector<const char *> getDeviceExtensions();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
+    // Vulkan text rendering resources
+    void initTextResources();
+    void cleanupTextResources();
+    void renderPendingText(VkCommandBuffer commandBuffer);
+
+    VkImage textAtlasImage = VK_NULL_HANDLE;
+    VkDeviceMemory textAtlasImageMemory = VK_NULL_HANDLE;
+    VkImageView textAtlasImageView = VK_NULL_HANDLE;
+    VkSampler textAtlasSampler = VK_NULL_HANDLE;
+    VkBuffer textVertexBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory textVertexBufferMemory = VK_NULL_HANDLE;
+    VkDescriptorSetLayout textDescriptorSetLayout = VK_NULL_HANDLE;
+    VkDescriptorPool textDescriptorPool = VK_NULL_HANDLE;
+    VkDescriptorSet textDescriptorSet = VK_NULL_HANDLE;
+    VkPipelineLayout textPipelineLayout = VK_NULL_HANDLE;
+    VkPipeline textPipeline = VK_NULL_HANDLE;
+    bool textResourcesInitialized = false;
+
+    struct TextDraw
+    {
+        std::vector<TextQuad> quads;
+        glm::vec3 color;
+        float alpha;
+    };
+
+    std::vector<TextDraw> pendingTextDraws;
+
     std::vector<char> readFile(const std::string &filename);
     VkShaderModule createShaderModule(const std::vector<char> &code);
     std::optional<RenderPrepResult> executeRenderInit();

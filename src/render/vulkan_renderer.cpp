@@ -59,6 +59,22 @@ static std::vector<const char *> getRequiredExtensions()
     return extensions;
 }
 
+static uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("Failed to find suitable memory type!");
+}
+
 bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device)
 {
     QueueFamilyIndices indices = findQueueFamilies(device);
@@ -212,6 +228,7 @@ void VulkanRenderer::setup()
         createImageViews();
         createRenderPass();
         createGraphicsPipeline();
+        initTextResources();
         createFramebuffers();
         createCommandPool();
         createCommandBuffers();
@@ -625,6 +642,240 @@ void VulkanRenderer::createGraphicsPipeline()
     std::cout << "[Vulkan] Graphics pipeline created" << std::endl;
 }
 
+struct TextVertex
+{
+    float position[2];
+    float color[4];
+};
+
+void VulkanRenderer::initTextResources()
+{
+    std::cout << "[Vulkan] Initializing text resources" << std::endl;
+
+    if (!ensureFontAtlas())
+    {
+        throw std::runtime_error("Failed to initialize font atlas for Vulkan text rendering");
+    }
+
+    const std::string vertexShaderPath = "./resources/shaders/text_quad.vert.spv";
+    const std::string fragmentShaderPath = "./resources/shaders/text_color.frag.spv";
+
+    auto vertShaderCode = readFile(vertexShaderPath);
+    auto fragShaderCode = readFile(fragmentShaderPath);
+
+    VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
+    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = vertShaderModule;
+    vertShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragShaderStageInfo.module = fragShaderModule;
+    fragShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+
+    VkVertexInputBindingDescription bindingDescription{};
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(TextVertex);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    VkVertexInputAttributeDescription attributeDescriptions[2]{};
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[0].offset = offsetof(TextVertex, position);
+
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(TextVertex, color);
+
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount = 2;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
+
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+    inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+    VkPipelineViewportStateCreateInfo viewportState{};
+    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.viewportCount = 1;
+    viewportState.scissorCount = 1;
+
+    VkPipelineRasterizationStateCreateInfo rasterizer{};
+    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizer.depthClampEnable = VK_FALSE;
+    rasterizer.rasterizerDiscardEnable = VK_FALSE;
+    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizer.lineWidth = 1.0f;
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.depthBiasEnable = VK_FALSE;
+
+    VkPipelineMultisampleStateCreateInfo multisampling{};
+    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+    colorBlendAttachment.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT |
+        VK_COLOR_COMPONENT_G_BIT |
+        VK_COLOR_COMPONENT_B_BIT |
+        VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.blendEnable = VK_TRUE;
+    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+
+    VkPipelineColorBlendStateCreateInfo colorBlending{};
+    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlending.logicOpEnable = VK_FALSE;
+    colorBlending.attachmentCount = 1;
+    colorBlending.pAttachments = &colorBlendAttachment;
+
+    VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    VkPipelineDynamicStateCreateInfo dynamicState{};
+    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicState.dynamicStateCount = 2;
+    dynamicState.pDynamicStates = dynamicStates;
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &textPipelineLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create text pipeline layout!");
+    }
+
+    VkGraphicsPipelineCreateInfo pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+    pipelineInfo.pViewportState = &viewportState;
+    pipelineInfo.pRasterizationState = &rasterizer;
+    pipelineInfo.pMultisampleState = &multisampling;
+    pipelineInfo.pColorBlendState = &colorBlending;
+    pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.layout = textPipelineLayout;
+    pipelineInfo.renderPass = renderPass;
+    pipelineInfo.subpass = 0;
+
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &textPipeline) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create text graphics pipeline!");
+    }
+
+    // Allocate a host-visible vertex buffer for text quads.
+    const VkDeviceSize textVertexBufferSize = 1 << 20; // 1 MB
+
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = textVertexBufferSize;
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(device, &bufferInfo, nullptr, &textVertexBuffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create Vulkan text vertex buffer!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device, textVertexBuffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits,
+                                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    if (vkAllocateMemory(device, &allocInfo, nullptr, &textVertexBufferMemory) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to allocate text vertex buffer memory!");
+    }
+
+    vkBindBufferMemory(device, textVertexBuffer, textVertexBufferMemory, 0);
+
+    vkDestroyShaderModule(device, fragShaderModule, nullptr);
+    vkDestroyShaderModule(device, vertShaderModule, nullptr);
+
+    textResourcesInitialized = true;
+
+    std::cout << "[Vulkan] Text resources initialized" << std::endl;
+}
+
+void VulkanRenderer::cleanupTextResources()
+{
+    if (textPipeline != VK_NULL_HANDLE)
+    {
+        vkDestroyPipeline(device, textPipeline, nullptr);
+        textPipeline = VK_NULL_HANDLE;
+    }
+    if (textPipelineLayout != VK_NULL_HANDLE)
+    {
+        vkDestroyPipelineLayout(device, textPipelineLayout, nullptr);
+        textPipelineLayout = VK_NULL_HANDLE;
+    }
+    if (textDescriptorPool != VK_NULL_HANDLE)
+    {
+        vkDestroyDescriptorPool(device, textDescriptorPool, nullptr);
+        textDescriptorPool = VK_NULL_HANDLE;
+    }
+    if (textDescriptorSetLayout != VK_NULL_HANDLE)
+    {
+        vkDestroyDescriptorSetLayout(device, textDescriptorSetLayout, nullptr);
+        textDescriptorSetLayout = VK_NULL_HANDLE;
+    }
+    if (textAtlasSampler != VK_NULL_HANDLE)
+    {
+        vkDestroySampler(device, textAtlasSampler, nullptr);
+        textAtlasSampler = VK_NULL_HANDLE;
+    }
+    if (textAtlasImageView != VK_NULL_HANDLE)
+    {
+        vkDestroyImageView(device, textAtlasImageView, nullptr);
+        textAtlasImageView = VK_NULL_HANDLE;
+    }
+    if (textAtlasImage != VK_NULL_HANDLE)
+    {
+        vkDestroyImage(device, textAtlasImage, nullptr);
+        textAtlasImage = VK_NULL_HANDLE;
+    }
+    if (textAtlasImageMemory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(device, textAtlasImageMemory, nullptr);
+        textAtlasImageMemory = VK_NULL_HANDLE;
+    }
+    if (textVertexBuffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(device, textVertexBuffer, nullptr);
+        textVertexBuffer = VK_NULL_HANDLE;
+    }
+    if (textVertexBufferMemory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(device, textVertexBufferMemory, nullptr);
+        textVertexBufferMemory = VK_NULL_HANDLE;
+    }
+
+    textResourcesInitialized = false;
+    pendingTextDraws.clear();
+}
+
 void VulkanRenderer::createFramebuffers()
 {
     std::cout << "[Vulkan] Creating framebuffers" << std::endl;
@@ -713,8 +964,9 @@ void VulkanRenderer::createSyncObjects()
 
 void VulkanRenderer::cleanup()
 {
-    std::cout << "[Vulkan] Renderer cleanup - STUB" << std::endl;
-    // TODO: Clean up Vulkan resources
+    std::cout << "[Vulkan] Renderer cleanup" << std::endl;
+    cleanupTextResources();
+    // TODO: Clean up the rest of Vulkan resources
 }
 
 VkPipeline graphicsPipeline = VK_NULL_HANDLE;
@@ -1249,8 +1501,9 @@ void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+    renderPendingText(commandBuffer);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -1354,13 +1607,15 @@ void VulkanRenderer::renderMenu(EngineState state)
 
     VkClearValue clearColor{};
 
+    float alpha = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
+
     switch (SceneManager::engineState)
     {
     case EngineState::Title:
     case EngineState::TitleSettings:
     case EngineState::TestMenu:
     {
-        float alpha = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
+
         float color = 0.0f;
 
         if (UIManager::shouldFadeBackground)
@@ -1377,6 +1632,32 @@ void VulkanRenderer::renderMenu(EngineState state)
 
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
+
+    float titleX = 0.02f, titleY = 0.04f;
+    float shadowDistance = 0.003f;
+    std::string titleText;
+
+    switch (state)
+    {
+    case EngineState::Title:
+        titleText = "Land Yachting Simulator";
+        break;
+    case EngineState::Pause:
+        titleText = "Paused";
+        break;
+    case EngineState::TestMenu:
+        titleText = "Tests";
+        break;
+    case EngineState::Settings:
+    case EngineState::TitleSettings:
+        titleText = "Settings";
+        break;
+    }
+
+    float positionOffset = easeInOutQuad(-0.01f, 0.0f, alpha);
+
+    renderText(titleText, titleX + positionOffset + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Left);
+    renderText(titleText, titleX + positionOffset, titleY, 1.0f, glm::vec3(1.0f), alpha, TextAlign::Left);
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -1400,6 +1681,8 @@ void VulkanRenderer::renderMenu(EngineState state)
 
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
+    renderPendingText(commandBuffer);
+
     vkCmdEndRenderPass(commandBuffer);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
@@ -1413,12 +1696,98 @@ void VulkanRenderer::renderMenu(EngineState state)
 void VulkanRenderer::renderText(std::string text, float x, float y, float scale,
                                 glm::vec3 color, float alpha, TextAlign textAlign)
 {
-    (void)text;
-    (void)x;
-    (void)y;
-    (void)scale;
-    (void)color;
-    (void)alpha;
-    (void)textAlign;
-    // TODO: Implement text rendering for Vulkan
+    if (!textResourcesInitialized)
+    {
+        initTextResources();
+
+        if (!ensureFontAtlas())
+        {
+            std::cerr << "[Vulkan] Cannot render text because font atlas failed to initialize" << std::endl;
+            return;
+        }
+    }
+
+    x *= WindowManager::screenUIScale * 2560.0f;
+    y *= WindowManager::screenUIScale * 1440.0f;
+    scale *= WindowManager::screenUIScale;
+
+    TextDraw draw;
+    draw.quads = buildTextQuads(text, x, y, scale, textAlign);
+    draw.color = color;
+    draw.alpha = alpha;
+
+    pendingTextDraws.push_back(std::move(draw));
+}
+
+void VulkanRenderer::renderPendingText(VkCommandBuffer commandBuffer)
+{
+    if (pendingTextDraws.empty())
+    {
+        std::cout << "[Vulkan] No text pending" << std::endl;
+        return;
+    }
+
+    if (!textResourcesInitialized || textPipeline == VK_NULL_HANDLE)
+    {
+        std::cout << "[Vulkan] No text pipeline initialised" << std::endl;
+        return;
+    }
+
+    std::vector<TextVertex> vertices;
+    vertices.reserve(pendingTextDraws.size() * 6);
+
+    auto getNdc = [&](float px, float py)
+    {
+        TextVertex vertex{};
+        vertex.position[0] = (px / static_cast<float>(swapChainExtent.width)) * 2.0f - 1.0f;
+        vertex.position[1] = 1.0f - (py / static_cast<float>(swapChainExtent.height)) * 2.0f;
+        return vertex;
+    };
+
+    for (const auto &draw : pendingTextDraws)
+    {
+        for (const auto &quad : draw.quads)
+        {
+            TextVertex v0 = getNdc(quad.position.x, quad.position.y + quad.size.y);
+            TextVertex v1 = getNdc(quad.position.x + quad.size.x, quad.position.y);
+            TextVertex v2 = getNdc(quad.position.x, quad.position.y);
+            TextVertex v3 = getNdc(quad.position.x + quad.size.x, quad.position.y + quad.size.y);
+
+            const float r = draw.color.r;
+            const float g = draw.color.g;
+            const float b = draw.color.b;
+            const float a = draw.alpha;
+
+            for (auto &v : {&v0, &v1, &v2, &v3})
+            {
+                v->color[0] = r;
+                v->color[1] = g;
+                v->color[2] = b;
+                v->color[3] = a;
+            }
+
+            vertices.push_back(v0);
+            vertices.push_back(v1);
+            vertices.push_back(v2);
+            vertices.push_back(v0);
+            vertices.push_back(v3);
+            vertices.push_back(v1);
+        }
+    }
+
+    if (!vertices.empty())
+    {
+        VkDeviceSize bufferSize = vertices.size() * sizeof(TextVertex);
+        void *data;
+        vkMapMemory(device, textVertexBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, vertices.data(), bufferSize);
+        vkUnmapMemory(device, textVertexBufferMemory);
+
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, textPipeline);
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &textVertexBuffer, offsets);
+        vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+    }
+
+    pendingTextDraws.clear();
 }
