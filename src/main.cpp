@@ -88,6 +88,9 @@ int main()
     try
     {
         g_renderer->setup();
+        int width, height;
+        glfwGetFramebufferSize(WindowManager::window, &width, &height);
+        WindowManager::framebufferSizeCallback(WindowManager::window, width, height);
     }
     catch (const std::exception &e)
     {
