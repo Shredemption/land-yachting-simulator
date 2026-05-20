@@ -1659,6 +1659,17 @@ void VulkanRenderer::renderMenu(EngineState state)
     renderText(titleText, titleX + positionOffset + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Left);
     renderText(titleText, titleX + positionOffset, titleY, 1.0f, glm::vec3(1.0f), alpha, TextAlign::Left);
 
+    if (UIManager::needsRestart)
+    {
+        renderText("Will restart to apply changes", 0.98f + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Right);
+        renderText("Will restart to apply changes", 0.98f, titleY, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), alpha, TextAlign::Right);
+    }
+    else if (UIManager::needsReload)
+    {
+        renderText("Will reload to apply changes", 0.98f + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Right);
+        renderText("Will reload to apply changes", 0.98f, titleY, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), alpha, TextAlign::Right);
+    }
+
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     VkViewport viewport{};

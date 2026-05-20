@@ -604,15 +604,21 @@ void UIManager::update()
 
 void UIManager::render()
 {
-    if (g_renderer->getType() == renderEngine::Vulkan)
+    switch (g_renderer->getType())
     {
-        return;
-    }
+    case renderEngine::Vulkan:
+        if (activeWidgets)
+            activeWidgets->Render();
+        break;
 
-    glDisable(GL_DEPTH_TEST);
-    if (activeWidgets)
-        activeWidgets->Render();
-    glEnable(GL_DEPTH_TEST);
+    case renderEngine::OpenGL:
+    default:
+        glDisable(GL_DEPTH_TEST);
+        if (activeWidgets)
+            activeWidgets->Render();
+        glEnable(GL_DEPTH_TEST);
+        break;
+    }
 }
 
 void UIManager::queueEngineState(EngineState state)
