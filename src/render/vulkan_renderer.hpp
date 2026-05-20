@@ -87,10 +87,16 @@ private:
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     std::vector<const char *> getDeviceExtensions();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     // Vulkan text rendering resources
     void initTextResources();
+    void initTextPipeline();
+    void initTextAtlasResources();
+    void createTextVertexBuffer();
     void cleanupTextResources();
+    void createTextDescriptorSetLayout();
     void renderPendingText(VkCommandBuffer commandBuffer);
 
     VkImage textAtlasImage = VK_NULL_HANDLE;
