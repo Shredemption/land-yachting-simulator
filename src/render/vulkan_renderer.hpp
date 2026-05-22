@@ -23,6 +23,56 @@ struct RenderPrepResult
     VkResult result;
 };
 
+class GraphicsPipelineBuilder
+{
+public:
+    explicit GraphicsPipelineBuilder(VkDevice device);
+
+    GraphicsPipelineBuilder &setShaders(
+        VkShaderModule vert,
+        VkShaderModule frag);
+
+    GraphicsPipelineBuilder &setVertexInput(
+        const VkPipelineVertexInputStateCreateInfo &info);
+
+    GraphicsPipelineBuilder &setTopology(
+        VkPrimitiveTopology topology);
+
+    GraphicsPipelineBuilder &enableAlphaBlending();
+
+    GraphicsPipelineBuilder &disableBlending();
+
+    GraphicsPipelineBuilder &setPipelineLayout(
+        VkPipelineLayout layout);
+
+    GraphicsPipelineBuilder &setRenderPass(
+        VkRenderPass renderPass);
+
+    VkPipeline build();
+
+private:
+    VkDevice device;
+
+    VkPipelineShaderStageCreateInfo shaderStages[2]{};
+
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+    VkPipelineViewportStateCreateInfo viewportState{};
+    VkPipelineRasterizationStateCreateInfo rasterizer{};
+    VkPipelineMultisampleStateCreateInfo multisampling{};
+    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+    VkPipelineColorBlendStateCreateInfo colorBlending{};
+    VkPipelineDynamicStateCreateInfo dynamicState{};
+
+    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+
+    VkDynamicState dynamicStates[2] =
+        {
+            VK_DYNAMIC_STATE_VIEWPORT,
+            VK_DYNAMIC_STATE_SCISSOR};
+};
+
 class VulkanRenderer : public BaseRenderer
 {
 public:
