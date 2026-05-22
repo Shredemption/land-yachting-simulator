@@ -361,6 +361,7 @@ void Slider::Update()
                 *linkedFloat = snappedValue;
 
                 g_renderer->renderMenu(SceneManager::engineState);
+                UIManager::render();
                 glfwPollEvents();
                 WindowManager::swapBuffers();
             }
