@@ -238,6 +238,75 @@ VkPipeline GraphicsPipelineBuilder::build()
     return pipeline;
 }
 
+AllocatedBuffer VulkanRenderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+{
+    AllocatedBuffer result;
+
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    vkCreateBuffer(device, &bufferInfo, nullptr, &result.buffer);
+
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(device, result.buffer, &memReq);
+
+    VkMemoryAllocateInfo alloc{};
+    alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc.allocationSize = memReq.size;
+    alloc.memoryTypeIndex = findMemoryType(
+        physicalDevice,
+        memReq.memoryTypeBits,
+        properties);
+
+    vkAllocateMemory(device, &alloc, nullptr, &result.memory);
+
+    vkBindBufferMemory(device, result.buffer, result.memory, 0);
+
+    return result;
+}
+
+AllocatedImage VulkanRenderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+{
+    AllocatedImage result;
+
+    VkImageCreateInfo imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format;
+    imageInfo.tiling = tiling;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = usage;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    vkCreateImage(device, &imageInfo, nullptr, &result.image);
+
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements(device, result.image, &memReq);
+
+    VkMemoryAllocateInfo alloc{};
+    alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc.allocationSize = memReq.size;
+    alloc.memoryTypeIndex = findMemoryType(
+        physicalDevice,
+        memReq.memoryTypeBits,
+        properties);
+
+    vkAllocateMemory(device, &alloc, nullptr, &result.memory);
+
+    vkBindImageMemory(device, result.image, result.memory, 0);
+
+    return result;
+}
+
 bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device)
 {
     QueueFamilyIndices indices = findQueueFamilies(device);
@@ -839,6 +908,69 @@ void VulkanRenderer::initTextPipeline()
     std::cout << "[Vulkan] Text pipeline created" << std::endl;
 }
 
+void VulkanRenderer::transition(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
+{
+    VkCommandBuffer cmd;
+
+    cmd = beginSingleTimeCommands();
+
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = oldLayout;
+    barrier.newLayout = newLayout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = image;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+
+    VkPipelineStageFlags srcStage;
+    VkPipelineStageFlags dstStage;
+
+    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+        newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+             newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+
+    vkCmdPipelineBarrier(cmd, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+    endSingleTimeCommands(cmd);
+};
+
+void VulkanRenderer::copyBufferToImage(VkBuffer stagingBuffer, VkImage textAtlasImage, const FontAtlas atlas)
+{
+    VkCommandBuffer cmd = beginSingleTimeCommands();
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+    region.imageExtent = {static_cast<uint32_t>(atlas.atlasWidth()), static_cast<uint32_t>(atlas.atlasHeight()), 1};
+
+    vkCmdCopyBufferToImage(cmd, stagingBuffer, textAtlasImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+    endSingleTimeCommands(cmd);
+};
+
 void VulkanRenderer::initTextAtlasResources()
 {
     const FontAtlas &atlas = getFontAtlas();
@@ -848,136 +980,38 @@ void VulkanRenderer::initTextAtlasResources()
     // =========================================================
     // 1. CREATE STAGING BUFFER
     // =========================================================
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingMemory;
-
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = imageSize;
-    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    vkCreateBuffer(device, &bufferInfo, nullptr, &stagingBuffer);
-
-    VkMemoryRequirements memReq;
-    vkGetBufferMemoryRequirements(device, stagingBuffer, &memReq);
-
-    VkMemoryAllocateInfo alloc{};
-    alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc.allocationSize = memReq.size;
-    alloc.memoryTypeIndex = findMemoryType(
-        physicalDevice,
-        memReq.memoryTypeBits,
+    AllocatedBuffer staging = createBuffer(
+        imageSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    vkAllocateMemory(device, &alloc, nullptr, &stagingMemory);
-    vkBindBufferMemory(device, stagingBuffer, stagingMemory, 0);
-
     void *data;
-    vkMapMemory(device, stagingMemory, 0, imageSize, 0, &data);
+    vkMapMemory(device, staging.memory, 0, imageSize, 0, &data);
     memcpy(data, atlas.atlasPixels().data(), static_cast<size_t>(imageSize));
-    vkUnmapMemory(device, stagingMemory);
+    vkUnmapMemory(device, staging.memory);
 
     // =========================================================
     // 2. CREATE IMAGE
     // =========================================================
-    VkImageCreateInfo imageInfo{};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = atlas.atlasWidth();
-    imageInfo.extent.height = atlas.atlasHeight();
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage =
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-        VK_IMAGE_USAGE_SAMPLED_BIT;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    AllocatedImage texture = createImage(
+        atlas.atlasWidth(),
+        atlas.atlasHeight(),
+        VK_FORMAT_R8G8B8A8_UNORM,
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    vkCreateImage(device, &imageInfo, nullptr, &textAtlasImage);
-
-    vkGetImageMemoryRequirements(device, textAtlasImage, &memReq);
-
-    alloc.allocationSize = memReq.size;
-    alloc.memoryTypeIndex = findMemoryType(physicalDevice, memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    vkAllocateMemory(device, &alloc, nullptr, &textAtlasImageMemory);
-    vkBindImageMemory(device, textAtlasImage, textAtlasImageMemory, 0);
+    textAtlasImage = texture.image;
+    textAtlasImageMemory = texture.memory;
 
     // =========================================================
     // 3. IMAGE LAYOUT TRANSITIONS (INLINE VERSION)
     // =========================================================
-    auto transition = [&](VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
-    {
-        VkCommandBuffer cmd;
-
-        cmd = beginSingleTimeCommands();
-
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = oldLayout;
-        barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        VkPipelineStageFlags srcStage;
-        VkPipelineStageFlags dstStage;
-
-        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-            newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-                 newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-
-        vkCmdPipelineBarrier(cmd, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-        endSingleTimeCommands(cmd);
-    };
-
-    auto copyBufferToImage = [&]()
-    {
-        VkCommandBuffer cmd = beginSingleTimeCommands();
-
-        VkBufferImageCopy region{};
-        region.bufferOffset = 0;
-        region.bufferRowLength = 0;
-        region.bufferImageHeight = 0;
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0;
-        region.imageSubresource.baseArrayLayer = 0;
-        region.imageSubresource.layerCount = 1;
-        region.imageExtent = {static_cast<uint32_t>(atlas.atlasWidth()), static_cast<uint32_t>(atlas.atlasHeight()), 1};
-
-        vkCmdCopyBufferToImage(cmd, stagingBuffer, textAtlasImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-        endSingleTimeCommands(cmd);
-    };
-
     transition(textAtlasImage,
                VK_IMAGE_LAYOUT_UNDEFINED,
                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-    copyBufferToImage();
+    copyBufferToImage(staging.buffer, textAtlasImage, atlas);
 
     transition(textAtlasImage,
                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -1049,8 +1083,8 @@ void VulkanRenderer::initTextAtlasResources()
     vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 
     // cleanup staging
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingMemory, nullptr);
+    vkDestroyBuffer(device, staging.buffer, nullptr);
+    vkFreeMemory(device, staging.memory, nullptr);
 
     std::cout << "[Vulkan] Text atlas initilialised" << std::endl;
 }
@@ -1059,28 +1093,13 @@ void VulkanRenderer::createTextVertexBuffer()
 {
     const VkDeviceSize textVertexBufferSize = 1 << 20; // 1 MB
 
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = textVertexBufferSize;
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    vkCreateBuffer(device, &bufferInfo, nullptr, &textVertexBuffer);
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, textVertexBuffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(
-        physicalDevice,
-        memRequirements.memoryTypeBits,
+    AllocatedBuffer buffer = createBuffer(
+        textVertexBufferSize,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    vkAllocateMemory(device, &allocInfo, nullptr, &textVertexBufferMemory);
-
-    vkBindBufferMemory(device, textVertexBuffer, textVertexBufferMemory, 0);
+    textVertexBuffer = buffer.buffer;
+    textVertexBufferMemory = buffer.memory;
 }
 
 void VulkanRenderer::createTextDescriptorSetLayout()

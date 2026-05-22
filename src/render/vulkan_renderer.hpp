@@ -23,6 +23,18 @@ struct RenderPrepResult
     VkResult result;
 };
 
+struct AllocatedBuffer
+{
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+};
+
+struct AllocatedImage
+{
+    VkImage image = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+};
+
 class GraphicsPipelineBuilder
 {
 public:
@@ -161,6 +173,11 @@ private:
     VkPipelineLayout textPipelineLayout = VK_NULL_HANDLE;
     VkPipeline textPipeline = VK_NULL_HANDLE;
     bool textResourcesInitialized = false;
+
+    AllocatedBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+    AllocatedImage createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+    void copyBufferToImage(VkBuffer stagingBuffer, VkImage textAtlasImage, const FontAtlas atlas);
+    void transition(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     struct TextDraw
     {
