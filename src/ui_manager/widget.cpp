@@ -4,8 +4,6 @@
 
 #include "ui_manager/ui_manager_defs.h"
 
-inline Slider *draggingSlider = nullptr;
-
 std::string formatFloat(float value, int precision)
 {
     std::ostringstream out;
@@ -352,17 +350,17 @@ void Slider::Update()
 
         if (hover && InputManager::leftMouseButton.pressed())
         {
-            draggingSlider = this;
+            UIManager::draggingSlider = this;
         }
 
         if (InputManager::leftMouseButton.released())
         {
-            if (draggingSlider == this)
-                draggingSlider = nullptr;
+            if (UIManager::draggingSlider == this)
+                UIManager::draggingSlider = nullptr;
         }
 
         // continuous drag update (per-frame)
-        if (draggingSlider == this &&
+        if (UIManager::draggingSlider == this &&
             InputManager::leftMouseButton.held())
         {
             float mouseX = std::clamp(

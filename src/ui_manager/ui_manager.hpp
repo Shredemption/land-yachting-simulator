@@ -4,12 +4,14 @@
 
 enum class EngineState;
 enum class SettingsPage;
+class Slider;
 
 namespace UIManager
 {
     inline bool needsReload = false;
     inline bool needsRestart = false;
-    
+    inline Slider *draggingSlider = nullptr;
+
     void countOptions(SettingsPage page);
     void load(EngineState state);
     void update();
