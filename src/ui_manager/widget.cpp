@@ -4,6 +4,8 @@
 
 #include "ui_manager/ui_manager_defs.h"
 
+inline Slider *draggingSlider = nullptr;
+
 std::string formatFloat(float value, int precision)
 {
     std::ostringstream out;
@@ -349,22 +351,33 @@ void Slider::Update()
             hover = false;
 
         if (hover && InputManager::leftMouseButton.pressed())
-            while (InputManager::leftMouseButton.held())
-            {
-                float mouseX = std::clamp(static_cast<float>(InputManager::mousePosX), xminSlider, xmaxSlider);
-                float normalized = (mouseX - xminSlider) / (xmaxSlider - xminSlider);
-                float value = lowerLim + normalized * (upperLim - lowerLim);
-                int steps = static_cast<int>((value - lowerLim) / stepSize + 0.5f);
-                float snappedValue = lowerLim + steps * stepSize;
-                snappedValue = std::clamp(snappedValue, lowerLim, upperLim);
+        {
+            draggingSlider = this;
+        }
 
-                *linkedFloat = snappedValue;
+        if (InputManager::leftMouseButton.released())
+        {
+            if (draggingSlider == this)
+                draggingSlider = nullptr;
+        }
 
-                g_renderer->renderMenu(SceneManager::engineState);
-                UIManager::render();
-                glfwPollEvents();
-                WindowManager::swapBuffers();
-            }
+        // continuous drag update (per-frame)
+        if (draggingSlider == this &&
+            InputManager::leftMouseButton.held())
+        {
+            float mouseX = std::clamp(
+                static_cast<float>(InputManager::mousePosX),
+                xminSlider,
+                xmaxSlider);
+
+            float normalized = (mouseX - xminSlider) / (xmaxSlider - xminSlider);
+            float value = lowerLim + normalized * (upperLim - lowerLim);
+
+            int steps = static_cast<int>((value - lowerLim) / stepSize + 0.5f);
+            float snappedValue = lowerLim + steps * stepSize;
+
+            *linkedFloat = std::clamp(snappedValue, lowerLim, upperLim);
+        }
         break;
     }
     case InputType::Keyboard:
