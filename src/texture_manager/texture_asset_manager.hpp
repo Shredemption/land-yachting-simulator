@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -33,12 +34,13 @@ namespace TextureAssetManager
     // Free unit allocator (still CPU-side bookkeeping)
     inline int nextFreeUnit = 5;
     inline std::mutex unitMutex;
+    inline std::mutex openglMutex;
 
     // ---- CPU-side API ----
     std::vector<std::string> loadMaterialTexturePaths(const std::string &type, const std::string &directory);
     void loadTexturesForShader(const shaderID &shader, const std::string &directory, ModelType &modelType, std::vector<std::string> &outTexturePaths, std::string &outTextureArrayName);
 
-    void queueStandalone(const std::string &path);
+    void queueStandalone(const std::string &path, bool repeating);
     void queueStandaloneTexture(const std::string &fileName);
     void queueStandaloneImage(const std::string &fileName);
 
@@ -54,6 +56,7 @@ namespace TextureAssetManager
     unsigned int getTextureArrayUnit(const std::string &arrayName);
     unsigned int getTextureLayerIndex(const std::string &arrayName, const std::string &fileName);
     void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers);
+    std::string getTextureArrayName(ModelType modelType);
 
     void clear();
 }

@@ -29,16 +29,17 @@ std::vector<std::string> TextureAssetManager::loadMaterialTexturePaths(const std
             continue;
 
         std::string filename = entry.path().filename().string();
+        std::string fullPath = entry.path().string();
 
-        if (filename.find(type) == std::string::npos)
-            continue;
-
-        for (const auto &ext : validExtensions)
+        if (filename.find(type) != std::string::npos)
         {
-            if (entry.path().extension() == ext)
+            for (const std::string &ext : validExtensions)
             {
-                paths.push_back(entry.path().string());
-                break;
+                if (entry.path().extension() == ext)
+                {
+                    paths.push_back(fullPath);
+                    break;
+                }
             }
         }
     }
@@ -46,40 +47,57 @@ std::vector<std::string> TextureAssetManager::loadMaterialTexturePaths(const std
     return paths;
 }
 
+std::string TextureAssetManager::getTextureArrayName(ModelType modelType)
+{
+    switch (modelType)
+    {
+    case ModelType::Yacht:
+        return "yachtTextureArray";
+    default:
+        return "";
+    }
+}
+
 void TextureAssetManager::loadTexturesForShader(const shaderID &shader, const std::string &directory, ModelType &modelType, std::vector<std::string> &outTexturePaths, std::string &outTextureArrayName)
 {
+    std::string textureArrayName = getTextureArrayName(modelType);
+    
     std::vector<std::string> texturePaths;
 
     if (shader == shaderID::Default)
     {
-        auto d = loadMaterialTexturePaths("diffuse", directory);
-        auto p = loadMaterialTexturePaths("properties", directory);
-        texturePaths.insert(texturePaths.end(), d.begin(), d.end());
-        texturePaths.insert(texturePaths.end(), p.begin(), p.end());
+        auto diffuseMaps = loadMaterialTexturePaths("diffuse", directory);
+        texturePaths.insert(texturePaths.end(), diffuseMaps.begin(), diffuseMaps.end());
+
+        auto propertiesMaps = loadMaterialTexturePaths("properties", directory);
+        texturePaths.insert(texturePaths.end(), propertiesMaps.begin(), propertiesMaps.end());
     }
     else if (shader == shaderID::Toon)
     {
-        auto h = loadMaterialTexturePaths("highlight", directory);
-        auto s = loadMaterialTexturePaths("shadow", directory);
-        texturePaths.insert(texturePaths.end(), h.begin(), h.end());
-        texturePaths.insert(texturePaths.end(), s.begin(), s.end());
+        auto highlightMaps = loadMaterialTexturePaths("highlight", directory);
+        texturePaths.insert(texturePaths.end(), highlightMaps.begin(), highlightMaps.end());
+
+        auto shadowMaps = loadMaterialTexturePaths("shadow", directory);
+        texturePaths.insert(texturePaths.end(), shadowMaps.begin(), shadowMaps.end());
     }
 
     for (const auto &texPath : texturePaths)
     {
-        if (std::find(outTexturePaths.begin(), outTexturePaths.end(), texPath) != outTexturePaths.end())
-            continue;
+        if (std::find(outTexturePaths.begin(), outTexturePaths.end(), texPath) == outTexturePaths.end())
+        {
+            if (!textureArrayName.empty())
+                queueTextureToArray(textureArrayName, texPath);
+            else
+                queueStandalone(texPath, true);
 
-        if (!outTextureArrayName.empty())
-            queueTextureToArray(outTextureArrayName, texPath);
-        else
-            queueStandalone(texPath);
-
-        outTexturePaths.push_back(texPath);
+            outTexturePaths.push_back(texPath);
+        }
     }
+
+    outTextureArrayName = textureArrayName;
 }
 
-void TextureAssetManager::queueStandalone(const std::string &path)
+void TextureAssetManager::queueStandalone(const std::string &path, bool repeating)
 {
     {
         std::lock_guard<std::mutex> lock(standaloneCacheMutex);
@@ -106,6 +124,8 @@ void TextureAssetManager::queueStandalone(const std::string &path)
     pt.textureUnit = nextFreeUnit++;
     pt.repeating = true;
 
+    std::cout << "[QUEUE] " << pt.path << "\n";
+
     {
         std::lock_guard<std::mutex> lock(textureQueueMutex);
         textureQueue.push(std::move(pt));
@@ -115,18 +135,19 @@ void TextureAssetManager::queueStandalone(const std::string &path)
 void TextureAssetManager::queueStandaloneTexture(const std::string &fileName)
 {
     std::string path = "resources/textures/" + fileName;
-    queueStandalone(path);
+    queueStandalone(path, true);
 }
 
 void TextureAssetManager::queueStandaloneImage(const std::string &fileName)
 {
     std::string path = "resources/images/" + fileName;
-    queueStandalone(path);
+    queueStandalone(path, true);
 }
 
 void TextureAssetManager::queueTextureToArray(const std::string &arrayName, const std::string &texturePath)
 {
-    std::lock_guard<std::mutex> lock(unitMutex);
+    std::lock_guard<std::mutex> arrayLock(textureArrayMutex);
+    std::lock_guard<std::mutex> unitLock(unitMutex);
 
     TextureArray &arr = textureArrays[arrayName];
 
@@ -136,12 +157,16 @@ void TextureAssetManager::queueTextureToArray(const std::string &arrayName, cons
     if (arr.textureLayerMap.find(texturePath) != arr.textureLayerMap.end())
         return;
 
-    for (auto &t : arr.pendingTextures)
+    for (const auto &t : arr.pendingTextures)
         if (t.path == texturePath)
             return;
 
     PendingTexture pt;
     pt.path = texturePath;
+    pt.width = 0;
+    pt.height = 0;
+    pt.channels = 0;
+    pt.textureID = 0;
     pt.textureUnit = arr.textureUnit;
 
     arr.pendingTextures.push_back(std::move(pt));
@@ -149,7 +174,8 @@ void TextureAssetManager::queueTextureToArray(const std::string &arrayName, cons
 
 void TextureAssetManager::queueTextureToArrayByFilename(const std::string &fileName, const std::string &arrayName)
 {
-    queueTextureToArray(arrayName, "resources/textures/" + fileName);
+    std::string path = "resources/images/" + fileName;
+    queueTextureToArray(arrayName, path);
 }
 
 SkyboxCPU TextureAssetManager::loadSkybox(const SkyBoxData &skybox)
@@ -194,6 +220,7 @@ SkyboxCPU TextureAssetManager::loadSkybox(const SkyBoxData &skybox)
 void TextureAssetManager::loadQueuedPixelData()
 {
     std::vector<std::future<void>> tasks;
+    std::vector<std::shared_ptr<PendingTexture>> textures;
 
     // Standalone
     {
@@ -201,33 +228,78 @@ void TextureAssetManager::loadQueuedPixelData()
 
         while (!textureQueue.empty())
         {
-            auto pt = std::make_shared<PendingTexture>(std::move(textureQueue.front()));
+            auto pt = std::make_shared<PendingTexture>(textureQueue.front());
             textureQueue.pop();
 
             std::string path = pt->path;
 
             tasks.push_back(std::async(std::launch::async, [pt, path]()
                                        {
-                int w, h, c;
-                unsigned char* data = stbi_load(path.c_str(), &w, &h, &c, 0);
+                int width, height, channels;
+                unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
                 if (!data)
                 {
-                    std::cerr << "Failed load: " << path << "\n";
+                    std::cerr << "Failed to load pixel data: " << path << std::endl;
                     return;
                 }
 
-                pt->width = w;
-                pt->height = h;
-                pt->channels = c;
-                pt->pixelData.assign(data, data + (w * h * c));
+                pt->width = width;
+                pt->height = height;
+                pt->channels = channels;
+                pt->pixelData.assign(data, data + (width * height * channels));
 
-                stbi_image_free(data); }));
+
+                stbi_image_free(data);
+
+                std::cout << "[CPU LOAD] " << pt->path << "\n";
+
+                SceneManager::loadingProgress.first++; }));
+
+            textures.push_back(pt);
         }
     }
 
-    for (auto &t : tasks)
-        t.get();
+    {
+        std::lock_guard<std::mutex> lock(textureArrayMutex);
+
+        for (auto &[name, arr] : textureArrays)
+        {
+            for (PendingTexture &ptRef : arr.pendingTextures)
+            {
+                PendingTexture *pt = &ptRef;
+
+                tasks.push_back(std::async(std::launch::async, [pt]()
+                                           {
+                    int width, height, channels;
+                    unsigned char *data = stbi_load(pt->path.c_str(), &width, &height, &channels, 4);
+                   
+                    if (!data)
+                    {
+                        std::cerr << "Failed to load pixel data: " << pt->path << std::endl;
+                        return;
+                    }
+
+                    pt->width = width;
+                    pt->height = height;
+                    pt->channels = 4;
+                    pt->pixelData.assign(data, data + (width * height * 4));
+
+                    stbi_image_free(data);
+
+                    SceneManager::loadingProgress.first++; }));
+            }
+        }
+    }
+
+    for (auto &task : tasks)
+        task.get();
+
+    {
+        std::lock_guard<std::mutex> lock(textureQueueMutex);
+        for (auto &pt : textures)
+            textureQueue.push(std::move(*pt));
+    }
 }
 
 void TextureAssetManager::clear()
@@ -271,42 +343,43 @@ unsigned int TextureAssetManager::getTextureArrayUnit(const std::string &arrayNa
 unsigned int TextureAssetManager::getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath)
 {
     auto it = textureArrays.find(arrayName);
-    if (it != textureArrays.end())
-    {
-        auto layerIt = it->second.textureLayerMap.find(texturePath);
-        if (layerIt != it->second.textureLayerMap.end())
-            return layerIt->second;
-    }
+
+    if (it == textureArrays.end())
+        return -1;
+
+    auto layerIt = it->second.textureLayerMap.find(texturePath);
+
+    if (layerIt != it->second.textureLayerMap.end())
+        return layerIt->second;
+
     return -1;
 }
-
 void TextureAssetManager::getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers)
 {
     textureLayers.clear();
 
     auto itArray = textureArrays.find(model.textureArrayName);
+
     if (itArray == textureArrays.end())
     {
-        // Texture array not found, set default
         textureUnit = 0;
+        textureArrayID = 0;
         return;
     }
 
     const TextureArray &texArray = itArray->second;
+
     textureUnit = texArray.textureUnit;
     textureArrayID = texArray.textureArrayID;
 
-    // For each texture path in the model, find its layer index in the texture array
     for (const auto &texPath : model.texturePaths)
     {
-        auto itLayer = texArray.textureLayerMap.find(texPath);
+        auto itLayer =
+            texArray.textureLayerMap.find(texPath);
+
         if (itLayer != texArray.textureLayerMap.end())
-        {
             textureLayers.push_back(itLayer->second);
-        }
         else
-        {
             textureLayers.push_back(-1);
-        }
     }
 }

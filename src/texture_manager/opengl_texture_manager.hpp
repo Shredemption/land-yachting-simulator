@@ -6,12 +6,13 @@ class OpenGLTextureManager : public ITextureManager
 {
 public:
     unsigned int createTexture2D(const PendingTexture &) override;
-
     unsigned int createTextureArray(TextureArray &, const std::vector<PendingTexture> &) override;
-
     unsigned int uploadSkybox(const SkyboxCPU &) override;
-
     void uploadPending() override;
 
     void clear() override;
+
+private:
+    void uploadStandalones();
+    void uploadTextureArrays();
 };
