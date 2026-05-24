@@ -38,13 +38,22 @@ namespace TextureAssetManager
     std::vector<std::string> loadMaterialTexturePaths(const std::string &type, const std::string &directory);
     void loadTexturesForShader(const shaderID &shader, const std::string &directory, ModelType &modelType, std::vector<std::string> &outTexturePaths, std::string &outTextureArrayName);
 
+    void queueStandalone(const std::string &path);
     void queueStandaloneTexture(const std::string &fileName);
     void queueStandaloneImage(const std::string &fileName);
 
     void queueTextureToArray(const std::string &arrayName, const std::string &texturePath);
     void queueTextureToArrayByFilename(const std::string &fileName, const std::string &arrayName);
 
+    SkyboxCPU loadSkybox(const SkyBoxData &skybox);
+
     void loadQueuedPixelData();
+
+    unsigned int getStandaloneTextureID(const std::string &texturePath);
+    unsigned int getStandaloneTextureUnit(const std::string &texturePath);
+    unsigned int getTextureArrayUnit(const std::string &arrayName);
+    unsigned int getTextureLayerIndex(const std::string &arrayName, const std::string &fileName);
+    void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers);
 
     void clear();
 }

@@ -8,18 +8,15 @@ unsigned int VulkanTextureManager::createTexture2D(const PendingTexture &)
     return 0;
 }
 
-unsigned int VulkanTextureManager::createTextureArray(
-    TextureArray &,
-    const std::vector<PendingTexture> &)
+unsigned int VulkanTextureManager::createTextureArray(TextureArray &, const std::vector<PendingTexture> &)
 {
     std::cout << "[Vulkan] createTextureArray stub\n";
     return 0;
 }
 
-unsigned int VulkanTextureManager::createSkybox(
-    const std::vector<std::string> &)
+unsigned int VulkanTextureManager::uploadSkybox(const SkyboxCPU &)
 {
-    std::cout << "[Vulkan] createSkybox stub\n";
+    std::cout << "[Vulkan] uploadSkybox stub\n";
     return 0;
 }
 
@@ -31,39 +28,4 @@ void VulkanTextureManager::uploadPending()
 void VulkanTextureManager::clear()
 {
     std::cout << "[Vulkan] clear stub\n";
-}
-
-unsigned int VulkanTextureManager::getStandaloneTextureID(const std::string &)
-{
-    std::cout << "[Vulkan] getStandaloneTexture stub\n";
-    return 0;
-}
-
-unsigned int VulkanTextureManager::getStandaloneTextureUnit(const std::string &)
-{
-    std::cout << "[Vulkan] getStandaloneTextureUnit stub\n";
-    return 0;
-}
-
-unsigned int VulkanTextureManager::getTextureArrayUnit(const std::string &)
-{
-    std::cout << "[Vulkan] getTextureArrayUnit stub\n";
-    return 0;
-}
-
-unsigned int VulkanTextureManager::getTextureLayerIndex(
-    const std::string &,
-    const std::string &)
-{
-    std::cout << "[Vulkan] getTextureLayerIndex stub\n";
-    return 0;
-}
-
-void VulkanTextureManager::getTextureData(
-    const Model &,
-    unsigned int &,
-    unsigned int &,
-    std::vector<int> &)
-{
-    std::cout << "[Vulkan] getTextureData stub\n";
 }

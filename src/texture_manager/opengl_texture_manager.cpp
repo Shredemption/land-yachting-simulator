@@ -16,11 +16,45 @@ unsigned int OpenGLTextureManager::createTextureArray(
     return 0;
 }
 
-unsigned int OpenGLTextureManager::createSkybox(
-    const std::vector<std::string> &)
+unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxCPU &skybox)
 {
-    std::cout << "[OpenGL] createSkybox stub\n";
-    return 0;
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    for (size_t i = 0; i < 6; i++)
+    {
+        const PendingTexture &face = skybox.faces[i];
+
+        if (face.pixelData.empty())
+        {
+            std::cerr << "Missing skybox face data at index " << i << "\n";
+            continue;
+        }
+
+        GLenum format = GL_RGBA;
+
+        glTexImage2D(
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            0,
+            GL_RGBA,
+            face.width,
+            face.height,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            face.pixelData.data());
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+    return textureID;
 }
 
 void OpenGLTextureManager::uploadPending()
@@ -31,39 +65,4 @@ void OpenGLTextureManager::uploadPending()
 void OpenGLTextureManager::clear()
 {
     std::cout << "[OpenGL] clear stub\n";
-}
-
-unsigned int OpenGLTextureManager::getStandaloneTextureID(const std::string &)
-{
-    std::cout << "[OpenGL] getStandaloneTexture stub\n";
-    return 0;
-}
-
-unsigned int OpenGLTextureManager::getStandaloneTextureUnit(const std::string &)
-{
-    std::cout << "[OpenGL] getStandaloneTextureUnit stub\n";
-    return 0;
-}
-
-unsigned int OpenGLTextureManager::getTextureArrayUnit(const std::string &)
-{
-    std::cout << "[OpenGL] getTextureArrayUnit stub\n";
-    return 0;
-}
-
-unsigned int OpenGLTextureManager::getTextureLayerIndex(
-    const std::string &,
-    const std::string &)
-{
-    std::cout << "[OpenGL] getTextureLayerIndex stub\n";
-    return 0;
-}
-
-void OpenGLTextureManager::getTextureData(
-    const Model &,
-    unsigned int &,
-    unsigned int &,
-    std::vector<int> &)
-{
-    std::cout << "[OpenGL] getTextureData stub\n";
 }

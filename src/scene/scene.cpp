@@ -388,11 +388,11 @@ void Scene::uploadToGPU()
     }
     for (auto &image : images)
     {
-        image.textureID = g_renderer->getTextureManager()->getStandaloneTextureID(image.file);
+        image.textureID = TextureAssetManager::getStandaloneTextureID(image.file);
     }
     if (hasSkyBox)
     {
-        this->skyBox.textureID = g_renderer->getTextureManager()->createSkybox(this->skyBox.faces());
-        this->skyBox.VAO = MeshUtil::setupSkyBoxMesh();
+        SkyboxCPU cpuSky = TextureAssetManager::loadSkybox(this->skyBox);
+        this->skyBox.textureID = g_renderer->getTextureManager()->uploadSkybox(cpuSky);
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -36,4 +37,9 @@ struct TextureArray
     std::unordered_map<std::string, int> textureLayerMap;
 
     int textureUnit = -1;
+};
+
+struct SkyboxCPU
+{
+    std::array<PendingTexture, 6> faces;
 };
