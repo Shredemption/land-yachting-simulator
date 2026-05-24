@@ -108,14 +108,14 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
         loadSkyBoxToScene(skybox);
     }
 
-    int texLoadCount = TextureManager::textureQueue.size();
-    for (const auto &arr : TextureManager::textureArrays)
+    int texLoadCount = TextureAssetManager::textureQueue.size();
+    for (const auto &arr : TextureAssetManager::textureArrays)
         texLoadCount += arr.second.pendingTextures.size();
     SceneManager::loadingState++;
     SceneManager::loadingProgress.first = 0;
     SceneManager::loadingProgress.second = texLoadCount;
 
-    TextureManager::loadQueuedPixelData();
+    TextureAssetManager::loadQueuedPixelData();
 
     SceneManager::loadingState++;
 };
@@ -245,16 +245,16 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
 
     if (loadUnitPlane.shader == shaderID::Water)
     {
-        TextureManager::queueTextureToArrayByFilename("waterDUDV.png", "waterTextureArray");
-        TextureManager::queueTextureToArrayByFilename("waterNormal.png", "waterTextureArray");
-        TextureManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueTextureToArrayByFilename("waterDUDV.png", "waterTextureArray");
+        TextureAssetManager::queueTextureToArrayByFilename("waterNormal.png", "waterTextureArray");
+        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
     }
 
     if (loadUnitPlane.shader == shaderID::ToonWater)
     {
-        TextureManager::queueStandaloneTexture("toonWater.jpeg");
-        TextureManager::queueStandaloneTexture("waterNormal.png");
-        TextureManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueStandaloneTexture("toonWater.jpeg");
+        TextureAssetManager::queueStandaloneTexture("waterNormal.png");
+        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
     }
 }
 
@@ -294,14 +294,14 @@ void Scene::loadGridToScene(JSONGrid grid)
 
     if (loadGrid.shader == shaderID::ToonTerrain)
     {
-        TextureManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
     }
     else if (loadGrid.shader == shaderID::Terrain)
     {
-        TextureManager::queueStandaloneTexture("heightmap.jpg");
-        TextureManager::queueTextureToArrayByFilename("sand_diffuse.jpg", "sandTextureArray");
-        TextureManager::queueTextureToArrayByFilename("sand_displacement.png", "sandTextureArray");
-        TextureManager::queueTextureToArrayByFilename("sand_normal.png", "sandTextureArray");
+        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueTextureToArrayByFilename("sand_diffuse.jpg", "sandTextureArray");
+        TextureAssetManager::queueTextureToArrayByFilename("sand_displacement.png", "sandTextureArray");
+        TextureAssetManager::queueTextureToArrayByFilename("sand_normal.png", "sandTextureArray");
     }
 }
 
@@ -348,7 +348,7 @@ void Scene::loadImageToScene(JSONImage image)
     loadImage.width = image.size[0];
     loadImage.height = image.size[1];
 
-    TextureManager::queueStandaloneImage(image.file);
+    TextureAssetManager::queueStandaloneImage(image.file);
 
     // Push text to scene
     this->images.push_back(loadImage);
@@ -356,7 +356,7 @@ void Scene::loadImageToScene(JSONImage image)
 
 void Scene::uploadToGPU()
 {
-    TextureManager::uploadToGPU();
+    g_renderer->getTextureManager()->uploadPending();
     // For each type, upload data to opengl context
     for (auto &modelData : structModels)
     {
@@ -388,11 +388,11 @@ void Scene::uploadToGPU()
     }
     for (auto &image : images)
     {
-        image.textureID = TextureManager::getStandaloneTextureID(image.file);
+        image.textureID = g_renderer->getTextureManager()->getStandaloneTextureID(image.file);
     }
     if (hasSkyBox)
     {
-        this->skyBox.textureID = TextureManager::loadSkyboxTexture(this->skyBox);
+        this->skyBox.textureID = g_renderer->getTextureManager()->createSkybox(this->skyBox.faces());
         this->skyBox.VAO = MeshUtil::setupSkyBoxMesh();
     }
 }

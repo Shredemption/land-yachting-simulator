@@ -18,6 +18,7 @@
 
 #include "render/render_defs.h"
 #include "render/base_renderer.hpp"
+#include "texture_manager/opengl_texture_manager.hpp"
 
 enum class EngineState;
 class Shader;
@@ -41,7 +42,11 @@ public:
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left) override;
     renderEngine getType() const override;
 
+    ITextureManager *getTextureManager() override;
+
 private:
+    std::unique_ptr<OpenGLTextureManager> textureManager;
+
     void createSceneFBO(int width, int height);
 
     // Render functions

@@ -75,7 +75,7 @@ void Model::loadModel(std::string mainPath, std::optional<std::vector<std::strin
         lodMeshes.push_back({std::move(combinedMesh)});
     }
 
-    TextureManager::loadTexturesForShader(shader, directory, modelType, texturePaths, textureArrayName);
+    TextureAssetManager::loadTexturesForShader(shader, directory, modelType, texturePaths, textureArrayName);
 
     if (hasPhysics)
         loadHitbox(hitboxPath);

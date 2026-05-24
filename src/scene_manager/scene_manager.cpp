@@ -100,7 +100,7 @@ void SceneManager::runOneFrame()
 void SceneManager::unload()
 {
     // Unload Texture array
-    TextureManager::clearTextures();
+    TextureAssetManager::clear();
 
     ThreadManager::sceneReadyForRender.store(false, std::memory_order_release);
 
@@ -123,11 +123,10 @@ void SceneManager::initSceneMap()
     std::cout << "[SceneManager] Initializing scene registry" << std::endl;
 
     sceneMap = {
-        { "cartoon",     "resources/scenes/cartoon.json" },
-        { "realistic",   "resources/scenes/realistic.json" },
-        { "test-yacht",  "resources/scenes/test/yacht.json" },
-        { "test-rigid",  "resources/scenes/test/rigid-body.json" }
-    };
+        {"cartoon", "resources/scenes/cartoon.json"},
+        {"realistic", "resources/scenes/realistic.json"},
+        {"test-yacht", "resources/scenes/test/yacht.json"},
+        {"test-rigid", "resources/scenes/test/rigid-body.json"}};
 
     std::cout << "[SceneManager] Scene registry initialized (" << sceneMap.size() << " scenes)" << std::endl;
 }
@@ -148,10 +147,10 @@ void SceneManager::switchEngineState(const EngineState &to)
     case EngineState::Title:
     {
         unload();
-        TextureManager::queueStandaloneImage("title-figure.png");
-        TextureManager::queueStandaloneImage("title-figure-black.png");
-        TextureManager::loadQueuedPixelData();
-        TextureManager::uploadToGPU();
+        TextureAssetManager::queueStandaloneImage("title-figure.png");
+        TextureAssetManager::queueStandaloneImage("title-figure-black.png");
+        TextureAssetManager::loadQueuedPixelData();
+        g_renderer->getTextureManager()->uploadPending();
         break;
     }
     case EngineState::Pause:

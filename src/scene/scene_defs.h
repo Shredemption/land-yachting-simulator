@@ -143,6 +143,10 @@ struct SkyBoxData
     std::string back;
     unsigned int textureID;
     unsigned int VAO;
+    std::vector<std::string> faces() const
+    {
+        return {right, left, up, down, front, back};
+    }
 };
 
 struct TextData

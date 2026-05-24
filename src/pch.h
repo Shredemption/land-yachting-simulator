@@ -49,7 +49,7 @@
 #include "settings_manager/settings_manager.hpp"
 #include "shader/shaderID.h"
 #include "shader/shader_util.hpp"
-#include "texture_manager/texture_manager.hpp"
+#include "texture_manager/texture_asset_manager.hpp"
 #include "thread_manager/thread_manager.hpp"
 #include "time_manager/time_manager.hpp"
 #include "ui_manager/ui_manager.hpp"

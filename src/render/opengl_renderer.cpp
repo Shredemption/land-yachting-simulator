@@ -4,6 +4,7 @@
 #include "pch.h"
 
 #include "ui_manager/ui_manager_defs.h"
+#include "texture_manager/opengl_texture_manager.hpp"
 
 void OpenGLRenderer::renderModel(const RenderCommand &cmd)
 {
@@ -117,9 +118,9 @@ void OpenGLRenderer::renderOpaquePlane(const RenderCommand &cmd)
 
     if (cmd.shader == shaderID::ToonWater)
     {
-        int toonWater = TextureManager::getStandaloneTextureUnit("resources/textures/toonWater.jpeg");
-        int normalMap = TextureManager::getStandaloneTextureUnit("resources/textures/waterNormal.png");
-        int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
+        int toonWater = textureManager->getStandaloneTextureUnit("resources/textures/toonWater.jpeg");
+        int normalMap = textureManager->getStandaloneTextureUnit("resources/textures/waterNormal.png");
+        int heightmap = textureManager->getStandaloneTextureUnit("resources/textures/heightmap.jpg");
 
         shader->setInt("toonWater", toonWater);
         shader->setInt("normalMap", normalMap);
@@ -162,9 +163,9 @@ void OpenGLRenderer::renderTransparentPlane(const RenderCommand &cmd)
     if (cmd.shader == shaderID::Water)
     {
         // Load surface textures
-        unsigned int waterTexArrayID = TextureManager::getTextureArrayUnit("waterTextureArray");
-        int dudv = TextureManager::getTextureLayerIndex("waterTextureArray", "resources/textures/waterDUDV.png");
-        int normal = TextureManager::getTextureLayerIndex("waterTextureArray", "resources/textures/waterNormal.png");
+        unsigned int waterTexArrayID = textureManager->getTextureArrayUnit("waterTextureArray");
+        int dudv = textureManager->getTextureLayerIndex("waterTextureArray", "resources/textures/waterDUDV.png");
+        int normal = textureManager->getTextureLayerIndex("waterTextureArray", "resources/textures/waterNormal.png");
 
         shader->setInt("waterTextureArray", waterTexArrayID);
         shader->setInt("dudvMapLayer", dudv);
@@ -215,10 +216,10 @@ void OpenGLRenderer::renderGrid(const RenderCommand &cmd)
         // Clipping Plane
         shader->setVec4("location_plane", clipPlane);
 
-        int heightmap = TextureManager::getStandaloneTextureUnit("resources/textures/heightmap.jpg");
+        int heightmap = textureManager->getStandaloneTextureUnit("resources/textures/heightmap.jpg");
         shader->setInt("heightmap", heightmap);
 
-        unsigned int sandTexArrayID = TextureManager::getTextureArrayUnit("sandTextureArray");
+        unsigned int sandTexArrayID = textureManager->getTextureArrayUnit("sandTextureArray");
         shader->setInt("sandTextureArray", sandTexArrayID);
 
         shader->setMat4("u_camXY", Camera::u_camXY);
@@ -344,7 +345,7 @@ void OpenGLRenderer::renderImage(const std::string &fileName, const glm::vec2 &p
     shader->setVec2("uScreenSize", glm::vec2(WindowManager::screenWidth, WindowManager::screenHeight));
     glm::vec2 screenSize = glm::vec2(WindowManager::screenWidth, WindowManager::screenHeight);
 
-    unsigned int textureUnit = TextureManager::getStandaloneTextureUnit("resources/images/" + fileName);
+    unsigned int textureUnit = textureManager->getStandaloneTextureUnit("resources/images/" + fileName);
     shader->setInt("uTexture", textureUnit);
 
     glm::vec2 posFactor = position; // normalized 0..1
@@ -561,6 +562,8 @@ void OpenGLRenderer::setup()
 {
     std::cout << "[OpenGL] Setting up renderer" << std::endl;
 
+    textureManager = std::make_unique<OpenGLTextureManager>();
+
     initQuad();
     initTextResources();
     createSceneFBO(WindowManager::windowWidth, WindowManager::windowHeight);
@@ -648,7 +651,7 @@ void OpenGLRenderer::prepareRender(::RenderBuffer &prepBuffer)
             cmd.modelMatrix = model.u_model;
             cmd.normalMatrix = model.u_normal;
 
-            TextureManager::getTextureData(*model.model, cmd.textureUnit, cmd.textureArrayID, cmd.textureLayers);
+            g_renderer->getTextureManager()->getTextureData(*model.model, cmd.textureUnit, cmd.textureArrayID, cmd.textureLayers);
 
             cmd.animated = model.animated;
 
@@ -1177,4 +1180,9 @@ void OpenGLRenderer::cleanup()
 renderEngine OpenGLRenderer::getType() const
 {
     return renderEngine::OpenGL;
+}
+
+ITextureManager *OpenGLRenderer::getTextureManager()
+{
+    return textureManager.get();
 }

@@ -5,6 +5,7 @@
 
 #include "render/base_renderer.hpp"
 #include "settings_manager/settings.h"
+#include "texture_manager/vulkan_texture_manager.hpp"
 
 struct QueueFamilyIndices
 {
@@ -101,8 +102,12 @@ public:
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left) override;
     renderEngine getType() const override { return renderEngine::Vulkan; }
 
+    ITextureManager *getTextureManager() override;
+
 private:
     const int MAX_FRAMES_IN_FLIGHT = 2;
+
+    std::unique_ptr<VulkanTextureManager> textureManager;
 
     VkInstance instance = VK_NULL_HANDLE;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
