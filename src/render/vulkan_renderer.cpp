@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include "ui_manager/ui_manager_defs.h"
+#include "texture_manager/vulkan_texture_manager.hpp"
 
 struct TextVertex
 {
@@ -452,6 +453,8 @@ void VulkanRenderer::setup()
     std::cout << "[Vulkan] Setup started" << std::endl;
     try
     {
+        textureManager = std::make_unique<VulkanTextureManager>();
+
         createInstance();
         createSurface();
         pickPhysicalDevice();
