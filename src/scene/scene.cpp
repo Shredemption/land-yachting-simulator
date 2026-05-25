@@ -108,9 +108,14 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
         loadSkyBoxToScene(skybox);
     }
 
-    int texLoadCount = TextureAssetManager::textureQueue.size();
-    for (const auto &arr : TextureAssetManager::textureArrays)
-        texLoadCount += arr.second.pendingTextures.size();
+    int texLoadCount = 0;
+    texLoadCount += static_cast<int>(TextureAssetManager::standaloneQueue.size());
+
+    for (const auto &arr : TextureAssetManager::getTextureArrays())
+    {
+        texLoadCount += static_cast<int>(arr.second.layers.size());
+    }
+
     SceneManager::loadingState++;
     SceneManager::loadingProgress.first = 0;
     SceneManager::loadingProgress.second = texLoadCount;
@@ -388,11 +393,12 @@ void Scene::uploadToGPU()
     }
     for (auto &image : images)
     {
-        image.textureID = TextureAssetManager::getStandaloneTextureID(image.file);
+        image.textureID = g_renderer->getTextureManager()->getStandaloneTextureID(image.file);
     }
     if (hasSkyBox)
     {
-        SkyboxCPU cpuSky = TextureAssetManager::loadSkybox(this->skyBox);
+        SkyboxCPU cpuRequest = TextureAssetManager::toSkyboxCPU(this->skyBox);
+        SkyboxAsset cpuSky = TextureAssetManager::loadSkybox(cpuRequest);
         this->skyBox.textureID = g_renderer->getTextureManager()->uploadSkybox(cpuSky);
     }
 }

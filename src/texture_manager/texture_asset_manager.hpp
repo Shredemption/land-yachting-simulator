@@ -1,12 +1,14 @@
 #pragma once
 
-#include <atomic>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
 #include <mutex>
+#include <filesystem>
+#include <iostream>
+#include <algorithm>
 
 #include "texture_manager_defs.h"
 
@@ -17,46 +19,37 @@ class Model;
 
 namespace TextureAssetManager
 {
-    // CPU-side storage
-    inline std::unordered_map<std::string, TextureArray> textureArrays;
-    inline std::mutex textureArrayMutex;
-
-    inline std::unordered_map<std::string, Texture> standaloneTextureCache;
-    inline std::mutex standaloneCacheMutex;
-
-    // Pending CPU work
-    inline std::queue<PendingTexture> textureQueue;
-    inline std::mutex textureQueueMutex;
-
-    inline std::unordered_set<std::string> pendingTextures;
-    inline std::mutex pendingTexturesMutex;
-
-    // Free unit allocator (still CPU-side bookkeeping)
-    inline int nextFreeUnit = 5;
-    inline std::mutex unitMutex;
-    inline std::mutex openglMutex;
-
-    // ---- CPU-side API ----
-    std::vector<std::string> loadMaterialTexturePaths(const std::string &type, const std::string &directory);
     void loadTexturesForShader(const shaderID &shader, const std::string &directory, ModelType &modelType, std::vector<std::string> &outTexturePaths, std::string &outTextureArrayName);
 
-    void queueStandalone(const std::string &path, bool repeating);
     void queueStandaloneTexture(const std::string &fileName);
     void queueStandaloneImage(const std::string &fileName);
 
     void queueTextureToArray(const std::string &arrayName, const std::string &texturePath);
     void queueTextureToArrayByFilename(const std::string &fileName, const std::string &arrayName);
 
-    SkyboxCPU loadSkybox(const SkyBoxData &skybox);
+    SkyboxAsset loadSkybox(const SkyboxCPU &skybox);
+    SkyboxCPU toSkyboxCPU(const SkyBoxData &data);
 
+    // Loads queued files into CPU memory. No OpenGL calls here.
     void loadQueuedPixelData();
 
-    unsigned int getStandaloneTextureID(const std::string &texturePath);
-    unsigned int getStandaloneTextureUnit(const std::string &texturePath);
-    unsigned int getTextureArrayUnit(const std::string &arrayName);
-    unsigned int getTextureLayerIndex(const std::string &arrayName, const std::string &fileName);
-    void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers);
+    void clear();
+
     std::string getTextureArrayName(ModelType modelType);
 
-    void clear();
-}
+    std::unordered_map<std::string, PendingTexture> &getStandaloneAssets();
+    std::unordered_map<std::string, TextureArray> &getTextureArrays();
+
+    std::vector<std::string> loadMaterialTexturePaths(const std::string &type, const std::string &directory);
+    bool loadTexturePixels(const std::string &path, bool forceRGBA, PendingTexture &out);
+
+    void queueStandalone(const std::string &path, bool repeating);
+
+    inline std::mutex mutex;
+
+    inline std::queue<std::pair<std::string, bool>> standaloneQueue;
+    inline std::unordered_set<std::string> pendingStandalonePaths;
+
+    inline std::unordered_map<std::string, PendingTexture> standaloneAssets;
+    inline std::unordered_map<std::string, TextureArray> textureArrays;
+};

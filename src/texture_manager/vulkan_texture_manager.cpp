@@ -14,7 +14,7 @@ unsigned int VulkanTextureManager::createTextureArray(TextureArray &, const std:
     return 0;
 }
 
-unsigned int VulkanTextureManager::uploadSkybox(const SkyboxCPU &)
+unsigned int VulkanTextureManager::uploadSkybox(const SkyboxAsset &)
 {
     std::cout << "[Vulkan] uploadSkybox stub\n";
     return 0;

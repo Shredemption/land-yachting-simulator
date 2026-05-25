@@ -2,103 +2,179 @@
 
 #include "pch.h"
 
-unsigned int OpenGLTextureManager::createTexture2D(const PendingTexture &pending)
+int OpenGLTextureManager::allocateUnit()
 {
-    GLuint texID;
+    return nextTextureUnit++;
+}
 
-    glActiveTexture(GL_TEXTURE0 + pending.textureUnit);
-    glGenTextures(1, &texID);
-    glBindTexture(GL_TEXTURE_2D, texID);
-
-    GLenum format = GL_RGBA;
-
-    switch (pending.channels)
+GLenum OpenGLTextureManager::formatFromChannels(int channels)
+{
+    switch (channels)
     {
     case 1:
-        format = GL_RED;
+        return GL_RED;
+    case 3:
+        return GL_RGB;
+    case 4:
+        return GL_RGBA;
+    default:
+        return GL_RGBA;
+    }
+}
+
+unsigned int OpenGLTextureManager::createTexture2D(const PendingTexture &tex)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+
+    auto &entry = gpuTextures[tex.path];
+
+    if (entry.ready)
+        return entry.id;
+
+    GLenum format = formatFromChannels(tex.channels);
+
+    GLenum internalFormat = GL_RGBA8;
+
+    switch (tex.channels)
+    {
+    case 1:
+        internalFormat = GL_R8;
         break;
     case 3:
-        format = GL_RGB;
+        internalFormat = GL_RGB8;
         break;
     case 4:
-    default:
-        format = GL_RGBA;
+        internalFormat = GL_RGBA8;
         break;
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, pending.width, pending.height, 0, format, GL_UNSIGNED_BYTE, pending.pixelData.data());
+    glGenTextures(1, &entry.id);
+
+    entry.unit = allocateUnit();
+
+    glActiveTexture(GL_TEXTURE0 + entry.unit);
+    glBindTexture(GL_TEXTURE_2D, entry.id);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        internalFormat,
+        tex.width,
+        tex.height,
+        0,
+        format,
+        GL_UNSIGNED_BYTE,
+        tex.pixelData.data());
+
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, pending.repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, pending.repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, tex.repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tex.repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, 0);
-    return texID;
+
+    entry.ready = true;
+
+    return entry.id;
 }
 
-unsigned int OpenGLTextureManager::createTextureArray(TextureArray &arr, const std::vector<PendingTexture> &textures)
+unsigned int OpenGLTextureManager::createTextureArray(TextureArray &array, const std::vector<PendingTexture> &layers)
 {
-    if (textures.empty())
+    std::lock_guard<std::mutex> lock(mutex);
+
+    if (array.ready)
+        return array.textureArrayID;
+
+    if (layers.empty())
         return 0;
 
-    arr.width = textures[0].width;
-    arr.height = textures[0].height;
+    int width = layers[0].width;
+    int height = layers[0].height;
 
-    GLuint texID;
+    array.textureUnit = allocateUnit();
 
-    glActiveTexture(GL_TEXTURE0 + arr.textureUnit);
-    glGenTextures(1, &texID);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, texID);
+    glGenTextures(1, &array.textureArrayID);
+    glActiveTexture(GL_TEXTURE0 + array.textureUnit);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, array.textureArrayID);
 
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, arr.width, arr.height, (GLsizei)textures.size(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    for (size_t layer = 0; layer < textures.size(); ++layer)
+    glTexImage3D(
+        GL_TEXTURE_2D_ARRAY,
+        0,
+        GL_RGBA8,
+        width,
+        height,
+        (int)layers.size(),
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        nullptr);
+
+    for (int i = 0; i < layers.size(); i++)
     {
-        const PendingTexture &tex = textures[layer];
+        const auto &tex = layers[i];
 
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, (GLint)layer, arr.width, arr.height, 1, GL_RGBA, GL_UNSIGNED_BYTE, tex.pixelData.data());
-        arr.textureLayerMap[tex.path] = (int)layer;
+        glTexSubImage3D(
+            GL_TEXTURE_2D_ARRAY,
+            0,
+            0, 0, i,
+            tex.width,
+            tex.height,
+            1,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            tex.pixelData.data());
+
+        array.textureLayerMap[tex.path] = i;
     }
 
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
-    arr.textureArrayID = texID;
-    return texID;
+    array.ready = true;
+
+    return array.textureArrayID;
 }
 
-unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxCPU &skybox)
+unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxAsset &skybox)
 {
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+    GLuint id = 0;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 
-    for (size_t i = 0; i < 6; i++)
+    for (int i = 0; i < 6; i++)
     {
-        const PendingTexture &face = skybox.faces[i];
+        const PendingTexture &tex = skybox.faces[i];
 
-        if (face.pixelData.empty())
+        if (tex.pixelData.empty())
         {
-            std::cerr << "Missing skybox face data at index " << i << "\n";
+            std::cerr << "Skybox face missing pixel data\n";
             continue;
         }
+
+        GLenum format = GL_RGBA;
 
         glTexImage2D(
             GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
             0,
-            GL_RGBA,
-            face.width,
-            face.height,
+            format,
+            tex.width,
+            tex.height,
             0,
-            GL_RGBA,
+            format,
             GL_UNSIGNED_BYTE,
-            face.pixelData.data());
+            tex.pixelData.data());
     }
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -109,103 +185,124 @@ unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxCPU &skybox)
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-    return textureID;
-}
-
-void OpenGLTextureManager::uploadStandalones()
-{
-    std::lock_guard<std::mutex> lock(TextureAssetManager::textureQueueMutex);
-
-    while (!TextureAssetManager::textureQueue.empty())
-    {
-        PendingTexture &pending = TextureAssetManager::textureQueue.front();
-        TextureAssetManager::textureQueue.pop();
-
-        GLuint texID = OpenGLTextureManager::createTexture2D(pending);
-
-        Texture tex;
-        tex.path = pending.path;
-        tex.index = texID;
-        tex.textureUnit = pending.textureUnit;
-
-        std::cout
-            << "[CACHE] Loaded texture: "
-            << pending.path
-            << " -> ID=" << texID
-            << " unit=" << pending.textureUnit
-            << "\n";
-
-        {
-            std::lock_guard<std::mutex> cacheLock(TextureAssetManager::standaloneCacheMutex);
-
-            TextureAssetManager::standaloneTextureCache[pending.path] = tex;
-        }
-
-        {
-            std::lock_guard<std::mutex> pendingLock(
-                TextureAssetManager::pendingTexturesMutex);
-
-            TextureAssetManager::pendingTextures.erase(pending.path);
-        }
-    }
-}
-
-void OpenGLTextureManager::uploadTextureArrays()
-{
-    std::lock_guard<std::mutex> lock(TextureAssetManager::openglMutex);
-
-    for (auto &[arrayName, arr] : TextureAssetManager::textureArrays)
-    {
-        if (arr.textureArrayID != 0)
-            continue;
-
-        if (arr.pendingTextures.empty())
-            continue;
-
-        createTextureArray(arr, arr.pendingTextures);
-
-        for (auto &tex : arr.pendingTextures)
-        {
-            tex.pixelData.clear();
-            tex.pixelData.shrink_to_fit();
-        }
-    }
+    return id;
 }
 
 void OpenGLTextureManager::uploadPending()
 {
-    uploadStandalones();
-    uploadTextureArrays();
-}
+    auto &standalones = TextureAssetManager::getStandaloneAssets();
 
-void clearStandaloneCache()
-{
-    std::lock_guard<std::mutex> lock(TextureAssetManager::standaloneCacheMutex);
-    for (auto &pair : TextureAssetManager::standaloneTextureCache)
+    for (auto it = standalones.begin(); it != standalones.end(); ++it)
     {
-        glDeleteTextures(1, &pair.second.index);
+        createTexture2D(it->second);
     }
-    TextureAssetManager::standaloneTextureCache.clear();
-}
 
-void clearTextureArrays()
-{
-    for (auto &[name, texArray] : TextureAssetManager::textureArrays)
+    auto &arrays = TextureAssetManager::getTextureArrays();
+
+    for (auto it = arrays.begin(); it != arrays.end(); ++it)
     {
-        if (texArray.textureArrayID != 0)
-        {
-            glDeleteTextures(1, &texArray.textureArrayID);
-            texArray.textureArrayID = 0;
-        }
-        texArray.textureLayerMap.clear();
-        texArray.pendingTextures.clear();
+        TextureArray &arr = it->second;
+
+        createTextureArray(arr, arr.layers);
+
+        arrayGPUMap[it->first] = &arr;
     }
-    TextureAssetManager::textureArrays.clear();
 }
 
 void OpenGLTextureManager::clear()
 {
-    clearStandaloneCache();
-    clearTextureArrays();
-    TextureAssetManager::nextFreeUnit = 5;
+    std::lock_guard<std::mutex> lock(mutex);
+
+    for (auto &[k, v] : skyboxCache)
+        glDeleteTextures(1, &v.id);
+
+    gpuTextures.clear();
+    skyboxCache.clear();
+
+    nextTextureUnit = 5;
+}
+
+unsigned int OpenGLTextureManager::getStandaloneTextureID(const std::string &texturePath)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+
+    auto it = gpuTextures.find(texturePath);
+    if (it != gpuTextures.end() && it->second.ready)
+        return it->second.id;
+
+    return 0;
+}
+
+unsigned int OpenGLTextureManager::getStandaloneTextureUnit(const std::string &texturePath)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+
+    auto it = gpuTextures.find(texturePath);
+    if (it != gpuTextures.end() && it->second.ready)
+        return it->second.unit;
+
+    return 0;
+}
+
+unsigned int OpenGLTextureManager::getTextureArrayID(const std::string &arrayName)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+
+    auto it = arrayGPUMap.find(arrayName);
+    if (it != arrayGPUMap.end())
+        return it->second->textureArrayID;
+
+    return 0;
+}
+
+unsigned int OpenGLTextureManager::getTextureArrayUnit(const std::string &arrayName)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+
+    auto it = arrayGPUMap.find(arrayName);
+    if (it != arrayGPUMap.end() && it->second)
+        return it->second->textureUnit;
+
+    return 0;
+}
+
+int OpenGLTextureManager::getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath)
+{
+    auto it = TextureAssetManager::getTextureArrays().find(arrayName);
+    if (it == TextureAssetManager::getTextureArrays().end())
+        return -1;
+
+    const TextureArray &arr = it->second;
+
+    auto layerIt = arr.textureLayerMap.find(texturePath);
+    if (layerIt != arr.textureLayerMap.end())
+        return layerIt->second;
+
+    return -1;
+}
+
+void OpenGLTextureManager::getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers)
+{
+    textureLayers.clear();
+
+    auto &arrays = TextureAssetManager::getTextureArrays();
+
+    auto it = arrays.find(model.textureArrayName);
+    if (it == arrays.end())
+    {
+        textureUnit = 0;
+        textureArrayID = 0;
+        return;
+    }
+
+    const TextureArray &arr = it->second;
+
+    textureArrayID = arr.textureArrayID;
+    textureUnit = arr.textureUnit;
+
+    for (const auto &path : model.texturePaths)
+    {
+        int layer = getTextureLayerIndex(model.textureArrayName, path);
+        textureLayers.push_back(layer);
+    }
 }
