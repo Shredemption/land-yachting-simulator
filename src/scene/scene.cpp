@@ -400,5 +400,6 @@ void Scene::uploadToGPU()
         SkyboxCPU cpuRequest = TextureAssetManager::toSkyboxCPU(this->skyBox);
         SkyboxAsset cpuSky = TextureAssetManager::loadSkybox(cpuRequest);
         this->skyBox.textureID = g_renderer->getTextureManager()->uploadSkybox(cpuSky);
+        this->skyBox.VAO = MeshUtil::setupSkyBoxMesh();
     }
 }

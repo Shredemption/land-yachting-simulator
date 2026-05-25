@@ -49,11 +49,13 @@ private:
     std::unordered_map<std::string, TextureArray *> arrayGPUMap;
 
     std::mutex mutex;
-    int nextTextureUnit = 5;
 
     std::unordered_map<std::string, GPUTexture> skyboxCache;
+    int reservedBase = 5;
+    int nextReservedUnit = 5;
 
 private:
     int allocateUnit();
     GLenum formatFromChannels(int channels);
+    int getSkyboxUnit();
 };

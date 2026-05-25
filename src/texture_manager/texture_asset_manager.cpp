@@ -134,6 +134,8 @@ SkyboxAsset TextureAssetManager::loadSkybox(const SkyboxCPU &skybox)
         result.faces[i] = std::move(tex);
     }
 
+    SceneManager::loadingProgress.first++;
+
     return result;
 }
 
@@ -205,6 +207,8 @@ void TextureAssetManager::loadQueuedPixelData()
 
             standaloneAssets[path] = std::move(tex);
             pendingStandalonePaths.erase(path);
+
+            SceneManager::loadingProgress.first++;
         }
     }
 
@@ -240,6 +244,8 @@ void TextureAssetManager::loadQueuedPixelData()
                 std::cerr << "Texture array mismatch in " << arrayName << "\n";
                 ok = false;
             }
+
+            SceneManager::loadingProgress.first++;
         }
 
         if (ok && !arr.layers.empty())

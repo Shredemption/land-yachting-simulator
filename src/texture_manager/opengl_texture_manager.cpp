@@ -4,7 +4,7 @@
 
 int OpenGLTextureManager::allocateUnit()
 {
-    return nextTextureUnit++;
+    return nextReservedUnit++;
 }
 
 GLenum OpenGLTextureManager::formatFromChannels(int channels)
@@ -75,7 +75,9 @@ unsigned int OpenGLTextureManager::createTexture2D(const PendingTexture &tex)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // Keep the texture bound to its assigned unit so shaders can reference its unit persistently
+    glActiveTexture(GL_TEXTURE0 + entry.unit);
+    glBindTexture(GL_TEXTURE_2D, entry.id);
 
     entry.ready = true;
 
@@ -95,7 +97,9 @@ unsigned int OpenGLTextureManager::createTextureArray(TextureArray &array, const
     int width = layers[0].width;
     int height = layers[0].height;
 
-    array.textureUnit = allocateUnit();
+    // If caller already assigned a texture unit (reserved), use it; otherwise allocate one
+    if (array.textureUnit == -1)
+        array.textureUnit = allocateUnit();
 
     glGenTextures(1, &array.textureArrayID);
     glActiveTexture(GL_TEXTURE0 + array.textureUnit);
@@ -140,7 +144,9 @@ unsigned int OpenGLTextureManager::createTextureArray(TextureArray &array, const
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    // Keep the texture array bound to its assigned unit so shaders can sample it without per-frame rebinding
+    glActiveTexture(GL_TEXTURE0 + array.textureUnit);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, array.textureArrayID);
 
     array.ready = true;
 
@@ -153,6 +159,7 @@ unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxAsset &skybox)
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     for (int i = 0; i < 6; i++)
     {
         const PendingTexture &tex = skybox.faces[i];
@@ -185,6 +192,9 @@ unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxAsset &skybox)
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
     return id;
 }
 
@@ -203,6 +213,12 @@ void OpenGLTextureManager::uploadPending()
     {
         TextureArray &arr = it->second;
 
+        // Reserve deterministic units for texture arrays so they remain bound after upload
+        if (arr.textureUnit == -1)
+        {
+            arr.textureUnit = nextReservedUnit++;
+        }
+
         createTextureArray(arr, arr.layers);
 
         arrayGPUMap[it->first] = &arr;
@@ -219,7 +235,7 @@ void OpenGLTextureManager::clear()
     gpuTextures.clear();
     skyboxCache.clear();
 
-    nextTextureUnit = 5;
+    nextReservedUnit = reservedBase;
 }
 
 unsigned int OpenGLTextureManager::getStandaloneTextureID(const std::string &texturePath)
@@ -264,6 +280,15 @@ unsigned int OpenGLTextureManager::getTextureArrayUnit(const std::string &arrayN
         return it->second->textureUnit;
 
     return 0;
+}
+
+int OpenGLTextureManager::getSkyboxUnit()
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    auto it = skyboxCache.find("__skybox__");
+    if (it != skyboxCache.end())
+        return it->second.unit;
+    return -1;
 }
 
 int OpenGLTextureManager::getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath)
