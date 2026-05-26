@@ -13,9 +13,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib)
 set(BUILD_SHARED_LIBS OFF)
 
-# Set Conan's toolchain and dependency paths
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_BINARY_DIR}/build/conan_toolchain.cmake" CACHE FILEPATH "Conan toolchain file")
-
 # Add all .cpp files in the src directory and its subdirectories
 file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
 

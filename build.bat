@@ -33,7 +33,7 @@ conan install .. ^
     --settings=compiler.cppstd=20
 
 cmake .. ^
-    -G "Visual Studio 17 2022" ^
+    -G "Visual Studio 18 2026" ^
     -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake ^
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ^
     -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
