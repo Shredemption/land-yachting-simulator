@@ -192,42 +192,67 @@ void TextureAssetManager::loadQueuedPixelData()
         }
     }
 
-    // -------------------------
     // Standalone textures
-    // -------------------------
+    std::vector<std::future<void>> futures;
+
     for (const auto &[path, repeating] : standaloneItems)
     {
-        PendingTexture tex;
+        futures.push_back(std::async(std::launch::async, [path, repeating]()
+                                     {
+            PendingTexture tex;
 
-        if (loadTexturePixels(path, false, tex))
-        {
-            tex.repeating = repeating;
+            if (loadTexturePixels(path, false, tex))
+            {
+                tex.repeating = repeating;
 
-            std::lock_guard<std::mutex> lock(mutex);
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
 
-            standaloneAssets[path] = std::move(tex);
-            pendingStandalonePaths.erase(path);
+                    standaloneAssets[path] = std::move(tex);
+                    pendingStandalonePaths.erase(path);
 
-            SceneManager::loadingProgress.first++;
-        }
+                    SceneManager::loadingProgress.first++;
+                }
+            } }));
     }
 
-    // -------------------------
-    // Texture arrays
-    // -------------------------
+    // Texture Arrays
+
     for (auto &[arrayName, arr] : textureArrays)
     {
-        int width = 0;
-        int height = 0;
-        bool first = true;
-        bool ok = true;
+        std::vector<std::future<void>> arrayFutures;
 
         for (auto &tex : arr.layers)
         {
             if (!tex.pixelData.empty())
                 continue;
 
-            if (!loadTexturePixels(tex.path, true, tex))
+            arrayFutures.push_back(std::async(std::launch::async,
+                                              [&tex]()
+                                              {
+                                                  PendingTexture loaded;
+
+                                                  if (loadTexturePixels(tex.path, true, loaded))
+                                                  {
+                                                      tex = std::move(loaded);
+
+                                                      SceneManager::loadingProgress.first++;
+                                                  }
+                                              }));
+        }
+
+        for (auto &f : arrayFutures)
+            f.get();
+
+        bool first = true;
+        bool ok = true;
+
+        int width = 0;
+        int height = 0;
+
+        for (const auto &tex : arr.layers)
+        {
+            if (tex.pixelData.empty())
             {
                 ok = false;
                 continue;
@@ -241,11 +266,11 @@ void TextureAssetManager::loadQueuedPixelData()
             }
             else if (tex.width != width || tex.height != height)
             {
-                std::cerr << "Texture array mismatch in " << arrayName << "\n";
+                std::cerr << "Texture array mismatch in "
+                          << arrayName << "\n";
+
                 ok = false;
             }
-
-            SceneManager::loadingProgress.first++;
         }
 
         if (ok && !arr.layers.empty())
@@ -254,6 +279,9 @@ void TextureAssetManager::loadQueuedPixelData()
             arr.height = height;
         }
     }
+
+    for (auto &f : futures)
+        f.get();
 }
 
 void TextureAssetManager::clear()
