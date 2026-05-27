@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 
 #include "render/base_renderer.hpp"
 #include "settings_manager/settings.h"
@@ -27,13 +28,13 @@ struct RenderPrepResult
 struct AllocatedBuffer
 {
     VkBuffer buffer = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
+    VmaAllocation allocation = VK_NULL_HANDLE;
 };
 
 struct AllocatedImage
 {
     VkImage image = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
+    VmaAllocation allocation = VK_NULL_HANDLE;
 };
 
 class GraphicsPipelineBuilder
@@ -108,6 +109,7 @@ private:
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
     std::unique_ptr<VulkanTextureManager> textureManager;
+    VmaAllocator allocator = VK_NULL_HANDLE;
 
     VkInstance instance = VK_NULL_HANDLE;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -132,6 +134,7 @@ private:
     uint32_t currentFrame = 0;
     bool framebufferResized = false;
 
+    void createAllocator();
     void createInstance();
     void createSurface();
     void pickPhysicalDevice();
@@ -171,7 +174,7 @@ private:
     VkImageView textAtlasImageView = VK_NULL_HANDLE;
     VkSampler textAtlasSampler = VK_NULL_HANDLE;
     VkBuffer textVertexBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory textVertexBufferMemory = VK_NULL_HANDLE;
+    VmaAllocation textVertexBufferAllocation;
     VkDescriptorSetLayout textDescriptorSetLayout = VK_NULL_HANDLE;
     VkDescriptorPool textDescriptorPool = VK_NULL_HANDLE;
     VkDescriptorSet textDescriptorSet = VK_NULL_HANDLE;
@@ -179,8 +182,8 @@ private:
     VkPipeline textPipeline = VK_NULL_HANDLE;
     bool textResourcesInitialized = false;
 
-    AllocatedBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-    AllocatedImage createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+    AllocatedBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+    AllocatedImage createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);
     void copyBufferToImage(VkBuffer stagingBuffer, VkImage textAtlasImage, const FontAtlas atlas);
     void transition(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 

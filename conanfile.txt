@@ -7,6 +7,7 @@ assimp/5.4.3
 stb/cci.20230920
 jsoncons/0.178.0
 freetype/2.13.3
+vulkan-memory-allocator/3.3.0
 
 [generators]
 CMakeToolchain

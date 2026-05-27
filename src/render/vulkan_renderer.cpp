@@ -6,6 +6,8 @@
 #include <set>
 
 #include <vulkan/vulkan.h>
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
 #include <GLFW/glfw3.h>
 
 #include "ui_manager/ui_manager_defs.h"
@@ -239,7 +241,7 @@ VkPipeline GraphicsPipelineBuilder::build()
     return pipeline;
 }
 
-AllocatedBuffer VulkanRenderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+AllocatedBuffer VulkanRenderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
 {
     AllocatedBuffer result;
 
@@ -249,27 +251,24 @@ AllocatedBuffer VulkanRenderer::createBuffer(VkDeviceSize size, VkBufferUsageFla
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    vkCreateBuffer(device, &bufferInfo, nullptr, &result.buffer);
+    VmaAllocationCreateInfo allocInfo{};
+    allocInfo.usage = memoryUsage;
 
-    VkMemoryRequirements memReq;
-    vkGetBufferMemoryRequirements(device, result.buffer, &memReq);
-
-    VkMemoryAllocateInfo alloc{};
-    alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc.allocationSize = memReq.size;
-    alloc.memoryTypeIndex = findMemoryType(
-        physicalDevice,
-        memReq.memoryTypeBits,
-        properties);
-
-    vkAllocateMemory(device, &alloc, nullptr, &result.memory);
-
-    vkBindBufferMemory(device, result.buffer, result.memory, 0);
+    if (vmaCreateBuffer(
+            allocator,
+            &bufferInfo,
+            &allocInfo,
+            &result.buffer,
+            &result.allocation,
+            nullptr) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create VMA buffer");
+    }
 
     return result;
 }
 
-AllocatedImage VulkanRenderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+AllocatedImage VulkanRenderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage)
 {
     AllocatedImage result;
 
@@ -288,22 +287,19 @@ AllocatedImage VulkanRenderer::createImage(uint32_t width, uint32_t height, VkFo
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    vkCreateImage(device, &imageInfo, nullptr, &result.image);
+    VmaAllocationCreateInfo allocInfo{};
+    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-    VkMemoryRequirements memReq;
-    vkGetImageMemoryRequirements(device, result.image, &memReq);
-
-    VkMemoryAllocateInfo alloc{};
-    alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc.allocationSize = memReq.size;
-    alloc.memoryTypeIndex = findMemoryType(
-        physicalDevice,
-        memReq.memoryTypeBits,
-        properties);
-
-    vkAllocateMemory(device, &alloc, nullptr, &result.memory);
-
-    vkBindImageMemory(device, result.image, result.memory, 0);
+    if (vmaCreateImage(
+            allocator,
+            &imageInfo,
+            &allocInfo,
+            &result.image,
+            &result.allocation,
+            nullptr) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create VMA image");
+    }
 
     return result;
 }
@@ -448,6 +444,21 @@ VkExtent2D VulkanRenderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capa
     }
 }
 
+void VulkanRenderer::createAllocator()
+{
+    VmaAllocatorCreateInfo allocatorInfo{};
+    allocatorInfo.physicalDevice = physicalDevice;
+    allocatorInfo.device = device;
+    allocatorInfo.instance = instance;
+
+    allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_0;
+
+    if (vmaCreateAllocator(&allocatorInfo, &allocator) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create VMA allocator");
+    }
+}
+
 void VulkanRenderer::setup()
 {
     std::cout << "[Vulkan] Setup started" << std::endl;
@@ -459,6 +470,7 @@ void VulkanRenderer::setup()
         createSurface();
         pickPhysicalDevice();
         createLogicalDevice();
+        createAllocator();
 
         createSwapChain();
         createImageViews();
@@ -983,15 +995,12 @@ void VulkanRenderer::initTextAtlasResources()
     // =========================================================
     // 1. CREATE STAGING BUFFER
     // =========================================================
-    AllocatedBuffer staging = createBuffer(
-        imageSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    AllocatedBuffer staging = createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
     void *data;
-    vkMapMemory(device, staging.memory, 0, imageSize, 0, &data);
+    vmaMapMemory(allocator, staging.allocation, &data);
     memcpy(data, atlas.atlasPixels().data(), static_cast<size_t>(imageSize));
-    vkUnmapMemory(device, staging.memory);
+    vmaUnmapMemory(allocator, staging.allocation);
 
     // =========================================================
     // 2. CREATE IMAGE
@@ -1001,11 +1010,9 @@ void VulkanRenderer::initTextAtlasResources()
         atlas.atlasHeight(),
         VK_FORMAT_R8G8B8A8_UNORM,
         VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
     textAtlasImage = texture.image;
-    textAtlasImageMemory = texture.memory;
 
     // =========================================================
     // 3. IMAGE LAYOUT TRANSITIONS (INLINE VERSION)
@@ -1086,8 +1093,7 @@ void VulkanRenderer::initTextAtlasResources()
     vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 
     // cleanup staging
-    vkDestroyBuffer(device, staging.buffer, nullptr);
-    vkFreeMemory(device, staging.memory, nullptr);
+    vmaDestroyBuffer(allocator, staging.buffer, staging.allocation);
 
     std::cout << "[Vulkan] Text atlas initilialised" << std::endl;
 }
@@ -1096,13 +1102,12 @@ void VulkanRenderer::createTextVertexBuffer()
 {
     const VkDeviceSize textVertexBufferSize = 1 << 20; // 1 MB
 
-    AllocatedBuffer buffer = createBuffer(
-        textVertexBufferSize,
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    AllocatedBuffer buffer = createBuffer(textVertexBufferSize,
+                                          VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                          VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     textVertexBuffer = buffer.buffer;
-    textVertexBufferMemory = buffer.memory;
+    textVertexBufferAllocation = buffer.allocation;
 }
 
 void VulkanRenderer::createTextDescriptorSetLayout()
@@ -1172,10 +1177,9 @@ void VulkanRenderer::cleanupTextResources()
         vkDestroyBuffer(device, textVertexBuffer, nullptr);
         textVertexBuffer = VK_NULL_HANDLE;
     }
-    if (textVertexBufferMemory != VK_NULL_HANDLE)
+    if (textVertexBufferAllocation != VK_NULL_HANDLE)
     {
-        vkFreeMemory(device, textVertexBufferMemory, nullptr);
-        textVertexBufferMemory = VK_NULL_HANDLE;
+        vmaDestroyBuffer(allocator, textVertexBuffer, textVertexBufferAllocation);
     }
 
     textResourcesInitialized = false;
@@ -1272,7 +1276,15 @@ void VulkanRenderer::createSyncObjects()
 void VulkanRenderer::cleanup()
 {
     std::cout << "[Vulkan] Renderer cleanup" << std::endl;
+
     cleanupTextResources();
+
+    if (allocator != VK_NULL_HANDLE)
+    {
+        vmaDestroyAllocator(allocator);
+        allocator = VK_NULL_HANDLE;
+    }
+
     // TODO: Clean up the rest of Vulkan resources
 }
 
@@ -2106,9 +2118,9 @@ void VulkanRenderer::renderPendingText(VkCommandBuffer commandBuffer)
     {
         VkDeviceSize bufferSize = vertices.size() * sizeof(TextVertex);
         void *data;
-        vkMapMemory(device, textVertexBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), bufferSize);
-        vkUnmapMemory(device, textVertexBufferMemory);
+        vmaMapMemory(allocator, textVertexBufferAllocation, &data);
+        memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
+        vmaUnmapMemory(allocator, textVertexBufferAllocation);
 
         VkDeviceSize offsets[] = {0};
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, textPipeline);

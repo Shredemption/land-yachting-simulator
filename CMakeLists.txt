@@ -1,6 +1,6 @@
 # Specify the minimum version of CMake
-cmake_minimum_required(VERSION 3.15)
-cmake_policy(SET CMP0091 NEW)
+cmake_minimum_required(VERSION 3.20)
+cmake_policy(SET CMP0111 NEW)
 
 # Project name
 project(Marama)
@@ -12,6 +12,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Prioritize static libraries (static libraries first, dynamic ones ignored)
 set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib)
 set(BUILD_SHARED_LIBS OFF)
+
+# Set Conan's toolchain and dependency paths
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_BINARY_DIR}/build/conan_toolchain.cmake" CACHE FILEPATH "Conan toolchain file")
 
 # Add all .cpp files in the src directory and its subdirectories
 file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
@@ -82,6 +85,7 @@ find_package(stb REQUIRED)
 find_package(jsoncons REQUIRED)
 find_package(freetype REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(VulkanMemoryAllocator REQUIRED)
 
 # Link libraries to the target
 target_link_libraries(${PROJECT_NAME}
@@ -93,6 +97,7 @@ target_link_libraries(${PROJECT_NAME}
     jsoncons
     Freetype::Freetype
     Vulkan::Vulkan
+    GPUOpen::VulkanMemoryAllocator
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
