@@ -141,7 +141,7 @@ struct SkyBoxData
     std::string right;
     std::string front;
     std::string back;
-    unsigned int textureID;
+    unsigned int textureHandle;
     unsigned int VAO;
     std::vector<std::string> faces() const
     {
@@ -166,7 +166,7 @@ struct ImageData
     float alpha;
     float rotation;
     bool mirrored;
-    unsigned int textureID;
+    unsigned int textureHandle;
 };
 
 struct LoadModelData

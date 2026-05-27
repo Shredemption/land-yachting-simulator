@@ -20,10 +20,8 @@ public:
 
     virtual void clear() = 0;
 
-    virtual unsigned int getStandaloneTextureID(const std::string &texturePath) = 0;
-    virtual unsigned int getTextureArrayID(const std::string &arrayName) = 0;
-    virtual unsigned int getStandaloneTextureUnit(const std::string &texturePath) = 0;
-    virtual unsigned int getTextureArrayUnit(const std::string &arrayName) = 0;
+    virtual unsigned int getTextureHandle(const std::string &texturePath) = 0;
+    virtual unsigned int getTextureArrayHandle(const std::string &arrayName) = 0;
     virtual int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath) = 0;
-    virtual void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers) = 0;
+    virtual void getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices) = 0;
 };

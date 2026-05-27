@@ -109,7 +109,7 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     }
 
     int texLoadCount = 0;
-    texLoadCount += static_cast<int>(TextureAssetManager::standaloneQueue.size());
+    texLoadCount += static_cast<int>(TextureAssetManager::textureQueue.size());
 
     for (const auto &arr : TextureAssetManager::getTextureArrays())
     {
@@ -120,7 +120,7 @@ Scene::Scene(std::string jsonPath, std::string sceneName)
     SceneManager::loadingProgress.first = 0;
     SceneManager::loadingProgress.second = texLoadCount;
 
-    TextureAssetManager::loadQueuedPixelData();
+    TextureAssetManager::resolveQueuedTextures();
 
     SceneManager::loadingState++;
 };
@@ -252,14 +252,14 @@ void Scene::loadUnitPlaneToScene(JSONUnitPlane unitPlane)
     {
         TextureAssetManager::queueTextureToArrayByFilename("waterDUDV.png", "waterTextureArray");
         TextureAssetManager::queueTextureToArrayByFilename("waterNormal.png", "waterTextureArray");
-        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueTexture("heightmap.jpg");
     }
 
     if (loadUnitPlane.shader == shaderID::ToonWater)
     {
-        TextureAssetManager::queueStandaloneTexture("toonWater.jpeg");
-        TextureAssetManager::queueStandaloneTexture("waterNormal.png");
-        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueTexture("toonWater.jpeg");
+        TextureAssetManager::queueTexture("waterNormal.png");
+        TextureAssetManager::queueTexture("heightmap.jpg");
     }
 }
 
@@ -299,11 +299,11 @@ void Scene::loadGridToScene(JSONGrid grid)
 
     if (loadGrid.shader == shaderID::ToonTerrain)
     {
-        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueTexture("heightmap.jpg");
     }
     else if (loadGrid.shader == shaderID::Terrain)
     {
-        TextureAssetManager::queueStandaloneTexture("heightmap.jpg");
+        TextureAssetManager::queueTexture("heightmap.jpg");
         TextureAssetManager::queueTextureToArrayByFilename("sand_diffuse.jpg", "sandTextureArray");
         TextureAssetManager::queueTextureToArrayByFilename("sand_displacement.png", "sandTextureArray");
         TextureAssetManager::queueTextureToArrayByFilename("sand_normal.png", "sandTextureArray");
@@ -353,7 +353,7 @@ void Scene::loadImageToScene(JSONImage image)
     loadImage.width = image.size[0];
     loadImage.height = image.size[1];
 
-    TextureAssetManager::queueStandaloneImage(image.file);
+    TextureAssetManager::queueImage(image.file);
 
     // Push text to scene
     this->images.push_back(loadImage);
@@ -393,13 +393,13 @@ void Scene::uploadToGPU()
     }
     for (auto &image : images)
     {
-        image.textureID = g_renderer->getTextureManager()->getStandaloneTextureID(image.file);
+        image.textureHandle = g_renderer->getTextureManager()->getTextureHandle(image.file);
     }
     if (hasSkyBox)
     {
         SkyboxCPU cpuRequest = TextureAssetManager::toSkyboxCPU(this->skyBox);
         SkyboxAsset cpuSky = TextureAssetManager::loadSkybox(cpuRequest);
-        this->skyBox.textureID = g_renderer->getTextureManager()->uploadSkybox(cpuSky);
+        this->skyBox.textureHandle = g_renderer->getTextureManager()->uploadSkybox(cpuSky);
         this->skyBox.VAO = MeshUtil::setupSkyBoxMesh();
     }
 }

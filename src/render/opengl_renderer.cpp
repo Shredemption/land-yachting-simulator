@@ -12,7 +12,7 @@ void OpenGLRenderer::renderModel(const RenderCommand &cmd)
     if (shader != lastShader)
     {
         // Set texture array index
-        shader->setInt("textureArray", cmd.textureUnit);
+        shader->setInt("textureArray", cmd.textureArrayHandle);
 
         // Send light and view position to shader
         shader->setVec3("lightPos", SceneManager::currentScene.get()->lightPos);
@@ -302,7 +302,7 @@ void OpenGLRenderer::renderSceneSkyBox()
         // Bind skybox
         glBindVertexArray(SceneManager::currentScene.get()->skyBox.VAO);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, SceneManager::currentScene.get()->skyBox.textureID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, SceneManager::currentScene.get()->skyBox.textureHandle);
 
         // Set view matrices
         shader->setMat4("u_view", glm::mat4(glm::mat3(Camera::u_view)));
@@ -651,7 +651,7 @@ void OpenGLRenderer::prepareRender(::RenderBuffer &prepBuffer)
             cmd.modelMatrix = model.u_model;
             cmd.normalMatrix = model.u_normal;
 
-            g_renderer->getTextureManager()->getTextureData(*model.model, cmd.textureUnit, cmd.textureArrayID, cmd.textureLayers);
+            g_renderer->getTextureManager()->getTextureBindings(*model.model, cmd.textureArrayHandle, cmd.textureLayers);
 
             cmd.animated = model.animated;
 

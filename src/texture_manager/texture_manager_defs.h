@@ -9,7 +9,7 @@ struct Texture
 {
     unsigned int index = 0;
     std::string path;
-    int textureUnit = -1;
+    int bindingSlot = -1;
 };
 
 struct PendingTexture
@@ -21,19 +21,18 @@ struct PendingTexture
     std::vector<unsigned char> pixelData;
     
     bool repeating = true;
-    unsigned int textureID = 0;
-    int textureUnit = -1;
+    unsigned int textureHandle = 0;
 };
 
 struct TextureArray
 {
-    unsigned int textureArrayID = 0;
+    unsigned int textureArrayHandle = 0;
     int width = 0;
     int height = 0;
     std::vector<PendingTexture> layers;
     std::unordered_map<std::string, int> textureLayerMap;
 
-    int textureUnit = -1;
+    int bindingSlot = -1;
 
     bool ready = false;
 };

@@ -66,28 +66,28 @@ bool TextureAssetManager::loadTexturePixels(const std::string &path, bool forceR
     return true;
 }
 
-void TextureAssetManager::queueStandalone(const std::string &path, bool repeating)
+void TextureAssetManager::queueTextureInternal(const std::string &path, bool repeating)
 {
     std::lock_guard<std::mutex> lock(mutex);
 
-    if (standaloneAssets.find(path) != standaloneAssets.end())
+    if (standaloneTextures.find(path) != standaloneTextures.end())
         return;
 
-    if (pendingStandalonePaths.find(path) != pendingStandalonePaths.end())
+    if (pendingTexturePaths.find(path) != pendingTexturePaths.end())
         return;
 
-    pendingStandalonePaths.insert(path);
-    standaloneQueue.emplace(path, repeating);
+    pendingTexturePaths.insert(path);
+    textureQueue.emplace(path, repeating);
 }
 
-void TextureAssetManager::queueStandaloneTexture(const std::string &fileName)
+void TextureAssetManager::queueTexture(const std::string &fileName)
 {
-    queueStandalone("resources/textures/" + fileName, true);
+    queueTextureInternal("resources/textures/" + fileName, true);
 }
 
-void TextureAssetManager::queueStandaloneImage(const std::string &fileName)
+void TextureAssetManager::queueImage(const std::string &fileName)
 {
-    queueStandalone("resources/images/" + fileName, false);
+    queueTextureInternal("resources/images/" + fileName, false);
 }
 
 void TextureAssetManager::queueTextureToArray(const std::string &arrayName, const std::string &texturePath)
@@ -170,7 +170,7 @@ void TextureAssetManager::loadTexturesForShader(const shaderID &shader, const st
         if (!textureArrayName.empty())
             queueTextureToArray(textureArrayName, texPath);
         else
-            queueStandalone(texPath, true);
+            queueTextureInternal(texPath, true);
 
         outTexturePaths.push_back(texPath);
     }
@@ -178,17 +178,17 @@ void TextureAssetManager::loadTexturesForShader(const shaderID &shader, const st
     outTextureArrayName = textureArrayName;
 }
 
-void TextureAssetManager::loadQueuedPixelData()
+void TextureAssetManager::resolveQueuedTextures()
 {
     std::vector<std::pair<std::string, bool>> standaloneItems;
 
     {
         std::lock_guard<std::mutex> lock(mutex);
 
-        while (!standaloneQueue.empty())
+        while (!textureQueue.empty())
         {
-            standaloneItems.push_back(standaloneQueue.front());
-            standaloneQueue.pop();
+            standaloneItems.push_back(textureQueue.front());
+            textureQueue.pop();
         }
     }
 
@@ -208,8 +208,8 @@ void TextureAssetManager::loadQueuedPixelData()
                 {
                     std::lock_guard<std::mutex> lock(mutex);
 
-                    standaloneAssets[path] = std::move(tex);
-                    pendingStandalonePaths.erase(path);
+                    standaloneTextures[path] = std::move(tex);
+                    pendingTexturePaths.erase(path);
 
                     SceneManager::loadingProgress.first++;
                 }
@@ -288,11 +288,11 @@ void TextureAssetManager::clear()
 {
     std::lock_guard<std::mutex> lock(mutex);
 
-    while (!standaloneQueue.empty())
-        standaloneQueue.pop();
+    while (!textureQueue.empty())
+        textureQueue.pop();
 
-    pendingStandalonePaths.clear();
-    standaloneAssets.clear();
+    pendingTexturePaths.clear();
+    standaloneTextures.clear();
 
     for (auto &[name, arr] : textureArrays)
     {
@@ -316,9 +316,9 @@ std::string TextureAssetManager::getTextureArrayName(ModelType modelType)
     }
 }
 
-std::unordered_map<std::string, PendingTexture> &TextureAssetManager::getStandaloneAssets()
+std::unordered_map<std::string, PendingTexture> &TextureAssetManager::getStandaloneTextures()
 {
-    return standaloneAssets;
+    return standaloneTextures;
 }
 
 std::unordered_map<std::string, TextureArray> &TextureAssetManager::getTextureArrays()

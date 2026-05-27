@@ -89,7 +89,7 @@ unsigned int OpenGLTextureManager::createTextureArray(TextureArray &array, const
     std::lock_guard<std::mutex> lock(mutex);
 
     if (array.ready)
-        return array.textureArrayID;
+        return array.textureArrayHandle;
 
     if (layers.empty())
         return 0;
@@ -98,12 +98,12 @@ unsigned int OpenGLTextureManager::createTextureArray(TextureArray &array, const
     int height = layers[0].height;
 
     // If caller already assigned a texture unit (reserved), use it; otherwise allocate one
-    if (array.textureUnit == -1)
-        array.textureUnit = allocateUnit();
+    if (array.bindingSlot == -1)
+        array.bindingSlot = allocateUnit();
 
-    glGenTextures(1, &array.textureArrayID);
-    glActiveTexture(GL_TEXTURE0 + array.textureUnit);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, array.textureArrayID);
+    glGenTextures(1, &array.textureArrayHandle);
+    glActiveTexture(GL_TEXTURE0 + array.bindingSlot);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, array.textureArrayHandle);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -145,12 +145,12 @@ unsigned int OpenGLTextureManager::createTextureArray(TextureArray &array, const
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     // Keep the texture array bound to its assigned unit so shaders can sample it without per-frame rebinding
-    glActiveTexture(GL_TEXTURE0 + array.textureUnit);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, array.textureArrayID);
+    glActiveTexture(GL_TEXTURE0 + array.bindingSlot);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, array.textureArrayHandle);
 
     array.ready = true;
 
-    return array.textureArrayID;
+    return array.textureArrayHandle;
 }
 
 unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxAsset &skybox)
@@ -200,7 +200,7 @@ unsigned int OpenGLTextureManager::uploadSkybox(const SkyboxAsset &skybox)
 
 void OpenGLTextureManager::uploadPending()
 {
-    auto &standalones = TextureAssetManager::getStandaloneAssets();
+    auto &standalones = TextureAssetManager::getStandaloneTextures();
 
     for (auto it = standalones.begin(); it != standalones.end(); ++it)
     {
@@ -214,9 +214,9 @@ void OpenGLTextureManager::uploadPending()
         TextureArray &arr = it->second;
 
         // Reserve deterministic units for texture arrays so they remain bound after upload
-        if (arr.textureUnit == -1)
+        if (arr.bindingSlot == -1)
         {
-            arr.textureUnit = nextReservedUnit++;
+            arr.bindingSlot = nextReservedUnit++;
         }
 
         createTextureArray(arr, arr.layers);
@@ -238,7 +238,7 @@ void OpenGLTextureManager::clear()
     nextReservedUnit = reservedBase;
 }
 
-unsigned int OpenGLTextureManager::getStandaloneTextureID(const std::string &texturePath)
+unsigned int OpenGLTextureManager::getTextureHandle(const std::string &texturePath)
 {
     std::lock_guard<std::mutex> lock(mutex);
 
@@ -260,13 +260,13 @@ unsigned int OpenGLTextureManager::getStandaloneTextureUnit(const std::string &t
     return 0;
 }
 
-unsigned int OpenGLTextureManager::getTextureArrayID(const std::string &arrayName)
+unsigned int OpenGLTextureManager::getTextureArrayHandle(const std::string &arrayName)
 {
     std::lock_guard<std::mutex> lock(mutex);
 
     auto it = arrayGPUMap.find(arrayName);
     if (it != arrayGPUMap.end())
-        return it->second->textureArrayID;
+        return it->second->textureArrayHandle;
 
     return 0;
 }
@@ -277,7 +277,7 @@ unsigned int OpenGLTextureManager::getTextureArrayUnit(const std::string &arrayN
 
     auto it = arrayGPUMap.find(arrayName);
     if (it != arrayGPUMap.end() && it->second)
-        return it->second->textureUnit;
+        return it->second->bindingSlot;
 
     return 0;
 }
@@ -306,28 +306,26 @@ int OpenGLTextureManager::getTextureLayerIndex(const std::string &arrayName, con
     return -1;
 }
 
-void OpenGLTextureManager::getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers)
+void OpenGLTextureManager::getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices)
 {
-    textureLayers.clear();
+    textureLayerIndices.clear();
 
     auto &arrays = TextureAssetManager::getTextureArrays();
 
     auto it = arrays.find(model.textureArrayName);
     if (it == arrays.end())
     {
-        textureUnit = 0;
-        textureArrayID = 0;
+        textureArrayHandle = 0;
         return;
     }
 
     const TextureArray &arr = it->second;
 
-    textureArrayID = arr.textureArrayID;
-    textureUnit = arr.textureUnit;
+    textureArrayHandle = arr.textureArrayHandle;
 
     for (const auto &path : model.texturePaths)
     {
         int layer = getTextureLayerIndex(model.textureArrayName, path);
-        textureLayers.push_back(layer);
+        textureLayerIndices.push_back(layer);
     }
 }

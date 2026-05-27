@@ -30,27 +30,15 @@ void VulkanTextureManager::clear()
     std::cout << "[Vulkan] clear stub\n";
 }
 
-unsigned int VulkanTextureManager::getStandaloneTextureID(const std::string &texturePath)
+unsigned int VulkanTextureManager::getTextureHandle(const std::string &texturePath)
 {
-    std::cout << "[Vulkan] getStandaloneTextureID stub\n";
+    std::cout << "[Vulkan] getTextureHandle stub\n";
     return 0;
 }
 
-unsigned int VulkanTextureManager::getTextureArrayID(const std::string &arrayName)
+unsigned int VulkanTextureManager::getTextureArrayHandle(const std::string &arrayName)
 {
-    std::cout << "[Vulkan] getTextureArrayID stub\n";
-    return 0;
-}
-
-unsigned int VulkanTextureManager::getStandaloneTextureUnit(const std::string &texturePath)
-{
-    std::cout << "[Vulkan] getStandaloneTextureUnit stub\n";
-    return 0;
-}
-
-unsigned int VulkanTextureManager::getTextureArrayUnit(const std::string &arrayName)
-{
-    std::cout << "[Vulkan] getTextureArrayUnit stub\n";
+    std::cout << "[Vulkan] getTextureArrayHandle stub\n";
     return 0;
 }
 
@@ -60,7 +48,7 @@ int VulkanTextureManager::getTextureLayerIndex(const std::string &arrayName, con
     return 0;
 }
 
-void VulkanTextureManager::getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers)
+void VulkanTextureManager::getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices)
 {
-    std::cout << "[Vulkan] getTextureData stub\n";
+    std::cout << "[Vulkan] getTextureBindings stub\n";
 }

@@ -47,8 +47,7 @@ struct RenderCommand
     glm::vec3 color;
     std::shared_ptr<std::vector<MeshVariant>> meshes;
 
-    unsigned int textureUnit;
-    unsigned int textureArrayID;
+    unsigned int textureArrayHandle;
     std::vector<int> textureLayers;
 
     glm::mat4 modelMatrix;

@@ -22,12 +22,12 @@ public:
 
     void clear() override;
 
-    unsigned int getStandaloneTextureID(const std::string &texturePath) override;
-    unsigned int getTextureArrayID(const std::string &arrayName) override;
-    unsigned int getStandaloneTextureUnit(const std::string &texturePath) override;
-    unsigned int getTextureArrayUnit(const std::string &arrayName) override;
+    unsigned int getTextureHandle(const std::string &texturePath) override;
+    unsigned int getTextureArrayHandle(const std::string &arrayName) override;
+    unsigned int getStandaloneTextureUnit(const std::string &texturePath);
+    unsigned int getTextureArrayUnit(const std::string &arrayName);
     int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath) override;
-    void getTextureData(const Model &model, unsigned int &textureUnit, unsigned int &textureArrayID, std::vector<int> &textureLayers) override;
+    void getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices) override;
 
 private:
     struct GPUTexture

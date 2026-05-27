@@ -147,9 +147,9 @@ void SceneManager::switchEngineState(const EngineState &to)
     case EngineState::Title:
     {
         unload();
-        TextureAssetManager::queueStandaloneImage("title-figure.png");
-        TextureAssetManager::queueStandaloneImage("title-figure-black.png");
-        TextureAssetManager::loadQueuedPixelData();
+        TextureAssetManager::queueImage("title-figure.png");
+        TextureAssetManager::queueImage("title-figure-black.png");
+        TextureAssetManager::resolveQueuedTextures();
         g_renderer->getTextureManager()->uploadPending();
         break;
     }
