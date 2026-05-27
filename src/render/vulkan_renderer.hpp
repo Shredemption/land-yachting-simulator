@@ -8,6 +8,21 @@
 #include "settings_manager/settings.h"
 #include "texture_manager/vulkan_texture_manager.hpp"
 
+struct VulkanContext
+{
+    VkDevice device;
+    VkPhysicalDevice physicalDevice;
+    VkQueue graphicsQueue;
+    VkCommandPool commandPool;
+
+    VmaAllocator allocator;
+
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer cmd);
+
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+};
+
 struct QueueFamilyIndices
 {
     std::optional<uint32_t> graphicsFamily;
@@ -90,6 +105,8 @@ private:
 class VulkanRenderer : public BaseRenderer
 {
 public:
+    VulkanContext context;
+
     void setup() override;
     void cleanup() override;
     void render() override;
@@ -109,13 +126,9 @@ private:
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
     std::unique_ptr<VulkanTextureManager> textureManager;
-    VmaAllocator allocator = VK_NULL_HANDLE;
 
     VkInstance instance = VK_NULL_HANDLE;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device = VK_NULL_HANDLE;
-    VkQueue graphicsQueue;
     VkQueue presentQueue;
     VkSwapchainKHR swapChain = VK_NULL_HANDLE;
     std::vector<VkImage> swapChainImages;
@@ -126,7 +139,6 @@ private:
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline graphicsPipeline = VK_NULL_HANDLE;
     std::vector<VkFramebuffer> swapChainFramebuffers;
-    VkCommandPool commandPool = VK_NULL_HANDLE;
     std::vector<VkCommandBuffer> commandBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -157,8 +169,6 @@ private:
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     std::vector<const char *> getDeviceExtensions();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-    VkCommandBuffer beginSingleTimeCommands();
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     // Vulkan text rendering resources
     void initTextResources();

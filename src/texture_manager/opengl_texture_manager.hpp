@@ -14,11 +14,8 @@
 class OpenGLTextureManager : public ITextureManager
 {
 public:
-    unsigned int createTexture2D(const PendingTexture &tex) override;
-    unsigned int createTextureArray(TextureArray &array, const std::vector<PendingTexture> &layers) override;
-    unsigned int uploadSkybox(const SkyboxAsset &skybox) override;
-
     void uploadPending() override;
+    unsigned int uploadSkybox(const SkyboxAsset &skybox) override;
 
     void clear() override;
 
@@ -58,4 +55,6 @@ private:
     int allocateUnit();
     GLenum formatFromChannels(int channels);
     int getSkyboxUnit();
+    unsigned int createTexture2D(const PendingTexture &tex);
+    unsigned int createTextureArray(TextureArray &array, const std::vector<PendingTexture> &layers);
 };
