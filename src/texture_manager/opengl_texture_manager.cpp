@@ -306,7 +306,7 @@ int OpenGLTextureManager::getTextureLayerIndex(const std::string &arrayName, con
     return -1;
 }
 
-void OpenGLTextureManager::getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices)
+void OpenGLTextureManager::getTextureBindings(const Model &model, unsigned int &textureBinding, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices)
 {
     textureLayerIndices.clear();
 
@@ -315,12 +315,14 @@ void OpenGLTextureManager::getTextureBindings(const Model &model, unsigned int &
     auto it = arrays.find(model.textureArrayName);
     if (it == arrays.end())
     {
+        textureBinding = 0;
         textureArrayHandle = 0;
         return;
     }
 
     const TextureArray &arr = it->second;
 
+    textureBinding = arr.bindingSlot;
     textureArrayHandle = arr.textureArrayHandle;
 
     for (const auto &path : model.texturePaths)

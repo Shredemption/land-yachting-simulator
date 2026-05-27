@@ -23,5 +23,5 @@ public:
     virtual unsigned int getTextureHandle(const std::string &texturePath) = 0;
     virtual unsigned int getTextureArrayHandle(const std::string &arrayName) = 0;
     virtual int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath) = 0;
-    virtual void getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices) = 0;
+    virtual void getTextureBindings(const Model &model, unsigned int &textureBinding, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices) = 0;
 };

@@ -1453,7 +1453,7 @@ void VulkanRenderer::prepareRender(RenderBuffer &prepBuffer)
             cmd.modelMatrix = model.u_model;
             cmd.normalMatrix = model.u_normal;
 
-            g_renderer->getTextureManager()->getTextureBindings(*model.model, cmd.textureArrayHandle, cmd.textureLayers);
+            g_renderer->getTextureManager()->getTextureBindings(*model.model, cmd.textureBinding, cmd.textureArrayHandle, cmd.textureLayers);
 
             cmd.animated = model.animated;
 

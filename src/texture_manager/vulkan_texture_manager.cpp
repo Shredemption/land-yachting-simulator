@@ -48,7 +48,7 @@ int VulkanTextureManager::getTextureLayerIndex(const std::string &arrayName, con
     return 0;
 }
 
-void VulkanTextureManager::getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices)
+void VulkanTextureManager::getTextureBindings(const Model &model, unsigned int &textureBinding, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices)
 {
     std::cout << "[Vulkan] getTextureBindings stub\n";
 }

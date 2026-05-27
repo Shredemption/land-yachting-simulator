@@ -12,7 +12,7 @@ void OpenGLRenderer::renderModel(const RenderCommand &cmd)
     if (shader != lastShader)
     {
         // Set texture array index
-        shader->setInt("textureArray", cmd.textureArrayHandle);
+        shader->setInt("textureArray", cmd.textureBinding);
 
         // Send light and view position to shader
         shader->setVec3("lightPos", SceneManager::currentScene.get()->lightPos);
@@ -651,7 +651,7 @@ void OpenGLRenderer::prepareRender(::RenderBuffer &prepBuffer)
             cmd.modelMatrix = model.u_model;
             cmd.normalMatrix = model.u_normal;
 
-            g_renderer->getTextureManager()->getTextureBindings(*model.model, cmd.textureArrayHandle, cmd.textureLayers);
+            g_renderer->getTextureManager()->getTextureBindings(*model.model, cmd.textureBinding, cmd.textureArrayHandle, cmd.textureLayers);
 
             cmd.animated = model.animated;
 

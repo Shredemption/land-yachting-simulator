@@ -16,5 +16,5 @@ public:
     unsigned int getTextureHandle(const std::string &texturePath) override;
     unsigned int getTextureArrayHandle(const std::string &arrayName) override;
     int getTextureLayerIndex(const std::string &arrayName, const std::string &texturePath) override;
-    void getTextureBindings(const Model &model, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices) override;
+    void getTextureBindings(const Model &model, unsigned int &textureBinding, unsigned int &textureArrayHandle, std::vector<int> &textureLayerIndices) override;
 };
