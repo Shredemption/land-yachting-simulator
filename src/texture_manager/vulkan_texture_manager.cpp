@@ -173,7 +173,56 @@ void VulkanTextureManager::uploadPending()
 
 void VulkanTextureManager::clear()
 {
-    std::cout << "[Vulkan] clear stub\n";
+    for (auto &[path, tex] : textures)
+    {
+        if (tex.view)
+            vkDestroyImageView(context.device, tex.view, nullptr);
+
+        if (tex.sampler)
+            vkDestroySampler(context.device, tex.sampler, nullptr);
+
+        if (tex.image)
+            vkDestroyImage(context.device, tex.image, nullptr);
+
+        if (tex.memory)
+            vkFreeMemory(context.device, tex.memory, nullptr);
+    }
+
+    textures.clear();
+
+    for (auto &[name, arr] : arrays)
+    {
+        if (arr.view)
+            vkDestroyImageView(context.device, arr.view, nullptr);
+
+        if (arr.sampler)
+            vkDestroySampler(context.device, arr.sampler, nullptr);
+
+        if (arr.image)
+            vkDestroyImage(context.device, arr.image, nullptr);
+
+        if (arr.memory)
+            vkFreeMemory(context.device, arr.memory, nullptr);
+    }
+
+    arrays.clear();
+
+    for (auto &[name, sky] : skyboxes)
+    {
+        if (sky.view)
+            vkDestroyImageView(context.device, sky.view, nullptr);
+
+        if (sky.sampler)
+            vkDestroySampler(context.device, sky.sampler, nullptr);
+
+        if (sky.image)
+            vkDestroyImage(context.device, sky.image, nullptr);
+
+        if (sky.memory)
+            vkFreeMemory(context.device, sky.memory, nullptr);
+    }
+
+    skyboxes.clear();
 }
 
 unsigned int VulkanTextureManager::getTextureHandle(const std::string &texturePath)
