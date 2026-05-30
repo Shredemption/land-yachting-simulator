@@ -71,25 +71,12 @@ private:
         bool ready = false;
     };
 
-    struct StagingBuffer
-    {
-        VkBuffer buffer;
-        VmaAllocation allocation;
-    };
-
     std::unordered_map<std::string, VulkanTexture> textures;
     std::unordered_map<std::string, VulkanTextureArray> arrays;
     std::unordered_map<std::string, VulkanSkybox> skyboxes;
 
     VulkanTexture createTexture2D(const PendingTexture &tex);
     VulkanTextureArray createTextureArray(TextureArray &, const std::vector<PendingTexture> &layers);
-
-    void createStagingBuffer(const void *data, VkDeviceSize size, VkBuffer &buffer, VmaAllocation &allocation);
-
-    VkImageView createImageView(VkImage image, VkFormat format);
-    VkImageView createImageViewArray(VkImage image, VkFormat format);
-
-    VkSampler createSampler(bool repeating);
 
     void createImage2D(uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags usage, VkImage &image, VkDeviceMemory &memory);
     void createImage2DArray(uint32_t width, uint32_t height, uint32_t layerCount, VkFormat format, VkImageUsageFlags usage, VkImage &image, VkDeviceMemory &memory);

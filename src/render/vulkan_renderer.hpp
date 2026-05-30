@@ -7,21 +7,7 @@
 #include "render/base_renderer.hpp"
 #include "settings_manager/settings.h"
 #include "texture_manager/vulkan_texture_manager.hpp"
-
-struct VulkanContext
-{
-    VkDevice device;
-    VkPhysicalDevice physicalDevice;
-    VkQueue graphicsQueue;
-    VkCommandPool commandPool;
-
-    VmaAllocator allocator;
-
-    VkCommandBuffer beginSingleTimeCommands();
-    void endSingleTimeCommands(VkCommandBuffer cmd);
-
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
-};
+#include "vulkan_context.hpp"
 
 struct QueueFamilyIndices
 {
@@ -186,8 +172,8 @@ private:
     void initTextPipeline();
     void initTextAtlasResources();
     void createTextVertexBuffer();
-    void cleanupTextResources();
     void createTextDescriptorSetLayout();
+    void cleanupTextResources();
     void renderPendingText(VkCommandBuffer commandBuffer);
 
     VkImage textAtlasImage = VK_NULL_HANDLE;
@@ -203,9 +189,29 @@ private:
     VkPipeline textPipeline = VK_NULL_HANDLE;
     bool textResourcesInitialized = false;
 
+    void initImageResources();
+    void initImagePipeline();
+    void initImageAtlasResources();
+    void createImageVertexBuffer();
+    void createImageDescriptorSetLayout();
+    void cleanupImageResources();
+    void renderPendingImages(VkCommandBuffer commandBuffer);
+
+    VkPipeline imagePipeline = VK_NULL_HANDLE;
+    VkPipelineLayout imagePipelineLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout imageDescriptorSetLayout = VK_NULL_HANDLE;
+    VkDescriptorPool imageDescriptorPool;
+    VkBuffer imageVertexBuffer = VK_NULL_HANDLE;
+    VmaAllocation imageVertexBufferAllocation;
+    VkDescriptorSet imageDescriptorSet;
+    VkImage dummyImage;
+    VkSampler dummySampler;
+    bool imageResourcesInitialized = false;
+
     AllocatedBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
     AllocatedImage createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);
     void copyBufferToImage(VkBuffer stagingBuffer, VkImage textAtlasImage, const FontAtlas atlas);
+    void copyBufferToImage(VkBuffer stagingBuffer, VkImage image, uint32_t width, uint32_t height);
     void transition(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     struct TextDraw
@@ -215,7 +221,28 @@ private:
         float alpha;
     };
 
+    struct ImageDraw
+    {
+        glm::vec2 position;
+        float width;
+        float height;
+
+        float alpha;
+        glm::vec2 scale;
+        bool uniformScaling;
+        float rotation;
+        bool mirrored;
+    };
+
+    struct ImageVertex
+    {
+        float position[2];
+        float uv[2];
+        float color[4];
+    };
+
     std::vector<TextDraw> pendingTextDraws;
+    std::vector<ImageDraw> pendingImageDraws;
 
     std::vector<char> readFile(const std::string &filename);
     VkShaderModule createShaderModule(const std::vector<char> &code);

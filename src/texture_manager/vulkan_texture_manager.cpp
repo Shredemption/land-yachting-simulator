@@ -17,14 +17,7 @@ VulkanTextureManager::VulkanTexture VulkanTextureManager::createTexture2D(const 
         static_cast<VkDeviceSize>(tex.height) *
         static_cast<VkDeviceSize>(tex.channels);
 
-    VkBuffer stagingBuffer;
-    VmaAllocation stagingAlloc;
-
-    createStagingBuffer(
-        tex.pixelData.data(),
-        imageSize,
-        stagingBuffer,
-        stagingAlloc);
+    auto staging = context.createStagingBuffer(tex.pixelData.data(), imageSize);
 
     createImage2D(
         tex.width,
@@ -40,7 +33,7 @@ VulkanTextureManager::VulkanTexture VulkanTextureManager::createTexture2D(const 
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     copyBufferToImage(
-        stagingBuffer,
+        staging.buffer,
         result.image,
         tex.width,
         tex.height);
@@ -50,15 +43,15 @@ VulkanTextureManager::VulkanTexture VulkanTextureManager::createTexture2D(const 
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    result.view = createImageView(
+    result.view = context.createImageView(
         result.image,
         result.format);
 
-    result.sampler = createSampler(tex.repeating);
+    result.sampler = context.createSampler(tex.repeating);
 
     result.ready = true;
 
-    vmaDestroyBuffer(context.allocator, stagingBuffer, stagingAlloc);
+    vmaDestroyBuffer(context.allocator, staging.buffer, staging.allocation);
 
     return result;
 }
@@ -78,17 +71,10 @@ VulkanTextureManager::VulkanTextureArray VulkanTextureManager::createTextureArra
 
     VkDeviceSize totalSize = layerSize * result.layerCount;
 
-    VkBuffer stagingBuffer;
-    VmaAllocation stagingAlloc;
-
-    createStagingBuffer(
-        nullptr,
-        totalSize,
-        stagingBuffer,
-        stagingAlloc);
+    auto staging = context.createStagingBuffer(nullptr, totalSize);
 
     void *mapped = nullptr;
-    vmaMapMemory(context.allocator, stagingAlloc, &mapped);
+    vmaMapMemory(context.allocator, staging.allocation, &mapped);
 
     size_t offset = 0;
     int layerIndex = 0;
@@ -105,7 +91,7 @@ VulkanTextureManager::VulkanTextureArray VulkanTextureManager::createTextureArra
         offset += layerSize;
     }
 
-    vmaUnmapMemory(context.allocator, stagingAlloc);
+    vmaUnmapMemory(context.allocator, staging.allocation);
 
     createImage2DArray(
         array.width,
@@ -122,7 +108,7 @@ VulkanTextureManager::VulkanTextureArray VulkanTextureManager::createTextureArra
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     copyBufferToImageArray(
-        stagingBuffer,
+        staging.buffer,
         result.image,
         array.width,
         array.height,
@@ -133,15 +119,15 @@ VulkanTextureManager::VulkanTextureArray VulkanTextureManager::createTextureArra
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    result.view = createImageViewArray(
+    result.view = context.createImageViewArray(
         result.image,
         result.format);
 
-    result.sampler = createSampler(true);
+    result.sampler = context.createSampler(true);
 
     result.ready = true;
 
-    vmaDestroyBuffer(context.allocator, stagingBuffer, stagingAlloc);
+    vmaDestroyBuffer(context.allocator, staging.buffer, staging.allocation);
 
     return result;
 }
@@ -248,38 +234,6 @@ void VulkanTextureManager::getTextureBindings(const Model &model, unsigned int &
     std::cout << "[Vulkan] getTextureBindings stub\n";
 }
 
-void VulkanTextureManager::createStagingBuffer(const void *data, VkDeviceSize size, VkBuffer &buffer, VmaAllocation &allocation)
-{
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    VmaAllocationCreateInfo allocInfo{};
-    allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-                      VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-    vmaCreateBuffer(
-        context.allocator,
-        &bufferInfo,
-        &allocInfo,
-        &buffer,
-        &allocation,
-        nullptr);
-
-    void *mapped = nullptr;
-    vmaMapMemory(context.allocator, allocation, &mapped);
-
-    if (data)
-    {
-        memcpy(mapped, data, static_cast<size_t>(size));
-    }
-
-    vmaUnmapMemory(context.allocator, allocation);
-}
-
 void VulkanTextureManager::createImage2D(uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags usage, VkImage &image, VkDeviceMemory &memory)
 {
     VkImageCreateInfo imageInfo{};
@@ -355,75 +309,6 @@ void VulkanTextureManager::createImage2DArray(uint32_t width, uint32_t height, u
 
     vkAllocateMemory(context.device, &allocInfo, nullptr, &memory);
     vkBindImageMemory(context.device, image, memory, 0);
-}
-
-VkImageView VulkanTextureManager::createImageView(VkImage image, VkFormat format)
-{
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = format;
-
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
-
-    VkImageView view;
-    vkCreateImageView(context.device, &viewInfo, nullptr, &view);
-
-    return view;
-}
-
-VkImageView VulkanTextureManager::createImageViewArray(VkImage image, VkFormat format)
-{
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-
-    viewInfo.image = image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-    viewInfo.format = format;
-
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
-
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-
-    VkImageView view;
-    VkResult result = vkCreateImageView(context.device, &viewInfo, nullptr, &view);
-
-    if (result != VK_SUCCESS)
-        throw std::runtime_error("Failed to create texture array image view");
-
-    return view;
-}
-
-VkSampler VulkanTextureManager::createSampler(bool repeating)
-{
-    VkSamplerCreateInfo info{};
-    info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-
-    info.magFilter = VK_FILTER_LINEAR;
-    info.minFilter = VK_FILTER_LINEAR;
-
-    info.addressModeU = repeating ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    info.addressModeV = info.addressModeU;
-    info.addressModeW = info.addressModeU;
-
-    info.anisotropyEnable = VK_TRUE;
-    info.maxAnisotropy = 16;
-
-    info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    info.unnormalizedCoordinates = VK_FALSE;
-
-    VkSampler sampler;
-    vkCreateSampler(context.device, &info, nullptr, &sampler);
-
-    return sampler;
 }
 
 void VulkanTextureManager::transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
