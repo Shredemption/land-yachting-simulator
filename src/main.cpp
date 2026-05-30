@@ -138,7 +138,6 @@ int main()
             break;
 
         case EngineState::None:
-            g_renderer->renderBlankScreen();
             glfwSetWindowShouldClose(WindowManager::window, GLFW_TRUE);
             break;
 
