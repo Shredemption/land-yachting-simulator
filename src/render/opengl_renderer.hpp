@@ -29,7 +29,8 @@ public:
     void renderBlankScreen() override;
     void renderLoadingScreen() override;
     void savePauseBackground() override;
-    void renderMenu(EngineState state) override;
+    void drawPauseBackground(float darken, float darkenOffset) override;
+    void setClearColor(float r, float g, float b, float a) override;
 
     void setup() override;
     void cleanup() override;
@@ -38,6 +39,7 @@ public:
     void render() override;
     void prepareRender(::RenderBuffer &prepBuffer) override;
     void executeRender(::RenderBuffer &renderBuffer, bool toScreen = true) override;
+    void renderMenu(EngineState state) override;
 
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left) override;
     renderEngine getType() const override;
@@ -57,7 +59,7 @@ private:
     void renderTransparentPlane(const RenderCommand &cmd);
     void renderGrid(const RenderCommand &cmd);
     void renderSceneSkyBox();
-    void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f, const glm::vec2 scale = {1.0, 1.0f}, const bool uniformScaling = false, const float rotation = 0.0f, const bool mirrored = false);
+    void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f, const glm::vec2 scale = {1.0, 1.0f}, const bool uniformScaling = false, const float rotation = 0.0f, const bool mirrored = false) override;
     void renderSceneImages();
     void renderReflectRefract(std::vector<RenderCommand> &renderBuffer);
     void renderTestQuad(unsigned int texture, int x, int y);

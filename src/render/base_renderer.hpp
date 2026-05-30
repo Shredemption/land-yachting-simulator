@@ -6,6 +6,8 @@
 #include "render/i_renderer.hpp"
 #include "render/font_atlas.hpp"
 
+enum class EngineState;
+
 class BaseRenderer : public IRenderer
 {
 public:
@@ -26,6 +28,8 @@ protected:
     };
 
     std::vector<TextQuad> buildTextQuads(const std::string &text, float x, float y, float scale, TextAlign textAlign) const;
+
+    void buildMenu(EngineState state);
 
 private:
     FontAtlas fontAtlas;

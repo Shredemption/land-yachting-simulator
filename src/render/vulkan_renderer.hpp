@@ -52,6 +52,12 @@ struct AllocatedImage
     VmaAllocation allocation = VK_NULL_HANDLE;
 };
 
+struct ClearColorConfig
+{
+    VkClearValue clearColor{};
+    bool clearColorSet = false;
+};
+
 class GraphicsPipelineBuilder
 {
 public:
@@ -110,14 +116,18 @@ public:
     void setup() override;
     void cleanup() override;
     void render() override;
+    void setClearColor(float r, float g, float b, float a) override;
     void prepareRender(RenderBuffer &prepBuffer) override;
     void executeRender(RenderBuffer &renderBuffer, bool toScreen = true) override;
+    void renderMenu(EngineState state) override;
     void resize(int width, int height) override;
     void renderBlankScreen() override;
     void renderLoadingScreen() override;
     void savePauseBackground() override;
-    void renderMenu(EngineState state) override;
+    void drawPauseBackground(float darken, float darkenOffset) override;
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color, float alpha = 1.0f, TextAlign textAlign = TextAlign::Left) override;
+    void renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha = 1.0f,
+                     const glm::vec2 scale = {1.0, 1.0f}, const bool uniformScaling = false, const float rotation = 0.0f, const bool mirrored = false) override;
     renderEngine getType() const override { return renderEngine::Vulkan; }
 
     ITextureManager *getTextureManager() override;
@@ -145,6 +155,7 @@ private:
     std::vector<VkFence> inFlightFences;
     uint32_t currentFrame = 0;
     bool framebufferResized = false;
+    ClearColorConfig clearColorConfig;
 
     void createAllocator();
     void createInstance();

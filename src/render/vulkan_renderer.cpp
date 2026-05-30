@@ -1801,7 +1801,11 @@ void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 
     VkClearValue clearColor{};
 
-    if (SceneManager::currentScene)
+    if (clearColorConfig.clearColorSet)
+    {
+        clearColor = clearColorConfig.clearColor;
+    }
+    else if (SceneManager::currentScene)
     {
         clearColor.color = {{
             SceneManager::currentScene->bgColor.r,
@@ -1812,7 +1816,7 @@ void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
     }
     else
     {
-        clearColor.color = {0.1, 0.1, 0.1};
+        clearColor.color = {{0.1f, 0.1f, 0.1f, 1.0f}};
     }
 
     renderPassInfo.clearValueCount = 1;
@@ -1899,6 +1903,20 @@ void VulkanRenderer::savePauseBackground()
     // TODO: Save pause background with Vulkan resources
 }
 
+void VulkanRenderer::drawPauseBackground(float darken, float darkenOffset)
+{
+    // TODO: implement
+}
+
+void VulkanRenderer::setClearColor(float r, float g, float b, float a)
+{
+    clearColorConfig.clearColor.color.float32[0] = r;
+    clearColorConfig.clearColor.color.float32[1] = g;
+    clearColorConfig.clearColor.color.float32[2] = b;
+    clearColorConfig.clearColor.color.float32[3] = a;
+    clearColorConfig.clearColorSet = true;
+}
+
 void VulkanRenderer::renderMenu(EngineState state)
 {
     (void)state;
@@ -1912,9 +1930,7 @@ void VulkanRenderer::renderMenu(EngineState state)
     auto prep = executeRenderInit();
 
     if (!prep.has_value())
-    {
         return;
-    }
 
     auto [imageIndex, result] = *prep;
 
@@ -1940,70 +1956,23 @@ void VulkanRenderer::renderMenu(EngineState state)
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = swapChainExtent;
 
+    clearColorConfig.clearColorSet = false;
+
+    buildMenu(state);
+
     VkClearValue clearColor{};
 
-    float alpha = std::clamp(UIManager::fade / UIManager::fadeTime, 0.0f, 1.0f);
-
-    switch (SceneManager::engineState)
+    if (clearColorConfig.clearColorSet)
     {
-    case EngineState::Title:
-    case EngineState::TitleSettings:
-    case EngineState::TestMenu:
-    {
-
-        float color = 0.0f;
-
-        if (UIManager::shouldFadeBackground)
-            color = easeInOutQuad(0.0f, 0.5f, alpha);
-        else
-            color = 0.5f;
-
-        clearColor.color = {color, 0, 0};
-        break;
+        clearColor = clearColorConfig.clearColor;
     }
-    default:
-        clearColor.color = {0.1, 0.1, 0.1};
+    else
+    {
+        clearColor.color = {{0.1f, 0.1f, 0.1f, 1.0f}};
     }
 
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
-
-    float titleX = 0.02f, titleY = 0.04f;
-    float shadowDistance = 0.003f;
-    std::string titleText;
-
-    switch (state)
-    {
-    case EngineState::Title:
-        titleText = "Land Yachting Simulator";
-        break;
-    case EngineState::Pause:
-        titleText = "Paused";
-        break;
-    case EngineState::TestMenu:
-        titleText = "Tests";
-        break;
-    case EngineState::Settings:
-    case EngineState::TitleSettings:
-        titleText = "Settings";
-        break;
-    }
-
-    float positionOffset = easeInOutQuad(-0.01f, 0.0f, alpha);
-
-    renderText(titleText, titleX + positionOffset + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Left);
-    renderText(titleText, titleX + positionOffset, titleY, 1.0f, glm::vec3(1.0f), alpha, TextAlign::Left);
-
-    if (UIManager::needsRestart)
-    {
-        renderText("Will restart to apply changes", 0.98f + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Right);
-        renderText("Will restart to apply changes", 0.98f, titleY, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), alpha, TextAlign::Right);
-    }
-    else if (UIManager::needsReload)
-    {
-        renderText("Will reload to apply changes", 0.98f + shadowDistance, titleY + shadowDistance, 1.0f, glm::vec3(0.0f), alpha, TextAlign::Right);
-        renderText("Will reload to apply changes", 0.98f, titleY, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), alpha, TextAlign::Right);
-    }
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -2151,6 +2120,10 @@ void VulkanRenderer::renderPendingText(VkCommandBuffer commandBuffer)
 
     pendingTextDraws.clear();
 }
+
+void VulkanRenderer::renderImage(const std::string &fileName, const glm::vec2 &position, const float width, const float height, const float alpha, const glm::vec2 scale, const bool uniformScaling, const float rotation, const bool mirrored) {
+    // TODO: implement
+};
 
 ITextureManager *VulkanRenderer::getTextureManager()
 {
